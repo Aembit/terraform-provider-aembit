@@ -170,11 +170,13 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServerWorkloadResource,
+		NewCredentialProviderResource,
 	}
 }
 
 func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewServerWorkloadsDataSource,
+		NewCredentialProvidersDataSource,
 	}
 }

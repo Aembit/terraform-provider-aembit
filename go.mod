@@ -2,7 +2,10 @@ module terraform-provider-aembit
 
 go 1.21.0
 
+toolchain go1.22.0
+
 require (
+	aembit.io/aembit v0.0.0-00010101000000-000000000000
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.5.0
 	github.com/hashicorp/terraform-plugin-go v0.21.0
@@ -73,3 +76,4 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 )
 
+replace aembit.io/aembit => ../aembit_api_client
