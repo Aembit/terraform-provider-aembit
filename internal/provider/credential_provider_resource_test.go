@@ -1,25 +1,22 @@
 package provider
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/apikey/TestAccCredentialProviderResource_ApiKey_Create.tf")
+	modifyFile, _ := os.ReadFile("../../tests/apikey/TestAccCredentialProviderResource_ApiKey_Modify.tf")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_credential_provider" "api_key" {
-	name = "TF Acceptance API Key"
-	api_key = {
-		api_key = "test"
-	}
-}
-`,
+				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr("aembit_credential_provider.api_key", "name", "TF Acceptance API Key"),
@@ -37,14 +34,7 @@ resource "aembit_credential_provider" "api_key" {
 			//},
 			// Update and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_credential_provider" "api_key" {
-	name = "TF Acceptance API Key - Modified"
-	api_key = {
-		api_key = "test"
-	}
-}
-`,
+				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.api_key", "name", "TF Acceptance API Key - Modified"),
@@ -56,22 +46,15 @@ resource "aembit_credential_provider" "api_key" {
 }
 
 func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/oauth/TestAccCredentialProviderResource_OAuth_Create.tf")
+	modifyFile, _ := os.ReadFile("../../tests/oauth/TestAccCredentialProviderResource_OAuth_Modify.tf")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_credential_provider" "oauth" {
-	name = "TF Acceptance OAuth"
-	oauth_client_credentials = {
-		token_url = "https://aembit.io/token"
-		client_id = "test"
-		client_secret = "test"
-		scopes = "test_scope"
-	}
-}
-`,
+				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr("aembit_credential_provider.oauth", "name", "TF Acceptance OAuth"),
@@ -89,17 +72,7 @@ resource "aembit_credential_provider" "oauth" {
 			//},
 			// Update and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_credential_provider" "oauth" {
-	name = "TF Acceptance OAuth - Modified"
-	oauth_client_credentials = {
-		token_url = "https://aembit.io/token"
-		client_id = "test"
-		client_secret = "test"
-		scopes = "test_scope"
-	}
-}
-`,
+				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.oauth", "name", "TF Acceptance OAuth - Modified"),

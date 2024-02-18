@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -89,15 +90,22 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Sensitive:      true,
 				AttributeTypes: credentialProviderOAuthClientCredentialsModel.AttrTypes,
 			},
+			"vault_client_token": schema.ObjectAttribute{
+				Optional:       true,
+				Sensitive:      true,
+				AttributeTypes: credentialProviderVaultClientTokenModel.AttrTypes,
+			},
 		},
 	}
 }
 
+// Configure validators to ensure that only one credential provider type is specified
 func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("api_key"),
 			path.MatchRoot("oauth_client_credentials"),
+			path.MatchRoot("vault_client_token"),
 		),
 	}
 }
@@ -113,19 +121,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO
-	credential.EntityDTO = aembit.EntityDTO{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-	if !plan.ApiKey.IsNull() {
-		credential.Type = "apikey"
-		credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
-	} else if !plan.OAuthClientCredentials.IsNull() {
-		credential.Type = "oauth-client-credential"
-		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"test\", \"ClientSecret\": \"test\", \"Scope\": \"test_scope\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
-	}
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(plan, nil)
 
 	// Create new Credential Provider
 	credential_provider, err := r.client.CreateCredentialProvider(credential, nil)
@@ -186,23 +182,26 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
 
 		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
-		var detailJSON map[string]any
-		json.Unmarshal([]byte(credential_provider.ProviderDetail), &detailJSON)
+		var oauth aembit.CredentialOAuthClientCredentialDTO
+		json.Unmarshal([]byte(credential_provider.ProviderDetail), &oauth)
 
 		// Compare for changes
-		if !state.OAuthClientCredentials.Attributes()["token_url"].Equal(types.StringValue(detailJSON["Url"].(string))) ||
-			!state.OAuthClientCredentials.Attributes()["client_id"].Equal(types.StringValue(detailJSON["ClientID"].(string))) ||
-			!state.OAuthClientCredentials.Attributes()["scopes"].Equal(types.StringValue(detailJSON["Scope"].(string))) {
+		if strings.Trim(state.OAuthClientCredentials.Attributes()["token_url"].String(), "\"") != oauth.TokenUrl ||
+			strings.Trim(state.OAuthClientCredentials.Attributes()["client_id"].String(), "\"") != oauth.ClientID ||
+			strings.Trim(state.OAuthClientCredentials.Attributes()["scopes"].String(), "\"") != oauth.Scope {
+			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["token_url"].String(), "\""), oauth.TokenUrl)
+			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["client_id"].String(), "\""), oauth.ClientID)
+			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["scopes"].String(), "\""), oauth.Scope)
 
 			// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
 			var secret string = state.OAuthClientCredentials.Attributes()["client_secret"].String()
 
 			state.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
 				map[string]attr.Value{
-					"token_url":     types.StringValue(detailJSON["Url"].(string)),
-					"client_id":     types.StringValue(detailJSON["ClientID"].(string)),
+					"token_url":     types.StringValue(oauth.TokenUrl),
+					"client_id":     types.StringValue(oauth.ClientID),
 					"client_secret": types.StringValue(secret),
-					"scopes":        types.StringValue(detailJSON["Scope"].(string)),
+					"scopes":        types.StringValue(oauth.Scope),
 				})
 		}
 	}
@@ -238,20 +237,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO
-	credential.EntityDTO = aembit.EntityDTO{
-		ExternalId:  external_id,
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		IsActive:    plan.IsActive.ValueBool(),
-	}
-	if !plan.ApiKey.IsNull() {
-		credential.Type = "apikey"
-		credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
-	} else if !plan.OAuthClientCredentials.IsNull() {
-		credential.Type = "oauth-client-credential"
-		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"test\", \"ClientSecret\": \"test\", \"Scope\": \"test_scope\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
-	}
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(plan, &external_id)
 
 	// Update Credential Provider
 	credential_provider, err := r.client.UpdateCredentialProvider(credential, nil)
@@ -311,4 +297,39 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 func (r *credentialProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func convertCredentialProviderModelToDTO(model credentialProviderResourceModel, external_id *string) aembit.CredentialProviderDTO {
+	var credential aembit.CredentialProviderDTO
+	credential.EntityDTO = aembit.EntityDTO{
+		Name:        model.Name.ValueString(),
+		Description: model.Description.ValueString(),
+		IsActive:    model.IsActive.ValueBool(),
+	}
+	if external_id != nil {
+		credential.EntityDTO.ExternalId = *external_id
+	}
+
+	// Handle the API Key use case
+	if !model.ApiKey.IsNull() {
+		credential.Type = "apikey"
+		apiKey := aembit.CredentialApiKeyDTO{ApiKey: strings.Trim(model.ApiKey.Attributes()["api_key"].String(), "\"")}
+		apiKeyJson, _ := json.Marshal(apiKey)
+		credential.ProviderDetail = string(apiKeyJson)
+	}
+
+	// Handle the OAuth Client Credentials use case
+	if !model.OAuthClientCredentials.IsNull() {
+		credential.Type = "oauth-client-credential"
+		oauth := aembit.CredentialOAuthClientCredentialDTO{
+			TokenUrl:        strings.Trim(model.OAuthClientCredentials.Attributes()["token_url"].String(), "\""),
+			ClientID:        strings.Trim(model.OAuthClientCredentials.Attributes()["client_id"].String(), "\""),
+			ClientSecret:    strings.Trim(model.OAuthClientCredentials.Attributes()["client_secret"].String(), "\""),
+			Scope:           strings.Trim(model.OAuthClientCredentials.Attributes()["scopes"].String(), "\""),
+			CredentialStyle: "authHeader",
+		}
+		oauthJson, _ := json.Marshal(oauth)
+		credential.ProviderDetail = string(oauthJson)
+	}
+	return credential
 }
