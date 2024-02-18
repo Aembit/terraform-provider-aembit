@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -77,23 +77,26 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Computed:    true,
 			},
-			"type": schema.StringAttribute{
-				Description: "Type of credential provider.",
-				Required:    true,
+			"api_key": schema.ObjectAttribute{
+				Optional:       true,
+				Sensitive:      true,
+				AttributeTypes: credentialProviderApiKeyModel.AttrTypes,
+			},
+			"oauth_client_credentials": schema.ObjectAttribute{
+				Optional:       true,
+				Sensitive:      true,
+				AttributeTypes: credentialProviderOAuthClientCredentialsModel.AttrTypes,
 			},
 		},
-		Blocks: map[string]schema.Block{
-			"api_key": schema.SingleNestedBlock{
-				Attributes: map[string]schema.Attribute{
-					"value": schema.StringAttribute{
-						Description: "API Key credential value.",
-						Optional:    true,
-						Computed:    true,
-						Sensitive:   true,
-					},
-				},
-			},
-		},
+	}
+}
+
+func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("api_key"),
+			path.MatchRoot("oauth_client_credentials"),
+		),
 	}
 }
 
@@ -114,8 +117,13 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
 	}
-	credential.Type = plan.Type.ValueString()
-	credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
+	if !plan.ApiKey.IsNull() {
+		credential.Type = "apikey"
+		credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
+	} else if !plan.OAuthClientCredentials.IsNull() {
+		credential.Type = "oauth-client-credential"
+		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"testr\", \"ClientSecret\": \"testrt\", \"Scope\": \"test\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
+	}
 
 	// Create new Credential Provider
 	credential_provider, err := r.client.CreateCredentialProvider(credential, nil)
@@ -132,7 +140,6 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	plan.Name = types.StringValue(credential_provider.EntityDTO.Name)
 	plan.Description = types.StringValue(credential_provider.EntityDTO.Description)
 	plan.IsActive = types.BoolValue(credential_provider.EntityDTO.IsActive)
-	plan.Type = types.StringValue(credential_provider.Type)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -167,15 +174,17 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 	state.Name = types.StringValue(credential_provider.EntityDTO.Name)
 	state.Description = types.StringValue(credential_provider.EntityDTO.Description)
 	state.IsActive = types.BoolValue(credential_provider.EntityDTO.IsActive)
-	state.Type = types.StringValue(credential_provider.Type)
 
+	// Make sure the type and non-secret values have not changed
 	switch credential_provider.Type {
-	case "apikey":
-		//elements := make([]attr.Value, 1)
-		//elements[0] = types.StringValue("test")
-		//state.ApiKey, _ = types.SetValue(types.StringType, elements)
-		state.ApiKey, _ = types.ObjectValue(map[string]attr.Type{"value": types.StringType},
-			map[string]attr.Value{"value": types.StringValue("test")})
+	//case "oauth-client-credential":
+	//	state.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
+	//		map[string]attr.Value{
+	//			"token_url":     types.StringValue("test"),
+	//			"client_id":     types.StringValue("test"),
+	//			"client_secret": types.StringValue(""),
+	//			"scopes":        types.StringValue("test"),
+	//		})
 	}
 
 	// Set refreshed state
@@ -216,7 +225,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
 	}
-	credential.Type = plan.Type.ValueString()
+	credential.Type = "apikey"
 	credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
 
 	// Update Credential Provider
@@ -234,7 +243,6 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	plan.Name = types.StringValue(credential_provider.EntityDTO.Name)
 	plan.Description = types.StringValue(credential_provider.EntityDTO.Description)
 	plan.IsActive = types.BoolValue(credential_provider.EntityDTO.IsActive)
-	plan.Type = types.StringValue(credential_provider.Type)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)

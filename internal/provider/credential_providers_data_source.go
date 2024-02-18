@@ -77,10 +77,6 @@ func (r *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							Description: "Active/Inactive status of the credential provider.",
 							Computed:    true,
 						},
-						"type": schema.StringAttribute{
-							Description: "Type of credential provider.",
-							Computed:    true,
-						},
 					},
 				},
 			},
@@ -108,7 +104,6 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 			Name:        types.StringValue(credential_provider.EntityDTO.Name),
 			Description: types.StringValue(credential_provider.EntityDTO.Description),
 			IsActive:    types.BoolValue(credential_provider.EntityDTO.IsActive),
-			Type:        types.StringValue(credential_provider.Type),
 		}
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
