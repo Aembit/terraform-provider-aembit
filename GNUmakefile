@@ -1,6 +1,7 @@
 default: testacc
 
 install:
+	go get aembit.io/aembit
 	go install .
 
 # Run acceptance tests

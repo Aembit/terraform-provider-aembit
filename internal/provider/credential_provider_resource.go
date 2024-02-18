@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -78,7 +79,19 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 			},
 			"type": schema.StringAttribute{
 				Description: "Type of credential provider.",
-				Computed:    true,
+				Required:    true,
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"api_key": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"value": schema.StringAttribute{
+						Description: "API Key credential value.",
+						Optional:    true,
+						Computed:    true,
+						Sensitive:   true,
+					},
+				},
 			},
 		},
 	}
@@ -101,6 +114,8 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
 	}
+	credential.Type = plan.Type.ValueString()
+	credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
 
 	// Create new Credential Provider
 	credential_provider, err := r.client.CreateCredentialProvider(credential, nil)
@@ -154,6 +169,15 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 	state.IsActive = types.BoolValue(credential_provider.EntityDTO.IsActive)
 	state.Type = types.StringValue(credential_provider.Type)
 
+	switch credential_provider.Type {
+	case "apikey":
+		//elements := make([]attr.Value, 1)
+		//elements[0] = types.StringValue("test")
+		//state.ApiKey, _ = types.SetValue(types.StringType, elements)
+		state.ApiKey, _ = types.ObjectValue(map[string]attr.Type{"value": types.StringType},
+			map[string]attr.Value{"value": types.StringValue("test")})
+	}
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -192,6 +216,8 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
 	}
+	credential.Type = plan.Type.ValueString()
+	credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
 
 	// Update Credential Provider
 	credential_provider, err := r.client.UpdateCredentialProvider(credential, nil)

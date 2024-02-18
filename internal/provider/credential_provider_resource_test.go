@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCredentialProviderResource(t *testing.T) {
+func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -15,6 +15,10 @@ func TestAccCredentialProviderResource(t *testing.T) {
 				Config: providerConfig + `
 resource "aembit_credential_provider" "test" {
 	name = "Unit Test 1"
+	type = "apikey"
+	api_key {
+		value = "test"
+	}
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -38,6 +42,10 @@ resource "aembit_credential_provider" "test" {
 				Config: providerConfig + `
 resource "aembit_credential_provider" "test" {
 	name = "Unit Test 1 - Modified"
+	type = "apikey"
+	api_key {
+		value = "test"
+	}
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
