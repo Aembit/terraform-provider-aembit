@@ -96,7 +96,7 @@ resource "aembit_credential_provider" "oauth" {
 		token_url = "https://aembit.io/token"
 		client_id = "test"
 		client_secret = "test"
-		scopes = ""
+		scopes = "test_scope"
 	}
 }
 `,

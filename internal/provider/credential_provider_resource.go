@@ -2,10 +2,12 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -122,7 +124,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 		credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
 	} else if !plan.OAuthClientCredentials.IsNull() {
 		credential.Type = "oauth-client-credential"
-		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"testr\", \"ClientSecret\": \"testrt\", \"Scope\": \"test\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
+		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"test\", \"ClientSecret\": \"test\", \"Scope\": \"test_scope\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
 	}
 
 	// Create new Credential Provider
@@ -177,14 +179,32 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 
 	// Make sure the type and non-secret values have not changed
 	switch credential_provider.Type {
-	//case "oauth-client-credential":
-	//	state.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
-	//		map[string]attr.Value{
-	//			"token_url":     types.StringValue("test"),
-	//			"client_id":     types.StringValue("test"),
-	//			"client_secret": types.StringValue(""),
-	//			"scopes":        types.StringValue("test"),
-	//		})
+	case "apikey":
+	// We leave the API Key alone complete to avoid confusing Terraform since Aembit doesn't return the current secret
+	case "oauth-client-credential":
+		// Generally, we want to pass the same state object through so that no change is detected, unless we see
+		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
+
+		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
+		var detailJSON map[string]any
+		json.Unmarshal([]byte(credential_provider.ProviderDetail), &detailJSON)
+
+		// Compare for changes
+		if !state.OAuthClientCredentials.Attributes()["token_url"].Equal(types.StringValue(detailJSON["Url"].(string))) ||
+			!state.OAuthClientCredentials.Attributes()["client_id"].Equal(types.StringValue(detailJSON["ClientID"].(string))) ||
+			!state.OAuthClientCredentials.Attributes()["scopes"].Equal(types.StringValue(detailJSON["Scope"].(string))) {
+
+			// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
+			var secret string = state.OAuthClientCredentials.Attributes()["client_secret"].String()
+
+			state.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
+				map[string]attr.Value{
+					"token_url":     types.StringValue(detailJSON["Url"].(string)),
+					"client_id":     types.StringValue(detailJSON["ClientID"].(string)),
+					"client_secret": types.StringValue(secret),
+					"scopes":        types.StringValue(detailJSON["Scope"].(string)),
+				})
+		}
 	}
 
 	// Set refreshed state
@@ -225,8 +245,13 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 		Description: plan.Description.ValueString(),
 		IsActive:    plan.IsActive.ValueBool(),
 	}
-	credential.Type = "apikey"
-	credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
+	if !plan.ApiKey.IsNull() {
+		credential.Type = "apikey"
+		credential.ProviderDetail = "{\"ApiKey\":\"test\"}"
+	} else if !plan.OAuthClientCredentials.IsNull() {
+		credential.Type = "oauth-client-credential"
+		credential.ProviderDetail = "{ \"Url\": \"https://aembit.io/token\", \"ClientID\": \"test\", \"ClientSecret\": \"test\", \"Scope\": \"test_scope\", \"CredentialStyle\": \"authHeader\", \"CustomParameters\" : [] }"
+	}
 
 	// Update Credential Provider
 	credential_provider, err := r.client.UpdateCredentialProvider(credential, nil)
