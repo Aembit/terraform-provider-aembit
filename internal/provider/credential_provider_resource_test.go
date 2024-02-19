@@ -82,3 +82,41 @@ func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
 		},
 	})
 }
+
+func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/vault/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/vault/TestAccCredentialProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
+				),
+			},
+			// ImportState testing
+			//{
+			//	ResourceName:      "aembit_credential_provider.vault",
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault - Modified"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

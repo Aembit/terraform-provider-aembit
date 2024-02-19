@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"aembit.io/aembit"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -92,7 +94,6 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 			},
 			"vault_client_token": schema.ObjectAttribute{
 				Optional:       true,
-				Sensitive:      true,
 				AttributeTypes: credentialProviderVaultClientTokenModel.AttrTypes,
 			},
 		},
@@ -121,7 +122,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(plan, nil)
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, nil)
 
 	// Create new Credential Provider
 	credential_provider, err := r.client.CreateCredentialProvider(credential, nil)
@@ -237,7 +238,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(plan, &external_id)
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, &external_id)
 
 	// Update Credential Provider
 	credential_provider, err := r.client.UpdateCredentialProvider(credential, nil)
@@ -299,7 +300,7 @@ func (r *credentialProviderResource) ImportState(ctx context.Context, req resour
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderModelToDTO(model credentialProviderResourceModel, external_id *string) aembit.CredentialProviderDTO {
+func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, external_id *string) aembit.CredentialProviderDTO {
 	var credential aembit.CredentialProviderDTO
 	credential.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -313,7 +314,7 @@ func convertCredentialProviderModelToDTO(model credentialProviderResourceModel, 
 	// Handle the API Key use case
 	if !model.ApiKey.IsNull() {
 		credential.Type = "apikey"
-		apiKey := aembit.CredentialApiKeyDTO{ApiKey: strings.Trim(model.ApiKey.Attributes()["api_key"].String(), "\"")}
+		apiKey := aembit.CredentialApiKeyDTO{ApiKey: getStringAttr(ctx, model.ApiKey, "api_key")}
 		apiKeyJson, _ := json.Marshal(apiKey)
 		credential.ProviderDetail = string(apiKeyJson)
 	}
@@ -322,14 +323,81 @@ func convertCredentialProviderModelToDTO(model credentialProviderResourceModel, 
 	if !model.OAuthClientCredentials.IsNull() {
 		credential.Type = "oauth-client-credential"
 		oauth := aembit.CredentialOAuthClientCredentialDTO{
-			TokenUrl:        strings.Trim(model.OAuthClientCredentials.Attributes()["token_url"].String(), "\""),
-			ClientID:        strings.Trim(model.OAuthClientCredentials.Attributes()["client_id"].String(), "\""),
-			ClientSecret:    strings.Trim(model.OAuthClientCredentials.Attributes()["client_secret"].String(), "\""),
-			Scope:           strings.Trim(model.OAuthClientCredentials.Attributes()["scopes"].String(), "\""),
+			TokenUrl:        getStringAttr(ctx, model.OAuthClientCredentials, "token_url"),
+			ClientID:        getStringAttr(ctx, model.OAuthClientCredentials, "client_id"),
+			ClientSecret:    getStringAttr(ctx, model.OAuthClientCredentials, "client_secret"),
+			Scope:           getStringAttr(ctx, model.OAuthClientCredentials, "scopes"),
 			CredentialStyle: "authHeader",
 		}
 		oauthJson, _ := json.Marshal(oauth)
 		credential.ProviderDetail = string(oauthJson)
 	}
+
+	// Handle the Vault Cvlient Token use case
+	if !model.VaultClientToken.IsNull() {
+		credential.Type = "vaultClientToken"
+		vault := aembit.CredentialVaultClientTokenDTO{
+			JwtConfig: &aembit.CredentialVaultClientTokenJwtConfigDTO{
+				Issuer:       "https://62c41c.id.aembit.local/",
+				Subject:      getStringAttr(ctx, model.VaultClientToken, "subject"),
+				SubjectType:  getStringAttr(ctx, model.VaultClientToken, "subject_type"),
+				Lifetime:     getInt32Attr(ctx, model.VaultClientToken, "lifetime"),
+				CustomClaims: make([]aembit.CredentialVaultClientTokenClaimsDTO, 0),
+			},
+			VaultCluster: &aembit.CredentialVaultClientTokenVaultClusterDTO{
+				VaultHost:          getStringAttr(ctx, model.VaultClientToken, "vault_host"),
+				Port:               getInt32Attr(ctx, model.VaultClientToken, "vault_port"),
+				Tls:                getBoolAttr(ctx, model.VaultClientToken, "vault_tls"),
+				Namespace:          getStringAttr(ctx, model.VaultClientToken, "vault_namespace"),
+				Role:               getStringAttr(ctx, model.VaultClientToken, "vault_role"),
+				AuthenticationPath: getStringAttr(ctx, model.VaultClientToken, "vault_path"),
+				ForwardingConfig:   getStringAttr(ctx, model.VaultClientToken, "vault_forwarding"),
+			},
+		}
+		claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
+		for _, claim := range claims {
+			vault.JwtConfig.CustomClaims = append(vault.JwtConfig.CustomClaims, aembit.CredentialVaultClientTokenClaimsDTO{
+				Key:       getStringAttr(ctx, claim, "key"),
+				Value:     getStringAttr(ctx, claim, "value"),
+				ValueType: getStringAttr(ctx, claim, "value_type"),
+			})
+		}
+		vaultJson, _ := json.Marshal(vault)
+		credential.ProviderDetail = string(vaultJson)
+	}
 	return credential
+}
+
+func getStringAttr(ctx context.Context, tfObject types.Object, name string) string {
+	var value string
+	tfValue, _ := tfObject.Attributes()[name].ToTerraformValue(ctx)
+	tfValue.As(&value)
+	return value
+}
+
+func getInt32Attr(ctx context.Context, tfObject types.Object, name string) int32 {
+	var value big.Float
+	tfValue, _ := tfObject.Attributes()[name].ToTerraformValue(ctx)
+	tfValue.As(&value)
+	result, _ := value.Int64()
+	return int32(result)
+}
+
+func getBoolAttr(ctx context.Context, tfObject types.Object, name string) bool {
+	var value bool
+	tfValue, _ := tfObject.Attributes()[name].ToTerraformValue(ctx)
+	tfValue.As(&value)
+	return value
+}
+
+func getSetObjectAttr(ctx context.Context, tfObject types.Object, name string) []types.Object {
+	var objSlice []types.Object
+	tfsdk.ValueAs(ctx, tfObject.Attributes()[name], &objSlice)
+
+	objects := make([]types.Object, len(objSlice))
+	for i, val := range objSlice {
+		objects[i] = val
+	}
+
+	return objects
 }

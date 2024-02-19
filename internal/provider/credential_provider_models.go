@@ -42,8 +42,17 @@ var credentialProviderOAuthClientCredentialsModel = types.ObjectType{
 // credentialProviderApiKeyModel maps OAuth Client Credentials Flow configuration.
 var credentialProviderVaultClientTokenModel = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
-		"subject":          types.StringType,
-		"subject_type":     types.StringType,
+		"subject":      types.StringType,
+		"subject_type": types.StringType,
+		"custom_claims": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"key":        types.StringType,
+					"value":      types.StringType,
+					"value_type": types.StringType,
+				},
+			},
+		},
 		"lifetime":         types.Int64Type,
 		"vault_host":       types.StringType,
 		"vault_tls":        types.BoolType,
