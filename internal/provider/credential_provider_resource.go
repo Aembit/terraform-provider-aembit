@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -166,44 +165,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	// Overwrite items with refreshed state
-	state.ID = types.StringValue(credential_provider.EntityDTO.ExternalId)
-	state.Name = types.StringValue(credential_provider.EntityDTO.Name)
-	state.Description = types.StringValue(credential_provider.EntityDTO.Description)
-	state.IsActive = types.BoolValue(credential_provider.EntityDTO.IsActive)
-
-	// Make sure the type and non-secret values have not changed
-	switch credential_provider.Type {
-	case "apikey":
-	// We leave the API Key alone complete to avoid confusing Terraform since Aembit doesn't return the current secret
-	case "oauth-client-credential":
-		// Generally, we want to pass the same state object through so that no change is detected, unless we see
-		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
-
-		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
-		var oauth aembit.CredentialOAuthClientCredentialDTO
-		json.Unmarshal([]byte(credential_provider.ProviderDetail), &oauth)
-
-		// Compare for changes
-		if strings.Trim(state.OAuthClientCredentials.Attributes()["token_url"].String(), "\"") != oauth.TokenUrl ||
-			strings.Trim(state.OAuthClientCredentials.Attributes()["client_id"].String(), "\"") != oauth.ClientID ||
-			strings.Trim(state.OAuthClientCredentials.Attributes()["scopes"].String(), "\"") != oauth.Scope {
-			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["token_url"].String(), "\""), oauth.TokenUrl)
-			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["client_id"].String(), "\""), oauth.ClientID)
-			fmt.Printf("TokenURL: %s %s\n", strings.Trim(state.OAuthClientCredentials.Attributes()["scopes"].String(), "\""), oauth.Scope)
-
-			// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
-			var secret string = state.OAuthClientCredentials.Attributes()["client_secret"].String()
-
-			state.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
-				map[string]attr.Value{
-					"token_url":     types.StringValue(oauth.TokenUrl),
-					"client_id":     types.StringValue(oauth.ClientID),
-					"client_secret": types.StringValue(secret),
-					"scopes":        types.StringValue(oauth.Scope),
-				})
-		}
-	}
+	state = convertCredentialProviderDTOToModel(ctx, credential_provider, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -364,4 +326,90 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 		credential.ProviderDetail = string(vaultJson)
 	}
 	return credential
+}
+
+func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
+	var model credentialProviderResourceModel
+	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.Name = types.StringValue(dto.EntityDTO.Name)
+	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+
+	// Make sure the type and non-secret values have not changed
+	switch dto.Type {
+	case "apikey":
+		model.OAuthClientCredentials = types.ObjectNull(credentialProviderOAuthClientCredentialsModel.AttrTypes)
+		model.VaultClientToken = types.ObjectNull(credentialProviderVaultClientTokenModel.AttrTypes)
+
+		// We leave the API Key alone complete to avoid confusing Terraform since Aembit doesn't return the current secret
+		model.ApiKey, _ = types.ObjectValue(credentialProviderApiKeyModel.AttrTypes,
+			map[string]attr.Value{
+				"api_key": types.StringValue(getStringAttr(ctx, state.ApiKey, "api_key")),
+			})
+	case "oauth-client-credential":
+		model.ApiKey = types.ObjectNull(credentialProviderApiKeyModel.AttrTypes)
+		model.VaultClientToken = types.ObjectNull(credentialProviderVaultClientTokenModel.AttrTypes)
+		// Generally, we want to pass the same state object through so that no change is detected, unless we see
+		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
+
+		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
+		var oauth aembit.CredentialOAuthClientCredentialDTO
+		json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
+
+		// Compare for changes
+		if getStringAttr(ctx, state.OAuthClientCredentials, "token_url") != oauth.TokenUrl ||
+			getStringAttr(ctx, state.OAuthClientCredentials, "client_id") != oauth.ClientID ||
+			getStringAttr(ctx, state.OAuthClientCredentials, "scopes") != oauth.Scope {
+
+			// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
+			var secret string = getStringAttr(ctx, state.OAuthClientCredentials, "client_secret")
+
+			model.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
+				map[string]attr.Value{
+					"token_url":     types.StringValue(oauth.TokenUrl),
+					"client_id":     types.StringValue(oauth.ClientID),
+					"client_secret": types.StringValue(secret),
+					"scopes":        types.StringValue(oauth.Scope),
+				})
+		} else {
+			model.OAuthClientCredentials = state.OAuthClientCredentials
+		}
+	case "vaultClientToken":
+		model.ApiKey = types.ObjectNull(credentialProviderApiKeyModel.AttrTypes)
+		model.OAuthClientCredentials = types.ObjectNull(credentialProviderOAuthClientCredentialsModel.AttrTypes)
+		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
+		var vault aembit.CredentialVaultClientTokenDTO
+		json.Unmarshal([]byte(dto.ProviderDetail), &vault)
+
+		// Get the custom claims to be injected into the model
+		claims := make([]attr.Value, len(vault.JwtConfig.CustomClaims))
+		//types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes),
+		//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
+		for i, claim := range vault.JwtConfig.CustomClaims {
+			claims[i], _ = types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes,
+				map[string]attr.Value{
+					"key":        types.StringValue(claim.Key),
+					"value":      types.StringValue(claim.Value),
+					"value_type": types.StringValue(claim.ValueType),
+				})
+		}
+		claimsValue, _ := types.SetValue(credentialProviderVaultClientTokenCustomClaimsModel, claims)
+
+		// Construct the model
+		model.VaultClientToken, _ = types.ObjectValue(credentialProviderVaultClientTokenModel.AttrTypes,
+			map[string]attr.Value{
+				"subject":          types.StringValue(vault.JwtConfig.Subject),
+				"subject_type":     types.StringValue(vault.JwtConfig.SubjectType),
+				"custom_claims":    claimsValue,
+				"lifetime":         types.Int64Value(int64(vault.JwtConfig.Lifetime)),
+				"vault_host":       types.StringValue(vault.VaultCluster.VaultHost),
+				"vault_tls":        types.BoolValue(vault.VaultCluster.Tls),
+				"vault_port":       types.Int64Value(int64(vault.VaultCluster.Port)),
+				"vault_namespace":  types.StringValue(vault.VaultCluster.Namespace),
+				"vault_role":       types.StringValue(vault.VaultCluster.Role),
+				"vault_path":       types.StringValue(vault.VaultCluster.AuthenticationPath),
+				"vault_forwarding": types.StringValue(vault.VaultCluster.ForwardingConfig),
+			})
+	}
+	return model
 }
