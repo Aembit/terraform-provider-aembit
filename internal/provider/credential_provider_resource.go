@@ -335,20 +335,17 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 
-	// Make sure the type and non-secret values have not changed
+	// Set the objects to null to begin with
+	model.ApiKey = types.ObjectNull(credentialProviderApiKeyModel.AttrTypes)
+	model.OAuthClientCredentials = types.ObjectNull(credentialProviderOAuthClientCredentialsModel.AttrTypes)
+	model.VaultClientToken = types.ObjectNull(credentialProviderVaultClientTokenModel.AttrTypes)
+
+	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
 	case "apikey":
-		model.OAuthClientCredentials = types.ObjectNull(credentialProviderOAuthClientCredentialsModel.AttrTypes)
-		model.VaultClientToken = types.ObjectNull(credentialProviderVaultClientTokenModel.AttrTypes)
-
 		// We leave the API Key alone complete to avoid confusing Terraform since Aembit doesn't return the current secret
-		model.ApiKey, _ = types.ObjectValue(credentialProviderApiKeyModel.AttrTypes,
-			map[string]attr.Value{
-				"api_key": types.StringValue(getStringAttr(ctx, state.ApiKey, "api_key")),
-			})
+		model.ApiKey = convertApiKeyDTOToModel(ctx, dto, state)
 	case "oauth-client-credential":
-		model.ApiKey = types.ObjectNull(credentialProviderApiKeyModel.AttrTypes)
-		model.VaultClientToken = types.ObjectNull(credentialProviderVaultClientTokenModel.AttrTypes)
 		// Generally, we want to pass the same state object through so that no change is detected, unless we see
 		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
 
@@ -375,8 +372,6 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 			model.OAuthClientCredentials = state.OAuthClientCredentials
 		}
 	case "vaultClientToken":
-		model.ApiKey = types.ObjectNull(credentialProviderApiKeyModel.AttrTypes)
-		model.OAuthClientCredentials = types.ObjectNull(credentialProviderOAuthClientCredentialsModel.AttrTypes)
 		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
 		var vault aembit.CredentialVaultClientTokenDTO
 		json.Unmarshal([]byte(dto.ProviderDetail), &vault)
@@ -412,4 +407,12 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 			})
 	}
 	return model
+}
+
+func convertApiKeyDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) types.ObjectValue {
+	value, _ := types.ObjectValue(credentialProviderApiKeyModel.AttrTypes,
+		map[string]attr.Value{
+			"api_key": types.StringValue(getStringAttr(ctx, state.ApiKey, "api_key")),
+		})
+	return value
 }
