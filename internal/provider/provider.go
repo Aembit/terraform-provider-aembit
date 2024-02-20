@@ -171,6 +171,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewServerWorkloadResource,
 		NewCredentialProviderResource,
+		NewTrustProviderResource,
 	}
 }
 
@@ -178,5 +179,6 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		NewServerWorkloadsDataSource,
 		NewCredentialProvidersDataSource,
+		NewTrustProvidersDataSource,
 	}
 }

@@ -29,7 +29,7 @@ var credentialProviderApiKeyModel = types.ObjectType{
 	},
 }
 
-// credentialProviderApiKeyModel maps OAuth Client Credentials Flow configuration.
+// credentialProviderOAuthClientCredentialsModel maps OAuth Client Credentials Flow configuration.
 var credentialProviderOAuthClientCredentialsModel = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"token_url":     types.StringType,
@@ -39,7 +39,7 @@ var credentialProviderOAuthClientCredentialsModel = types.ObjectType{
 	},
 }
 
-// credentialProviderApiKeyModel maps OAuth Client Credentials Flow configuration.
+// credentialProviderVaultClientTokenModel maps OAuth Client Credentials Flow configuration.
 var credentialProviderVaultClientTokenModel = types.ObjectType{
 	AttrTypes: map[string]attr.Type{
 		"subject":      types.StringType,

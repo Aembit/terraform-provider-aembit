@@ -2,7 +2,7 @@ default: testacc
 
 install:
 	go get aembit.io/aembit
-	go install .
+	go install -a -ldflags "-X main.version=1.0.0" .
 
 # Run acceptance tests
 .PHONY: testacc

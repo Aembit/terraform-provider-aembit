@@ -8,8 +8,8 @@ import (
 )
 
 func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/apikey/TestAccCredentialProviderResource_ApiKey_Create.tf")
-	modifyFile, _ := os.ReadFile("../../tests/apikey/TestAccCredentialProviderResource_ApiKey_Modify.tf")
+	createFile, _ := os.ReadFile("../../tests/credential/apikey/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/apikey/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -46,8 +46,8 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/oauth/TestAccCredentialProviderResource_OAuth_Create.tf")
-	modifyFile, _ := os.ReadFile("../../tests/oauth/TestAccCredentialProviderResource_OAuth_Modify.tf")
+	createFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -84,8 +84,8 @@ func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/vault/TestAccCredentialProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/vault/TestAccCredentialProviderResource.tfmod")
+	createFile, _ := os.ReadFile("../../tests/credential/vault/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/vault/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
