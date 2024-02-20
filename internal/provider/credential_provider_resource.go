@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -343,76 +344,86 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
 	case "apikey":
-		// We leave the API Key alone complete to avoid confusing Terraform since Aembit doesn't return the current secret
 		model.ApiKey = convertApiKeyDTOToModel(ctx, dto, state)
 	case "oauth-client-credential":
-		// Generally, we want to pass the same state object through so that no change is detected, unless we see
-		// that a non-secret value has changed. So let's compare values, and only update if there has been any change.
-
-		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
-		var oauth aembit.CredentialOAuthClientCredentialDTO
-		json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
-
-		// Compare for changes
-		if getStringAttr(ctx, state.OAuthClientCredentials, "token_url") != oauth.TokenUrl ||
-			getStringAttr(ctx, state.OAuthClientCredentials, "client_id") != oauth.ClientID ||
-			getStringAttr(ctx, state.OAuthClientCredentials, "scopes") != oauth.Scope {
-
-			// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
-			var secret string = getStringAttr(ctx, state.OAuthClientCredentials, "client_secret")
-
-			model.OAuthClientCredentials, _ = types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
-				map[string]attr.Value{
-					"token_url":     types.StringValue(oauth.TokenUrl),
-					"client_id":     types.StringValue(oauth.ClientID),
-					"client_secret": types.StringValue(secret),
-					"scopes":        types.StringValue(oauth.Scope),
-				})
-		} else {
-			model.OAuthClientCredentials = state.OAuthClientCredentials
-		}
+		model.OAuthClientCredentials = convertOAuthClientCredentialDTOToModel(ctx, dto, state)
 	case "vaultClientToken":
-		// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
-		var vault aembit.CredentialVaultClientTokenDTO
-		json.Unmarshal([]byte(dto.ProviderDetail), &vault)
-
-		// Get the custom claims to be injected into the model
-		claims := make([]attr.Value, len(vault.JwtConfig.CustomClaims))
-		//types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes),
-		//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
-		for i, claim := range vault.JwtConfig.CustomClaims {
-			claims[i], _ = types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes,
-				map[string]attr.Value{
-					"key":        types.StringValue(claim.Key),
-					"value":      types.StringValue(claim.Value),
-					"value_type": types.StringValue(claim.ValueType),
-				})
-		}
-		claimsValue, _ := types.SetValue(credentialProviderVaultClientTokenCustomClaimsModel, claims)
-
-		// Construct the model
-		model.VaultClientToken, _ = types.ObjectValue(credentialProviderVaultClientTokenModel.AttrTypes,
-			map[string]attr.Value{
-				"subject":          types.StringValue(vault.JwtConfig.Subject),
-				"subject_type":     types.StringValue(vault.JwtConfig.SubjectType),
-				"custom_claims":    claimsValue,
-				"lifetime":         types.Int64Value(int64(vault.JwtConfig.Lifetime)),
-				"vault_host":       types.StringValue(vault.VaultCluster.VaultHost),
-				"vault_tls":        types.BoolValue(vault.VaultCluster.Tls),
-				"vault_port":       types.Int64Value(int64(vault.VaultCluster.Port)),
-				"vault_namespace":  types.StringValue(vault.VaultCluster.Namespace),
-				"vault_role":       types.StringValue(vault.VaultCluster.Role),
-				"vault_path":       types.StringValue(vault.VaultCluster.AuthenticationPath),
-				"vault_forwarding": types.StringValue(vault.VaultCluster.ForwardingConfig),
-			})
+		model.VaultClientToken = convertVaultClientTokenDTOToModel(ctx, dto, state)
 	}
 	return model
 }
 
-func convertApiKeyDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) types.ObjectValue {
+// convertApiKeyDTOToModel converts the API Key state object into a model ready for terraform processing
+// Note: Since Aembit vaults the API Key and does not return it in the API, the DTO will never contain the stored value
+func convertApiKeyDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) basetypes.ObjectValue {
 	value, _ := types.ObjectValue(credentialProviderApiKeyModel.AttrTypes,
 		map[string]attr.Value{
 			"api_key": types.StringValue(getStringAttr(ctx, state.ApiKey, "api_key")),
+		})
+	return value
+}
+
+// convertOAuthClientCredentialDTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing
+// Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value
+func convertOAuthClientCredentialDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) basetypes.ObjectValue {
+	// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
+	var oauth aembit.CredentialOAuthClientCredentialDTO
+	json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
+
+	// Compare for changes
+	if getStringAttr(ctx, state.OAuthClientCredentials, "token_url") != oauth.TokenUrl ||
+		getStringAttr(ctx, state.OAuthClientCredentials, "client_id") != oauth.ClientID ||
+		getStringAttr(ctx, state.OAuthClientCredentials, "scopes") != oauth.Scope {
+
+		// Pull the client_secret from the state to avoid confusing Terraform since Aembit doesn't return the current secret
+		var secret string = getStringAttr(ctx, state.OAuthClientCredentials, "client_secret")
+
+		value, _ := types.ObjectValue(credentialProviderOAuthClientCredentialsModel.AttrTypes,
+			map[string]attr.Value{
+				"token_url":     types.StringValue(oauth.TokenUrl),
+				"client_id":     types.StringValue(oauth.ClientID),
+				"client_secret": types.StringValue(secret),
+				"scopes":        types.StringValue(oauth.Scope),
+			})
+		return value
+	}
+	return state.OAuthClientCredentials
+}
+
+// convertVaultClientTokenDTOToModel converts the VaultClientToken state object into a model ready for terraform processing
+func convertVaultClientTokenDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) basetypes.ObjectValue {
+	// First, parse the credential_provider.ProviderDetail JSON returned from Aembit Cloud
+	var vault aembit.CredentialVaultClientTokenDTO
+	json.Unmarshal([]byte(dto.ProviderDetail), &vault)
+
+	// Get the custom claims to be injected into the model
+	claims := make([]attr.Value, len(vault.JwtConfig.CustomClaims))
+	//types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes),
+	//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
+	for i, claim := range vault.JwtConfig.CustomClaims {
+		claims[i], _ = types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes,
+			map[string]attr.Value{
+				"key":        types.StringValue(claim.Key),
+				"value":      types.StringValue(claim.Value),
+				"value_type": types.StringValue(claim.ValueType),
+			})
+	}
+	claimsValue, _ := types.SetValue(credentialProviderVaultClientTokenCustomClaimsModel, claims)
+
+	// Construct the model
+	value, _ := types.ObjectValue(credentialProviderVaultClientTokenModel.AttrTypes,
+		map[string]attr.Value{
+			"subject":          types.StringValue(vault.JwtConfig.Subject),
+			"subject_type":     types.StringValue(vault.JwtConfig.SubjectType),
+			"custom_claims":    claimsValue,
+			"lifetime":         types.Int64Value(int64(vault.JwtConfig.Lifetime)),
+			"vault_host":       types.StringValue(vault.VaultCluster.VaultHost),
+			"vault_tls":        types.BoolValue(vault.VaultCluster.Tls),
+			"vault_port":       types.Int64Value(int64(vault.VaultCluster.Port)),
+			"vault_namespace":  types.StringValue(vault.VaultCluster.Namespace),
+			"vault_role":       types.StringValue(vault.VaultCluster.Role),
+			"vault_path":       types.StringValue(vault.VaultCluster.AuthenticationPath),
+			"vault_forwarding": types.StringValue(vault.VaultCluster.ForwardingConfig),
 		})
 	return value
 }
