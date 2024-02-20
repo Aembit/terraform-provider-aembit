@@ -7,7 +7,6 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -152,10 +151,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(trust_provider.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(trust_provider.EntityDTO.Name)
-	plan.Description = types.StringValue(trust_provider.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(trust_provider.EntityDTO.IsActive)
+	plan = convertTrustProviderDTOToModel(ctx, *trust_provider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -187,12 +183,6 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 
 	state = convertTrustProviderDTOToModel(ctx, trust_provider)
 
-	// Overwrite items with refreshed state
-	state.ID = types.StringValue(trust_provider.EntityDTO.ExternalId)
-	state.Name = types.StringValue(trust_provider.EntityDTO.Name)
-	state.Description = types.StringValue(trust_provider.EntityDTO.Description)
-	state.IsActive = types.BoolValue(trust_provider.EntityDTO.IsActive)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -212,8 +202,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Extract external ID from state
-	var external_id string
-	external_id = state.ID.ValueString()
+	external_id := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan trustProviderResourceModel
@@ -237,13 +226,10 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(trust_provider.EntityDTO.ExternalId)
-	plan.Name = types.StringValue(trust_provider.EntityDTO.Name)
-	plan.Description = types.StringValue(trust_provider.EntityDTO.Description)
-	plan.IsActive = types.BoolValue(trust_provider.EntityDTO.IsActive)
+	state = convertTrustProviderDTOToModel(ctx, *trust_provider)
 
 	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -297,14 +283,29 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 		trust.EntityDTO.ExternalId = *external_id
 	}
 
-	// Handle the API Key use case
-	if !model.AzureMetadata.IsNull() {
+	// Handle the Azure Metadata use case
+	if model.AzureMetadata != nil {
 		trust.Provider = "AzureMetadataService"
 		trust.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-		trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: "AzureSubscriptionId",
-			Value:     getStringAttr(ctx, model.AzureMetadata, "subscription_id"),
-		})
+
+		if len(model.AzureMetadata.Sku.ValueString()) > 0 {
+			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
+				Attribute: "AzureSku",
+				Value:     model.AzureMetadata.Sku.ValueString(),
+			})
+		}
+		if len(model.AzureMetadata.VmId.ValueString()) > 0 {
+			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
+				Attribute: "AzureVmId",
+				Value:     model.AzureMetadata.VmId.ValueString(),
+			})
+		}
+		if len(model.AzureMetadata.SubscriptionId.ValueString()) > 0 {
+			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
+				Attribute: "AzureSubscriptionId",
+				Value:     model.AzureMetadata.SubscriptionId.ValueString(),
+			})
+		}
 	}
 
 	return trust
@@ -319,17 +320,22 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 
 	switch dto.Provider {
 	case "AzureMetadataService": // Azure Metadata
-		model.AzureMetadata, _ = types.ObjectValue(
-			map[string]attr.Type{
-				"sku":             types.StringType,
-				"vm_id":           types.StringType,
-				"subscription_id": types.StringType,
-			},
-			map[string]attr.Value{
-				"sku":             types.StringNull(),
-				"vm_id":           types.StringNull(),
-				"subscription_id": types.StringValue("subscription_id"),
-			})
+		model.AzureMetadata = &trustProviderAzureMetadataModel{
+			Sku:            types.StringNull(),
+			VmId:           types.StringNull(),
+			SubscriptionId: types.StringNull(),
+		}
+
+		for _, rule := range dto.MatchRules {
+			switch rule.Attribute {
+			case "AzureSku":
+				model.AzureMetadata.Sku = types.StringValue(rule.Value)
+			case "AzureVmId":
+				model.AzureMetadata.VmId = types.StringValue(rule.Value)
+			case "AzureSubscriptionId":
+				model.AzureMetadata.SubscriptionId = types.StringValue(rule.Value)
+			}
+		}
 	}
 
 	return model

@@ -27,11 +27,11 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			//{
-			//	ResourceName:      "aembit_trust_provider.api_key",
-			//	ImportState:       false,
-			//	ImportStateVerify: false,
-			//},
+			{
+				ResourceName:      "aembit_trust_provider.azure",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

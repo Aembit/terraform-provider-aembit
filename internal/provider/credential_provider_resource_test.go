@@ -27,11 +27,11 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			//{
-			//	ResourceName:      "aembit_credential_provider.api_key",
-			//	ImportState:       false,
-			//	ImportStateVerify: false,
-			//},
+			{
+				ResourceName:      "aembit_credential_provider.api_key",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -65,11 +65,11 @@ func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			//{
-			//	ResourceName:      "aembit_credential_provider.oauth",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			{
+				ResourceName:      "aembit_credential_provider.oauth",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -103,11 +103,11 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			//{
-			//	ResourceName:      "aembit_credential_provider.vault",
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//},
+			{
+				ResourceName:      "aembit_credential_provider.vault",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
