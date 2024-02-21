@@ -2,15 +2,14 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"aembit.io/aembit"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -83,12 +82,8 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Azure Metadata type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"sku": schema.StringAttribute{
-						Optional: true,
-					},
-					"vm_id": schema.StringAttribute{
-						Optional: true,
-					},
+					"sku":   schema.StringAttribute{Optional: true},
+					"vm_id": schema.StringAttribute{Optional: true},
 					"subscription_id": schema.StringAttribute{
 						Optional: true,
 						//Validators: []validator.String{
@@ -100,20 +95,41 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						//},
 					},
 				},
-				Validators: []validator.Object{
-					// Validate azure_metadata has at least one value
-					objectvalidator.AtLeastOneOf(path.Expressions{
-						path.MatchRoot("azure_metadata").AtName("sku"),
-						path.MatchRoot("azure_metadata").AtName("vm_id"),
-						path.MatchRoot("azure_metadata").AtName("subscription_id"),
-					}...),
+			},
+			"aws_metadata": schema.SingleNestedAttribute{
+				Description: "AWS Metadata type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"certificate": schema.StringAttribute{
+						Optional:    true,
+						Description: "PEM Certificate to be used for Signature verification",
+					},
+					"account_id":                schema.StringAttribute{Optional: true},
+					"architecture":              schema.StringAttribute{Optional: true},
+					"availability_zone":         schema.StringAttribute{Optional: true},
+					"billing_products":          schema.StringAttribute{Optional: true},
+					"image_id":                  schema.StringAttribute{Optional: true},
+					"instance_id":               schema.StringAttribute{Optional: true},
+					"instance_type":             schema.StringAttribute{Optional: true},
+					"kernel_id":                 schema.StringAttribute{Optional: true},
+					"marketplace_product_codes": schema.StringAttribute{Optional: true},
+					"pending_time":              schema.StringAttribute{Optional: true},
+					"private_ip":                schema.StringAttribute{Optional: true},
+					"ramdisk_id":                schema.StringAttribute{Optional: true},
+					"region":                    schema.StringAttribute{Optional: true},
+					"version":                   schema.StringAttribute{Optional: true},
 				},
 			},
-			//"azure_metadata": schema.ObjectAttribute{
-			//	Optional:       true,
-			//	AttributeTypes: trustProviderAzureMetadataModel.AttrTypes,
-			//	Validators:     trustProviderAzureMetadataValidators,
-			//},
+			"kerberos": schema.SingleNestedAttribute{
+				Description: "Kerberos type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"agent_controller_id": schema.StringAttribute{Optional: true},
+					"principal":           schema.StringAttribute{Optional: true},
+					"realm":               schema.StringAttribute{Optional: true},
+					"source_ip":           schema.StringAttribute{Optional: true},
+				},
+			},
 		},
 	}
 }
@@ -123,6 +139,8 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("azure_metadata"),
+			path.MatchRoot("aws_metadata"),
+			path.MatchRoot("kerberos"),
 		),
 	}
 }
@@ -285,30 +303,137 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 
 	// Handle the Azure Metadata use case
 	if model.AzureMetadata != nil {
-		trust.Provider = "AzureMetadataService"
-		trust.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-
-		if len(model.AzureMetadata.Sku.ValueString()) > 0 {
-			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
-				Attribute: "AzureSku",
-				Value:     model.AzureMetadata.Sku.ValueString(),
-			})
-		}
-		if len(model.AzureMetadata.VmId.ValueString()) > 0 {
-			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
-				Attribute: "AzureVmId",
-				Value:     model.AzureMetadata.VmId.ValueString(),
-			})
-		}
-		if len(model.AzureMetadata.SubscriptionId.ValueString()) > 0 {
-			trust.MatchRules = append(trust.MatchRules, aembit.TrustProviderMatchRuleDTO{
-				Attribute: "AzureSubscriptionId",
-				Value:     model.AzureMetadata.SubscriptionId.ValueString(),
-			})
-		}
+		convertAzureMetadataModelToDTO(ctx, model, &trust)
+	}
+	if model.AwsMetadata != nil {
+		convertAwsMetadataModelToDTO(ctx, model, &trust)
+	}
+	if model.Kerberos != nil {
+		convertKerberosModelToDTO(ctx, model, &trust)
 	}
 
 	return trust
+}
+
+func convertAzureMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "AzureMetadataService"
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+
+	if len(model.AzureMetadata.Sku.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AzureSku", Value: model.AzureMetadata.Sku.ValueString(),
+		})
+	}
+	if len(model.AzureMetadata.VmId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AzureVmId", Value: model.AzureMetadata.VmId.ValueString(),
+		})
+	}
+	if len(model.AzureMetadata.SubscriptionId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AzureSubscriptionId", Value: model.AzureMetadata.SubscriptionId.ValueString(),
+		})
+	}
+}
+
+func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "AWSMetadataService"
+	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.AwsMetadata.Certificate.ValueString()))
+	dto.PemType = "Certificate"
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+
+	if len(model.AwsMetadata.AccountId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsAccountId", Value: model.AwsMetadata.AccountId.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.Architecture.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsArchitecture", Value: model.AwsMetadata.Architecture.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.AvailabilityZone.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsAvailabilityZone", Value: model.AwsMetadata.AvailabilityZone.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.BillingProducts.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsBillingProducts", Value: model.AwsMetadata.BillingProducts.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.ImageId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsImageId", Value: model.AwsMetadata.ImageId.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.InstanceId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsInstanceId", Value: model.AwsMetadata.InstanceId.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.InstanceType.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsInstanceType", Value: model.AwsMetadata.InstanceType.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.KernelId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsKernelId", Value: model.AwsMetadata.KernelId.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.MarketplaceProductCodes.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsMarketplaceProductCodes", Value: model.AwsMetadata.MarketplaceProductCodes.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.PendingTime.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsPendingTime", Value: model.AwsMetadata.PendingTime.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.PrivateIP.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsPrivateIp", Value: model.AwsMetadata.PrivateIP.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.RamdiskId.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsRamdiskId", Value: model.AwsMetadata.RamdiskId.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.Region.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsRegion", Value: model.AwsMetadata.Region.ValueString(),
+		})
+	}
+	if len(model.AwsMetadata.Version.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "AwsVersion", Value: model.AwsMetadata.Version.ValueString(),
+		})
+	}
+}
+
+func convertKerberosModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "Kerberos"
+	dto.AgentControllerId = model.Kerberos.AgentControllerId.ValueString()
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+
+	if len(model.Kerberos.Principal.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "Principal", Value: model.Kerberos.Principal.ValueString(),
+		})
+	}
+	if len(model.Kerberos.Realm.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "Realm", Value: model.Kerberos.Realm.ValueString(),
+		})
+	}
+	if len(model.Kerberos.SourceIP.ValueString()) > 0 {
+		dto.MatchRules = append(dto.MatchRules, aembit.TrustProviderMatchRuleDTO{
+			Attribute: "SourceIp", Value: model.Kerberos.SourceIP.ValueString(),
+		})
+	}
 }
 
 func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
@@ -320,23 +445,109 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 
 	switch dto.Provider {
 	case "AzureMetadataService": // Azure Metadata
-		model.AzureMetadata = &trustProviderAzureMetadataModel{
-			Sku:            types.StringNull(),
-			VmId:           types.StringNull(),
-			SubscriptionId: types.StringNull(),
-		}
-
-		for _, rule := range dto.MatchRules {
-			switch rule.Attribute {
-			case "AzureSku":
-				model.AzureMetadata.Sku = types.StringValue(rule.Value)
-			case "AzureVmId":
-				model.AzureMetadata.VmId = types.StringValue(rule.Value)
-			case "AzureSubscriptionId":
-				model.AzureMetadata.SubscriptionId = types.StringValue(rule.Value)
-			}
-		}
+		model.AzureMetadata = convertAzureMetadataDTOToModel(ctx, dto)
+	case "AWSMetadataService": // AWS Metadata
+		model.AwsMetadata = convertAwsMetadataDTOToModel(ctx, dto)
+	case "Kerberos": // Kerberos
+		model.Kerberos = convertKerberosDTOToModel(ctx, dto)
 	}
 
+	return model
+}
+
+func convertAzureMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
+	model := &trustProviderAzureMetadataModel{
+		Sku:            types.StringNull(),
+		VmId:           types.StringNull(),
+		SubscriptionId: types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "AzureSku":
+			model.Sku = types.StringValue(rule.Value)
+		case "AzureVmId":
+			model.VmId = types.StringValue(rule.Value)
+		case "AzureSubscriptionId":
+			model.SubscriptionId = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
+	decodedCert, _ := base64.StdEncoding.DecodeString(dto.Certificate)
+
+	model := &trustProviderAwsMetadataModel{
+		Certificate:             types.StringValue(string(decodedCert)),
+		AccountId:               types.StringNull(),
+		Architecture:            types.StringNull(),
+		AvailabilityZone:        types.StringNull(),
+		BillingProducts:         types.StringNull(),
+		ImageId:                 types.StringNull(),
+		InstanceId:              types.StringNull(),
+		InstanceType:            types.StringNull(),
+		KernelId:                types.StringNull(),
+		MarketplaceProductCodes: types.StringNull(),
+		PendingTime:             types.StringNull(),
+		PrivateIP:               types.StringNull(),
+		RamdiskId:               types.StringNull(),
+		Region:                  types.StringNull(),
+		Version:                 types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "AwsAccountId":
+			model.AccountId = types.StringValue(rule.Value)
+		case "AwsArchitecture":
+			model.Architecture = types.StringValue(rule.Value)
+		case "AwsAvailabilityZone":
+			model.AvailabilityZone = types.StringValue(rule.Value)
+		case "AwsBillingProducts":
+			model.BillingProducts = types.StringValue(rule.Value)
+		case "AwsImageId":
+			model.ImageId = types.StringValue(rule.Value)
+		case "AwsInstanceId":
+			model.InstanceId = types.StringValue(rule.Value)
+		case "AwsInstanceType":
+			model.InstanceType = types.StringValue(rule.Value)
+		case "AwsKernelId":
+			model.KernelId = types.StringValue(rule.Value)
+		case "AwsMarketplaceProductCodes":
+			model.MarketplaceProductCodes = types.StringValue(rule.Value)
+		case "AwsPendingTime":
+			model.PendingTime = types.StringValue(rule.Value)
+		case "AwsPrivateIp":
+			model.PrivateIP = types.StringValue(rule.Value)
+		case "AwsRamdiskId":
+			model.RamdiskId = types.StringValue(rule.Value)
+		case "AwsRegion":
+			model.Region = types.StringValue(rule.Value)
+		case "AwsVersion":
+			model.Version = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertKerberosDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
+	model := &trustProviderKerberosModel{
+		AgentControllerId: types.StringValue(dto.AgentControllerId),
+		Principal:         types.StringNull(),
+		Realm:             types.StringNull(),
+		SourceIP:          types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "Principal":
+			model.Principal = types.StringValue(rule.Value)
+		case "Realm":
+			model.Realm = types.StringValue(rule.Value)
+		case "SourceIp":
+			model.SourceIP = types.StringValue(rule.Value)
+		}
+	}
 	return model
 }
