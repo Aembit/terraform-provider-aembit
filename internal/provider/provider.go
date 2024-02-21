@@ -175,7 +175,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
-	client, err := aembit.NewClient(&tenant, &token, &stack)
+	client, err := aembit.NewClient(aembit.AembitUrlBuilder{Tenant: tenant, StackDomain: stack}, &token)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Aembit API Client",
@@ -199,6 +199,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewServerWorkloadResource,
 		NewCredentialProviderResource,
 		NewTrustProviderResource,
+		NewClientWorkloadResource,
 	}
 }
 

@@ -23,7 +23,7 @@ func NewTrustProvidersDataSource() datasource.DataSource {
 
 // trustProvidersDataSource is the data source implementation.
 type trustProvidersDataSource struct {
-	client *aembit.Client
+	client *aembit.AembitClient
 }
 
 // Configure adds the provider configured client to the data source.
@@ -32,11 +32,11 @@ func (d *trustProvidersDataSource) Configure(_ context.Context, req datasource.C
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.Client)
+	client, ok := req.ProviderData.(*aembit.AembitClient)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aembit.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *aembit.AembitClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
