@@ -20,5 +20,5 @@ build: testacc
 	go install github.com/goreleaser/goreleaser@latest
 	goreleaser build --snapshot --clean
 
-release: testacc
-	goreleaser release
+docs:
+	go generate ./...
