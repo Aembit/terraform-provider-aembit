@@ -35,8 +35,8 @@ type serviceEndpointModel struct {
 }
 
 // workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
-type workloadServiceAuthenticationModel struct {
-	Method types.String `tfsdk:"method"`
-	Scheme types.String `tfsdk:"scheme"`
-	Config types.String `tfsdk:"config"`
-}
+//type workloadServiceAuthenticationModel struct {
+//	Method types.String `tfsdk:"method"`
+//	Scheme types.String `tfsdk:"scheme"`
+//	Config types.String `tfsdk:"config"`
+//}

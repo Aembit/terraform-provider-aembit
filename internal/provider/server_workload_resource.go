@@ -257,8 +257,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var externalID string
-	externalID = state.ID.ValueString()
+	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan serverWorkloadResourceModel
@@ -353,7 +352,7 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

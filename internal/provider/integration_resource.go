@@ -121,7 +121,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, nil)
+	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(plan, nil)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegration(dto, nil)
@@ -134,7 +134,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIntegrationDTOToModel(ctx, *integration, plan)
+	plan = convertIntegrationDTOToModel(*integration, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -164,7 +164,7 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state = convertIntegrationDTOToModel(ctx, integration, state)
+	state = convertIntegrationDTOToModel(integration, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -196,7 +196,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, &externalID)
+	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(plan, &externalID)
 
 	// Update Integration
 	integration, err := r.client.UpdateIntegration(dto, nil)
@@ -209,7 +209,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIntegrationDTOToModel(ctx, *integration, state)
+	state = convertIntegrationDTOToModel(*integration, state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -249,13 +249,13 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *integrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIntegrationModelToDTO(ctx context.Context, model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
+func convertIntegrationModelToDTO(model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
 	var integration aembit.IntegrationDTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -279,7 +279,7 @@ func convertIntegrationModelToDTO(ctx context.Context, model integrationResource
 	return integration
 }
 
-func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
+func convertIntegrationDTOToModel(dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
 	var model integrationResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)

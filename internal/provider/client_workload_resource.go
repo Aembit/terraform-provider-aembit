@@ -196,7 +196,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 	// Compare the identity list contents between backend and Terraform state.
 	// Only perform this check if we haven't already found a difference.
-	if mismatch == false {
+	if !mismatch {
 		identityExists := make(map[string]string)
 		for _, identity := range state.Identities {
 			// Build map of identities from Terraform state.
@@ -213,7 +213,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 			}
 		}
 	}
-	if mismatch == true {
+	if mismatch {
 		// Backend doesn't match Terraform state--replace Terraform state.
 		var newIdentities []identitiesModel
 		for _, identityItem := range clientWorkload.Identities {
@@ -244,8 +244,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var externalID string
-	externalID = state.ID.ValueString()
+	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan clientWorkloadResourceModel
@@ -333,7 +332,7 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

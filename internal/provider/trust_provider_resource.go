@@ -134,7 +134,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified
+// Configure validators to ensure that only one trust provider type is specified.
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -156,7 +156,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, nil)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, nil)
 
 	// Create new Trust Provider
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
@@ -169,7 +169,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	plan = convertTrustProviderDTOToModel(*trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -199,7 +199,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(ctx, trustProvider)
+	state = convertTrustProviderDTOToModel(trustProvider)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -231,7 +231,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, &externalID)
+	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(plan, &externalID)
 
 	// Update Trust Provider
 	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
@@ -244,7 +244,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	state = convertTrustProviderDTOToModel(*trustProvider)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -284,13 +284,13 @@ func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *trustProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
+func convertTrustProviderModelToDTO(model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -303,19 +303,19 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 
 	// Handle the Azure Metadata use case
 	if model.AzureMetadata != nil {
-		convertAzureMetadataModelToDTO(ctx, model, &trust)
+		convertAzureMetadataModelToDTO(model, &trust)
 	}
 	if model.AwsMetadata != nil {
-		convertAwsMetadataModelToDTO(ctx, model, &trust)
+		convertAwsMetadataModelToDTO(model, &trust)
 	}
 	if model.Kerberos != nil {
-		convertKerberosModelToDTO(ctx, model, &trust)
+		convertKerberosModelToDTO(model, &trust)
 	}
 
 	return trust
 }
 
-func convertAzureMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 
@@ -336,7 +336,7 @@ func convertAzureMetadataModelToDTO(ctx context.Context, model trustProviderReso
 	}
 }
 
-func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AWSMetadataService"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.AwsMetadata.Certificate.ValueString()))
 	dto.PemType = "Certificate"
@@ -414,7 +414,7 @@ func convertAwsMetadataModelToDTO(ctx context.Context, model trustProviderResour
 	}
 }
 
-func convertKerberosModelToDTO(ctx context.Context, model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "Kerberos"
 	dto.AgentControllerID = model.Kerberos.AgentControllerID.ValueString()
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -436,7 +436,7 @@ func convertKerberosModelToDTO(ctx context.Context, model trustProviderResourceM
 	}
 }
 
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(dto aembit.TrustProviderDTO) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -445,17 +445,17 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 
 	switch dto.Provider {
 	case "AzureMetadataService": // Azure Metadata
-		model.AzureMetadata = convertAzureMetadataDTOToModel(ctx, dto)
+		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
 	case "AWSMetadataService": // AWS Metadata
-		model.AwsMetadata = convertAwsMetadataDTOToModel(ctx, dto)
+		model.AwsMetadata = convertAwsMetadataDTOToModel(dto)
 	case "Kerberos": // Kerberos
-		model.Kerberos = convertKerberosDTOToModel(ctx, dto)
+		model.Kerberos = convertKerberosDTOToModel(dto)
 	}
 
 	return model
 }
 
-func convertAzureMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
+func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
 	model := &trustProviderAzureMetadataModel{
 		Sku:            types.StringNull(),
 		VMID:           types.StringNull(),
@@ -475,7 +475,7 @@ func convertAzureMetadataDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	return model
 }
 
-func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
+func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
 	decodedCert, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &trustProviderAwsMetadataModel{
@@ -531,7 +531,7 @@ func convertAwsMetadataDTOToModel(ctx context.Context, dto aembit.TrustProviderD
 	return model
 }
 
-func convertKerberosDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
+func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
 	model := &trustProviderKerberosModel{
 		AgentControllerID: types.StringValue(dto.AgentControllerID),
 		Principal:         types.StringNull(),

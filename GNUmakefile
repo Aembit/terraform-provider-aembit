@@ -1,5 +1,9 @@
 default: testacc
 
+# Run the GitHub CI Linters locally
+lint: 
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:latest golangci-lint run -v
+
 install:
 	go mod tidy
 	go install github.com/goreleaser/goreleaser@latest

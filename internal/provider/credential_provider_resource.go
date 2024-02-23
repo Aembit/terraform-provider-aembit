@@ -27,8 +27,7 @@ func NewCredentialProviderResource() resource.Resource {
 
 // credentialProviderResource is the resource implementation.
 type credentialProviderResource struct {
-	client   *aembit.CloudClient
-	provider aembitProvider
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -161,7 +160,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 	}
 }
 
-// Configure validators to ensure that only one credential provider type is specified
+// Configure validators to ensure that only one credential provider type is specified.
 func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -196,7 +195,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(*credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -226,7 +225,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state)
+	state = convertCredentialProviderDTOToModel(credentialProvider, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -247,8 +246,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Extract external ID from state
-	var externalID string
-	externalID = state.ID.ValueString()
+	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan credentialProviderResourceModel
@@ -272,7 +270,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan)
+	plan = convertCredentialProviderDTOToModel(*credentialProvider, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -312,13 +310,13 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *credentialProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderDTO {
+func convertCredentialProviderModelToDTO(_ context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderDTO {
 	var credential aembit.CredentialProviderDTO
 	credential.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -365,7 +363,7 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 			},
 			VaultCluster: &aembit.CredentialVaultClientTokenVaultClusterDTO{
 				VaultHost:          model.VaultClientToken.VaultHost,
-				Port:               int32(model.VaultClientToken.VaultPort),
+				Port:               model.VaultClientToken.VaultPort,
 				TLS:                model.VaultClientToken.VaultTLS,
 				Namespace:          model.VaultClientToken.VaultNamespace,
 				Role:               model.VaultClientToken.VaultRole,
@@ -387,7 +385,7 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	return credential
 }
 
-func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
+func convertCredentialProviderDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) credentialProviderResourceModel {
 	var model credentialProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -402,18 +400,18 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
 	case "apikey":
-		model.APIKey = convertAPIKeyDTOToModel(ctx, dto, state)
+		model.APIKey = convertAPIKeyDTOToModel(dto, state)
 	case "oauth-client-credential":
-		model.OAuthClientCredentials = convertOAuthClientCredentialDTOToModel(ctx, dto, state)
+		model.OAuthClientCredentials = convertOAuthClientCredentialDTOToModel(dto, state)
 	case "vaultClientToken":
-		model.VaultClientToken = convertVaultClientTokenDTOToModel(ctx, dto, state)
+		model.VaultClientToken = convertVaultClientTokenDTOToModel(dto, state)
 	}
 	return model
 }
 
-// convertAPIKeyDTOToModel converts the API Key state object into a model ready for terraform processing
-// Note: Since Aembit vaults the API Key and does not return it in the API, the DTO will never contain the stored value
-func convertAPIKeyDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderAPIKeyModel {
+// convertAPIKeyDTOToModel converts the API Key state object into a model ready for terraform processing.
+// Note: Since Aembit vaults the API Key and does not return it in the API, the DTO will never contain the stored value.
+func convertAPIKeyDTOToModel(_ aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderAPIKeyModel {
 	value := credentialProviderAPIKeyModel{APIKey: types.StringNull()}
 	if state.APIKey != nil {
 		value.APIKey = state.APIKey.APIKey
@@ -421,14 +419,17 @@ func convertAPIKeyDTOToModel(ctx context.Context, dto aembit.CredentialProviderD
 	return &value
 }
 
-// convertOAuthClientCredentialDTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing
-// Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value
-func convertOAuthClientCredentialDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderOAuthClientCredentialsModel {
+// convertOAuthClientCredentialDTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing.
+// Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
+func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderOAuthClientCredentialsModel {
 	value := credentialProviderOAuthClientCredentialsModel{ClientSecret: types.StringNull()}
 
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
 	var oauth aembit.CredentialOAuthClientCredentialDTO
-	json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
+	if err != nil {
+		return nil
+	}
 
 	value.TokenURL = types.StringValue(oauth.TokenURL)
 	value.ClientID = types.StringValue(oauth.ClientID)
@@ -440,11 +441,14 @@ func convertOAuthClientCredentialDTOToModel(ctx context.Context, dto aembit.Cred
 	return &value
 }
 
-// convertVaultClientTokenDTOToModel converts the VaultClientToken state object into a model ready for terraform processing
-func convertVaultClientTokenDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
+// convertVaultClientTokenDTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
+func convertVaultClientTokenDTOToModel(dto aembit.CredentialProviderDTO, _ credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
 	var vault aembit.CredentialVaultClientTokenDTO
-	json.Unmarshal([]byte(dto.ProviderDetail), &vault)
+	err := json.Unmarshal([]byte(dto.ProviderDetail), &vault)
+	if err != nil {
+		return nil
+	}
 
 	value := credentialProviderVaultClientTokenModel{
 		Subject:     vault.JwtConfig.Subject,

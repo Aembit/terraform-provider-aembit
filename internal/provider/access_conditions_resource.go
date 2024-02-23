@@ -103,7 +103,7 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 	}
 }
 
-// Configure validators to ensure that only one trust provider type is specified
+// Configure validators to ensure that only one trust provider type is specified.
 func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
@@ -252,13 +252,13 @@ func (r *accessConditionResource) Delete(ctx context.Context, req resource.Delet
 	}
 }
 
-// Imports an existing resource by passing externalId
+// Imports an existing resource by passing externalId.
 func (r *accessConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(_ context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -284,7 +284,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, state accessConditionResourceModel) accessConditionResourceModel {
+func convertAccessConditionDTOToModel(_ context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
 	var model accessConditionResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
