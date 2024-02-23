@@ -1,30 +1,22 @@
 package provider
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccServerWorkloadResource(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tfmod")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_server_workload" "test" {
-	name = "Unit Test 1"
-	service_endpoint = {
-		host = "unittest.testhost.com"
-		port = 443
-		app_protocol = "HTTP"
-		transport_protocol = "TCP"
-		requested_port = 80
-		tls_verification = "full"
-	}
-}
-`,
+				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
@@ -51,19 +43,7 @@ resource "aembit_server_workload" "test" {
 			},
 			// Update and Read testing
 			{
-				Config: providerConfig + `
-resource "aembit_server_workload" "test" {
-	name = "Unit Test 1 - Modified"
-	service_endpoint = {
-		host = "unittest.testhost2.com"
-		port = 443
-		app_protocol = "HTTP"
-		transport_protocol = "TCP"
-		requested_port = 80
-		tls_verification = "full"
-	}
-}
-`,
+				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
