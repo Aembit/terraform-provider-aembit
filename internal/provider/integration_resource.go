@@ -27,7 +27,7 @@ func NewIntegrationResource() resource.Resource {
 
 // integrationResource is the resource implementation.
 type integrationResource struct {
-	client *aembit.AembitClient
+	client *aembit.CloudClient
 }
 
 // Metadata returns the resource type name.
@@ -41,7 +41,7 @@ func (r *integrationResource) Configure(_ context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*aembit.AembitClient)
+	client, ok := req.ProviderData.(*aembit.CloudClient)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -185,7 +185,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Extract external ID from state
-	external_id := state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan integrationResourceModel
@@ -196,7 +196,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, &external_id)
+	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, &externalID)
 
 	// Update Integration
 	integration, err := r.client.UpdateIntegration(dto, nil)
@@ -255,23 +255,23 @@ func (r *integrationResource) ImportState(ctx context.Context, req resource.Impo
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIntegrationModelToDTO(ctx context.Context, model integrationResourceModel, external_id *string) aembit.IntegrationDTO {
+func convertIntegrationModelToDTO(ctx context.Context, model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
 	var integration aembit.IntegrationDTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if external_id != nil {
-		integration.EntityDTO.ExternalId = *external_id
+	if externalID != nil {
+		integration.EntityDTO.ExternalID = *externalID
 	}
 
 	integration.Endpoint = model.Endpoint.ValueString()
 	integration.Type = model.Type.ValueString()
 	integration.SyncFrequencySeconds = model.SyncFrequency.ValueInt64()
 	integration.IntegrationJSON = aembit.IntegrationJSONDTO{
-		TokenUrl:     model.OAuthClientCredentials.TokenURL.ValueString(),
-		ClientId:     model.OAuthClientCredentials.ClientID.ValueString(),
+		TokenURL:     model.OAuthClientCredentials.TokenURL.ValueString(),
+		ClientID:     model.OAuthClientCredentials.ClientID.ValueString(),
 		ClientSecret: model.OAuthClientCredentials.ClientSecret.ValueString(),
 		Audience:     model.OAuthClientCredentials.Audience.ValueString(),
 	}
@@ -281,7 +281,7 @@ func convertIntegrationModelToDTO(ctx context.Context, model integrationResource
 
 func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
 	var model integrationResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalId)
+	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
@@ -290,8 +290,8 @@ func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO
 	model.Endpoint = types.StringValue(dto.Endpoint)
 	model.SyncFrequency = types.Int64Value(dto.SyncFrequencySeconds)
 	model.OAuthClientCredentials = &integrationOAuthClientCredentialsModel{
-		TokenURL:     types.StringValue(dto.IntegrationJSON.TokenUrl),
-		ClientID:     types.StringValue(dto.IntegrationJSON.ClientId),
+		TokenURL:     types.StringValue(dto.IntegrationJSON.TokenURL),
+		ClientID:     types.StringValue(dto.IntegrationJSON.ClientID),
 		ClientSecret: types.StringValue(dto.IntegrationJSON.ClientSecret),
 		Audience:     types.StringValue(dto.IntegrationJSON.Audience),
 	}

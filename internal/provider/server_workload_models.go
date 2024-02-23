@@ -20,18 +20,18 @@ type serverWorkloadsDataSourceModel struct {
 
 // serviceEndpointModel maps service endpoint data.
 type serviceEndpointModel struct {
-	ExternalId        types.String `tfsdk:"external_id"`
-	Id                types.Int64  `tfsdk:"id"`
+	ExternalID        types.String `tfsdk:"external_id"`
+	ID                types.Int64  `tfsdk:"id"`
 	Host              types.String `tfsdk:"host"`
 	AppProtocol       types.String `tfsdk:"app_protocol"`
 	TransportProtocol types.String `tfsdk:"transport_protocol"`
 	RequestedPort     types.Int64  `tfsdk:"requested_port"`
-	RequestedTls      types.Bool   `tfsdk:"requested_tls"`
+	RequestedTLS      types.Bool   `tfsdk:"requested_tls"`
 	Port              types.Int64  `tfsdk:"port"`
-	Tls               types.Bool   `tfsdk:"tls"`
+	TLS               types.Bool   `tfsdk:"tls"`
 
 	//WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"workload_service_authentication"`
-	TlsVerification types.String `tfsdk:"tls_verification"`
+	TLSVerification types.String `tfsdk:"tls_verification"`
 }
 
 // workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
