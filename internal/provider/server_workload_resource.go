@@ -352,8 +352,8 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 }
 
-// Imports an existing resource by passing externalId.
+// Imports an existing resource by passing externalID.
 func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import externalId and save to id attribute
+	// Retrieve import externalID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
