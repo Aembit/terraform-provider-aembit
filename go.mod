@@ -76,4 +76,4 @@ require (
 	google.golang.org/protobuf v1.32.0 // indirect
 )
 
-replace aembit.io/aembit => ../aembit_api_client
+replace aembit.io/aembit => ./aembit_api_client
