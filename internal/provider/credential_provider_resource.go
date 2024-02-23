@@ -27,7 +27,8 @@ func NewCredentialProviderResource() resource.Resource {
 
 // credentialProviderResource is the resource implementation.
 type credentialProviderResource struct {
-	client *aembit.AembitClient
+	client   *aembit.AembitClient
+	provider aembitProvider
 }
 
 // Metadata returns the resource type name.
@@ -182,7 +183,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, nil)
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, nil, r.client.Tenant, r.client.StackDomain)
 
 	// Create new Credential Provider
 	credential_provider, err := r.client.CreateCredentialProvider(credential, nil)
@@ -258,7 +259,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, &external_id)
+	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, &external_id, r.client.Tenant, r.client.StackDomain)
 
 	// Update Credential Provider
 	credential_provider, err := r.client.UpdateCredentialProvider(credential, nil)
@@ -317,7 +318,7 @@ func (r *credentialProviderResource) ImportState(ctx context.Context, req resour
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, external_id *string) aembit.CredentialProviderDTO {
+func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, external_id *string, tenantId string, stackDomain string) aembit.CredentialProviderDTO {
 	var credential aembit.CredentialProviderDTO
 	credential.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -350,12 +351,13 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 		credential.ProviderDetail = string(oauthJson)
 	}
 
-	// Handle the Vault Cvlient Token use case
+	// Handle the Vault Client Token use case
 	if model.VaultClientToken != nil {
 		credential.Type = "vaultClientToken"
+
 		vault := aembit.CredentialVaultClientTokenDTO{
 			JwtConfig: &aembit.CredentialVaultClientTokenJwtConfigDTO{
-				Issuer:       "https://62c41c.id.aembit.local/",
+				Issuer:       fmt.Sprintf("https://%s.id.%s/", tenantId, stackDomain),
 				Subject:      model.VaultClientToken.Subject,
 				SubjectType:  model.VaultClientToken.SubjectType,
 				Lifetime:     model.VaultClientToken.Lifetime,
