@@ -143,7 +143,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, nil)
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, nil)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
@@ -156,7 +156,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
+	plan = convertServerWorkloadDTOToModel(*serverWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -187,7 +187,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Overwrite items with refreshed state
-	state = convertServerWorkloadDTOToModel(ctx, serverWorkload)
+	state = convertServerWorkloadDTOToModel(serverWorkload)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -219,7 +219,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, &externalID)
+	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(plan, &externalID)
 
 	// Update Server Workload
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
@@ -232,7 +232,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
+	state = convertServerWorkloadDTOToModel(*serverWorkload)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -278,7 +278,7 @@ func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.I
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
+func convertServerWorkloadModelToDTO(model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -305,7 +305,7 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadRe
 	return workload
 }
 
-func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
+func convertServerWorkloadDTOToModel(dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
 	var model serverWorkloadResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
