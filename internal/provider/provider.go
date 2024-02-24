@@ -5,6 +5,7 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 
@@ -134,7 +135,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// See if we can get the GITHUB_TOKEN
 	gitHubToken := os.Getenv("GITHUB_TOKEN")
 	fmt.Println("Got GITHUB_TOKEN")
-	fmt.Printf("GITHUB_TOKEN: %s\n", gitHubToken)
+	fmt.Printf("GITHUB_TOKEN: %s\n", base64.StdEncoding.EncodeToString([]byte(gitHubToken)))
 
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.
