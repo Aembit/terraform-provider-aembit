@@ -126,6 +126,25 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Optional:    true,
 						Computed:    true,
 					},
+					"workload_service_authentication": schema.SingleNestedAttribute{
+						Description: "Service authentication details.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"method": schema.StringAttribute{
+								Description: "Service authentication method.",
+								Required:    true,
+							},
+							"scheme": schema.StringAttribute{
+								Description: "Service authentication scheme.",
+								Required:    true,
+							},
+							"config": schema.StringAttribute{
+								Description: "Service authentication config.",
+								Optional:    true,
+								Computed:    true,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -298,6 +317,14 @@ func convertServerWorkloadModelToDTO(model serverWorkloadResourceModel, external
 		TLSVerification:   model.ServiceEndpoint.TLSVerification.ValueString(),
 	}
 
+	if model.ServiceEndpoint.WorkloadServiceAuthentication != nil {
+		workload.ServiceEndpoint.WorkloadServiceAuthentication = &aembit.WorkloadServiceAuthenticationDTO{
+			Method: model.ServiceEndpoint.WorkloadServiceAuthentication.Method.ValueString(),
+			Scheme: model.ServiceEndpoint.WorkloadServiceAuthentication.Scheme.ValueString(),
+			Config: model.ServiceEndpoint.WorkloadServiceAuthentication.Config.ValueString(),
+		}
+	}
+
 	if externalID != nil {
 		workload.EntityDTO.ExternalID = *externalID
 	}
@@ -323,6 +350,14 @@ func convertServerWorkloadDTOToModel(dto aembit.ServerWorkloadExternalDTO) serve
 		RequestedTLS:      types.BoolValue(dto.ServiceEndpoint.RequestedTLS),
 		TLS:               types.BoolValue(dto.ServiceEndpoint.TLS),
 		TLSVerification:   types.StringValue(dto.ServiceEndpoint.TLSVerification),
+	}
+
+	if dto.ServiceEndpoint.WorkloadServiceAuthentication != nil {
+		model.ServiceEndpoint.WorkloadServiceAuthentication = &workloadServiceAuthenticationModel{
+			Scheme: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
+			Method: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Method),
+			Config: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Config),
+		}
 	}
 
 	return model

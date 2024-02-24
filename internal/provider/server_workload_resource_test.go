@@ -27,6 +27,8 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Bearer"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_server_workload.test", "type"),
@@ -47,8 +49,10 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
-					// Verify Service Endpoint Host updated.
+					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost2.com"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "Password Authentication"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Password"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
