@@ -5,8 +5,9 @@ package provider
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 
 	"aembit.io/aembit"
@@ -133,13 +134,23 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	// See if we can get the GITHUB_TOKEN
-	gitHubToken := fmt.Sprintf("TEST --- %s --- TEST", os.Getenv("GITHUB_TOKEN"))
-	fmt.Println("Got GITHUB_TOKEN")
-	fmt.Printf("GITHUB_TOKEN: %s\n", base64.StdEncoding.EncodeToString([]byte(gitHubToken)))
+	tokenRequestURL := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_URL")
+	tokenRequestToken := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+	fmt.Printf("Got ACTIONS_ID_TOKEN_REQUEST_URL: %s\n", tokenRequestURL)
 
-	gitHubToken = fmt.Sprintf("TEST --- %s --- TEST", os.Getenv("ACTIONS_RUNTIME_TOKEN"))
-	fmt.Println("Got ACTIONS_RUNTIME_TOKEN")
-	fmt.Printf("ACTIONS_RUNTIME_TOKEN: %s\n", base64.StdEncoding.EncodeToString([]byte(gitHubToken)))
+	tokenRequest, err := http.NewRequest("GET", fmt.Sprintf("%s&audience=api://Aembit", tokenRequestURL), nil)
+	if err == nil {
+		tokenRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenRequestToken))
+
+		client := &http.Client{}
+		tokenResponse, err := client.Do(tokenRequest)
+		if err == nil {
+			reqBody, err := ioutil.ReadAll(tokenResponse.Body)
+			if err == nil {
+				fmt.Printf("GitHub Action ID Token: %s\n", reqBody)
+			}
+		}
+	}
 
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.
