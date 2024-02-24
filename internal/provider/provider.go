@@ -6,7 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -145,7 +145,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		client := &http.Client{}
 		tokenResponse, err := client.Do(tokenRequest)
 		if err == nil {
-			reqBody, err := ioutil.ReadAll(tokenResponse.Body)
+			reqBody, err := io.ReadAll(tokenResponse.Body)
 			if err == nil {
 				fmt.Printf("GitHub Action ID Token: %s\n", reqBody)
 			}
