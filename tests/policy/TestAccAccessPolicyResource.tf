@@ -13,6 +13,13 @@ resource "aembit_client_workload" "first_client" {
     ]
 }
 
+resource "aembit_credential_provider" "api_key" {
+	name = "TF Acceptance Policy CP"
+	api_key = {
+		api_key = "test"
+	}
+}
+
 resource "aembit_server_workload" "first_server" {
     name = "first terraform server workload"
     description = "new server workload for policy integration"
@@ -33,5 +40,5 @@ resource "aembit_access_policy" "first_policy" {
     is_active = false
     client_workload = aembit_client_workload.first_client.id
     server_workload = aembit_server_workload.first_server.id
-    //server_workload = "b7b82d82-a0ba-4c1e-8d5e-a6b4e6533731"
+    credential_provider = aembit_credential_provider.api_key.id
 }
