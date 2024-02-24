@@ -98,5 +98,6 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
