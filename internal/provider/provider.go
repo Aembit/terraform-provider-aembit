@@ -5,6 +5,7 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -147,7 +148,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		if err == nil {
 			reqBody, err := io.ReadAll(tokenResponse.Body)
 			if err == nil {
-				fmt.Printf("GitHub Action ID Token: %s\n", reqBody)
+				base64Token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("TEST %s TEST", string(reqBody))))
+				fmt.Printf("GitHub Action ID Token: %s\n", base64Token)
 			}
 		}
 	}
