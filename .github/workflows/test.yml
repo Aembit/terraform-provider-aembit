@@ -17,6 +17,7 @@ on:
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
+  id-token: write # To get the GitHub Action ID JWT Token
 
 # Ensure only one workflow run at a time
 concurrency:
