@@ -457,7 +457,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch GCP ID Token: %w", err)
+		return "", fmt.Errorf("failed to fetch github id token: %w", err)
 	}
 	defer resp.Body.Close()
 
