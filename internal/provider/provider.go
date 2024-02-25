@@ -144,10 +144,16 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	if len(aembitClientID) > 0 {
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
 		if err == nil {
+			fmt.Printf("DEBUG: Got ID Token: %s\n", idToken)
 			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
+				fmt.Printf("DEBUG: Got Aembit Token: %s\n", aembitToken)
 				token = aembitToken
+			} else {
+				fmt.Printf("WARNING: Failed to get Aembit Token: %v\n", err)
 			}
+		} else {
+			fmt.Printf("WARNING: Failed to get ID Token: %v\n", err)
 		}
 	}
 
@@ -268,7 +274,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getTenantId(clientId), stackDomain)
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
 	if err != nil {
-		return "", fmt.Errorf("Failed to create request: %w", err)
+		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 
@@ -297,10 +303,12 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 
 func getIdentityToken(clientId, stackDomain string) (string, error) {
 	// First, determine which token type we need to get based on the identity type
+	fmt.Printf("DEBUG: ID Token for ClientID: %s\n", clientId)
 	switch getIdentityType((clientId)) {
 	case "gcp_idtoken":
 		return getGcpIdentityToken(clientId, stackDomain)
 	case "github_idtoken":
+		fmt.Printf("DEBUG: Getting GitHub ID Token\n")
 		return getGitHubIdentityToken(clientId, stackDomain)
 	case "terraform_idtoken":
 	}
