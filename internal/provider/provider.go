@@ -6,6 +6,7 @@ package provider
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -25,6 +26,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Ensure AembitProvider satisfies various provider interfaces.
@@ -167,7 +170,12 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
 				fmt.Printf("DEBUG: Got Aembit Token: %s\n", aembitToken)
-				token = aembitToken
+				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+				if err == nil {
+					token = roleToken
+				} else {
+					fmt.Printf("WARNING: Failed to get Aembit API Role Token: %v\n", err)
+				}
 			} else {
 				fmt.Printf("WARNING: Failed to get Aembit Token: %v\n", err)
 			}
@@ -269,6 +277,72 @@ var GCP_ID_TOKEN string
 var GITHUB_ID_TOKEN string
 var TERRAFORM_ID_TOKEN string
 var AEMBIT_TOKEN string
+
+type ClientRequestNetwork struct {
+	TargetHost        string `json:"targetHost"`
+	TargetPort        int16  `json:"targetPort"`
+	TransportProtocol string `json:"transportProtocol"`
+}
+
+type ClientRequest struct {
+	Version string               `json:"version"`
+	Network ClientRequestNetwork `json:"network"`
+}
+
+type WorkloadAssessmentIdToken struct {
+	IdentityToken string `json:"identityToken"`
+}
+
+type WorkloadAssessment struct {
+	Version string                    `json:"version"`
+	GitHub  WorkloadAssessmentIdToken `json:"github"`
+}
+
+type tokenAuth struct {
+	token string
+}
+
+func (t tokenAuth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
+	return map[string]string{
+		"authorization": "Bearer " + t.token,
+	}, nil
+}
+
+func (tokenAuth) RequireTransportSecurity() bool {
+	return true
+}
+
+func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
+	var err error
+	var clientRequest, workloadAssessment []byte
+	var conn *grpc.ClientConn
+	var aembitClient EdgeCommanderClient
+	var credResponse *CredentialResponse
+
+	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false})
+	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	if clientRequest, err = json.Marshal(ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}); err != nil {
+		return "", err
+	}
+	if workloadAssessment, err = json.Marshal(WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}); err != nil {
+		return "", err
+	}
+
+	aembitClient = NewEdgeCommanderClient(conn)
+	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
+		ClientRequest:      string(clientRequest),
+		AgentAssessment:    string(workloadAssessment),
+		WorkloadAssessment: string(workloadAssessment),
+	}); err != nil {
+		return "", err
+	}
+
+	return credResponse.Credential, nil
+}
 
 func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	if isTokenValid(AEMBIT_TOKEN) {
