@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -43,6 +44,7 @@ type aembitProviderModel struct {
 	Tenant      types.String `tfsdk:"tenant"`
 	Token       types.String `tfsdk:"token"`
 	StackDomain types.String `tfsdk:"stack_domain"`
+	ClientID    types.String `tfsdk:"client_id"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -64,16 +66,33 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"tenant": schema.StringAttribute{
-				Optional: true,
+				Description: "Tenant ID of the specific Aembit Cloud instance",
+				Optional:    true,
+			},
+			"client_id": schema.StringAttribute{
+				Description: "The Aembit Trust Provider Client ID to use for authentication to the Aembit Cloud Tenant instance (recommended).",
+				Optional:    true,
 			},
 			"token": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Description: "Access Token to use for authentication to the Aembit Cloud Tenant instance",
+				Optional:    true,
+				Sensitive:   true,
 			},
 			"stack_domain": schema.StringAttribute{
-				Optional: true,
+				Description: "For development purposes only",
+				Optional:    true,
 			},
 		},
+	}
+}
+
+// Configure validators to ensure that only one credential provider type is specified.
+func (p *aembitProvider) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("client_id"),
+			path.MatchRoot("token"),
+		),
 	}
 }
 
@@ -377,7 +396,13 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	GITHUB_ID_TOKEN = string(body)
+	jsonBody := make(map[string]string)
+	err = json.Unmarshal(body, &jsonBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse response body: %w", err)
+	}
+
+	GITHUB_ID_TOKEN = jsonBody["value"]
 	return GITHUB_ID_TOKEN, nil
 }
 
