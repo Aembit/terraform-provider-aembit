@@ -166,10 +166,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	if len(aembitClientID) > 0 {
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
 		if err == nil {
-			fmt.Printf("DEBUG: Got ID Token: %s\n", idToken)
 			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
-				fmt.Printf("DEBUG: Got Aembit Token: %s\n", aembitToken)
 				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
 				if err == nil {
 					token = roleToken
@@ -396,12 +394,10 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 
 func getIdentityToken(clientId, stackDomain string) (string, error) {
 	// First, determine which token type we need to get based on the identity type
-	fmt.Printf("DEBUG: ID Token for ClientID: %s\n", clientId)
 	switch getIdentityType((clientId)) {
 	case "gcp_idtoken":
 		return getGcpIdentityToken(clientId, stackDomain)
 	case "github_idtoken":
-		fmt.Printf("DEBUG: Getting GitHub ID Token\n")
 		return getGitHubIdentityToken(clientId, stackDomain)
 	case "terraform_idtoken":
 	}
