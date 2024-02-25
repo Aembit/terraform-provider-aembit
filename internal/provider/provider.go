@@ -4,12 +4,17 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"time"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -134,22 +139,14 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		stackDomain = config.StackDomain.ValueString()
 	}
 
-	// See if we can get the GITHUB_TOKEN
-	tokenRequestURL := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_URL")
-	tokenRequestToken := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN")
-	fmt.Printf("Got ACTIONS_ID_TOKEN_REQUEST_URL: %s\n", tokenRequestURL)
-
-	tokenRequest, err := http.NewRequest("GET", fmt.Sprintf("%s&audience=api://Aembit", tokenRequestURL), nil)
-	if err == nil {
-		tokenRequest.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenRequestToken))
-
-		client := &http.Client{}
-		tokenResponse, err := client.Do(tokenRequest)
+	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
+	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
+	if len(aembitClientID) > 0 {
+		idToken, err := getIdentityToken(aembitClientID, stackDomain)
 		if err == nil {
-			reqBody, err := io.ReadAll(tokenResponse.Body)
+			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
-				base64Token := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("TEST %s TEST", string(reqBody))))
-				fmt.Printf("GitHub Action ID Token: %s\n", base64Token)
+				token = aembitToken
 			}
 		}
 	}
@@ -240,4 +237,185 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewClientWorkloadsDataSource,
 		NewAccessPoliciesDataSource,
 	}
+}
+
+// // Temporary until Aembit SDK is published
+var GCP_ID_TOKEN string
+var GITHUB_ID_TOKEN string
+var TERRAFORM_ID_TOKEN string
+var AEMBIT_TOKEN string
+
+func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
+	if isTokenValid(AEMBIT_TOKEN) {
+		return AEMBIT_TOKEN, nil
+	}
+
+	details := url.Values{}
+	details.Set("grant_type", "client_credentials")
+	details.Set("client_id", clientId)
+	attestationData := map[string]interface{}{
+		"version": "1.0.0",
+		"github": map[string]interface{}{
+			"identityToken": idToken,
+		},
+	}
+	attestationJSON, err := json.Marshal(attestationData)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal attestation data: %w", err)
+	}
+	details.Set("attestation", string(attestationJSON))
+
+	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getTenantId(clientId), stackDomain)
+	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
+	if err != nil {
+		return "", fmt.Errorf("Failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch aembit token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var tokenResponse struct {
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.Unmarshal(body, &tokenResponse); err != nil {
+		return "", fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	AEMBIT_TOKEN = tokenResponse.AccessToken
+	return AEMBIT_TOKEN, nil
+}
+
+func getIdentityToken(clientId, stackDomain string) (string, error) {
+	// First, determine which token type we need to get based on the identity type
+	switch getIdentityType((clientId)) {
+	case "gcp_idtoken":
+		return getGcpIdentityToken(clientId, stackDomain)
+	case "github_idtoken":
+		return getGitHubIdentityToken(clientId, stackDomain)
+	case "terraform_idtoken":
+	}
+	return "", fmt.Errorf("no matching id token configuration")
+}
+
+func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
+	if isTokenValid(GCP_ID_TOKEN) {
+		return GCP_ID_TOKEN, nil
+	}
+
+	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	metadataIdentityTokenUrl := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s", url.QueryEscape(audience))
+
+	req, err := http.NewRequest("GET", metadataIdentityTokenUrl, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+	req.Header.Set("Metadata-Flavor", "Google")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch GCP ID Token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	GCP_ID_TOKEN = string(body)
+	return GCP_ID_TOKEN, nil
+}
+
+func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
+	if isTokenValid(GITHUB_ID_TOKEN) {
+		return GITHUB_ID_TOKEN, nil
+	}
+
+	tokenRequestURL := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_URL")
+	tokenRequestToken := os.Getenv("ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+	if len(tokenRequestURL) == 0 || len(tokenRequestToken) == 0 {
+		return "", fmt.Errorf("github action not configured for id_token access")
+	}
+
+	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	identityTokenURL := fmt.Sprintf("%s&audience=%s", tokenRequestURL, url.QueryEscape(audience))
+
+	req, err := http.NewRequest("GET", identityTokenURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create http request: %w", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tokenRequestToken))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch GCP ID Token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	GITHUB_ID_TOKEN = string(body)
+	return GITHUB_ID_TOKEN, nil
+}
+
+func getTenantId(clientId string) string {
+	clientIdSplit := strings.Split(clientId, ":")
+	if len(clientIdSplit) >= 3 {
+		return clientIdSplit[2]
+	}
+
+	return ""
+}
+
+func getIdentityType(clientId string) string {
+	clientIdSplit := strings.Split(clientId, ":")
+	if len(clientIdSplit) >= 5 {
+		return clientIdSplit[4]
+	}
+
+	return ""
+}
+
+func isTokenValid(jwtToken string) bool {
+	var payload []byte
+	var expClaim float64
+	var err error
+	var ok bool
+
+	if jwtToken == "" || !strings.Contains(jwtToken, ".") || strings.Count(jwtToken, ".") != 2 {
+		return false
+	}
+
+	parts := strings.Split(jwtToken, ".")
+	if payload, err = base64.RawURLEncoding.DecodeString(parts[1]); err != nil {
+		return false
+	}
+
+	var claims map[string]interface{}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return false
+	}
+
+	if expClaim, ok = claims["exp"].(float64); !ok {
+		return false
+	}
+
+	// Calculate expiration with a 60-second safety window
+	expiration := time.Unix(int64(expClaim), 0).UTC().Add(-60 * time.Second)
+	return time.Now().UTC().Before(expiration)
 }
