@@ -239,7 +239,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 	}
 }
 
-// // Temporary until Aembit SDK is published
+// // Temporary until Aembit SDK is published.
 var GCP_ID_TOKEN string
 var GITHUB_ID_TOKEN string
 var TERRAFORM_ID_TOKEN string
