@@ -32,7 +32,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "k8sNamespace"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.value", "unittest1namespace"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.value", fmt.Sprintf("unittest1namespace%d", randID)),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "id"),
 					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "type"),
