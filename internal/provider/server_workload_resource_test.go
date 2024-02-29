@@ -24,7 +24,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost.com"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.port", "443"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.app_protocol", "HTTP"),
-					//resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
