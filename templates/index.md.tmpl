@@ -1,0 +1,24 @@
+---
+layout: ""
+page_title: "Provider: Aembit Cloud"
+description: |-
+  This Aembit Cloud provider provides resources and data sources to manage the Aembit platform as infrastructure-as-code, through the Aembit management API.
+---
+
+# Aembit Provider
+
+The Aembit provider interacts with the configuration of the Aembit platform via the management API. The provider requires credentials before it can be used.
+
+## Getting Started
+
+To get started using the Aembit Terraform provider, first you'll need an active Aembit cloud tenant.  Get instant access with a [Aembit trial account](https://useast2.aembit.io/signup), or read more about Aembit at [aembit.io](https://aembit.io)
+
+## Provider Authentication
+
+### Authenticate using an environment variable access token
+
+{{ tffile "examples/provider/provider-env.tf" }}
+
+{{ codefile "shell" (printf "%s" "examples/provider/provider-env-at.sh") }}
+
+{{ .SchemaMarkdown }}
