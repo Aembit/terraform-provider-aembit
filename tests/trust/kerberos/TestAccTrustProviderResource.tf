@@ -10,4 +10,8 @@ resource "aembit_trust_provider" "kerberos" {
 		principal = "principal"
 		source_ip = "source_ip"
 	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
 }

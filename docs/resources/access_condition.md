@@ -77,6 +77,7 @@ resource "aembit_access_condition" "wiz" {
 - `crowdstrike_conditions` (Attributes) CrowdStrike Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--crowdstrike_conditions))
 - `description` (String) Description for the Access Condition.
 - `is_active` (Boolean) Active status of the Access Condition.
+- `tags` (Map of String) Tags are key-value pairs.
 - `wiz_conditions` (Attributes) Wiz Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--wiz_conditions))
 
 ### Read-Only

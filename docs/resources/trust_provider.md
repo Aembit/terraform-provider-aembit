@@ -88,6 +88,7 @@ resource "aembit_trust_provider" "kerberos" {
 - `description` (String) Description for the Trust Provider.
 - `is_active` (Boolean) Active status of the Trust Provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--kerberos))
+- `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
