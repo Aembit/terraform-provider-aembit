@@ -20,12 +20,13 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Server Workload Name
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "is_active", "true"),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost.com"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.port", "443"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.app_protocol", "HTTP"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.transport_protocol", "TCP"),
-					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "80"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.requested_port", "443"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.tls_verification", "full"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.scheme", "Bearer"),
@@ -48,6 +49,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "name", "Unit Test 1 - Modified"),
+					resource.TestCheckResourceAttr("aembit_server_workload.test", "is_active", "true"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.host", "unittest.testhost2.com"),
 					resource.TestCheckResourceAttr("aembit_server_workload.test", "service_endpoint.workload_service_authentication.method", "HTTP Authentication"),

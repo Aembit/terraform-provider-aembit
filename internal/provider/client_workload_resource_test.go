@@ -28,7 +28,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "k8sNamespace"),
@@ -54,7 +54,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
 					// Verify Service Endpoint Host updated.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "orange"),

@@ -3,6 +3,7 @@ provider "aembit" {
 
 resource "aembit_credential_provider" "vault" {
 	name = "TF Acceptance Vault"
+	is_active = true
 	vault_client_token = {
 		subject = "subject"
 		subject_type = "literal"
