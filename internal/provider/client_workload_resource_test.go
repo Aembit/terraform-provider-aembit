@@ -28,7 +28,7 @@ func TestAccClientWorkloadResource(t *testing.T) {
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
+					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
 					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "k8sNamespace"),
