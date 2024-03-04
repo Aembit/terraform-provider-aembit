@@ -148,11 +148,12 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
 	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
 	if len(aembitClientID) > 0 {
+		tenant = getAembitTenantId(aembitClientID)
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
 		if err == nil {
 			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
 			if err == nil {
-				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
 				if err == nil {
 					token = roleToken
 				} else {
@@ -296,7 +297,7 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	var credResponse *CredentialResponse
 
 	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false})
-	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
+	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getAembitTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
 		return "", err
 	}
 	defer conn.Close()
@@ -340,7 +341,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	}
 	details.Set("attestation", string(attestationJSON))
 
-	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getTenantId(clientId), stackDomain)
+	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getAembitTenantId(clientId), stackDomain)
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
@@ -378,6 +379,7 @@ func getIdentityToken(clientId, stackDomain string) (string, error) {
 	case "github_idtoken":
 		return getGitHubIdentityToken(clientId, stackDomain)
 	case "terraform_idtoken":
+		return getTerraformIdentityToken()
 	}
 	return "", fmt.Errorf("no matching id token configuration")
 }
@@ -387,7 +389,7 @@ func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
 		return GCP_ID_TOKEN, nil
 	}
 
-	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	audience := fmt.Sprintf("https://%s.id.%s", getAembitTenantId(clientId), stackDomain)
 	metadataIdentityTokenUrl := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s", url.QueryEscape(audience))
 
 	req, err := http.NewRequest("GET", metadataIdentityTokenUrl, nil)
@@ -423,7 +425,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 		return "", fmt.Errorf("github action not configured for id_token access")
 	}
 
-	audience := fmt.Sprintf("https://%s.id.%s", getTenantId(clientId), stackDomain)
+	audience := fmt.Sprintf("https://%s.id.%s", getAembitTenantId(clientId), stackDomain)
 	identityTokenURL := fmt.Sprintf("%s&audience=%s", tokenRequestURL, url.QueryEscape(audience))
 
 	req, err := http.NewRequest("GET", identityTokenURL, nil)
@@ -457,7 +459,16 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	return GITHUB_ID_TOKEN, nil
 }
 
-func getTenantId(clientId string) string {
+func getTerraformIdentityToken() (string, error) {
+	if isTokenValid(TERRAFORM_ID_TOKEN) {
+		return TERRAFORM_ID_TOKEN, nil
+	}
+
+	TERRAFORM_ID_TOKEN := os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
+	return TERRAFORM_ID_TOKEN, nil
+}
+
+func getAembitTenantId(clientId string) string {
 	clientIdSplit := strings.Split(clientId, ":")
 	if len(clientIdSplit) >= 3 {
 		return clientIdSplit[2]
