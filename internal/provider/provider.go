@@ -271,8 +271,10 @@ type WorkloadAssessmentIdToken struct {
 }
 
 type WorkloadAssessment struct {
-	Version string                    `json:"version"`
-	GitHub  WorkloadAssessmentIdToken `json:"github"`
+	Version   string                    `json:"version"`
+	GCP       WorkloadAssessmentIdToken `json:"gcp,omitempty"`
+	GitHub    WorkloadAssessmentIdToken `json:"github,omitempty"`
+	Terraform WorkloadAssessmentIdToken `json:"terraform,omitempty"`
 }
 
 type tokenAuth struct {
@@ -291,7 +293,7 @@ func (tokenAuth) RequireTransportSecurity() bool {
 
 func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
 	var err error
-	var clientRequest, workloadAssessment []byte
+	var clientRequest, workloadAssessment string
 	var conn *grpc.ClientConn
 	var aembitClient EdgeCommanderClient
 	var credResponse *CredentialResponse
@@ -302,23 +304,56 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	}
 	defer conn.Close()
 
-	if clientRequest, err = json.Marshal(ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}); err != nil {
+	if clientRequest, err = getClientRequest(targetHost, targetPort); err != nil {
 		return "", err
 	}
-	if workloadAssessment, err = json.Marshal(WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}); err != nil {
+	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken); err != nil {
 		return "", err
 	}
 
 	aembitClient = NewEdgeCommanderClient(conn)
 	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
-		ClientRequest:      string(clientRequest),
-		AgentAssessment:    string(workloadAssessment),
-		WorkloadAssessment: string(workloadAssessment),
+		ClientRequest:      clientRequest,
+		AgentAssessment:    workloadAssessment,
+		WorkloadAssessment: workloadAssessment,
 	}); err != nil {
 		return "", err
 	}
 
 	return credResponse.Credential, nil
+}
+
+func getClientRequest(targetHost string, targetPort int16) (string, error) {
+	var request []byte
+	var err error
+	var clientRequest ClientRequest = ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}
+
+	if request, err = json.Marshal(clientRequest); err != nil {
+		return "", err
+	}
+	return string(request), nil
+}
+
+func getWorkloadAssessment(clientId, idToken string) (string, error) {
+	var assessment []byte
+	var err error
+	var workload WorkloadAssessment
+
+	switch getAembitIdentityType(clientId) {
+	case "gcp_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", GCP: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	case "github_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	case "terraform_idtoken":
+		workload = WorkloadAssessment{Version: "1.0.0", Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+	default:
+		return "", fmt.Errorf("invalid aembit client id")
+	}
+
+	if assessment, err = json.Marshal(workload); err != nil {
+		return "", err
+	}
+	return string(assessment), nil
 }
 
 func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
