@@ -326,12 +326,24 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 		return AEMBIT_TOKEN, nil
 	}
 
+	idTokenType := ""
+	switch getAembitIdentityType((clientId)) {
+	case "gcp_idtoken":
+		idTokenType = "gcp"
+	case "github_idtoken":
+		idTokenType = "github"
+	case "terraform_idtoken":
+		idTokenType = "terraform"
+	default:
+		return "", fmt.Errorf("invalid aembit client id")
+	}
+
 	details := url.Values{}
 	details.Set("grant_type", "client_credentials")
 	details.Set("client_id", clientId)
 	attestationData := map[string]interface{}{
 		"version": "1.0.0",
-		"github": map[string]interface{}{
+		idTokenType: map[string]interface{}{
 			"identityToken": idToken,
 		},
 	}
@@ -373,7 +385,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 
 func getIdentityToken(clientId, stackDomain string) (string, error) {
 	// First, determine which token type we need to get based on the identity type
-	switch getIdentityType((clientId)) {
+	switch getAembitIdentityType((clientId)) {
 	case "gcp_idtoken":
 		return getGcpIdentityToken(clientId, stackDomain)
 	case "github_idtoken":
@@ -477,7 +489,7 @@ func getAembitTenantId(clientId string) string {
 	return ""
 }
 
-func getIdentityType(clientId string) string {
+func getAembitIdentityType(clientId string) string {
 	clientIdSplit := strings.Split(clientId, ":")
 	if len(clientIdSplit) >= 5 {
 		return clientIdSplit[4]
