@@ -46,3 +46,9 @@ jobs:
           # GitHub sets the GITHUB_TOKEN secret automatically.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+      - name: Archive Release Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-aembit
+          path: dist
+          retention-days: 14
