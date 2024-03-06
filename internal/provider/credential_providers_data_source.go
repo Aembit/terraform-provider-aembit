@@ -182,7 +182,7 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := convertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{})
+		credentialProviderState := convertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 
