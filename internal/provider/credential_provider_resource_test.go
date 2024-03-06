@@ -18,8 +18,9 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 			{
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Credential Provider Name
+					// Verify Credential Provider set values
 					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "aembit_access_token.lifetime", "1800"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "id"),
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "aembit_access_token.audience"),
@@ -97,8 +98,9 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 			{
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Credential Provider Name
+					// Verify Credential set values
 					resource.TestCheckResourceAttr("aembit_credential_provider.aws", "name", "TF Acceptance AWS STS"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.aws", "aws_sts.lifetime", "1800"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.aws", "id"),
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.aws", "aws_sts.oidc_issuer"),
@@ -141,8 +143,9 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 			{
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Credential Provider Name
+					// Verify Credential Provider set values
 					resource.TestCheckResourceAttr("aembit_credential_provider.gcp", "name", "TF Acceptance GCP Workload"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.gcp", "google_workload_identity.lifetime", "1800"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.gcp", "id"),
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.gcp", "google_workload_identity.oidc_issuer"),

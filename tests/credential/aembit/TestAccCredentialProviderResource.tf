@@ -6,6 +6,6 @@ resource "aembit_credential_provider" "aembit" {
 	is_active = true
 	aembit_access_token = {
 		role_id = "cca45e0a-c1c6-4b24-a895-52b547861a28"
-		lifetime = 900
+		lifetime = 1800
 	}
 }

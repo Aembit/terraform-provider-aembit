@@ -7,6 +7,6 @@ resource "aembit_credential_provider" "gcp" {
 	google_workload_identity = {
 		audience = "audience"
 		service_account = "test@test.com"
-		lifetime = 900
+		lifetime = 1800
 	}
 }

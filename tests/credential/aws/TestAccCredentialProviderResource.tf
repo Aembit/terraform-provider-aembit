@@ -6,6 +6,6 @@ resource "aembit_credential_provider" "aws" {
 	is_active = true
 	aws_sts = {
 		role_arn = "role_arn"
-		lifetime = 900
+		lifetime = 1800
 	}
 }
