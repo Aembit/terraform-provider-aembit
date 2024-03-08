@@ -230,7 +230,7 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	// Check if Agent Controller is Active - if it is, disable it first
+	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
 		_, err := r.client.DisableAccessPolicy(state.ID.ValueString(), nil)
 		if err != nil {
