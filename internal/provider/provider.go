@@ -147,6 +147,10 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
 	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
+	if len(config.ClientID.ValueString()) > 0 {
+		// If there is a provider block ClientID, prefer that
+		aembitClientID = config.ClientID.ValueString()
+	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
 		idToken, err := getIdentityToken(aembitClientID, stackDomain)
