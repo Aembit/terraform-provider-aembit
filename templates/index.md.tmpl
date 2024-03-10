@@ -20,7 +20,7 @@ To get started using the Aembit Terraform provider, first you'll need an active 
 Aembit supports authentication to the Aembit API using a native authentication capability which utilizes OIDC (Open ID Connect tokens) ID Tokens. This capability requires configuring your Aembit tenant with the appropriate components as follows:
 * **Client Workload:** This workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
 * **Trust Provider:** This component ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
-  * Match Rules can be configured for platform specific restrictions, for example repository on GitHub or workspace ID on Terraform Cloud.
+  * Match Rules can be configured for platform-specific restrictions, for example repository on GitHub or workspace ID on Terraform Cloud.
 * **Credential Provider:** This associates the Client Workload with an Aembit Role to ensure that the Client Workload has access to only the applicable Aembit resources.
   * Note: The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
 * **Server Workload:** This workload identifies the Aembit tenant-specific API endpoint.
