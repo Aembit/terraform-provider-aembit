@@ -13,6 +13,8 @@ The Aembit provider interacts with the configuration of the Aembit platform via 
 
 To get started using the Aembit Terraform provider, first you'll need an active Aembit cloud tenant.  Get instant access with a [Aembit trial account](https://useast2.aembit.io/signup), or read more about Aembit at [aembit.io](https://aembit.io)
 
+## Provider Authentication
+
 ### Authenticate using Aembit native authentication
 
 Aembit supports authentication to the Aembit API using a native authentication capability which utilizes OIDC (Open ID Connect tokens) ID Tokens. This capability requires configuring your Aembit tenant with the appropriate components as follows:
