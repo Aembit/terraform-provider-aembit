@@ -1,0 +1,30 @@
+# Inspect code with Go Security Checker
+name: Gosec Security Checker
+
+# Enable check for pull requests on main
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+            token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+            submodules: recursive
+      - name: Setup Go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+            go-version-file: 'go.mod'
+            cache: true
+      - name: Go Mod Download
+        run: go mod download
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: -exclude=G402,G101 ./...
