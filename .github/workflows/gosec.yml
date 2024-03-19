@@ -3,9 +3,6 @@ name: Gosec Security Checker
 
 # Enable check for pull requests on main
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
