@@ -93,5 +93,31 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-        run: go test -v -cover ./internal/provider/
-        timeout-minutes: 10
+        run: go test -v -coverprofile coverage.out ./internal/provider/ 
+        timeout-minutes: 10        
+      # Upload clippy output as artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.terraform }}
+          path: coverage.out
+          retention-days: 1
+
+  # Run acceptance tests in a matrix with Terraform CLI versions
+  sonarcloud:
+    name: SonarCloud Scan
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
+
+      - name: Download Test Coverage
+        uses: actions/download-artifact@v4
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
