@@ -23,7 +23,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFileConfig),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider set values
 					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token"),
@@ -43,7 +43,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: string(modifyFileConfig),
+				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token - Modified"),
