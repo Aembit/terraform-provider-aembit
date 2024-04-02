@@ -75,8 +75,8 @@ jobs:
       matrix:
         # list whatever Terraform versions here you would like to support
         terraform:
-          - '1.6.*'
-          - '1.7.*'
+          - '1.6'
+          - '1.7'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -88,14 +88,14 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3.0.0
         with:
-          terraform_version: ${{ matrix.terraform }}
+          terraform_version: ${{ matrix.terraform }}.*
           terraform_wrapper: false
       - run: go mod download
       - env:
           TF_ACC: "1"
         run: go test -v -coverprofile coverage.out ./internal/provider/ 
         timeout-minutes: 10        
-      # Upload clippy output as artifact
+      # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.terraform }}
