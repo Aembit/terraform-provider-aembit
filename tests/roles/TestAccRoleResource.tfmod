@@ -1,9 +1,8 @@
 provider "aembit" {
 }
 
-
 resource "aembit_role" "role" {
-	name = "TF Acceptance Role for Token"
+	name = "TF Acceptance Role - Modified"
 	is_active = true
 	access_policies = { read = true, write = true }
 	client_workloads = { read = true, write = true }
@@ -23,13 +22,4 @@ resource "aembit_role" "role" {
 	roles = { read = true, write = true }
 	log_streams = { read = true, write = true }
 	identity_providers = { read = true, write = true }
-}
-
-resource "aembit_credential_provider" "aembit" {
-	name = "TF Acceptance Aembit Token"
-	is_active = true
-	aembit_access_token = {
-		role_id = aembit_role.role.id
-		lifetime = 1800
-	}
 }
