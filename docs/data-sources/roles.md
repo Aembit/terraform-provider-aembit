@@ -24,7 +24,21 @@ Manages an role.
 
 Required:
 
+- `access_authorization_events` (Attributes) Permissions for Access Authorization Event resources. (see [below for nested schema](#nestedatt--roles--access_authorization_events))
+- `access_conditions` (Attributes) Permissions for Access Condition resources. (see [below for nested schema](#nestedatt--roles--access_conditions))
 - `access_policies` (Attributes) Permissions for Access Policy resources. (see [below for nested schema](#nestedatt--roles--access_policies))
+- `agent_controllers` (Attributes) Permissions for Agent Controller resources. (see [below for nested schema](#nestedatt--roles--agent_controllers))
+- `audit_logs` (Attributes) Permissions for Audit Log resources. (see [below for nested schema](#nestedatt--roles--audit_logs))
+- `client_workloads` (Attributes) Permissions for Client Workload resources. (see [below for nested schema](#nestedatt--roles--client_workloads))
+- `credential_providers` (Attributes) Permissions for Credential Provider resources. (see [below for nested schema](#nestedatt--roles--credential_providers))
+- `identity_providers` (Attributes) Permissions for Identity Provider resources. (see [below for nested schema](#nestedatt--roles--identity_providers))
+- `integrations` (Attributes) Permissions for Integration resources. (see [below for nested schema](#nestedatt--roles--integrations))
+- `log_streams` (Attributes) Permissions for Log Stream resources. (see [below for nested schema](#nestedatt--roles--log_streams))
+- `roles` (Attributes) Permissions for Role resources. (see [below for nested schema](#nestedatt--roles--roles))
+- `server_workloads` (Attributes) Permissions for Server Workload resources. (see [below for nested schema](#nestedatt--roles--server_workloads))
+- `trust_providers` (Attributes) Permissions for Trust Provider resources. (see [below for nested schema](#nestedatt--roles--trust_providers))
+- `users` (Attributes) Permissions for User resources. (see [below for nested schema](#nestedatt--roles--users))
+- `workload_events` (Attributes) Permissions for Workload Event resources. (see [below for nested schema](#nestedatt--roles--workload_events))
 
 Read-Only:
 
@@ -34,10 +48,133 @@ Read-Only:
 - `name` (String) User-provided name of the role.
 - `tags` (Map of String)
 
+<a id="nestedatt--roles--access_authorization_events"></a>
+### Nested Schema for `roles.access_authorization_events`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Access Authorization Event data.
+
+
+<a id="nestedatt--roles--access_conditions"></a>
+### Nested Schema for `roles.access_conditions`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Access Condition resources.
+- `write` (Boolean) True if this Role should be able to create and update Access Condition resources.
+
+
 <a id="nestedatt--roles--access_policies"></a>
 ### Nested Schema for `roles.access_policies`
 
-Required:
+Read-Only:
 
 - `read` (Boolean) Trust if this Role should be able to query and view Access Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update Access Policy resources.
+
+
+<a id="nestedatt--roles--agent_controllers"></a>
+### Nested Schema for `roles.agent_controllers`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Agent Controller resources.
+- `write` (Boolean) True if this Role should be able to create and update Agent Controller resources.
+
+
+<a id="nestedatt--roles--audit_logs"></a>
+### Nested Schema for `roles.audit_logs`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Audit Log data.
+
+
+<a id="nestedatt--roles--client_workloads"></a>
+### Nested Schema for `roles.client_workloads`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Client Workload resources.
+- `write` (Boolean) True if this Role should be able to create and update Client Workload resources.
+
+
+<a id="nestedatt--roles--credential_providers"></a>
+### Nested Schema for `roles.credential_providers`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Credential Provider resources.
+- `write` (Boolean) True if this Role should be able to create and update Credential Provider resources.
+
+
+<a id="nestedatt--roles--identity_providers"></a>
+### Nested Schema for `roles.identity_providers`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Identity Provider resources.
+- `write` (Boolean) True if this Role should be able to create and update Identity Provider resources.
+
+
+<a id="nestedatt--roles--integrations"></a>
+### Nested Schema for `roles.integrations`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Integration resources.
+- `write` (Boolean) True if this Role should be able to create and update Integration resources.
+
+
+<a id="nestedatt--roles--log_streams"></a>
+### Nested Schema for `roles.log_streams`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Log Stream resources.
+- `write` (Boolean) True if this Role should be able to create and update Log Stream resources.
+
+
+<a id="nestedatt--roles--roles"></a>
+### Nested Schema for `roles.roles`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Role resources.
+- `write` (Boolean) True if this Role should be able to create and update Role resources.
+
+
+<a id="nestedatt--roles--server_workloads"></a>
+### Nested Schema for `roles.server_workloads`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Server Workload resources.
+- `write` (Boolean) True if this Role should be able to create and update Server Workload resources.
+
+
+<a id="nestedatt--roles--trust_providers"></a>
+### Nested Schema for `roles.trust_providers`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Trust Provider resources.
+- `write` (Boolean) True if this Role should be able to create and update Trust Provider resources.
+
+
+<a id="nestedatt--roles--users"></a>
+### Nested Schema for `roles.users`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view User resources.
+- `write` (Boolean) True if this Role should be able to create and update User resources.
+
+
+<a id="nestedatt--roles--workload_events"></a>
+### Nested Schema for `roles.workload_events`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Workload Event data.
