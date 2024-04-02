@@ -86,50 +86,53 @@ func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"access_policies":             definePermissionAttribute("Access Policy"),
-			"client_workloads":            definePermissionAttribute("Client Workload"),
-			"trust_providers":             definePermissionAttribute("Trust Provider"),
-			"access_conditions":           definePermissionAttribute("Access Condition"),
-			"integrations":                definePermissionAttribute("Integration"),
-			"credential_providers":        definePermissionAttribute("Credential Provider"),
-			"server_workloads":            definePermissionAttribute("Server Workload"),
-			"agent_controllers":           definePermissionAttribute("Agent Controller"),
-			"access_authorization_events": definePermissionReadOnlyAttribute("Access Authorization Event"),
-			"audit_logs":                  definePermissionReadOnlyAttribute("Audit Log"),
-			"workload_events":             definePermissionReadOnlyAttribute("Workload Event"),
-			"users":                       definePermissionAttribute("User"),
-			"roles":                       definePermissionAttribute("Role"),
-			"log_streams":                 definePermissionAttribute("Log Stream"),
-			"identity_providers":          definePermissionAttribute("Identity Provider"),
+			"access_policies":             definePermissionAttribute("Access Policy", false),
+			"client_workloads":            definePermissionAttribute("Client Workload", false),
+			"trust_providers":             definePermissionAttribute("Trust Provider", false),
+			"access_conditions":           definePermissionAttribute("Access Condition", false),
+			"integrations":                definePermissionAttribute("Integration", false),
+			"credential_providers":        definePermissionAttribute("Credential Provider", false),
+			"server_workloads":            definePermissionAttribute("Server Workload", false),
+			"agent_controllers":           definePermissionAttribute("Agent Controller", false),
+			"access_authorization_events": definePermissionReadOnlyAttribute("Access Authorization Event", false),
+			"audit_logs":                  definePermissionReadOnlyAttribute("Audit Log", false),
+			"workload_events":             definePermissionReadOnlyAttribute("Workload Event", false),
+			"users":                       definePermissionAttribute("User", false),
+			"roles":                       definePermissionAttribute("Role", false),
+			"log_streams":                 definePermissionAttribute("Log Stream", false),
+			"identity_providers":          definePermissionAttribute("Identity Provider", false),
 		},
 	}
 }
 
-func definePermissionAttribute(name string) schema.SingleNestedAttribute {
+func definePermissionAttribute(name string, computed bool) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: fmt.Sprintf("Permissions for %s resources.", name),
 		Required:    true,
 		Attributes: map[string]schema.Attribute{
 			"read": schema.BoolAttribute{
 				Description: fmt.Sprintf("Trust if this Role should be able to query and view %s resources.", name),
-				Required:    true,
+				Required:    !computed,
+				Computed:    computed,
 			},
 			"write": schema.BoolAttribute{
 				Description: fmt.Sprintf("True if this Role should be able to create and update %s resources.", name),
-				Required:    true,
+				Required:    !computed,
+				Computed:    computed,
 			},
 		},
 	}
 }
 
-func definePermissionReadOnlyAttribute(name string) schema.SingleNestedAttribute {
+func definePermissionReadOnlyAttribute(name string, computed bool) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: fmt.Sprintf("Permissions for %s resources.", name),
 		Required:    true,
 		Attributes: map[string]schema.Attribute{
 			"read": schema.BoolAttribute{
 				Description: fmt.Sprintf("Trust if this Role should be able to query and view %s data.", name),
-				Required:    true,
+				Required:    !computed,
+				Computed:    computed,
 			},
 		},
 	}

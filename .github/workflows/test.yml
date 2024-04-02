@@ -102,7 +102,7 @@ jobs:
           path: coverage.out
           retention-days: 1
 
-  # Run acceptance tests in a matrix with Terraform CLI versions
+  # Run SonarCloud Scanner and upload results
   sonarcloud:
     name: SonarCloud Scan
     needs: test

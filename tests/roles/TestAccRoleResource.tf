@@ -14,9 +14,9 @@ resource "aembit_role" "role" {
 
 	agent_controllers = { read = true, write = true }
 
-	access_authorization_events = { read = true, write = true }
-	audit_logs = { read = true, write = true }
-	workload_events = { read = true, write = true }
+	access_authorization_events = { read = true }
+	audit_logs = { read = true }
+	workload_events = { read = true }
 
 	users = { read = true, write = true }
 	roles = { read = true, write = true }
