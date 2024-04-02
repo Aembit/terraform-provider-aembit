@@ -1,7 +1,10 @@
 package provider
 
 import (
+	"fmt"
+	"math/rand"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,12 +14,16 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tfmod")
 
+	randID := rand.Intn(10000000)
+	createFileConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Role for Token", fmt.Sprintf("TF Acceptance Role for Token %d", randID))
+	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "TF Acceptance Role for Token", fmt.Sprintf("TF Acceptance Role for Token %d", randID))
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: string(createFileConfig),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider set values
 					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token"),
@@ -36,7 +43,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: string(modifyFile),
+				Config: string(modifyFileConfig),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token - Modified"),
