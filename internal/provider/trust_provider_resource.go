@@ -335,6 +335,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("aws_ecs_role"),
+			path.MatchRoot("aws_role"),
 			path.MatchRoot("aws_metadata"),
 			path.MatchRoot("azure_metadata"),
 			path.MatchRoot("gcp_identity"),
@@ -581,10 +582,10 @@ func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.Trus
 	dto.Provider = "AWSRole"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AccountID, "AwsAccountId")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AssumedRole, "AwsAssumedRole")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.RoleARN, "AwsRoleARN")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.Username, "AwsUsername")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AssumedRole, "AwsAssumedRole")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.RoleARN, "AwsRoleARN")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.Username, "AwsUsername")
 }
 
 func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
