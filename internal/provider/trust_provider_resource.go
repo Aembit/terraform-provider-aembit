@@ -110,8 +110,8 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"aws_ecs_role": schema.SingleNestedAttribute{
-				Description: "AWS ECS Role type Trust Provider configuration.",
-				Optional:    true,
+				Description:        "AWS ECS Role type Trust Provider configuration.",
+				Optional:           true,
 				DeprecationMessage: "Deprecated. Use aws_role instead",
 				Attributes: map[string]schema.Attribute{
 					"account_id": schema.StringAttribute{
