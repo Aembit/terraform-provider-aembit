@@ -14,6 +14,7 @@ type trustProviderResourceModel struct {
 	Tags               types.Map                        `tfsdk:"tags"`
 	AzureMetadata      *trustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
 	AwsEcsRole         *trustProviderAwsEcsRoleModel    `tfsdk:"aws_ecs_role"`
+	AwsRole            *trustProviderAwsEcsRoleModel    `tfsdk:"aws_role"`
 	AwsMetadata        *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
 	GcpIdentity        *trustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
 	GitHubAction       *trustProviderGitHubActionModel  `tfsdk:"github_action"`
