@@ -112,7 +112,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 			"aws_ecs_role": schema.SingleNestedAttribute{
 				Description:        "AWS ECS Role type Trust Provider configuration.",
 				Optional:           true,
-				DeprecationMessage: "Deprecated. Use aws_role instead",
+				DeprecationMessage: "Please migrate to `aws_role` which replaces this Trust Provider type.",
 				Attributes: map[string]schema.Attribute{
 					"account_id": schema.StringAttribute{
 						Description: "The ID of the AWS account that is hosting the ECS Task.",
@@ -675,9 +675,9 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 
 	switch dto.Provider {
 	case "AWSECSRole":
-		model.AwsEcsRole = convertAwsEcsRoleDTOToModel(dto)
+		model.AwsEcsRole = convertAwsRoleDTOToModel(dto)
 	case "AWSRole":
-		model.AwsRole = convertAwsEcsRoleDTOToModel(dto)
+		model.AwsRole = convertAwsRoleDTOToModel(dto)
 	case "AWSMetadataService":
 		model.AwsMetadata = convertAwsMetadataDTOToModel(dto)
 	case "AzureMetadataService":
@@ -717,8 +717,8 @@ func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderA
 	return model
 }
 
-func convertAwsEcsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsEcsRoleModel {
-	model := &trustProviderAwsEcsRoleModel{
+func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsRoleModel {
+	model := &trustProviderAwsRoleModel{
 		AccountID:   types.StringNull(),
 		AssumedRole: types.StringNull(),
 		RoleARN:     types.StringNull(),
