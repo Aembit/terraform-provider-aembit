@@ -77,10 +77,10 @@ Read-Only:
 
 Read-Only:
 
-- `account_id` (String) The ID of the AWS account that is hosting the ECS Task.
-- `assumed_role` (String) The Name of the AWS IAM Role which is running the ECS Task.
-- `role_arn` (String) The ARN of the AWS IAM Role which is running the ECS Task.
-- `username` (String) The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).
+- `account_id` (String) The ID of the AWS account that is hosting the Client Workload.
+- `assumed_role` (String) The Name of the AWS IAM Role which is running the Client Workload.
+- `role_arn` (String) The ARN of the AWS IAM Role which is running the Client Workload.
+- `username` (String) The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).
 
 
 <a id="nestedatt--trust_providers--azure_metadata"></a>

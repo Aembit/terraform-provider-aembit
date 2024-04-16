@@ -137,19 +137,19 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"account_id": schema.StringAttribute{
-						Description: "The ID of the AWS account that is hosting the ECS Task.",
+						Description: "The ID of the AWS account that is hosting the Client Workload.",
 						Optional:    true,
 					},
 					"assumed_role": schema.StringAttribute{
-						Description: "The Name of the AWS IAM Role which is running the ECS Task.",
+						Description: "The Name of the AWS IAM Role which is running the Client Workload.",
 						Optional:    true,
 					},
 					"role_arn": schema.StringAttribute{
-						Description: "The ARN of the AWS IAM Role which is running the ECS Task.",
+						Description: "The ARN of the AWS IAM Role which is running the Client Workload.",
 						Optional:    true,
 					},
 					"username": schema.StringAttribute{
-						Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
+						Description: "The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).",
 						Optional:    true,
 					},
 				},
