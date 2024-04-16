@@ -91,7 +91,7 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								"\t* `aembitClientId`\n" +
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
 								"\t* `awsEcsTaskFamily`\n" +
-								"\t* `awsLambdaArn`\n" +								
+								"\t* `awsLambdaArn`\n" +
 								"\t* `gcpIdentityToken`\n" +
 								"\t* `githubIdTokenRepository`\n" +
 								"\t* `githubIdTokenSubject`\n" +
