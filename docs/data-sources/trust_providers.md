@@ -24,8 +24,9 @@ Manages an trust provider.
 
 Read-Only:
 
-- `aws_ecs_role` (Attributes) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_ecs_role))
+- `aws_ecs_role` (Attributes, Deprecated) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_ecs_role))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
+- `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
 - `description` (String) User-provided description of the trust provider.
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gcp_identity))
@@ -69,6 +70,17 @@ Read-Only:
 - `ramdisk_id` (String)
 - `region` (String)
 - `version` (String)
+
+
+<a id="nestedatt--trust_providers--aws_role"></a>
+### Nested Schema for `trust_providers.aws_role`
+
+Read-Only:
+
+- `account_id` (String) The ID of the AWS account that is hosting the Client Workload.
+- `assumed_role` (String) The Name of the AWS IAM Role which is running the Client Workload.
+- `role_arn` (String) The ARN of the AWS IAM Role which is running the Client Workload.
+- `username` (String) The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).
 
 
 <a id="nestedatt--trust_providers--azure_metadata"></a>

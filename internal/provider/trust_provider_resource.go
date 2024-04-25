@@ -110,8 +110,9 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"aws_ecs_role": schema.SingleNestedAttribute{
-				Description: "AWS ECS Role type Trust Provider configuration.",
-				Optional:    true,
+				Description:        "AWS ECS Role type Trust Provider configuration.",
+				Optional:           true,
+				DeprecationMessage: "Please migrate to `aws_role` which replaces this Trust Provider type.",
 				Attributes: map[string]schema.Attribute{
 					"account_id": schema.StringAttribute{
 						Description: "The ID of the AWS account that is hosting the ECS Task.",
@@ -127,6 +128,28 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 					"username": schema.StringAttribute{
 						Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
+						Optional:    true,
+					},
+				},
+			},
+			"aws_role": schema.SingleNestedAttribute{
+				Description: "AWS Role type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"account_id": schema.StringAttribute{
+						Description: "The ID of the AWS account that is hosting the Client Workload.",
+						Optional:    true,
+					},
+					"assumed_role": schema.StringAttribute{
+						Description: "The Name of the AWS IAM Role which is running the Client Workload.",
+						Optional:    true,
+					},
+					"role_arn": schema.StringAttribute{
+						Description: "The ARN of the AWS IAM Role which is running the Client Workload.",
+						Optional:    true,
+					},
+					"username": schema.StringAttribute{
+						Description: "The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).",
 						Optional:    true,
 					},
 				},
@@ -312,6 +335,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("aws_ecs_role"),
+			path.MatchRoot("aws_role"),
 			path.MatchRoot("aws_metadata"),
 			path.MatchRoot("azure_metadata"),
 			path.MatchRoot("gcp_identity"),
@@ -501,6 +525,9 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 	if model.AwsEcsRole != nil {
 		convertAwsEcsRoleModelToDTO(model, &trust)
 	}
+	if model.AwsRole != nil {
+		convertAwsRoleModelToDTO(model, &trust)
+	}
 	if model.AzureMetadata != nil {
 		convertAzureMetadataModelToDTO(model, &trust)
 	}
@@ -549,6 +576,16 @@ func convertAwsEcsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.T
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AssumedRole, "AwsAssumedRole")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.RoleARN, "AwsRoleARN")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.Username, "AwsUsername")
+}
+
+func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "AWSRole"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AssumedRole, "AwsAssumedRole")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.RoleARN, "AwsRoleARN")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.Username, "AwsUsername")
 }
 
 func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -638,7 +675,9 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 
 	switch dto.Provider {
 	case "AWSECSRole":
-		model.AwsEcsRole = convertAwsEcsRoleDTOToModel(dto)
+		model.AwsEcsRole = convertAwsRoleDTOToModel(dto)
+	case "AWSRole":
+		model.AwsRole = convertAwsRoleDTOToModel(dto)
 	case "AWSMetadataService":
 		model.AwsMetadata = convertAwsMetadataDTOToModel(dto)
 	case "AzureMetadataService":
@@ -678,8 +717,8 @@ func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderA
 	return model
 }
 
-func convertAwsEcsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsEcsRoleModel {
-	model := &trustProviderAwsEcsRoleModel{
+func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsRoleModel {
+	model := &trustProviderAwsRoleModel{
 		AccountID:   types.StringNull(),
 		AssumedRole: types.StringNull(),
 		RoleARN:     types.StringNull(),

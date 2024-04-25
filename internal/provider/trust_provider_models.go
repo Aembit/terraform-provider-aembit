@@ -13,7 +13,8 @@ type trustProviderResourceModel struct {
 	IsActive           types.Bool                       `tfsdk:"is_active"`
 	Tags               types.Map                        `tfsdk:"tags"`
 	AzureMetadata      *trustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
-	AwsEcsRole         *trustProviderAwsEcsRoleModel    `tfsdk:"aws_ecs_role"`
+	AwsEcsRole         *trustProviderAwsRoleModel       `tfsdk:"aws_ecs_role"`
+	AwsRole            *trustProviderAwsRoleModel       `tfsdk:"aws_role"`
 	AwsMetadata        *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
 	GcpIdentity        *trustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
 	GitHubAction       *trustProviderGitHubActionModel  `tfsdk:"github_action"`
@@ -33,7 +34,7 @@ type trustProviderAzureMetadataModel struct {
 	SubscriptionID types.String `tfsdk:"subscription_id"`
 }
 
-type trustProviderAwsEcsRoleModel struct {
+type trustProviderAwsRoleModel struct {
 	AccountID   types.String `tfsdk:"account_id"`
 	AssumedRole types.String `tfsdk:"assumed_role"`
 	RoleARN     types.String `tfsdk:"role_arn"`
