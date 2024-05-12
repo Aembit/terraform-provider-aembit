@@ -39,6 +39,8 @@ resource "aembit_server_workload" "first_server" {
 resource "aembit_access_policy" "first_policy" {
     is_active = false
     client_workload = aembit_client_workload.first_client.id
+    trust_providers = []
+    access_conditions = []
     credential_provider = aembit_credential_provider.api_key.id
     server_workload = aembit_server_workload.first_server.id
 }
