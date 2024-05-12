@@ -296,14 +296,14 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 		model.CredentialProvider = types.StringValue(dto.CredentialProvider)
 	}
 
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
 	if len(dto.TrustProviders) > 0 {
-		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider)
 		}
 	}
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
 	if len(dto.AccessConditions) > 0 {
-		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions)
 		}
@@ -323,14 +323,14 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessP
 		model.CredentialProvider = types.StringValue(dto.CredentialProvider.ExternalID)
 	}
 
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
 	if len(dto.TrustProviders) > 0 {
-		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
 		}
 	}
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
 	if len(dto.AccessConditions) > 0 {
-		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
 		}
