@@ -1,14 +1,27 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
 
+	res "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestUnitRoleConfigure(t *testing.T) {
+	var role roleResource = roleResource{}
+	var configRequest res.ConfigureRequest = res.ConfigureRequest{ProviderData: "invalidData"}
+	var configResponse res.ConfigureResponse = res.ConfigureResponse{}
+
+	role.Configure(context.Background(), configRequest, &configResponse)
+
+	assert.NotEmpty(t, configResponse.Diagnostics)
+}
 
 func TestAccRoleResource(t *testing.T) {
 	const resourceID string = "aembit_role.role"
