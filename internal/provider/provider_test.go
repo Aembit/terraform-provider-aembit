@@ -24,9 +24,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestUnitResourceConfigure(t *testing.T) {
 	var configResponse resource.ConfigureResponse = resource.ConfigureResponse{}
 	resourceConfigure(resource.ConfigureRequest{ProviderData: nil}, &configResponse)
-	assert.NotEmpty(t, configResponse.Diagnostics)
+	assert.Empty(t, configResponse.Diagnostics)
 
-	configResponse = resource.ConfigureResponse{}
 	resourceConfigure(resource.ConfigureRequest{ProviderData: "invalidData"}, &configResponse)
 	assert.NotEmpty(t, configResponse.Diagnostics)
 }
@@ -34,9 +33,8 @@ func TestUnitResourceConfigure(t *testing.T) {
 func TestUnitDataSourceConfigure(t *testing.T) {
 	var configResponse datasource.ConfigureResponse = datasource.ConfigureResponse{}
 	datasourceConfigure(datasource.ConfigureRequest{ProviderData: nil}, &configResponse)
-	assert.NotEmpty(t, configResponse.Diagnostics)
+	assert.Empty(t, configResponse.Diagnostics)
 
-	configResponse = datasource.ConfigureResponse{}
 	datasourceConfigure(datasource.ConfigureRequest{ProviderData: "invalidData"}, &configResponse)
 	assert.NotEmpty(t, configResponse.Diagnostics)
 }
