@@ -1,27 +1,14 @@
 package provider
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
 
-	res "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/stretchr/testify/assert"
 )
-
-func TestUnitAccessPolicyConfigure(t *testing.T) {
-	var role accessPolicyResource = accessPolicyResource{}
-	var configRequest res.ConfigureRequest = res.ConfigureRequest{ProviderData: "invalidData"}
-	var configResponse res.ConfigureResponse = res.ConfigureResponse{}
-
-	role.Configure(context.Background(), configRequest, &configResponse)
-
-	assert.NotEmpty(t, configResponse.Diagnostics)
-}
 
 func TestAccAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tf")

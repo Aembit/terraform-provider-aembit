@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -40,22 +39,7 @@ func (r *accessPolicyResource) Metadata(_ context.Context, req resource.Metadata
 
 // Configure adds the provider configured client to the resource.
 func (r *accessPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	var client *aembit.CloudClient
-	var ok bool
-
-	if req.ProviderData == nil {
-		return
-	}
-
-	if client, ok = req.ProviderData.(*aembit.CloudClient); !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	r.client = client
+	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
