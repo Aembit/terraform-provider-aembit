@@ -13,11 +13,16 @@ resource "aembit_client_workload" "first_client" {
     ]
 }
 
-resource "aembit_trust_provider" "azure1" {
-	name = "TF Acceptance Azure"
-	azure_metadata = {
-		subscription_id = "subscription_id"
-	}
+resource "aembit_client_workload" "second_client" {
+    name = "second terraform client workload"
+    description = "new client workload for policy integration"
+    is_active = false
+    identities = [
+        {
+            type = "k8sNamespace"
+            value = "secondClientWorkloadNamespace"
+        },
+    ]
 }
 
 resource "aembit_credential_provider" "api_key" {
@@ -44,12 +49,17 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
-    is_active = true
+    is_active = false
     client_workload = aembit_client_workload.first_client.id
-    trust_providers = [
-        aembit_trust_provider.azure1.id
-    ]
+    trust_providers = []
     access_conditions = []
+    credential_provider = aembit_credential_provider.api_key.id
+    server_workload = aembit_server_workload.first_server.id
+}
+
+resource "aembit_access_policy" "second_policy" {
+    is_active = false
+    client_workload = aembit_client_workload.second_client.id
     credential_provider = aembit_credential_provider.api_key.id
     server_workload = aembit_server_workload.first_server.id
 }

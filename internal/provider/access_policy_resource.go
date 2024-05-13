@@ -2,13 +2,14 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -38,22 +39,7 @@ func (r *accessPolicyResource) Metadata(_ context.Context, req resource.Metadata
 
 // Configure adds the provider configured client to the resource.
 func (r *accessPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*aembit.CloudClient)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
+	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
@@ -80,7 +66,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"trust_providers": schema.SetAttribute{
 				Description: "Set of Trust Providers to enforce on the Access Policy.",
 				Optional:    true,
+				Computed:    true,
 				ElementType: types.StringType,
+				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -88,7 +76,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"access_conditions": schema.SetAttribute{
 				Description: "Set of Access Conditions to enforce on the Access Policy.",
 				Optional:    true,
+				Computed:    true,
 				ElementType: types.StringType,
+				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -274,12 +264,17 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	}
 
 	policy.TrustProviders = make([]string, len(model.TrustProviders))
-	for i, trustProvider := range model.TrustProviders {
-		policy.TrustProviders[i] = trustProvider.ValueString()
+	if model.TrustProviders != nil && len(model.TrustProviders) > 0 {
+		for i, trustProvider := range model.TrustProviders {
+			policy.TrustProviders[i] = trustProvider.ValueString()
+		}
 	}
+
 	policy.AccessConditions = make([]string, len(model.AccessConditions))
-	for i, accessConditions := range model.AccessConditions {
-		policy.AccessConditions[i] = accessConditions.ValueString()
+	if model.AccessConditions != nil && len(model.AccessConditions) > 0 {
+		for i, accessConditions := range model.AccessConditions {
+			policy.AccessConditions[i] = accessConditions.ValueString()
+		}
 	}
 
 	return policy
@@ -296,14 +291,15 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 		model.CredentialProvider = types.StringValue(dto.CredentialProvider)
 	}
 
-	if len(dto.TrustProviders) > 0 {
-		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	if dto.TrustProviders != nil && len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider)
 		}
 	}
-	if len(dto.AccessConditions) > 0 {
-		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+	if dto.AccessConditions != nil && len(dto.AccessConditions) > 0 {
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions)
 		}
@@ -323,14 +319,15 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessP
 		model.CredentialProvider = types.StringValue(dto.CredentialProvider.ExternalID)
 	}
 
-	if len(dto.TrustProviders) > 0 {
-		model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	if dto.TrustProviders != nil && len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
 		}
 	}
-	if len(dto.AccessConditions) > 0 {
-		model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+	if dto.AccessConditions != nil && len(dto.AccessConditions) > 0 {
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
 		}

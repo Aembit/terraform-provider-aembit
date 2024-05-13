@@ -57,6 +57,46 @@ type aembitProvider struct {
 	version string
 }
 
+// Configure adds the provider configured client to the resource.
+func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureResponse) *aembit.CloudClient {
+	if req.ProviderData == nil {
+		return nil
+	}
+
+	var client *aembit.CloudClient
+	var ok bool
+	if client, ok = req.ProviderData.(*aembit.CloudClient); !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configuration Type",
+			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return nil
+	}
+
+	return client
+}
+
+// Configure adds the provider configured client to the data source.
+func datasourceConfigure(req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) *aembit.CloudClient {
+	if req.ProviderData == nil {
+		return nil
+	}
+
+	var client *aembit.CloudClient
+	var ok bool
+	if client, ok = req.ProviderData.(*aembit.CloudClient); !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configuration Type",
+			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return nil
+	}
+
+	return client
+}
+
 // Metadata returns the provider type name.
 func (p *aembitProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "aembit"

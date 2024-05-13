@@ -4,8 +4,13 @@
 package provider
 
 import (
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/stretchr/testify/assert"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -14,4 +19,22 @@ import (
 // reattach.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 	"aembit": providerserver.NewProtocol6WithError(New("test")()),
+}
+
+func TestUnitResourceConfigure(t *testing.T) {
+	var configResponse resource.ConfigureResponse = resource.ConfigureResponse{}
+	resourceConfigure(resource.ConfigureRequest{ProviderData: nil}, &configResponse)
+	assert.Empty(t, configResponse.Diagnostics)
+
+	resourceConfigure(resource.ConfigureRequest{ProviderData: "invalidData"}, &configResponse)
+	assert.NotEmpty(t, configResponse.Diagnostics)
+}
+
+func TestUnitDataSourceConfigure(t *testing.T) {
+	var configResponse datasource.ConfigureResponse = datasource.ConfigureResponse{}
+	datasourceConfigure(datasource.ConfigureRequest{ProviderData: nil}, &configResponse)
+	assert.Empty(t, configResponse.Diagnostics)
+
+	datasourceConfigure(datasource.ConfigureRequest{ProviderData: "invalidData"}, &configResponse)
+	assert.NotEmpty(t, configResponse.Diagnostics)
 }
