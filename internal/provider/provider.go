@@ -60,10 +60,6 @@ type aembitProvider struct {
 // Configure adds the provider configured client to the resource.
 func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureResponse) *aembit.CloudClient {
 	if req.ProviderData == nil {
-		resp.Diagnostics.AddError(
-			"No Resource Provider Configuration",
-			"When configuring the Resource, no provider configuration was available",
-		)
 		return nil
 	}
 
@@ -84,10 +80,6 @@ func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureRe
 // Configure adds the provider configured client to the data source.
 func datasourceConfigure(req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) *aembit.CloudClient {
 	if req.ProviderData == nil {
-		resp.Diagnostics.AddError(
-			"No Data Source Provider Configuration",
-			"When configuring the Data Source, no provider configuration was available",
-		)
 		return nil
 	}
 
