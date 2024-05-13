@@ -67,8 +67,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
 				),
 			},
 			// ImportState testing
@@ -83,6 +82,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
