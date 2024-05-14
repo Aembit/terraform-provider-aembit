@@ -65,9 +65,21 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify dynamic values have any value set in the state.
+					// Verify values for First Policy.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "name", "TF First Policy"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "client_workload"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "trust_providers.#", "0"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "access_conditions.#", "0"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "credential_provider"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "server_workload"),
+
+					// Verify values for Second Policy.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
+					resource.TestCheckResourceAttr("aembit_access_policy.second_policy", "name", "TF Second Policy"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "client_workload"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "credential_provider"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "server_workload"),
 				),
 			},
 			// ImportState testing
@@ -80,9 +92,21 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
+					// Verify values for First Policy.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "name", "Placeholder"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "client_workload"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "trust_providers.#", "0"),
+					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "access_conditions.#", "0"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "credential_provider"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "server_workload"),
+
+					// Verify values for Second Policy.
 					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
+					resource.TestCheckResourceAttr("aembit_access_policy.second_policy", "name", "Placeholder"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "client_workload"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "credential_provider"),
+					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "server_workload"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
