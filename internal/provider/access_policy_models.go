@@ -8,6 +8,7 @@ import (
 type accessPolicyResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                 types.String   `tfsdk:"id"`
+	Name               types.String   `tfsdk:"name"`
 	IsActive           types.Bool     `tfsdk:"is_active"`
 	ClientWorkload     types.String   `tfsdk:"client_workload"`
 	TrustProviders     []types.String `tfsdk:"trust_providers"`

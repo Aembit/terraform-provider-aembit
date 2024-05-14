@@ -25,6 +25,7 @@ description: |-
 - `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
 - `credential_provider` (String) Credential Provider ID configured in the Access Policy.
 - `is_active` (Boolean) Active/Inactive status of the Access Policy.
+- `name` (String) Name for the Access Policy.
 - `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.
 
 ### Read-Only
