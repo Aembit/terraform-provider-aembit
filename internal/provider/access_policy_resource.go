@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -50,6 +51,12 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Access Policy.",
 				Computed:    true,
+			},
+			"name": schema.StringAttribute{
+				Description: "Name for the Access Policy.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("Placeholder"),
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active/Inactive status of the Access Policy.",
@@ -252,7 +259,7 @@ func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.PolicyDTO {
 	var policy aembit.PolicyDTO
 	policy.EntityDTO = aembit.EntityDTO{
-		Name:     "Placeholder",
+		Name:     model.Name.ValueString(),
 		IsActive: model.IsActive.ValueBool(),
 	}
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
@@ -283,6 +290,7 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
+	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload)
@@ -311,6 +319,7 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
+	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalID)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalID)
