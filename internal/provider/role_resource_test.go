@@ -47,9 +47,9 @@ func TestAccRoleResource(t *testing.T) {
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: string(createFile), Check: testDeleteRole(resourceID), ExpectNonEmptyPlan: true},
+			{Config: createFileConfig, Check: testDeleteRole(resourceID), ExpectNonEmptyPlan: true},
 			// Recreate the resource from the first test step
-			{Config: string(createFile)},
+			{Config: createFileConfig},
 			// ImportState testing
 			{ResourceName: resourceID, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
