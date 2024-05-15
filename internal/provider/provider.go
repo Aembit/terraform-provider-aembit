@@ -135,6 +135,7 @@ func (p *aembitProvider) ConfigValidators(_ context.Context) []resource.ConfigVa
 }
 
 func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var err error
 	tflog.Info(ctx, "Configuring Aembit client...")
 
 	// Retrieve provider data from configuration
@@ -193,25 +194,8 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
-		idToken, err := getIdentityToken(aembitClientID, stackDomain)
-		if err == nil {
-			aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
-			if err == nil {
-				roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
-				if err == nil {
-					token = roleToken
-				} else {
-					tflog.Warn(ctx, "Failed to get Aembit API Role Token: %v", map[string]interface{}{
-						"error": err,
-					})
-				}
-			} else {
-				tflog.Warn(ctx, "Failed to get Aembit Token: %v", map[string]interface{}{
-					"error": err,
-				})
-			}
-		} else {
-			tflog.Warn(ctx, "Failed to get ID Token: %v", map[string]interface{}{
+		if token, err = getToken(ctx, aembitClientID, stackDomain); err != nil {
+			tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
 				"error": err,
 			})
 		}
@@ -341,6 +325,34 @@ func (t tokenAuth) GetRequestMetadata(ctx context.Context, in ...string) (map[st
 
 func (tokenAuth) RequireTransportSecurity() bool {
 	return true
+}
+
+func getToken(ctx context.Context, aembitClientID, stackDomain string) (string, error) {
+	idToken, err := getIdentityToken(aembitClientID, stackDomain)
+	if err == nil {
+		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
+		if err == nil {
+			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+			if err == nil {
+				return roleToken, nil
+			} else {
+				tflog.Warn(ctx, "Failed to get Aembit API Role Token: %v", map[string]interface{}{
+					"error": err,
+				})
+				return "", err
+			}
+		} else {
+			tflog.Warn(ctx, "Failed to get Aembit Token: %v", map[string]interface{}{
+				"error": err,
+			})
+			return "", err
+		}
+	} else {
+		tflog.Warn(ctx, "Failed to get ID Token: %v", map[string]interface{}{
+			"error": err,
+		})
+		return "", err
+	}
 }
 
 func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {

@@ -2,21 +2,34 @@ package provider
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
+
+const testClientWorkloadResource string = "aembit_client_workload.test"
+
+func testDeleteClientWorkload() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var rs *terraform.ResourceState
+		var ok bool
+		var err error
+		if rs, ok = s.RootModule().Resources[testClientWorkloadResource]; !ok {
+			return fmt.Errorf("Not found: %s", testClientWorkloadResource)
+		}
+		if ok, err = testClient.DeleteClientWorkload(rs.Primary.ID, nil); !ok {
+			return err
+		}
+		return nil
+	}
+}
 
 func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/k8sNamespace/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/k8sNamespace/TestAccClientWorkloadResource.tfmod")
-
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "unittest1namespace", fmt.Sprintf("unittest1namespace%d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "unittest1namespace", fmt.Sprintf("unittest1namespace%d", randID))
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1namespace")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -26,39 +39,39 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "description", "Acceptance Test client workload"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "false"),
 					// Verify Workload Identity.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "k8sNamespace"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.value", fmt.Sprintf("unittest1namespace%d", randID)),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.#", "1"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.type", "k8sNamespace"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.value", newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "blue"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "blue"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "id"),
+					resource.TestCheckResourceAttrSet(testClientWorkloadResource, "id"),
 				),
 			},
+			// Test Aembit API Removal causes re-create with non-empty plan
+			{Config: createFileConfig, Check: testDeleteClientWorkload(), ExpectNonEmptyPlan: true},
+			// Recreate the resource from the first test step
+			{Config: createFileConfig},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_client_workload.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - modified"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - modified"),
 					// Verify active state updated.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "orange"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "orange"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -78,39 +91,35 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - awsLambdaArn"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "false"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - awsLambdaArn"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "description", "Acceptance Test client workload"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "false"),
 					// Verify Workload Identity.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.#", "1"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.type", "awsLambdaArn"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "identities.0.value", "arn:aws:lambda:us-east-1:880961858887:function:helloworld"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.#", "1"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.type", "awsLambdaArn"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.value", "arn:aws:lambda:us-east-1:880961858887:function:helloworld"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "blue"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "blue"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_client_workload.test", "id"),
+					resource.TestCheckResourceAttrSet(testClientWorkloadResource, "id"),
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_client_workload.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "name", "Unit Test 1 - awsLambdaArn - modified"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
 					// Verify active state updated.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "is_active", "true"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.color", "orange"),
-					resource.TestCheckResourceAttr("aembit_client_workload.test", "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "orange"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

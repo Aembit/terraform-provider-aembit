@@ -10,7 +10,7 @@ resource "aembit_agent_controller" "device_code" {
 
 resource "aembit_agent_controller" "azure_tp" {
 	name = "TF Acceptance Azure Trust Provider"
-	is_active = true
+	is_active = false
     tags = {
         color = "blue"
         day   = "Sunday"

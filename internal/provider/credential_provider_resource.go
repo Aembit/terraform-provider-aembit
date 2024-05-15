@@ -363,10 +363,11 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 	// Get refreshed credential value from Aembit
 	credentialProvider, err := r.client.GetCredentialProvider(state.ID.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading Aembit Credential Provider",
+		resp.Diagnostics.AddWarning(
+			"Error reading Aembit Credential Provider",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

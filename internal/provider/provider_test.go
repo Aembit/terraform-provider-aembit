@@ -4,14 +4,36 @@
 package provider
 
 import (
+	"context"
+	"os"
 	"testing"
 
+	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/stretchr/testify/assert"
 )
+
+var (
+	testClient *aembit.CloudClient
+)
+
+func init() {
+	tenant := os.Getenv("AEMBIT_TENANT_ID")
+	stackDomain := os.Getenv("AEMBIT_STACK_DOMAIN")
+
+	token := os.Getenv("AEMBIT_TOKEN")
+	if token == "" {
+		aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
+		tenant = getAembitTenantId(aembitClientID)
+		token, _ = getToken(context.Background(), aembitClientID, stackDomain)
+	}
+	testClient, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "test")
+	testClient.Tenant = tenant
+	testClient.StackDomain = stackDomain
+}
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
 // acceptance testing. The factory function will be invoked for every Terraform

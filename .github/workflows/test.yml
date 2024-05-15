@@ -115,6 +115,7 @@ jobs:
         with:
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
+          fetch-depth: 0
 
       - name: Download Test Coverage
         uses: actions/download-artifact@v4

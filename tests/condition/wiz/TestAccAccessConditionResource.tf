@@ -17,7 +17,7 @@ resource "aembit_integration" "wiz" {
 
 resource "aembit_access_condition" "wiz" {
 	name = "TF Acceptance Wiz"
-	is_active = true
+	is_active = false
 	integration_id = aembit_integration.wiz.id
 	wiz_conditions = {
 		max_last_seen = 3600
