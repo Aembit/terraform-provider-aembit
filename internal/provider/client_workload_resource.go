@@ -179,10 +179,11 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	// Get refreshed workload value from Aembit
 	clientWorkload, err := r.client.GetClientWorkload(state.ID.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError(
+		resp.Diagnostics.AddWarning(
 			"Error Reading Aembit Client Workload",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const TrustProviderPathRole string = "aembit_trust_provider.aws_role"
+
 func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/azure/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/azure/TestAccTrustProviderResource.tfmod")
@@ -97,16 +99,16 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.aws_role", "name", "TF Acceptance AWS Role"),
+					resource.TestCheckResourceAttr(TrustProviderPathRole, "name", "TF Acceptance AWS Role"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_role", "id"),
+					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_role", "id"),
+					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_trust_provider.aws_role",
+				ResourceName:      TrustProviderPathRole,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -115,9 +117,9 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_trust_provider.aws_role", "name", "TF Acceptance AWS Role - Modified"),
+					resource.TestCheckResourceAttr(TrustProviderPathRole, "name", "TF Acceptance AWS Role - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_role", "id"),
+					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

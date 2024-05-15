@@ -125,10 +125,11 @@ func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadReq
 	// Get refreshed controller value from Aembit
 	agentController, err := r.client.GetAgentController(state.ID.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError(
+		resp.Diagnostics.AddWarning(
 			"Error Reading Aembit Agent Controller",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

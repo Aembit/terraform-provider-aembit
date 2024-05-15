@@ -1,22 +1,19 @@
 package provider
 
 import (
-	"fmt"
-	"math/rand"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
+const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
+
 func TestAccAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tfmod")
-
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "clientworkloadNamespace", fmt.Sprintf("clientworkloadNamespace%d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "clientworkloadNamespace", fmt.Sprintf("clientworkloadNamespace%d", randID))
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -26,14 +23,14 @@ func TestAccAccessPolicyResource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_access_policy.first_policy",
+				ResourceName:      AccessPolicyPathFirst,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -42,7 +39,7 @@ func TestAccAccessPolicyResource(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -53,10 +50,7 @@ func TestAccAccessPolicyResource(t *testing.T) {
 func TestAccBasicAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tfmod")
-
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "clientworkloadNamespace", fmt.Sprintf("clientworkloadNamespace%d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "clientworkloadNamespace", fmt.Sprintf("clientworkloadNamespace%d", randID))
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -66,25 +60,25 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify values for First Policy.
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "name", "TF First Policy"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "client_workload"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "trust_providers.#", "0"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "access_conditions.#", "0"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "credential_provider"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "server_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "TF First Policy"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
 
 					// Verify values for Second Policy.
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
-					resource.TestCheckResourceAttr("aembit_access_policy.second_policy", "name", "TF Second Policy"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "client_workload"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "credential_provider"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "server_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
+					resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "TF Second Policy"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_access_policy.first_policy",
+				ResourceName:      AccessPolicyPathFirst,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -93,20 +87,20 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify values for First Policy.
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "id"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "name", "Placeholder"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "client_workload"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "trust_providers.#", "0"),
-					resource.TestCheckResourceAttr("aembit_access_policy.first_policy", "access_conditions.#", "0"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "credential_provider"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.first_policy", "server_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "Placeholder"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
+					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
 
 					// Verify values for Second Policy.
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "id"),
-					resource.TestCheckResourceAttr("aembit_access_policy.second_policy", "name", "Placeholder"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "client_workload"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "credential_provider"),
-					resource.TestCheckResourceAttrSet("aembit_access_policy.second_policy", "server_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
+					resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "Placeholder"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
+					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

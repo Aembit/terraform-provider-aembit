@@ -172,10 +172,11 @@ func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadReq
 	// Get refreshed trust value from Aembit
 	accessCondition, err := r.client.GetAccessCondition(state.ID.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError(
+		resp.Diagnostics.AddWarning(
 			"Error Reading Aembit Access Condition",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
