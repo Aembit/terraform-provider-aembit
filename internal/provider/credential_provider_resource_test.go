@@ -2,21 +2,34 @@ package provider
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
+
+const testCredentialProviderAembit string = "aembit_credential_provider.aembit"
+
+func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var rs *terraform.ResourceState
+		var ok bool
+		var err error
+		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		if ok, err = testClient.DeleteCredentialProvider(rs.Primary.ID, nil); !ok {
+			return err
+		}
+		return nil
+	}
+}
 
 func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tfmod")
-
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Role for Token", fmt.Sprintf("TF Acceptance Role for Token %d", randID))
-	modifyFileConfig := strings.ReplaceAll(string(modifyFile), "TF Acceptance Role for Token", fmt.Sprintf("TF Acceptance Role for Token %d", randID))
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "IGNORE")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -26,29 +39,29 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider set values
-					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token"),
-					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "aembit_access_token.lifetime", "1800"),
+					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", "TF Acceptance Aembit Token"),
+					resource.TestCheckResourceAttr(testCredentialProviderAembit, "aembit_access_token.lifetime", "1800"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "id"),
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "aembit_access_token.audience"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "aembit_access_token.audience"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
 				),
 			},
+			// Test Aembit API Removal causes re-create with non-empty plan
+			{Config: createFileConfig, Check: testDeleteCredentialProvider(testCredentialProviderAembit), ExpectNonEmptyPlan: true},
+			// Recreate the resource from the first test step
+			{Config: createFileConfig},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.aembit",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: testCredentialProviderAembit, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_credential_provider.aembit", "name", "TF Acceptance Aembit Token - Modified"),
+					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", "TF Acceptance Aembit Token - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aembit", "aembit_access_token.audience"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "aembit_access_token.audience"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -76,11 +89,7 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.api_key",
-				ImportState:       true,
-				ImportStateVerify: false,
-			},
+			{ResourceName: "aembit_credential_provider.api_key", ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -117,11 +126,7 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.aws",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_credential_provider.aws", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -161,11 +166,7 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.gcp",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_credential_provider.gcp", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -203,11 +204,7 @@ func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.snowflake",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_credential_provider.snowflake", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -244,11 +241,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.oauth",
-				ImportState:       true,
-				ImportStateVerify: false,
-			},
+			{ResourceName: "aembit_credential_provider.oauth", ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -282,11 +275,7 @@ func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.userpass",
-				ImportState:       true,
-				ImportStateVerify: false,
-			},
+			{ResourceName: "aembit_credential_provider.userpass", ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -325,11 +314,7 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_credential_provider.vault",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_credential_provider.vault", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

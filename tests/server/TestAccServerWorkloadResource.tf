@@ -4,7 +4,7 @@ provider "aembit" {
 resource "aembit_server_workload" "test" {
 	name = "Unit Test 1"
     description = "Description"
-    is_active = true
+    is_active = false
 	service_endpoint = {
 		host = "unittest.testhost.com"
 		port = 443

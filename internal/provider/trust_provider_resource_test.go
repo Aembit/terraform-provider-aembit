@@ -1,13 +1,31 @@
 package provider
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const TrustProviderPathRole string = "aembit_trust_provider.aws_role"
+const trustProviderPathRole string = "aembit_trust_provider.aws_role"
+const trustProviderPathAzure string = "aembit_trust_provider.azure"
+
+func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var rs *terraform.ResourceState
+		var ok bool
+		var err error
+		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		if ok, err = testClient.DeleteTrustProvider(rs.Primary.ID, nil); !ok {
+			return err
+		}
+		return nil
+	}
+}
 
 func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/azure/TestAccTrustProviderResource.tf")
@@ -21,25 +39,25 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.azure", "name", "TF Acceptance Azure"),
+					resource.TestCheckResourceAttr(trustProviderPathAzure, "name", "TF Acceptance Azure"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.azure", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderPathAzure, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.azure", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderPathAzure, "id"),
 				),
 			},
+			// Test Aembit API Removal causes re-create with non-empty plan
+			{Config: string(createFile), Check: testDeleteTrustProvider(trustProviderPathAzure), ExpectNonEmptyPlan: true},
+			// Recreate the resource from the first test step
+			{Config: string(createFile)},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.azure",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: trustProviderPathAzure, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_trust_provider.azure", "name", "TF Acceptance Azure - Modified"),
+					resource.TestCheckResourceAttr(trustProviderPathAzure, "name", "TF Acceptance Azure - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -67,11 +85,7 @@ func TestAccTrustProviderResource_AwsEcsRole(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.aws_ecs",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.aws_ecs", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -99,27 +113,23 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr(TrustProviderPathRole, "name", "TF Acceptance AWS Role"),
+					resource.TestCheckResourceAttr(trustProviderPathRole, "name", "TF Acceptance AWS Role"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderPathRole, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderPathRole, "id"),
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      TrustProviderPathRole,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: trustProviderPathRole, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(TrustProviderPathRole, "name", "TF Acceptance AWS Role - Modified"),
+					resource.TestCheckResourceAttr(trustProviderPathRole, "name", "TF Acceptance AWS Role - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(TrustProviderPathRole, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderPathRole, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -147,11 +157,7 @@ func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.aws",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.aws", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -185,11 +191,7 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.gcp",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.gcp", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -225,11 +227,7 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.github",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.github", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -269,11 +267,7 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.kerberos",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.kerberos", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -321,11 +315,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.kubernetes",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.kubernetes", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -369,11 +359,7 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      "aembit_trust_provider.terraform",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: "aembit_trust_provider.terraform", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

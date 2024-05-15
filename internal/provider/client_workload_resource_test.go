@@ -19,11 +19,9 @@ func testDeleteClientWorkload() resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[testClientWorkloadResource]; !ok {
 			return fmt.Errorf("Not found: %s", testClientWorkloadResource)
 		}
-
-		if ok, err = Client.DeleteClientWorkload(rs.Primary.ID, nil); !ok {
+		if ok, err = testClient.DeleteClientWorkload(rs.Primary.ID, nil); !ok {
 			return err
 		}
-
 		return nil
 	}
 }
@@ -57,21 +55,11 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
-			{
-				Config:             createFileConfig,
-				Check:              testDeleteClientWorkload(),
-				ExpectNonEmptyPlan: true,
-			},
+			{Config: createFileConfig, Check: testDeleteClientWorkload(), ExpectNonEmptyPlan: true},
 			// Recreate the resource from the first test step
-			{
-				Config: createFileConfig,
-			},
+			{Config: createFileConfig},
 			// ImportState testing
-			{
-				ResourceName:      testClientWorkloadResource,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -119,11 +107,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      testClientWorkloadResource,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

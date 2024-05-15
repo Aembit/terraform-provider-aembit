@@ -379,7 +379,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 	trustProvider, err := r.client.GetTrustProvider(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
-			"Error Reading Aembit Trust Provider",
+			"Error reading Aembit Trust Provider",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
 		resp.State.RemoveResource(ctx)

@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	Client *aembit.CloudClient
+	testClient *aembit.CloudClient
 )
 
 func init() {
@@ -30,9 +30,9 @@ func init() {
 		tenant = getAembitTenantId(aembitClientID)
 		token, _ = getToken(context.Background(), aembitClientID, stackDomain)
 	}
-	Client, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "test")
-	Client.Tenant = tenant
-	Client.StackDomain = stackDomain
+	testClient, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "test")
+	testClient.Tenant = tenant
+	testClient.StackDomain = stackDomain
 }
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during

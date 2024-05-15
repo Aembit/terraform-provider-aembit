@@ -171,7 +171,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	role, err := r.client.GetRole(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
-			"Error Reading Aembit Role",
+			"Error reading Aembit Role",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
 		resp.State.RemoveResource(ctx)

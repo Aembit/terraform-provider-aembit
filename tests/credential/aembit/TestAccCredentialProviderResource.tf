@@ -27,7 +27,7 @@ resource "aembit_role" "role" {
 
 resource "aembit_credential_provider" "aembit" {
 	name = "TF Acceptance Aembit Token"
-	is_active = true
+	is_active = false
 	aembit_access_token = {
 		role_id = aembit_role.role.id
 		lifetime = 1800
