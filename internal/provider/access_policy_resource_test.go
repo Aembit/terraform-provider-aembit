@@ -10,6 +10,14 @@ import (
 const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
 const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
 
+var accessPolicyChecks = []resource.TestCheckFunc{
+	// Verify values for First Policy.
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
+}
+
 func TestAccAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tfmod")
@@ -22,29 +30,37 @@ func TestAccAccessPolicyResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+					accessPolicyChecks...,
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      AccessPolicyPathFirst,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: AccessPolicyPathFirst, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+					accessPolicyChecks...,
 				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+var basicAccessPolicyChecks = []resource.TestCheckFunc{
+	// Verify values for First Policy.
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
+	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
+	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
+
+	// Verify values for Second Policy.
+	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
 }
 
 func TestAccBasicAccessPolicyResource(t *testing.T) {
@@ -59,48 +75,22 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify values for First Policy.
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "TF First Policy"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
-
-					// Verify values for Second Policy.
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
-					resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "TF Second Policy"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
+					append(basicAccessPolicyChecks,
+						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "TF First Policy"),
+						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "TF Second Policy"),
+					)...,
 				),
 			},
 			// ImportState testing
-			{
-				ResourceName:      AccessPolicyPathFirst,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			{ResourceName: AccessPolicyPathFirst, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify values for First Policy.
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "Placeholder"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
-					resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
-
-					// Verify values for Second Policy.
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
-					resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "Placeholder"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
-					resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
+					append(basicAccessPolicyChecks,
+						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "Placeholder"),
+						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "Placeholder"),
+					)...,
 				),
 			},
 			// Delete testing automatically occurs in TestCase
