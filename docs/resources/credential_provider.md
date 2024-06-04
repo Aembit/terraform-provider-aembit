@@ -20,7 +20,7 @@ resource "aembit_credential_provider" "api_key" {
 	}
 }
 
-resource "aembit_credential_provider" "oauth" {
+resource "aembit_credential_provider" "oauth_authHeader" {
 	name = "OAuth Credential Provider"
 	is_active = true
 	oauth_client_credentials = {
@@ -28,6 +28,20 @@ resource "aembit_credential_provider" "oauth" {
 		client_id = "test_client_id"
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
+		credential_style = "authHeader"
+	}
+}
+
+
+resource "aembit_credential_provider" "oauth_postBody" {
+	name = "OAuth Credential Provider"
+	is_active = true
+	oauth_client_credentials = {
+		token_url = "https://aembit.io/token"
+		client_id = "test_client_id"
+		client_secret = "test_client_secret"
+		scopes = "test_scopes"
+		credential_style = "postBody"
 	}
 }
 
@@ -146,6 +160,7 @@ Required:
 
 Optional:
 
+- `credential_style` (String) Credential Style for the OAuth Credential Provider.
 - `scopes` (String) Scopes for the OAuth Credential Provider.
 
 

@@ -174,6 +174,9 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"scopes": schema.StringAttribute{
 									Computed: true,
 								},
+								"credential_style": schema.StringAttribute{
+									Computed: true,
+								},
 							},
 						},
 						"username_password": schema.SingleNestedAttribute{

@@ -192,6 +192,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Description: "Scopes for the OAuth Credential Provider.",
 						Optional:    true,
 					},
+					"credential_style": schema.StringAttribute{
+						Description: "Credential Style for the OAuth Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("authHeader"),
+					},
 				},
 			},
 			"username_password": schema.SingleNestedAttribute{
@@ -552,7 +558,7 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 			ClientID:        model.OAuthClientCredentials.ClientID.ValueString(),
 			ClientSecret:    model.OAuthClientCredentials.ClientSecret.ValueString(),
 			Scope:           model.OAuthClientCredentials.Scopes.ValueString(),
-			CredentialStyle: "authHeader",
+			CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
 		}
 		oauthJSON, _ := json.Marshal(oauth)
 		credential.ProviderDetail = string(oauthJSON)
@@ -743,6 +749,7 @@ func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, st
 	value.TokenURL = types.StringValue(oauth.TokenURL)
 	value.ClientID = types.StringValue(oauth.ClientID)
 	value.Scopes = types.StringValue(oauth.Scope)
+	value.CredentialStyle = types.StringValue(oauth.CredentialStyle)
 	if state.OAuthClientCredentials != nil {
 		value.ClientSecret = state.OAuthClientCredentials.ClientSecret
 	}

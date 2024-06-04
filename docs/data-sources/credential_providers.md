@@ -113,6 +113,7 @@ Read-Only:
 
 - `client_id` (String)
 - `client_secret` (String, Sensitive)
+- `credential_style` (String)
 - `scopes` (String)
 - `token_url` (String)
 
