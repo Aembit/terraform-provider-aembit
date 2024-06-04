@@ -13,7 +13,6 @@ type trustProviderResourceModel struct {
 	IsActive           types.Bool                       `tfsdk:"is_active"`
 	Tags               types.Map                        `tfsdk:"tags"`
 	AzureMetadata      *trustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
-	AwsEcsRole         *trustProviderAwsRoleModel       `tfsdk:"aws_ecs_role"`
 	AwsRole            *trustProviderAwsRoleModel       `tfsdk:"aws_role"`
 	AwsMetadata        *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
 	GcpIdentity        *trustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`

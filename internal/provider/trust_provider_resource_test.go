@@ -65,42 +65,6 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 	})
 }
 
-func TestAccTrustProviderResource_AwsEcsRole(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/trust/aws_ecs/TestAccTrustProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/trust/aws_ecs/TestAccTrustProviderResource.tfmod")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: string(createFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.aws_ecs", "name", "TF Acceptance AWS ECS"),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_ecs", "id"),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_ecs", "id"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: "aembit_trust_provider.aws_ecs", ImportState: true, ImportStateVerify: true},
-			// Update and Read testing
-			{
-				Config: string(modifyFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_trust_provider.aws_ecs", "name", "TF Acceptance AWS ECS - Modified"),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws_ecs", "id"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
 func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/aws_role/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/aws_role/TestAccTrustProviderResource.tfmod")
