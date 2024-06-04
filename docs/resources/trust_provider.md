@@ -84,7 +84,6 @@ resource "aembit_trust_provider" "kerberos" {
 
 ### Optional
 
-- `aws_ecs_role` (Attributes, Deprecated) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_ecs_role))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_metadata))
 - `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
@@ -100,17 +99,6 @@ resource "aembit_trust_provider" "kerberos" {
 ### Read-Only
 
 - `id` (String) Unique identifier of the Trust Provider.
-
-<a id="nestedatt--aws_ecs_role"></a>
-### Nested Schema for `aws_ecs_role`
-
-Optional:
-
-- `account_id` (String) The ID of the AWS account that is hosting the ECS Task.
-- `assumed_role` (String) The Name of the AWS IAM Role which is running the ECS Task.
-- `role_arn` (String) The ARN of the AWS IAM Role which is running the ECS Task.
-- `username` (String) The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).
-
 
 <a id="nestedatt--aws_metadata"></a>
 ### Nested Schema for `aws_metadata`

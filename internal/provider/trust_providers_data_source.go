@@ -77,29 +77,6 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								},
 							},
 						},
-						"aws_ecs_role": schema.SingleNestedAttribute{
-							Description:        "AWS ECS Role type Trust Provider configuration.",
-							Computed:           true,
-							DeprecationMessage: "Please migrate to `aws_role` which replaces this Trust Provider type.",
-							Attributes: map[string]schema.Attribute{
-								"account_id": schema.StringAttribute{
-									Description: "The ID of the AWS account that is hosting the ECS Task.",
-									Computed:    true,
-								},
-								"assumed_role": schema.StringAttribute{
-									Description: "The Name of the AWS IAM Role which is running the ECS Task.",
-									Computed:    true,
-								},
-								"role_arn": schema.StringAttribute{
-									Description: "The ARN of the AWS IAM Role which is running the ECS Task.",
-									Computed:    true,
-								},
-								"username": schema.StringAttribute{
-									Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
-									Computed:    true,
-								},
-							},
-						},
 						"aws_role": schema.SingleNestedAttribute{
 							Description: "AWS Role type Trust Provider configuration.",
 							Computed:    true,

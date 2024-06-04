@@ -24,7 +24,6 @@ Manages an trust provider.
 
 Read-Only:
 
-- `aws_ecs_role` (Attributes, Deprecated) AWS ECS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_ecs_role))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
 - `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
@@ -38,17 +37,6 @@ Read-Only:
 - `name` (String) User-provided name of the trust provider.
 - `tags` (Map of String)
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
-
-<a id="nestedatt--trust_providers--aws_ecs_role"></a>
-### Nested Schema for `trust_providers.aws_ecs_role`
-
-Read-Only:
-
-- `account_id` (String) The ID of the AWS account that is hosting the ECS Task.
-- `assumed_role` (String) The Name of the AWS IAM Role which is running the ECS Task.
-- `role_arn` (String) The ARN of the AWS IAM Role which is running the ECS Task.
-- `username` (String) The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).
-
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
