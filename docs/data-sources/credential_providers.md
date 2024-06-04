@@ -115,6 +115,7 @@ Read-Only:
 - `client_secret` (String, Sensitive)
 - `scopes` (String)
 - `token_url` (String)
+- `credential_style` (String)
 
 
 <a id="nestedatt--credential_providers--vault_client_token"></a>

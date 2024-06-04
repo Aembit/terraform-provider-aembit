@@ -221,7 +221,7 @@ func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 	})
 }
 
-func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
+func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tfmod")
 
@@ -233,21 +233,55 @@ func TestAccCredentialProviderResource_OAuthClientCredentials(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr("aembit_credential_provider.oauth", "name", "TF Acceptance OAuth"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_authHeader", "name", "TF Acceptance OAuth"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth", "id"),
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_authHeader", "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth", "id"),
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_authHeader", "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_credential_provider.oauth", ImportState: true, ImportStateVerify: false},
+			{ResourceName: "aembit_credential_provider.oauth_authHeader", ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_credential_provider.oauth", "name", "TF Acceptance OAuth - Modified"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_authHeader", "name", "TF Acceptance OAuth - Modified"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_postBody", "name", "TF Acceptance OAuth"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_postBody", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_postBody", "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: "aembit_credential_provider.oauth_postBody", ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_postBody", "name", "TF Acceptance OAuth - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
