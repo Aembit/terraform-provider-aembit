@@ -93,29 +93,6 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
-			"aws_ecs_role": schema.SingleNestedAttribute{
-				Description:        "AWS ECS Role type Trust Provider configuration.",
-				Optional:           true,
-				DeprecationMessage: "Please migrate to `aws_role` which replaces this Trust Provider type.",
-				Attributes: map[string]schema.Attribute{
-					"account_id": schema.StringAttribute{
-						Description: "The ID of the AWS account that is hosting the ECS Task.",
-						Optional:    true,
-					},
-					"assumed_role": schema.StringAttribute{
-						Description: "The Name of the AWS IAM Role which is running the ECS Task.",
-						Optional:    true,
-					},
-					"role_arn": schema.StringAttribute{
-						Description: "The ARN of the AWS IAM Role which is running the ECS Task.",
-						Optional:    true,
-					},
-					"username": schema.StringAttribute{
-						Description: "The UsernID of the AWS IAM Account which is running the ECS Task (not commonly used).",
-						Optional:    true,
-					},
-				},
-			},
 			"aws_role": schema.SingleNestedAttribute{
 				Description: "AWS Role type Trust Provider configuration.",
 				Optional:    true,
@@ -318,7 +295,6 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
-			path.MatchRoot("aws_ecs_role"),
 			path.MatchRoot("aws_role"),
 			path.MatchRoot("aws_metadata"),
 			path.MatchRoot("azure_metadata"),
@@ -507,9 +483,6 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 	if model.AwsMetadata != nil {
 		convertAwsMetadataModelToDTO(model, &trust)
 	}
-	if model.AwsEcsRole != nil {
-		convertAwsEcsRoleModelToDTO(model, &trust)
-	}
 	if model.AwsRole != nil {
 		convertAwsRoleModelToDTO(model, &trust)
 	}
@@ -551,16 +524,6 @@ func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembi
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.Sku, "AzureSku")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.VMID, "AzureVmId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.SubscriptionID, "AzureSubscriptionId")
-}
-
-func convertAwsEcsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
-	dto.Provider = "AWSECSRole"
-
-	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AccountID, "AwsAccountId")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.AssumedRole, "AwsAssumedRole")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.RoleARN, "AwsRoleARN")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsEcsRole.Username, "AwsUsername")
 }
 
 func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -659,8 +622,6 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	switch dto.Provider {
-	case "AWSECSRole":
-		model.AwsEcsRole = convertAwsRoleDTOToModel(dto)
 	case "AWSRole":
 		model.AwsRole = convertAwsRoleDTOToModel(dto)
 	case "AWSMetadataService":
