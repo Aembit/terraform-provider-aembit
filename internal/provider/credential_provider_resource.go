@@ -195,8 +195,8 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"credential_style": schema.StringAttribute{
 						Description: "Credential Style for the OAuth Credential Provider.",
 						Optional:    true,
-						Computed:	 true,
-						Default: 	 stringdefault.StaticString("authHeader"),
+						Computed:    true,
+						Default:     stringdefault.StaticString("authHeader"),
 					},
 				},
 			},

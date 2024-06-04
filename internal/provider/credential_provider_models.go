@@ -59,10 +59,10 @@ type credentialProviderSnowflakeTokenModel struct {
 
 // credentialProviderOAuthClientCredentialsModel maps OAuth Client Credentials Flow configuration.
 type credentialProviderOAuthClientCredentialsModel struct {
-	TokenURL		types.String `tfsdk:"token_url"`
-	ClientID		types.String `tfsdk:"client_id"`
-	ClientSecret	types.String `tfsdk:"client_secret"`
-	Scopes			types.String `tfsdk:"scopes"`
+	TokenURL        types.String `tfsdk:"token_url"`
+	ClientID        types.String `tfsdk:"client_id"`
+	ClientSecret    types.String `tfsdk:"client_secret"`
+	Scopes          types.String `tfsdk:"scopes"`
 	CredentialStyle types.String `tfsdk:"credential_style"`
 }
 
