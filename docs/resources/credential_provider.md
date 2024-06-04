@@ -32,6 +32,7 @@ resource "aembit_credential_provider" "oauth_authHeader" {
 	}
 }
 
+
 resource "aembit_credential_provider" "oauth_postBody" {
 	name = "OAuth Credential Provider"
 	is_active = true
@@ -156,10 +157,10 @@ Required:
 - `client_id` (String) Client ID for the OAuth Credential Provider.
 - `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
 - `token_url` (String) Token URL for the OAuth Credential Provider.
-- `credential_style` (String) Credential Style for the OAuth Credential Provider.
 
 Optional:
 
+- `credential_style` (String) Credential Style for the OAuth Credential Provider.
 - `scopes` (String) Scopes for the OAuth Credential Provider.
 
 
