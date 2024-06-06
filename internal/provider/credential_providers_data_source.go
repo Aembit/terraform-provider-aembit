@@ -177,6 +177,22 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"credential_style": schema.StringAttribute{
 									Computed: true,
 								},
+								"custom_parameters": schema.SetNestedAttribute{
+									Computed: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
 							},
 						},
 						"username_password": schema.SingleNestedAttribute{

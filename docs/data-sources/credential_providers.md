@@ -114,8 +114,19 @@ Read-Only:
 - `client_id` (String)
 - `client_secret` (String, Sensitive)
 - `credential_style` (String)
+- `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials--custom_parameters))
 - `scopes` (String)
 - `token_url` (String)
+
+<a id="nestedatt--credential_providers--oauth_client_credentials--custom_parameters"></a>
+### Nested Schema for `credential_providers.oauth_client_credentials.custom_parameters`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
 
 
 <a id="nestedatt--credential_providers--vault_client_token"></a>

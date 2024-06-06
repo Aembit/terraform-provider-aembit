@@ -29,6 +29,13 @@ resource "aembit_credential_provider" "oauth_authHeader" {
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		credential_style = "authHeader"
+		custom_parameters = [
+		{
+			key = "key"
+			value = "value"
+			value_type = "literal"
+		}
+	]
 	}
 }
 
@@ -42,6 +49,13 @@ resource "aembit_credential_provider" "oauth_postBody" {
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		credential_style = "postBody"
+		custom_parameters = [
+		{
+			key = "key"
+			value = "value"
+			value_type = "literal"
+		}
+	]
 	}
 }
 
@@ -156,12 +170,23 @@ Required:
 
 - `client_id` (String) Client ID for the OAuth Credential Provider.
 - `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
+- `credential_style` (String) Credential Style for the OAuth Credential Provider.
 - `token_url` (String) Token URL for the OAuth Credential Provider.
 
 Optional:
 
-- `credential_style` (String) Credential Style for the OAuth Credential Provider.
+- `custom_parameters` (Attributes Set) Set Custom Parameters for the OAuth Credential Provider. (see [below for nested schema](#nestedatt--oauth_client_credentials--custom_parameters))
 - `scopes` (String) Scopes for the OAuth Credential Provider.
+
+<a id="nestedatt--oauth_client_credentials--custom_parameters"></a>
+### Nested Schema for `oauth_client_credentials.custom_parameters`
+
+Required:
+
+- `key` (String) Key for Custom Parameter of the OAuth Credential Provider.
+- `value` (String) Value for Custom Parameter of the OAuth Credential Provider.
+- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider.
+
 
 
 <a id="nestedatt--snowflake_jwt"></a>
