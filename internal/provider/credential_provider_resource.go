@@ -579,14 +579,6 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 			CredentialStyle:  model.OAuthClientCredentials.CredentialStyle.ValueString(),
 			CustomParameters: convertCredentialOAuthCustomParameters(model),
 		}
-		for i, parameter := range model.OAuthClientCredentials.CustomParameters {
-			oauth.CustomParameters[i] = aembit.CredentialOAuthParametersDTO{
-				Key:       parameter.Key,
-				Value:     parameter.Value,
-				ValueType: parameter.ValueType,
-			}
-		}
-
 		oauthJSON, _ := json.Marshal(oauth)
 		credential.ProviderDetail = string(oauthJSON)
 	}
