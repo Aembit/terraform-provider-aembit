@@ -572,11 +572,11 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	if model.OAuthClientCredentials != nil {
 		credential.Type = "oauth-client-credential"
 		oauth := aembit.CredentialOAuthClientCredentialDTO{
-			TokenURL:        model.OAuthClientCredentials.TokenURL.ValueString(),
-			ClientID:        model.OAuthClientCredentials.ClientID.ValueString(),
-			ClientSecret:    model.OAuthClientCredentials.ClientSecret.ValueString(),
-			Scope:           model.OAuthClientCredentials.Scopes.ValueString(),
-			CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
+			TokenURL:         model.OAuthClientCredentials.TokenURL.ValueString(),
+			ClientID:         model.OAuthClientCredentials.ClientID.ValueString(),
+			ClientSecret:     model.OAuthClientCredentials.ClientSecret.ValueString(),
+			Scope:            model.OAuthClientCredentials.Scopes.ValueString(),
+			CredentialStyle:  model.OAuthClientCredentials.CredentialStyle.ValueString(),
 			CustomParameters: make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthClientCredentials.CustomParameters)),
 		}
 		for i, parameter := range model.OAuthClientCredentials.CustomParameters {
