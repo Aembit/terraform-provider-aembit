@@ -853,7 +853,7 @@ func convertVaultClientTokenDTOToModel(dto aembit.CredentialProviderDTO, _ crede
 	return &value
 }
 
-// Get the custom parameters to be injected into the model
+// Get the custom parameters to be injected into the model.
 func convertCredentialOAuthCustomParameters(model credentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
 	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthClientCredentials.CustomParameters))
 	for i, param := range model.OAuthClientCredentials.CustomParameters {
