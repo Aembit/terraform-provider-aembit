@@ -185,7 +185,10 @@ Required:
 
 - `key` (String) Key for Custom Parameter of the OAuth Credential Provider.
 - `value` (String) Value for Custom Parameter of the OAuth Credential Provider.
-- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider.
+
+Optional:
+
+- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.
 
 
 
