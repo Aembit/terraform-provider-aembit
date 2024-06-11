@@ -210,8 +210,16 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 									Required:    true,
 								},
 								"value_type": schema.StringAttribute{
-									Description: "Type of value for Custom Parameter of the OAuth Credential Provider.",
-									Required:    true,
+									Description: "Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.",
+									Optional:    true,
+									Computed:    true,
+									Default:     stringdefault.StaticString("literal"),
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
 								},
 							},
 						},

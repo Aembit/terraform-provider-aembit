@@ -15,12 +15,17 @@ resource "aembit_credential_provider" "oauth_authHeader" {
 		scopes = "test_scopes"
 		credential_style = "authHeader"
 		custom_parameters = [
-		{
-			key = "key"
-			value = "value"
-			value_type = "literal"
-		}
-	]
+			{
+				key = "key"
+				value = "value"
+				value_type = "literal"
+			},
+			{
+				key = "key2"
+				value = "value2"
+				value_type = "dynamic"
+			}
+		]
 	}
 }
 
@@ -38,11 +43,16 @@ resource "aembit_credential_provider" "oauth_postBody" {
 		scopes = "test_scopes"
 		credential_style = "postBody"
 		custom_parameters = [
-		{
-			key = "key"
-			value = "value"
-			value_type = "literal"
-		}
-	]
+			{
+				key = "key"
+				value = "value"
+				value_type = "literal"
+			},
+			{
+				key = "key2"
+				value = "value2"
+				value_type = "dynamic"
+			}
+		]
 	}
 }
