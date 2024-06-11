@@ -194,9 +194,35 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 					"credential_style": schema.StringAttribute{
 						Description: "Credential Style for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"custom_parameters": schema.SetNestedAttribute{
+						Description: "Set Custom Parameters for the OAuth Credential Provider.",
 						Optional:    true,
-						Computed:    true,
-						Default:     stringdefault.StaticString("authHeader"),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"key": schema.StringAttribute{
+									Description: "Key for Custom Parameter of the OAuth Credential Provider.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "Value for Custom Parameter of the OAuth Credential Provider.",
+									Required:    true,
+								},
+								"value_type": schema.StringAttribute{
+									Description: "Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.",
+									Optional:    true,
+									Computed:    true,
+									Default:     stringdefault.StaticString("literal"),
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -554,11 +580,12 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	if model.OAuthClientCredentials != nil {
 		credential.Type = "oauth-client-credential"
 		oauth := aembit.CredentialOAuthClientCredentialDTO{
-			TokenURL:        model.OAuthClientCredentials.TokenURL.ValueString(),
-			ClientID:        model.OAuthClientCredentials.ClientID.ValueString(),
-			ClientSecret:    model.OAuthClientCredentials.ClientSecret.ValueString(),
-			Scope:           model.OAuthClientCredentials.Scopes.ValueString(),
-			CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
+			TokenURL:         model.OAuthClientCredentials.TokenURL.ValueString(),
+			ClientID:         model.OAuthClientCredentials.ClientID.ValueString(),
+			ClientSecret:     model.OAuthClientCredentials.ClientSecret.ValueString(),
+			Scope:            model.OAuthClientCredentials.Scopes.ValueString(),
+			CredentialStyle:  model.OAuthClientCredentials.CredentialStyle.ValueString(),
+			CustomParameters: convertCredentialOAuthCustomParameters(model),
 		}
 		oauthJSON, _ := json.Marshal(oauth)
 		credential.ProviderDetail = string(oauthJSON)
@@ -754,6 +781,17 @@ func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, st
 		value.ClientSecret = state.OAuthClientCredentials.ClientSecret
 	}
 
+	// Get the custom parameters to be injected into the model
+	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(oauth.CustomParameters))
+	for i, parameter := range oauth.CustomParameters {
+		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
+			Key:       parameter.Key,
+			Value:     parameter.Value,
+			ValueType: parameter.ValueType,
+		}
+	}
+	value.CustomParameters = parameters
+
 	return &value
 }
 
@@ -813,4 +851,17 @@ func convertVaultClientTokenDTOToModel(dto aembit.CredentialProviderDTO, _ crede
 	}
 	value.CustomClaims = claims
 	return &value
+}
+
+// Get the custom parameters to be injected into the model.
+func convertCredentialOAuthCustomParameters(model credentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
+	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthClientCredentials.CustomParameters))
+	for i, param := range model.OAuthClientCredentials.CustomParameters {
+		parameters[i] = aembit.CredentialOAuthParametersDTO{
+			Key:       param.Key,
+			Value:     param.Value,
+			ValueType: param.ValueType,
+		}
+	}
+	return parameters
 }
