@@ -29,5 +29,6 @@ Read-Only:
 - `credential_provider` (String) Credential Provider ID configured in the Access Policy.
 - `id` (String) Unique identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
+- `name` (String) Placeholder name of the access policy.
 - `server_workload` (String) Configured server workload of the access policy.
 - `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.
