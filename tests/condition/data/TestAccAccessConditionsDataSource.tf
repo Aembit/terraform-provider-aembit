@@ -34,7 +34,3 @@ resource "aembit_access_condition" "crowdstrike" {
 data "aembit_access_conditions" "test" {
     depends_on = [ aembit_access_condition.crowdstrike ]
 }
-
-output "test" {
-  value = data.aembit_access_conditions.test
-}

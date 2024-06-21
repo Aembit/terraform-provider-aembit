@@ -28,8 +28,3 @@ resource "aembit_credential_provider" "oauth" {
 data "aembit_credential_providers" "test" {
     depends_on = [ aembit_credential_provider.oauth ]
 }
-
-output "test" {
-  value     = data.aembit_credential_providers.test
-  sensitive = true
-}

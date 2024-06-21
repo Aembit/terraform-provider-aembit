@@ -21,8 +21,3 @@ resource "aembit_integration" "wiz" {
 data "aembit_integrations" "test" {
     depends_on = [ aembit_integration.wiz ]
 }
-
-output "test" {
-  value     = data.aembit_integrations.test
-  sensitive = true
-}

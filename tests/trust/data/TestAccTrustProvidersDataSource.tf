@@ -46,7 +46,3 @@ data "aembit_trust_providers" "test" {
         aembit_trust_provider.kubernetes_key
      ]
 }
-
-output "test" {
-  value = data.aembit_trust_providers.test
-}

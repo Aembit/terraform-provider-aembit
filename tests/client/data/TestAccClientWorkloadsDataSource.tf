@@ -21,7 +21,3 @@ data "aembit_client_workloads" "test" {
     depends_on = [ aembit_client_workload.test ]
 }
 
-output "test_client_workloads" {
-  value = data.aembit_client_workloads.test
-}
-

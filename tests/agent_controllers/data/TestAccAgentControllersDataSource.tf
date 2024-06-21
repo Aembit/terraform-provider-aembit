@@ -22,7 +22,3 @@ resource "aembit_trust_provider" "azure" {
 data "aembit_agent_controllers" "test" {
     depends_on = [ aembit_agent_controller.azure_tp ]
 }
-
-output "test" {
-  value = data.aembit_agent_controllers.test
-}

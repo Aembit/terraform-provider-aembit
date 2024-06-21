@@ -33,7 +33,3 @@ provider "aembit" {
 data "aembit_server_workloads" "test" {
     depends_on = [ aembit_server_workload.test ]
 }
-
-output "test_server_workloads" {
-  value = data.aembit_server_workloads.test
-}

@@ -27,7 +27,3 @@ resource "aembit_role" "role" {
 data "aembit_roles" "test" {
     depends_on = [ aembit_role.role ]
 }
-
-output "test" {
-  value     = data.aembit_roles.test
-}
