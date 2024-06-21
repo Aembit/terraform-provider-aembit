@@ -29,7 +29,7 @@ func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
 func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "IGNORE")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Role for Token")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
