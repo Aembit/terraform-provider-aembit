@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testAccessConditionsDataSource string = "data.aembit_access_conditions.test"
+
 func TestAccAccessConditionsDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource.tf")
 
@@ -18,15 +20,15 @@ func TestAccAccessConditionsDataSource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of Access Conditions returned
-					resource.TestCheckResourceAttrSet("data.aembit_access_conditions.test", "access_conditions.#"),
+					resource.TestCheckResourceAttrSet(testAccessConditionsDataSource, "access_conditions.#"),
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr("data.aembit_access_conditions.test", "access_conditions.0.name", "TF Acceptance Crowdstrike"),
+					resource.TestCheckResourceAttr(testAccessConditionsDataSource, "access_conditions.0.name", "TF Acceptance Crowdstrike"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("data.aembit_access_conditions.test", "access_conditions.0.tags.%", "2"),
-					resource.TestCheckResourceAttr("data.aembit_access_conditions.test", "access_conditions.0.tags.color", "blue"),
-					resource.TestCheckResourceAttr("data.aembit_access_conditions.test", "access_conditions.0.tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testAccessConditionsDataSource, "access_conditions.0.tags.%", "2"),
+					resource.TestCheckResourceAttr(testAccessConditionsDataSource, "access_conditions.0.tags.color", "blue"),
+					resource.TestCheckResourceAttr(testAccessConditionsDataSource, "access_conditions.0.tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("data.aembit_access_conditions.test", "access_conditions.0.id"),
+					resource.TestCheckResourceAttrSet(testAccessConditionsDataSource, "access_conditions.0.id"),
 				),
 			},
 		},

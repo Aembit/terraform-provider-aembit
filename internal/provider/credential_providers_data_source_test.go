@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
+
 func TestAccCredentialProvidersDataSource(t *testing.T) {
 	skipCI(t)
 	createFile, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource.tf")
@@ -19,11 +21,11 @@ func TestAccCredentialProvidersDataSource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of Credential Providers returned
-					resource.TestCheckResourceAttrSet("data.aembit_credential_providers.test", "credential_providers.#"),
+					resource.TestCheckResourceAttrSet(testCredentialProvidersDataSource, "credential_providers.#"),
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr("data.aembit_credential_providers.test", "credential_providers.0.name", "TF Acceptance OAuth"),
+					resource.TestCheckResourceAttr(testCredentialProvidersDataSource, "credential_providers.0.name", "TF Acceptance OAuth"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("data.aembit_credential_providers.test", "credential_providers.0.id"),
+					resource.TestCheckResourceAttrSet(testCredentialProvidersDataSource, "credential_providers.0.id"),
 				),
 			},
 		},

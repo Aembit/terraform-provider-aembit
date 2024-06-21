@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testAgentControllerDeviceCodeDataSource string = "data.aembit_agent_controller_device_code.test"
+
 func TestAccAgentControllerDeviceCodeDataSource(t *testing.T) {
 	skipCI(t)
 	createFile, _ := os.ReadFile("../../tests/device_code/TestAccDeviceCodeDataSource.tf")
@@ -19,7 +21,7 @@ func TestAccAgentControllerDeviceCodeDataSource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("data.aembit_agent_controller_device_code.test", "device_code"),
+					resource.TestCheckResourceAttrSet(testAgentControllerDeviceCodeDataSource, "device_code"),
 				),
 			},
 		},

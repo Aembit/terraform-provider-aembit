@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testAgentControllersDataSource string = "data.aembit_agent_controllers.test"
+
 func TestAccAgentControllersDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/agent_controllers/data/TestAccAgentControllersDataSource.tf")
 
@@ -18,15 +20,15 @@ func TestAccAgentControllersDataSource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of Agent Controllers returned
-					resource.TestCheckResourceAttrSet("data.aembit_agent_controllers.test", "agent_controllers.#"),
+					resource.TestCheckResourceAttrSet(testAgentControllersDataSource, "agent_controllers.#"),
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("data.aembit_agent_controllers.test", "agent_controllers.0.name", "TF Acceptance Azure Trust Provider"),
+					resource.TestCheckResourceAttr(testAgentControllersDataSource, "agent_controllers.0.name", "TF Acceptance Azure Trust Provider"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("data.aembit_agent_controllers.test", "agent_controllers.0.tags.%", "2"),
-					resource.TestCheckResourceAttr("data.aembit_agent_controllers.test", "agent_controllers.0.tags.color", "blue"),
-					resource.TestCheckResourceAttr("data.aembit_agent_controllers.test", "agent_controllers.0.tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testAgentControllersDataSource, "agent_controllers.0.tags.%", "2"),
+					resource.TestCheckResourceAttr(testAgentControllersDataSource, "agent_controllers.0.tags.color", "blue"),
+					resource.TestCheckResourceAttr(testAgentControllersDataSource, "agent_controllers.0.tags.day", "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("data.aembit_agent_controllers.test", "agent_controllers.0.id"),
+					resource.TestCheckResourceAttrSet(testAgentControllersDataSource, "agent_controllers.0.id"),
 				),
 			},
 		},

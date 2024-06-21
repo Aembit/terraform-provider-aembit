@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
+const testAccessPoliciesDataSource string = "data.aembit_access_policies.test"
+
 func TestAccAccessPoliciesDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource.tf")
 
@@ -24,14 +26,14 @@ func TestAccAccessPoliciesDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of Access Policies returned
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.#"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.#"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.id"),
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.client_workload"),
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.trust_providers.#"),
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.access_conditions.#"),
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.credential_provider"),
-					resource.TestCheckResourceAttrSet("data.aembit_access_policies.test", "access_policies.0.server_workload"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.id"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.client_workload"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.server_workload"),
 				),
 			},
 		},
