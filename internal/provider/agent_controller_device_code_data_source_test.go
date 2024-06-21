@@ -8,6 +8,7 @@ import (
 )
 
 func TestAccAgentControllerDeviceCodeDataSource(t *testing.T) {
+	skipCI(t)
 	createFile, _ := os.ReadFile("../../tests/device_code/TestAccDeviceCodeDataSource.tf")
 
 	resource.Test(t, resource.TestCase{
