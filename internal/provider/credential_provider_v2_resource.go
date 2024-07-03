@@ -24,12 +24,12 @@ var (
 	_ resource.ResourceWithImportState = &credentialProviderV2Resource{}
 )
 
-// NewCredentialProviderResource is a helper function to simplify the provider implementation.
+// NewCredentialProviderV2Resource is a helper function to simplify the provider implementation.
 func NewCredentialProviderV2Resource() resource.Resource {
 	return &credentialProviderV2Resource{}
 }
 
-// credentialProviderResource is the resource implementation.
+// credentialProviderV2Resource is the resource implementation.
 type credentialProviderV2Resource struct {
 	client *aembit.CloudClient
 }
@@ -655,7 +655,7 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	return model
 }
 
-// convertAembitTokenDTOToModel converts the Aembit Token state object into a model ready for terraform processing.
+// convertAembitTokenV2DTOToModel converts the Aembit Token state object into a model ready for terraform processing.
 func convertAembitTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *credentialProviderAembitTokenModel {
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
 	value := credentialProviderAembitTokenModel{
@@ -666,7 +666,7 @@ func convertAembitTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *credent
 	return &value
 }
 
-// convertAPIKeyDTOToModel converts the API Key state object into a model ready for terraform processing.
+// convertAPIKeyV2DTOToModel converts the API Key state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the API Key and does not return it in the API, the DTO will never contain the stored value.
 func convertAPIKeyV2DTOToModel(_ aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderAPIKeyModel {
 	value := credentialProviderAPIKeyModel{APIKey: types.StringNull()}
@@ -676,7 +676,7 @@ func convertAPIKeyV2DTOToModel(_ aembit.CredentialProviderV2DTO, state credentia
 	return &value
 }
 
-// convertAwsSTSDTOToModel converts the AWS STS state object into a model ready for terraform processing.
+// convertAwsSTSV2DTOToModel converts the AWS STS state object into a model ready for terraform processing.
 func convertAwsSTSV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderAwsSTSModel {
 	value := credentialProviderAwsSTSModel{
 		OIDCIssuer:    types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
@@ -687,7 +687,7 @@ func convertAwsSTSV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stack
 	return &value
 }
 
-// convertGoogleWorkloadDTOToModel converts the Google Workload state object into a model ready for terraform processing.
+// convertGoogleWorkloadV2DTOToModel converts the Google Workload state object into a model ready for terraform processing.
 func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderGoogleWorkloadModel {
 	value := credentialProviderGoogleWorkloadModel{
 		OIDCIssuer:     types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
@@ -698,7 +698,7 @@ func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenan
 	return &value
 }
 
-// convertSnowflakeTokenDTOToModel converts the Snowflake JWT Token state object into a model ready for terraform processing.
+// convertSnowflakeTokenV2DTOToModel converts the Snowflake JWT Token state object into a model ready for terraform processing.
 func convertSnowflakeTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *credentialProviderSnowflakeTokenModel {
 	acctData := strings.Split(dto.Subject, ".")
 	keyData := strings.ReplaceAll(dto.KeyContent, "\n", "")
@@ -712,7 +712,7 @@ func convertSnowflakeTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *cred
 	return &value
 }
 
-// convertOAuthClientCredentialDTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing.
+// convertOAuthClientCredentialV2DTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
 func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderOAuthClientCredentialsModel {
 	value := credentialProviderOAuthClientCredentialsModel{ClientSecret: types.StringNull()}
@@ -738,7 +738,7 @@ func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO
 	return &value
 }
 
-// convertUserPassDTOToModel converts the API Key state object into a model ready for terraform processing.
+// convertUserPassV2DTOToModel converts the API Key state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the Password and does not return it in the API, the DTO will never contain the stored value.
 func convertUserPassV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderUserPassModel {
 	value := credentialProviderUserPassModel{
@@ -751,7 +751,7 @@ func convertUserPassV2DTOToModel(dto aembit.CredentialProviderV2DTO, state crede
 	return &value
 }
 
-// convertVaultClientTokenDTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
+// convertVaultClientTokenV2DTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
 func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
 	value := credentialProviderVaultClientTokenModel{
 		Subject:     dto.Subject,

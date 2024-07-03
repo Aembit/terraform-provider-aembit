@@ -15,12 +15,12 @@ var (
 	_ datasource.DataSourceWithConfigure = &credentialProvidersV2DataSource{}
 )
 
-// NewCredentialProvidersDataSource is a helper function to simplify the provider implementation.
+// NewCredentialProvidersV2DataSource is a helper function to simplify the provider implementation.
 func NewCredentialProvidersV2DataSource() datasource.DataSource {
 	return &credentialProvidersV2DataSource{}
 }
 
-// credentialProvidersDataSource is the data source implementation.
+// credentialProvidersV2DataSource is the data source implementation.
 type credentialProvidersV2DataSource struct {
 	client *aembit.CloudClient
 }
