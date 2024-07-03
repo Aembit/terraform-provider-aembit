@@ -607,14 +607,14 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 		credential.Type = "vaultClientToken"
 
 		vault := aembit.CredentialVaultClientTokenDTO{
-			JwtConfig: &aembit.CredentialVaultClientTokenJwtConfigDTO{
+			JwtConfig: aembit.CredentialVaultClientTokenJwtConfigDTO{
 				Issuer:       fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain),
 				Subject:      model.VaultClientToken.Subject,
 				SubjectType:  model.VaultClientToken.SubjectType,
 				Lifetime:     model.VaultClientToken.Lifetime,
 				CustomClaims: make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
 			},
-			VaultCluster: &aembit.CredentialVaultClientTokenVaultClusterDTO{
+			VaultCluster: aembit.CredentialVaultClientTokenVaultClusterDTO{
 				VaultHost:          model.VaultClientToken.VaultHost,
 				Port:               model.VaultClientToken.VaultPort,
 				TLS:                model.VaultClientToken.VaultTLS,
