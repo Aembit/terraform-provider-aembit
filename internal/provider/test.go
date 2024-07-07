@@ -9,6 +9,10 @@ import (
 
 var maxRand = big.NewInt(10000000)
 
+const tagsCount = "tags.%"
+const tagsColor = "tags.color"
+const tagsDay = "tags.day"
+
 //func randomizeFileConfig(config, startValue string) (string, string) {
 //	randID, _ := rand.Int(rand.Reader, maxRand)
 //

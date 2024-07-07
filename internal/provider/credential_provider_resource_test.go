@@ -340,9 +340,9 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.color", "blue"),
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsColor, "blue"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "vault_client_token.vault_forwarding", ""),
@@ -359,9 +359,9 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "name", "TF Acceptance Vault - Modified"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.color", "orange"),
-					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsColor, "orange"),
+					resource.TestCheckResourceAttr("aembit_credential_provider.vault", tagsDay, "Tuesday"),
 					// Verify Vault_Forwarding update
 					resource.TestCheckResourceAttr("aembit_credential_provider.vault", "vault_client_token.vault_forwarding", "conditional"),
 				),

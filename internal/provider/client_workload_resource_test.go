@@ -51,9 +51,9 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sNamespace"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
@@ -73,9 +73,9 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -104,9 +104,9 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sPodName"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
@@ -122,9 +122,9 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -153,9 +153,9 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "awsLambdaArn"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
@@ -171,9 +171,9 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testCWResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

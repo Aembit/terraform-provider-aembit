@@ -24,7 +24,7 @@ func TestAccDefaultResourceSet(t *testing.T) {
 					resource.TestCheckResourceAttr(testResourceSetDefault, "name", "Default"),
 					resource.TestCheckResourceAttr(testResourceSetDefault, "id", "ffffffff-ffff-ffff-ffff-ffffffffffff"),
 
-					resource.TestMatchResourceAttr(testResourceSetsAll, "resource_sets.#", regexp.MustCompile(`[0-9]`)),
+					resource.TestMatchResourceAttr(testResourceSetsAll, "resource_sets.#", regexp.MustCompile(`[2-9]`)),
 				),
 			},
 		},
