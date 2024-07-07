@@ -2,12 +2,14 @@ package provider
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const resourceSetID string = "data.aembit_resource_set.default"
+const testResourceSetDefault string = "data.aembit_resource_set.default"
+const testResourceSetsAll string = "data.aembit_resource_sets.all"
 
 func TestAccDefaultResourceSet(t *testing.T) {
 	readFile, _ := os.ReadFile("../../tests/resource_set/TestAccDefaultResourceSet.tf")
@@ -19,8 +21,10 @@ func TestAccDefaultResourceSet(t *testing.T) {
 			{
 				Config: string(readFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceSetID, "name", "Default"),
-					resource.TestCheckResourceAttr(resourceSetID, "id", "ffffffff-ffff-ffff-ffff-ffffffffffff"),
+					resource.TestCheckResourceAttr(testResourceSetDefault, "name", "Default"),
+					resource.TestCheckResourceAttr(testResourceSetDefault, "id", "ffffffff-ffff-ffff-ffff-ffffffffffff"),
+
+					resource.TestMatchResourceAttr(testResourceSetsAll, "resource_sets.#", regexp.MustCompile(`[0-9]`)),
 				),
 			},
 		},

@@ -29,7 +29,7 @@ func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
 func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/aembit/TestAccCredentialProviderResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "IGNORE")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Aembit Token")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -39,7 +39,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider set values
-					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", "TF Acceptance Aembit Token"),
+					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", newName),
 					resource.TestCheckResourceAttr(testCredentialProviderAembit, "aembit_access_token.lifetime", "1800"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
@@ -59,7 +59,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", "TF Acceptance Aembit Token - Modified"),
+					resource.TestCheckResourceAttr(testCredentialProviderAembit, "name", newName),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "aembit_access_token.audience"),
 				),

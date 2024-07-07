@@ -135,13 +135,14 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tfmod")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "arn:aws:lambda:us-east-1:880961858887:function:helloworld")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: string(createFileConfig),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn"),
@@ -150,7 +151,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "awsLambdaArn"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, "arn:aws:lambda:us-east-1:880961858887:function:helloworld"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, "tags.%", "2"),
 					resource.TestCheckResourceAttr(testCWResource, "tags.color", "blue"),
@@ -163,7 +164,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
-				Config: string(modifyFile),
+				Config: string(modifyFileConfig),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
