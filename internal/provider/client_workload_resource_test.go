@@ -79,6 +79,55 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 	})
 }
 
+func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tfmod")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1podname")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - In Resource Set"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "description", "Acceptance Test client workload"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.#", "1"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.type", "k8sPodName"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.value", newName),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "blue"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Sunday"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testClientWorkloadResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - In Resource Set - modified"),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "true"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "orange"),
+					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Tuesday"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tfmod")
