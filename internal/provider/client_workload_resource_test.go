@@ -142,7 +142,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFileConfig),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn"),
@@ -164,7 +164,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
-				Config: string(modifyFileConfig),
+				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
