@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -359,10 +358,10 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, nil, r.client.Tenant, r.client.StackDomain)
+	var credential aembit.CredentialProviderV2DTO = convertCredentialProviderModelToV2DTO(ctx, plan, nil, r.client.Tenant, r.client.StackDomain)
 
 	// Create new Credential Provider
-	credentialProvider, err := r.client.CreateCredentialProvider(credential, nil)
+	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Credential Provider",
@@ -372,7 +371,7 @@ func (r *credentialProviderResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
+	plan = convertCredentialProviderV2DTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -393,7 +392,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Get refreshed credential value from Aembit
-	credentialProvider, err := r.client.GetCredentialProvider(state.ID.ValueString(), nil)
+	credentialProvider, err := r.client.GetCredentialProviderV2(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Credential Provider",
@@ -403,7 +402,7 @@ func (r *credentialProviderResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	state = convertCredentialProviderDTOToModel(ctx, credentialProvider, state, r.client.Tenant, r.client.StackDomain)
+	state = convertCredentialProviderV2DTOToModel(ctx, credentialProvider, state, r.client.Tenant, r.client.StackDomain)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -435,10 +434,10 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Generate API request body from plan
-	var credential aembit.CredentialProviderDTO = convertCredentialProviderModelToDTO(ctx, plan, &externalID, r.client.Tenant, r.client.StackDomain)
+	var credential aembit.CredentialProviderV2DTO = convertCredentialProviderModelToV2DTO(ctx, plan, &externalID, r.client.Tenant, r.client.StackDomain)
 
 	// Update Credential Provider
-	credentialProvider, err := r.client.UpdateCredentialProvider(credential, nil)
+	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider",
@@ -448,7 +447,7 @@ func (r *credentialProviderResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderDTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
+	plan = convertCredentialProviderV2DTOToModel(ctx, *credentialProvider, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -470,7 +469,7 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 
 	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableCredentialProvider(state.ID.ValueString(), nil)
+		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Credential Provider",
@@ -481,7 +480,7 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 	}
 
 	// Delete existing Credential Provider
-	_, err := r.client.DeleteCredentialProvider(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderV2(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",
@@ -497,8 +496,8 @@ func (r *credentialProviderResource) ImportState(ctx context.Context, req resour
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderModelToDTO(ctx context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderDTO {
-	var credential aembit.CredentialProviderDTO
+func convertCredentialProviderModelToV2DTO(ctx context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderV2DTO {
+	var credential aembit.CredentialProviderV2DTO
 	credential.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
@@ -522,64 +521,54 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 	// Handle the Aembit Token use case
 	if model.AembitToken != nil {
 		credential.Type = "aembit-access-token"
-		aembitToken := aembit.CredentialAembitTokenDTO{
-			Audience: fmt.Sprintf("%s.api.%s", tenantID, stackDomain),
-			RoleID:   model.AembitToken.Role.ValueString(),
-			Lifetime: model.AembitToken.Lifetime,
+		credential.Audience = fmt.Sprintf("%s.api.%s", tenantID, stackDomain)
+		credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
+			RoleID:            model.AembitToken.Role.ValueString(),
+			LifetimeInSeconds: model.AembitToken.Lifetime,
 		}
-		aembitTokenJSON, _ := json.Marshal(aembitToken)
-		credential.ProviderDetail = string(aembitTokenJSON)
 	}
 
 	// Handle the API Key use case
 	if model.APIKey != nil {
 		credential.Type = "apikey"
-		apiKey := aembit.CredentialAPIKeyDTO{APIKey: model.APIKey.APIKey.ValueString()}
-		apiKeyJSON, _ := json.Marshal(apiKey)
-		credential.ProviderDetail = string(apiKeyJSON)
+		credential.CredentialAPIKeyDTO = aembit.CredentialAPIKeyDTO{APIKey: model.APIKey.APIKey.ValueString()}
 	}
 
 	// Handle the AWS STS use case
 	if model.AwsSTS != nil {
 		credential.Type = "aws-sts-oidc"
-		awsSTS := aembit.CredentialAwsSTSDTO{
-			RoleArn:  model.AwsSTS.RoleARN.ValueString(),
-			Lifetime: model.AwsSTS.Lifetime,
+		credential.Lifetime = model.AwsSTS.Lifetime
+		credential.CredentialAwsSTSV2DTO = aembit.CredentialAwsSTSV2DTO{
+			RoleArn: model.AwsSTS.RoleARN.ValueString(),
 		}
-		awsSTSJSON, _ := json.Marshal(awsSTS)
-		credential.ProviderDetail = string(awsSTSJSON)
 	}
 
 	// Handle the GCP Workload Identity Federation use case
 	if model.GoogleWorkload != nil {
 		credential.Type = "gcp-identity-federation"
-		gcpWorkload := aembit.CredentialGoogleWorkloadDTO{
-			Audience:       model.GoogleWorkload.Audience.ValueString(),
+		credential.Audience = model.GoogleWorkload.Audience.ValueString()
+		credential.Lifetime = model.GoogleWorkload.Lifetime
+		credential.CredentialGoogleWorkloadV2DTO = aembit.CredentialGoogleWorkloadV2DTO{
 			ServiceAccount: model.GoogleWorkload.ServiceAccount.ValueString(),
-			Lifetime:       model.GoogleWorkload.Lifetime,
 		}
-		gcpWorkloadJSON, _ := json.Marshal(gcpWorkload)
-		credential.ProviderDetail = string(gcpWorkloadJSON)
 	}
 
 	// Handle the Snowflake JWT use case
 	if model.SnowflakeToken != nil {
 		credential.Type = "signed-jwt"
-		gcpWorkload := aembit.CredentialSnowflakeTokenDTO{
+		credential.Issuer = fmt.Sprintf("%s.%s.SHA256:{sha256(publicKey)}", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString())
+		credential.Subject = fmt.Sprintf("%s.%s", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString())
+		credential.Lifetime = 1
+		credential.CredentialSnowflakeTokenV2DTO = aembit.CredentialSnowflakeTokenV2DTO{
 			TokenConfiguration: "snowflake",
 			AlgorithmType:      "RS256",
-			Issuer:             fmt.Sprintf("%s.%s.SHA256:{sha256(publicKey)}", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString()),
-			Subject:            fmt.Sprintf("%s.%s", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString()),
-			Lifetime:           1,
 		}
-		gcpWorkloadJSON, _ := json.Marshal(gcpWorkload)
-		credential.ProviderDetail = string(gcpWorkloadJSON)
 	}
 
 	// Handle the OAuth Client Credentials use case
 	if model.OAuthClientCredentials != nil {
 		credential.Type = "oauth-client-credential"
-		oauth := aembit.CredentialOAuthClientCredentialDTO{
+		credential.CredentialOAuthClientCredentialDTO = aembit.CredentialOAuthClientCredentialDTO{
 			TokenURL:         model.OAuthClientCredentials.TokenURL.ValueString(),
 			ClientID:         model.OAuthClientCredentials.ClientID.ValueString(),
 			ClientSecret:     model.OAuthClientCredentials.ClientSecret.ValueString(),
@@ -587,58 +576,47 @@ func convertCredentialProviderModelToDTO(ctx context.Context, model credentialPr
 			CredentialStyle:  model.OAuthClientCredentials.CredentialStyle.ValueString(),
 			CustomParameters: convertCredentialOAuthCustomParameters(model),
 		}
-		oauthJSON, _ := json.Marshal(oauth)
-		credential.ProviderDetail = string(oauthJSON)
 	}
 
 	// Handle the Username Password use case
 	if model.UsernamePassword != nil {
 		credential.Type = "username-password"
-		userPass := aembit.CredentialUsernamePasswordDTO{
+		credential.CredentialUsernamePasswordDTO = aembit.CredentialUsernamePasswordDTO{
 			Username: model.UsernamePassword.Username.ValueString(),
 			Password: model.UsernamePassword.Password.ValueString(),
 		}
-		userPassJSON, _ := json.Marshal(userPass)
-		credential.ProviderDetail = string(userPassJSON)
 	}
 
 	// Handle the Vault Client Token use case
 	if model.VaultClientToken != nil {
 		credential.Type = "vaultClientToken"
-
-		vault := aembit.CredentialVaultClientTokenDTO{
-			JwtConfig: aembit.CredentialVaultClientTokenJwtConfigDTO{
-				Issuer:       fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain),
-				Subject:      model.VaultClientToken.Subject,
-				SubjectType:  model.VaultClientToken.SubjectType,
-				Lifetime:     model.VaultClientToken.Lifetime,
-				CustomClaims: make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
-			},
-			VaultCluster: aembit.CredentialVaultClientTokenVaultClusterDTO{
-				VaultHost:          model.VaultClientToken.VaultHost,
-				Port:               model.VaultClientToken.VaultPort,
-				TLS:                model.VaultClientToken.VaultTLS,
-				Namespace:          model.VaultClientToken.VaultNamespace,
-				Role:               model.VaultClientToken.VaultRole,
-				AuthenticationPath: model.VaultClientToken.VaultPath,
-				ForwardingConfig:   model.VaultClientToken.VaultForwarding,
-			},
+		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
+		credential.Subject = model.VaultClientToken.Subject
+		credential.Lifetime = model.VaultClientToken.Lifetime
+		credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
+			SubjectType:        model.VaultClientToken.SubjectType,
+			CustomClaims:       make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
+			VaultHost:          model.VaultClientToken.VaultHost,
+			Port:               model.VaultClientToken.VaultPort,
+			TLS:                model.VaultClientToken.VaultTLS,
+			Namespace:          model.VaultClientToken.VaultNamespace,
+			Role:               model.VaultClientToken.VaultRole,
+			AuthenticationPath: model.VaultClientToken.VaultPath,
+			ForwardingConfig:   model.VaultClientToken.VaultForwarding,
 		}
 		for i, claim := range model.VaultClientToken.CustomClaims {
-			vault.JwtConfig.CustomClaims[i] = aembit.CredentialVaultClientTokenClaimsDTO{
+			credential.CredentialVaultClientTokenV2DTO.CustomClaims[i] = aembit.CredentialVaultClientTokenClaimsDTO{
 				Key:       claim.Key,
 				Value:     claim.Value,
 				ValueType: claim.ValueType,
 			}
 		}
-
-		vaultJSON, _ := json.Marshal(vault)
-		credential.ProviderDetail = string(vaultJSON)
 	}
+
 	return credential
 }
 
-func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.CredentialProviderDTO, state credentialProviderResourceModel, tenant, stackDomain string) credentialProviderResourceModel {
+func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel, tenant, stackDomain string) credentialProviderResourceModel {
 	var model credentialProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -658,45 +636,39 @@ func convertCredentialProviderDTOToModel(ctx context.Context, dto aembit.Credent
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
 	case "aembit-access-token":
-		model.AembitToken = convertAembitTokenDTOToModel(dto)
+		model.AembitToken = convertAembitTokenV2DTOToModel(dto)
 	case "apikey":
-		model.APIKey = convertAPIKeyDTOToModel(dto, state)
+		model.APIKey = convertAPIKeyV2DTOToModel(dto, state)
 	case "aws-sts-oidc":
-		model.AwsSTS = convertAwsSTSDTOToModel(dto, tenant, stackDomain)
+		model.AwsSTS = convertAwsSTSV2DTOToModel(dto, tenant, stackDomain)
 	case "gcp-identity-federation":
-		model.GoogleWorkload = convertGoogleWorkloadDTOToModel(dto, tenant, stackDomain)
+		model.GoogleWorkload = convertGoogleWorkloadV2DTOToModel(dto, tenant, stackDomain)
 	case "signed-jwt":
-		model.SnowflakeToken = convertSnowflakeTokenDTOToModel(dto)
+		model.SnowflakeToken = convertSnowflakeTokenV2DTOToModel(dto)
 	case "oauth-client-credential":
-		model.OAuthClientCredentials = convertOAuthClientCredentialDTOToModel(dto, state)
+		model.OAuthClientCredentials = convertOAuthClientCredentialV2DTOToModel(dto, state)
 	case "username-password":
-		model.UsernamePassword = convertUserPassDTOToModel(dto, state)
+		model.UsernamePassword = convertUserPassV2DTOToModel(dto, state)
 	case "vaultClientToken":
-		model.VaultClientToken = convertVaultClientTokenDTOToModel(dto, state)
+		model.VaultClientToken = convertVaultClientTokenV2DTOToModel(dto, state)
 	}
 	return model
 }
 
-// convertAembitTokenDTOToModel converts the Aembit Token state object into a model ready for terraform processing.
-func convertAembitTokenDTOToModel(dto aembit.CredentialProviderDTO) *credentialProviderAembitTokenModel {
+// convertAembitTokenV2DTOToModel converts the Aembit Token state object into a model ready for terraform processing.
+func convertAembitTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *credentialProviderAembitTokenModel {
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var aembitToken aembit.CredentialAembitTokenDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &aembitToken)
-	if err != nil {
-		return nil
-	}
-
 	value := credentialProviderAembitTokenModel{
-		Audience: types.StringValue(aembitToken.Audience),
-		Role:     types.StringValue(aembitToken.RoleID),
-		Lifetime: aembitToken.Lifetime,
+		Audience: types.StringValue(dto.Audience),
+		Role:     types.StringValue(dto.RoleID),
+		Lifetime: dto.LifetimeInSeconds,
 	}
 	return &value
 }
 
-// convertAPIKeyDTOToModel converts the API Key state object into a model ready for terraform processing.
+// convertAPIKeyV2DTOToModel converts the API Key state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the API Key and does not return it in the API, the DTO will never contain the stored value.
-func convertAPIKeyDTOToModel(_ aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderAPIKeyModel {
+func convertAPIKeyV2DTOToModel(_ aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderAPIKeyModel {
 	value := credentialProviderAPIKeyModel{APIKey: types.StringNull()}
 	if state.APIKey != nil {
 		value.APIKey = state.APIKey.APIKey
@@ -704,53 +676,32 @@ func convertAPIKeyDTOToModel(_ aembit.CredentialProviderDTO, state credentialPro
 	return &value
 }
 
-// convertAwsSTSDTOToModel converts the AWS STS state object into a model ready for terraform processing.
-func convertAwsSTSDTOToModel(dto aembit.CredentialProviderDTO, tenant, stackDomain string) *credentialProviderAwsSTSModel {
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var awsSTS aembit.CredentialAwsSTSDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &awsSTS)
-	if err != nil {
-		return nil
-	}
-
+// convertAwsSTSV2DTOToModel converts the AWS STS state object into a model ready for terraform processing.
+func convertAwsSTSV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderAwsSTSModel {
 	value := credentialProviderAwsSTSModel{
 		OIDCIssuer:    types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 		TokenAudience: types.StringValue("sts.amazonaws.com"),
-		RoleARN:       types.StringValue(awsSTS.RoleArn),
-		Lifetime:      awsSTS.Lifetime,
+		RoleARN:       types.StringValue(dto.RoleArn),
+		Lifetime:      dto.Lifetime,
 	}
 	return &value
 }
 
-// convertGoogleWorkloadDTOToModel converts the Google Workload state object into a model ready for terraform processing.
-func convertGoogleWorkloadDTOToModel(dto aembit.CredentialProviderDTO, tenant, stackDomain string) *credentialProviderGoogleWorkloadModel {
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var gcpWorkload aembit.CredentialGoogleWorkloadDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &gcpWorkload)
-	if err != nil {
-		return nil
-	}
-
+// convertGoogleWorkloadV2DTOToModel converts the Google Workload state object into a model ready for terraform processing.
+func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderGoogleWorkloadModel {
 	value := credentialProviderGoogleWorkloadModel{
 		OIDCIssuer:     types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
-		Audience:       types.StringValue(gcpWorkload.Audience),
-		ServiceAccount: types.StringValue(gcpWorkload.ServiceAccount),
-		Lifetime:       gcpWorkload.Lifetime,
+		Audience:       types.StringValue(dto.Audience),
+		ServiceAccount: types.StringValue(dto.ServiceAccount),
+		Lifetime:       dto.Lifetime,
 	}
 	return &value
 }
 
-// convertSnowflakeTokenDTOToModel converts the Snowflake JWT Token state object into a model ready for terraform processing.
-func convertSnowflakeTokenDTOToModel(dto aembit.CredentialProviderDTO) *credentialProviderSnowflakeTokenModel {
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var snowflake aembit.CredentialSnowflakeTokenDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &snowflake)
-	if err != nil {
-		return nil
-	}
-
-	acctData := strings.Split(snowflake.Subject, ".")
-	keyData := strings.ReplaceAll(snowflake.KeyContent, "\n", "")
+// convertSnowflakeTokenV2DTOToModel converts the Snowflake JWT Token state object into a model ready for terraform processing.
+func convertSnowflakeTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO) *credentialProviderSnowflakeTokenModel {
+	acctData := strings.Split(dto.Subject, ".")
+	keyData := strings.ReplaceAll(dto.KeyContent, "\n", "")
 	keyData = strings.Replace(keyData, "-----BEGIN PUBLIC KEY-----", "", 1)
 	keyData = strings.Replace(keyData, "-----END PUBLIC KEY-----", "", 1)
 	value := credentialProviderSnowflakeTokenModel{
@@ -761,29 +712,21 @@ func convertSnowflakeTokenDTOToModel(dto aembit.CredentialProviderDTO) *credenti
 	return &value
 }
 
-// convertOAuthClientCredentialDTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing.
+// convertOAuthClientCredentialV2DTOToModel converts the OAuth Client Credential state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
-func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderOAuthClientCredentialsModel {
+func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderOAuthClientCredentialsModel {
 	value := credentialProviderOAuthClientCredentialsModel{ClientSecret: types.StringNull()}
-
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var oauth aembit.CredentialOAuthClientCredentialDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &oauth)
-	if err != nil {
-		return nil
-	}
-
-	value.TokenURL = types.StringValue(oauth.TokenURL)
-	value.ClientID = types.StringValue(oauth.ClientID)
-	value.Scopes = types.StringValue(oauth.Scope)
-	value.CredentialStyle = types.StringValue(oauth.CredentialStyle)
+	value.TokenURL = types.StringValue(dto.TokenURL)
+	value.ClientID = types.StringValue(dto.ClientID)
+	value.Scopes = types.StringValue(dto.Scope)
+	value.CredentialStyle = types.StringValue(dto.CredentialStyle)
 	if state.OAuthClientCredentials != nil {
 		value.ClientSecret = state.OAuthClientCredentials.ClientSecret
 	}
 
 	// Get the custom parameters to be injected into the model
-	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(oauth.CustomParameters))
-	for i, parameter := range oauth.CustomParameters {
+	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
+	for i, parameter := range dto.CustomParameters {
 		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
 			Key:       parameter.Key,
 			Value:     parameter.Value,
@@ -795,18 +738,11 @@ func convertOAuthClientCredentialDTOToModel(dto aembit.CredentialProviderDTO, st
 	return &value
 }
 
-// convertUserPassDTOToModel converts the API Key state object into a model ready for terraform processing.
+// convertUserPassV2DTOToModel converts the API Key state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the Password and does not return it in the API, the DTO will never contain the stored value.
-func convertUserPassDTOToModel(dto aembit.CredentialProviderDTO, state credentialProviderResourceModel) *credentialProviderUserPassModel {
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var userPass aembit.CredentialUsernamePasswordDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &userPass)
-	if err != nil {
-		return nil
-	}
-
+func convertUserPassV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderUserPassModel {
 	value := credentialProviderUserPassModel{
-		Username: types.StringValue(userPass.Username),
+		Username: types.StringValue(dto.Username),
 		Password: types.StringNull(),
 	}
 	if state.UsernamePassword != nil {
@@ -815,34 +751,27 @@ func convertUserPassDTOToModel(dto aembit.CredentialProviderDTO, state credentia
 	return &value
 }
 
-// convertVaultClientTokenDTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
-func convertVaultClientTokenDTOToModel(dto aembit.CredentialProviderDTO, _ credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
-	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
-	var vault aembit.CredentialVaultClientTokenDTO
-	err := json.Unmarshal([]byte(dto.ProviderDetail), &vault)
-	if err != nil {
-		return nil
-	}
-
+// convertVaultClientTokenV2DTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
+func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
 	value := credentialProviderVaultClientTokenModel{
-		Subject:     vault.JwtConfig.Subject,
-		SubjectType: vault.JwtConfig.SubjectType,
-		Lifetime:    vault.JwtConfig.Lifetime,
+		Subject:     dto.Subject,
+		SubjectType: dto.SubjectType,
+		Lifetime:    dto.Lifetime,
 
-		VaultHost:       vault.VaultCluster.VaultHost,
-		VaultPort:       vault.VaultCluster.Port,
-		VaultTLS:        vault.VaultCluster.TLS,
-		VaultNamespace:  vault.VaultCluster.Namespace,
-		VaultRole:       vault.VaultCluster.Role,
-		VaultPath:       vault.VaultCluster.AuthenticationPath,
-		VaultForwarding: vault.VaultCluster.ForwardingConfig,
+		VaultHost:       dto.VaultHost,
+		VaultPort:       dto.Port,
+		VaultTLS:        dto.TLS,
+		VaultNamespace:  dto.Namespace,
+		VaultRole:       dto.Role,
+		VaultPath:       dto.AuthenticationPath,
+		VaultForwarding: dto.ForwardingConfig,
 	}
 
 	// Get the custom claims to be injected into the model
-	claims := make([]*credentialProviderVaultClientTokenCustomClaimsModel, len(vault.JwtConfig.CustomClaims))
+	claims := make([]*credentialProviderVaultClientTokenCustomClaimsModel, len(dto.CustomClaims))
 	//types.ObjectValue(credentialProviderVaultClientTokenCustomClaimsModel.AttrTypes),
 	//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
-	for i, claim := range vault.JwtConfig.CustomClaims {
+	for i, claim := range dto.CustomClaims {
 		claims[i] = &credentialProviderVaultClientTokenCustomClaimsModel{
 			Key:       claim.Key,
 			Value:     claim.Value,
