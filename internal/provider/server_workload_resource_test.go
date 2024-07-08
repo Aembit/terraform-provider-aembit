@@ -41,9 +41,9 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "name", "Unit Test 1"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "is_active", "false"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Sunday"),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.host", "unittest.testhost.com"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.port", "443"),
@@ -79,9 +79,9 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "name", "Unit Test 1 - Modified"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.host", "unittest.testhost2.com"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.authentication_config.method", "HTTP Authentication"),
