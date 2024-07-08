@@ -43,9 +43,9 @@ func TestAccAgentControllerResources(t *testing.T) {
 					resource.TestCheckResourceAttr(testAgentControllerAzure, "name", "TF Acceptance Azure Trust Provider"),
 					resource.TestCheckResourceAttr(testAgentControllerDeviceCode, "name", "TF Acceptance Device Code"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAgentControllerAzure, "id"),
 					resource.TestCheckResourceAttrSet(testAgentControllerDeviceCode, "id"),
@@ -67,9 +67,9 @@ func TestAccAgentControllerResources(t *testing.T) {
 					resource.TestCheckResourceAttr(testAgentControllerAzure, "name", "TF Acceptance Azure Trust Provider - Modified"),
 					resource.TestCheckResourceAttr(testAgentControllerDeviceCode, "name", "TF Acceptance Device Code - Modified"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

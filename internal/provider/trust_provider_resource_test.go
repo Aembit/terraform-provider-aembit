@@ -225,9 +225,9 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kerberos", "id"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.color", "blue"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsColor, "blue"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsDay, "Sunday"),
 				),
 			},
 			// ImportState testing
@@ -239,9 +239,9 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "name", "TF Acceptance Kerberos - Modified"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.color", "orange"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsColor, "orange"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kerberos", tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -267,9 +267,9 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes", "id"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.color", "blue"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsColor, "blue"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_key", "name", "TF Acceptance Kubernetes Key"),
 					// Verify dynamic values have any value set in the state.
@@ -287,9 +287,9 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					// Verify Name updated
 					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "name", "TF Acceptance Kubernetes - Modified"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.%", "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.color", "orange"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsColor, "orange"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsDay, "Tuesday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_key", "name", "TF Acceptance Kubernetes Key - Modified"),
 					// Verify dynamic values have any value set in the state.

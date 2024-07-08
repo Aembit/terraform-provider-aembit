@@ -44,9 +44,10 @@ func New(version string) func() provider.Provider {
 
 // aembitProviderModel maps provider schema data to a Go type.
 type aembitProviderModel struct {
-	Tenant   types.String `tfsdk:"tenant"`
-	Token    types.String `tfsdk:"token"`
-	ClientID types.String `tfsdk:"client_id"`
+	Tenant      types.String `tfsdk:"tenant"`
+	Token       types.String `tfsdk:"token"`
+	ClientID    types.String `tfsdk:"client_id"`
+	ResourceSet types.String `tfsdk:"resource_set_id"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -120,6 +121,10 @@ func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "The Aembit Resource Set to use for resources associated with this Terraform Provider.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -175,6 +180,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tenant := os.Getenv("AEMBIT_TENANT_ID")
 	token := os.Getenv("AEMBIT_TOKEN")
 	stackDomain := os.Getenv("AEMBIT_STACK_DOMAIN")
+	resourceSetId := ""
 	if len(stackDomain) == 0 {
 		stackDomain = "useast2.aembit.io"
 	}
@@ -184,6 +190,9 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if !config.Token.IsNull() && len(config.Token.ValueString()) > 0 {
 		token = config.Token.ValueString()
+	}
+	if !config.ResourceSet.IsNull() && len(config.ResourceSet.ValueString()) > 0 {
+		resourceSetId = config.ResourceSet.ValueString()
 	}
 
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
@@ -235,7 +244,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
-	client, err := aembit.NewClient(aembit.URLBuilder{}, &token, p.version)
+	client, err := aembit.NewClient(aembit.URLBuilder{}, &token, resourceSetId, p.version)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Aembit API Client",
@@ -268,6 +277,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAccessPolicyResource,
 		NewAgentControllerResource,
 		NewRoleResource,
+		//NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 	}
 }
 
@@ -284,6 +294,8 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewAgentControllersDataSource,
 		NewAgentControllerDeviceCodeDataSource,
 		NewRolesDataSource,
+		NewResourceSetDataSource,
+		NewResourceSetsDataSource,
 	}
 }
 

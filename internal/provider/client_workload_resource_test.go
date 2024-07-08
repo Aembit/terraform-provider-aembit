@@ -9,15 +9,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testClientWorkloadResource string = "aembit_client_workload.test"
+const testCWResource string = "aembit_client_workload.test"
+const testCWResourceDescription string = "Acceptance Test client workload"
+const testCWResourceIdentitiesCount string = "identities.#"
+const testCWResourceIdentitiesType string = "identities.0.type"
+const testCWResourceIdentitiesValue string = "identities.0.value"
 
 func testDeleteClientWorkload() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		var rs *terraform.ResourceState
 		var ok bool
 		var err error
-		if rs, ok = s.RootModule().Resources[testClientWorkloadResource]; !ok {
-			return fmt.Errorf("Not found: %s", testClientWorkloadResource)
+		if rs, ok = s.RootModule().Resources[testCWResource]; !ok {
+			return fmt.Errorf("Not found: %s", testCWResource)
 		}
 		if ok, err = testClient.DeleteClientWorkload(rs.Primary.ID, nil); !ok {
 			return err
@@ -39,19 +43,19 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "false"),
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1"),
+					resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.#", "1"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.type", "k8sNamespace"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.value", newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sNamespace"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testClientWorkloadResource, "id"),
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -59,19 +63,68 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: createFileConfig},
 			// ImportState testing
-			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - modified"),
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - modified"),
 					// Verify active state updated.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "true"),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tfmod")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1podname")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - In Resource Set"),
+					resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sPodName"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - In Resource Set - modified"),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -82,44 +135,45 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tfmod")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "arn:aws:lambda:us-east-1:880961858887:function:helloworld")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - awsLambdaArn"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "description", "Acceptance Test client workload"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "false"),
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn"),
+					resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.#", "1"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.type", "awsLambdaArn"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "identities.0.value", "arn:aws:lambda:us-east-1:880961858887:function:helloworld"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "awsLambdaArn"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testClientWorkloadResource, "id"),
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testClientWorkloadResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
-				Config: string(modifyFile),
+				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
 					// Verify active state updated.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "is_active", "true"),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.color", "orange"),
-					resource.TestCheckResourceAttr(testClientWorkloadResource, "tags.day", "Tuesday"),
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
