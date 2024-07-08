@@ -272,7 +272,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state credentialProvidersDataSourceModel
 
-	credentialProviders, err := d.client.GetCredentialProviders(nil)
+	credentialProviders, err := d.client.GetCredentialProvidersV2(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Providers",
@@ -283,7 +283,7 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := convertCredentialProviderDTOToModel(ctx, credentialProvider, credentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
+		credentialProviderState := convertCredentialProviderV2DTOToModel(ctx, credentialProvider, credentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

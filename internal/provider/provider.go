@@ -269,7 +269,6 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewServerWorkloadResource,
 		NewCredentialProviderResource,
-		NewCredentialProviderV2Resource,
 		NewTrustProviderResource,
 		NewClientWorkloadResource,
 		NewIntegrationResource,
@@ -285,7 +284,6 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		NewServerWorkloadsDataSource,
 		NewCredentialProvidersDataSource,
-		NewCredentialProvidersV2DataSource,
 		NewTrustProvidersDataSource,
 		NewClientWorkloadsDataSource,
 		NewIntegrationsDataSource,
