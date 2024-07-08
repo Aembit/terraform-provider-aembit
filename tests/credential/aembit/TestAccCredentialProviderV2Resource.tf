@@ -3,7 +3,7 @@ provider "aembit" {
 
 
 resource "aembit_role" "role" {
-	name = "TF Acceptance Role for Token"
+	name = "TF Acceptance Role for Token V2"
 	is_active = true
 	access_policies = { read = true, write = true }
 	client_workloads = { read = true, write = true }
