@@ -63,7 +63,7 @@ func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
-				Description: "IDs of the Roles to associate with this ResourceSet.",
+				Description: "IDs of the Roles associated with this ResourceSet.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,

@@ -276,7 +276,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAccessPolicyResource,
 		NewAgentControllerResource,
 		NewRoleResource,
-		//NewResourceSetResource,	// Preventing Resource Set Resoures via Terraform until we add support for deleting Resource Sets
+		//NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 	}
 }
 
