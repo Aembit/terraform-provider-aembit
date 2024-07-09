@@ -168,13 +168,17 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Get refreshed trust value from Aembit
-	role, err := r.client.GetRole(state.ID.ValueString(), nil)
+	role, err, notFound := r.client.GetRole(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Role",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
-		resp.State.RemoveResource(ctx)
+
+		// If the resource is not found on Aembit Cloud, delete it locally
+		if notFound {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 

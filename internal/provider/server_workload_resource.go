@@ -254,13 +254,17 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed workload value from Aembit
-	serverWorkload, err := r.client.GetServerWorkload(state.ID.ValueString(), nil)
+	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Server Workload",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
-		resp.State.RemoveResource(ctx)
+
+		// If the resource is not found on Aembit Cloud, delete it locally
+		if notFound {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 

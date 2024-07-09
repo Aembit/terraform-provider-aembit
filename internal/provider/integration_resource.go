@@ -160,13 +160,17 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Get refreshed trust value from Aembit
-	integration, err := r.client.GetIntegration(state.ID.ValueString(), nil)
+	integration, err, notFound := r.client.GetIntegration(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
 			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
-		resp.State.RemoveResource(ctx)
+
+		// If the resource is not found on Aembit Cloud, delete it locally
+		if notFound {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 
