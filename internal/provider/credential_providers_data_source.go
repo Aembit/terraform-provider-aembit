@@ -210,10 +210,6 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"client_id": schema.StringAttribute{
 									Computed: true,
 								},
-								"client_secret": schema.StringAttribute{
-									Computed:  true,
-									Sensitive: true,
-								},
 								"scopes": schema.StringAttribute{
 									Computed: true,
 								},

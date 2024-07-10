@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -299,12 +301,14 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tfmod")
 
+	newID := uuid.New().String()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: strings.ReplaceAll(string(createFile), "replace-with-uuid", newID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code"),

@@ -2,7 +2,7 @@ provider "aembit" {
 }
 
 resource "aembit_credential_provider" "oauth_authorization_code" {
-	id = "a8f8ecdc-eb48-4a29-b854-d25745628b51"
+	id = "replace-with-uuid"
 	name = "TF Acceptance OAuth Authorization Code"
 	is_active = true
 	tags = {
@@ -26,7 +26,7 @@ resource "aembit_credential_provider" "oauth_authorization_code" {
 			{
 				key = "key2"
 				value = "value2"
-				value_type = "dynamic"
+				value_type = "literal"
 			}
 		]
 	}
