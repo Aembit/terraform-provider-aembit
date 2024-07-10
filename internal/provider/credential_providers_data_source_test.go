@@ -10,7 +10,6 @@ import (
 const testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
 
 func TestAccCredentialProvidersDataSource(t *testing.T) {
-	skipCI(t)
 	createFile, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource.tf")
 
 	resource.Test(t, resource.TestCase{
