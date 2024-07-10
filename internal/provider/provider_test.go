@@ -30,7 +30,7 @@ func init() {
 		tenant = getAembitTenantId(aembitClientID)
 		token, _ = getToken(context.Background(), aembitClientID, stackDomain)
 	}
-	testClient, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "test")
+	testClient, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "", "test")
 	testClient.Tenant = tenant
 	testClient.StackDomain = stackDomain
 }

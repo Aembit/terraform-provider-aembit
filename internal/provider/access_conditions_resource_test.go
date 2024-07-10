@@ -79,9 +79,9 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 					// Verify AccessCondition Name
 					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "name", "TF Acceptance Crowdstrike"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "tags.%", "2"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "tags.color", "blue"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "tags.day", "Sunday"),
+					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceCrowdstrike, "id"),
 					// Verify placeholder ID is set
