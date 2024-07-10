@@ -293,6 +293,8 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 	})
 }
 
+const testOAuthAuthorizationCodeResourceName string = "aembit_credential_provider.oauth_authorization_code"
+
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tfmod")
@@ -305,21 +307,21 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_authorization_code", "name", "TF Acceptance OAuth Authorization Code"),
+					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code"),
 					//Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_authorization_code", "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.oauth_authorization_code", "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_credential_provider.oauth_authorization_code", ImportState: true, ImportStateVerify: false},
+			{ResourceName: testOAuthAuthorizationCodeResourceName, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_credential_provider.oauth_authorization_code", "name", "TF Acceptance OAuth Authorization Code - Modified"),
+					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
