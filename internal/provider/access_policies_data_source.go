@@ -50,6 +50,10 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Unique identifier of the access policy.",
 							Computed:    true,
 						},
+						"name": schema.StringAttribute{
+							Description: "Placeholder name of the access policy.",
+							Computed:    true,
+						},
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the access policy.",
 							Computed:    true,
