@@ -217,7 +217,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"scopes": schema.StringAttribute{
 									Computed: true,
 								},
-								"is_pkce_required": schema.StringAttribute{
+								"is_pkce_required": schema.BoolAttribute{
 									Computed: true,
 								},
 								"callback_url": schema.StringAttribute{

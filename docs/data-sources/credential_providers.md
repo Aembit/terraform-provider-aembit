@@ -117,7 +117,7 @@ Read-Only:
 - `client_id` (String)
 - `client_secret` (String, Sensitive)
 - `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code--custom_parameters))
-- `is_pkce_required` (String)
+- `is_pkce_required` (Boolean)
 - `oauth_url` (String)
 - `scopes` (String)
 - `state` (String)
