@@ -1,6 +1,6 @@
 module terraform-provider-aembit
 
-go 1.20
+go 1.21
 
 require (
 	aembit.io/aembit v0.0.0-00010101000000-000000000000
