@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"aembit.io/aembit"
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -945,19 +944,4 @@ func convertCredentialOAuthAuthorizationCodeCustomParameters(model credentialPro
 		}
 	}
 	return parameters
-}
-
-func validateUUID(v interface{}, k string) (ws []string, errors []error) {
-	value, ok := v.(string)
-	if !ok {
-		errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
-		return
-	}
-
-	_, err := uuid.Parse(value)
-	if err != nil {
-		errors = append(errors, fmt.Errorf("%q must be a valid UUID: %s", k, err))
-	}
-
-	return
 }
