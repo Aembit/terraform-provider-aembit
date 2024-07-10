@@ -98,6 +98,7 @@ resource "aembit_credential_provider" "vault" {
 - `description` (String) Description for the Credential Provider.
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `is_active` (Boolean) Active status of the Credential Provider.
+- `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
 - `tags` (Map of String) Tags are key-value pairs.
@@ -161,6 +162,39 @@ Optional:
 Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+
+
+<a id="nestedatt--oauth_authorization_code"></a>
+### Nested Schema for `oauth_authorization_code`
+
+Required:
+
+- `authorization_url` (String) Authorization URL for the OAuth Credential Provider.
+- `client_id` (String) Client ID for the OAuth Credential Provider.
+- `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
+- `oauth_url` (String) OAuth URL for the OAuth Credential Provider.
+- `token_url` (String) Token URL for the OAuth Credential Provider.
+
+Optional:
+
+- `callback_url` (String) Callback URL for the OAuth Credential Provider.
+- `custom_parameters` (Attributes Set) Set Custom Parameters for the OAuth Credential Provider. (see [below for nested schema](#nestedatt--oauth_authorization_code--custom_parameters))
+- `is_pkce_required` (Boolean) PKCE required flag for the OAuth Credential Provider.
+- `scopes` (String) Scopes for the OAuth Credential Provider.
+- `state` (String) State for the OAuth Credential Provider.
+
+<a id="nestedatt--oauth_authorization_code--custom_parameters"></a>
+### Nested Schema for `oauth_authorization_code.custom_parameters`
+
+Required:
+
+- `key` (String) Key for Custom Parameter of the OAuth Credential Provider.
+- `value` (String) Value for Custom Parameter of the OAuth Credential Provider.
+
+Optional:
+
+- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.
+
 
 
 <a id="nestedatt--oauth_client_credentials"></a>

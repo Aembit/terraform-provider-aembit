@@ -37,6 +37,7 @@ Read-Only:
 - `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `name` (String) User-provided name of the credential provider.
+- `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
 - `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
@@ -104,6 +105,33 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String, Sensitive)
+
+
+<a id="nestedatt--credential_providers--oauth_authorization_code"></a>
+### Nested Schema for `credential_providers.oauth_authorization_code`
+
+Read-Only:
+
+- `authorization_url` (String)
+- `callback_url` (String)
+- `client_id` (String)
+- `client_secret` (String, Sensitive)
+- `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code--custom_parameters))
+- `is_pkce_required` (String)
+- `oauth_url` (String)
+- `scopes` (String)
+- `state` (String)
+- `token_url` (String)
+
+<a id="nestedatt--credential_providers--oauth_authorization_code--custom_parameters"></a>
+### Nested Schema for `credential_providers.oauth_authorization_code.custom_parameters`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
 
 
 <a id="nestedatt--credential_providers--oauth_client_credentials"></a>

@@ -18,6 +18,7 @@ type credentialProviderResourceModel struct {
 	GoogleWorkload         *credentialProviderGoogleWorkloadModel         `tfsdk:"google_workload_identity"`
 	SnowflakeToken         *credentialProviderSnowflakeTokenModel         `tfsdk:"snowflake_jwt"`
 	OAuthClientCredentials *credentialProviderOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
+	OAuthAuthorizationCode *credentialProviderOAuthAuthorizationCodeModel `tfsdk:"oauth_authorization_code"`
 	UsernamePassword       *credentialProviderUserPassModel               `tfsdk:"username_password"`
 	VaultClientToken       *credentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`
 }
@@ -67,6 +68,20 @@ type credentialProviderOAuthClientCredentialsModel struct {
 	CustomParameters []*credentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
 }
 
+// credentialProviderOAuthAuthorizationCodeModel maps OAuth Authorization Code Flow configuration.
+type credentialProviderOAuthAuthorizationCodeModel struct {
+	OAuthUrl         types.String                                          `tfsdk:"oauth_url"`
+	AuthorizationUrl types.String                                          `tfsdk:"authorization_url"`
+	TokenUrl         types.String                                          `tfsdk:"token_url"`
+	ClientID         types.String                                          `tfsdk:"client_id"`
+	ClientSecret     types.String                                          `tfsdk:"client_secret"`
+	Scopes           types.String                                          `tfsdk:"scopes"`
+	CustomParameters []*credentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
+	IsPkceRequired   types.Bool                                            `tfsdk:"is_pkce_required"`
+	CallBackUrl      types.String                                          `tfsdk:"callback_url"`
+	State            types.String                                          `tfsdk:"state"`
+}
+
 type credentialProviderOAuthClientCustomParametersModel struct {
 	Key       string `tfsdk:"key"`
 	Value     string `tfsdk:"value"`
@@ -78,7 +93,7 @@ type credentialProviderUserPassModel struct {
 	Password types.String `tfsdk:"password"`
 }
 
-// credentialProviderVaultClientTokenModel maps OAuth Client Credentials Flow configuration.
+// credentialProviderVaultClientTokenModel maps Vault Client configuration.
 type credentialProviderVaultClientTokenModel struct {
 	Subject         string                                                 `tfsdk:"subject"`
 	SubjectType     string                                                 `tfsdk:"subject_type"`

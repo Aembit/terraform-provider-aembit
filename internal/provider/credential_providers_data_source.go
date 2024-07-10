@@ -195,6 +195,55 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								},
 							},
 						},
+						"oauth_authorization_code": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"oauth_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"authorization_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_id": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_secret": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+								"scopes": schema.StringAttribute{
+									Computed: true,
+								},
+								"is_pkce_required": schema.StringAttribute{
+									Computed: true,
+								},
+								"callback_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"state": schema.StringAttribute{
+									Computed: true,
+								},
+								"custom_parameters": schema.SetNestedAttribute{
+									Computed: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
 						"username_password": schema.SingleNestedAttribute{
 							Description: "Username/Password type Credential Provider configuration.",
 							Optional:    true,
