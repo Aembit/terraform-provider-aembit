@@ -73,7 +73,7 @@ func (d *resourceSetDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	resourceSet, err := d.client.GetResourceSet(state.ID.ValueString(), nil)
+	resourceSet, err, _ := d.client.GetResourceSet(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Resource Sets",
