@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -23,7 +24,7 @@ func testDeleteClientWorkload() resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[testCWResource]; !ok {
 			return fmt.Errorf("Not found: %s", testCWResource)
 		}
-		if ok, err = testClient.DeleteClientWorkload(rs.Primary.ID, nil); !ok {
+		if ok, err = testClient.DeleteClientWorkload(context.Background(), rs.Primary.ID, nil); !ok {
 			return err
 		}
 		return nil

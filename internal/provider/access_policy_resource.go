@@ -245,7 +245,7 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 
 	// Delete existing Access Policy
-	_, err := r.client.DeleteAccessPolicy(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAccessPolicy(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Access Policy",

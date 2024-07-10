@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -20,7 +21,7 @@ func testDeleteAccessCondition(resourceName string) resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
-		if ok, err = testClient.DeleteAccessCondition(rs.Primary.ID, nil); !ok {
+		if ok, err = testClient.DeleteAccessCondition(context.Background(), rs.Primary.ID, nil); !ok {
 			return err
 		}
 		return nil

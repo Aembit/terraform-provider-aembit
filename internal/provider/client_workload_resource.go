@@ -177,7 +177,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed workload value from Aembit
-	clientWorkload, err, notFound := r.client.GetClientWorkload(state.ID.ValueString(), nil)
+	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Client Workload",
@@ -270,7 +270,7 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing Client Workload
-	_, err := r.client.DeleteClientWorkload(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteClientWorkload(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Client Workload",

@@ -198,7 +198,7 @@ func (r *resourceSetResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	// Delete existing ResourceSet
-	_, err := r.client.DeleteResourceSet(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteResourceSet(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting ResourceSet",

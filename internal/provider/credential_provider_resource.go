@@ -484,7 +484,7 @@ func (r *credentialProviderResource) Delete(ctx context.Context, req resource.De
 	}
 
 	// Delete existing Credential Provider
-	_, err := r.client.DeleteCredentialProviderV2(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",

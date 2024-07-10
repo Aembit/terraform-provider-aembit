@@ -260,7 +260,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	// Delete existing Role
-	_, err := r.client.DeleteRole(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteRole(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Role",
