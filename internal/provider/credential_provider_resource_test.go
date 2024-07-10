@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -19,7 +20,7 @@ func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
-		if ok, err = testClient.DeleteCredentialProviderV2(rs.Primary.ID, nil); !ok {
+		if ok, err = testClient.DeleteCredentialProviderV2(context.Background(), rs.Primary.ID, nil); !ok {
 			return err
 		}
 		return nil

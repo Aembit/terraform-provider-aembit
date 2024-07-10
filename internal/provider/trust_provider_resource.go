@@ -444,7 +444,7 @@ func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	// Delete existing Trust Provider
-	_, err := r.client.DeleteTrustProvider(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Trust Provider",

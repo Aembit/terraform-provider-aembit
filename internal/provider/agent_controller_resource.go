@@ -215,7 +215,7 @@ func (r *agentControllerResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing Agent Controller
-	_, err := r.client.DeleteAgentController(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAgentController(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Agent Controller",

@@ -262,7 +262,7 @@ func (r *accessConditionResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing AccessCondition
-	_, err := r.client.DeleteAccessCondition(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting AccessCondition",

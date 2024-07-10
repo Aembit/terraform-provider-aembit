@@ -347,7 +347,7 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing Server Workload
-	_, err := r.client.DeleteServerWorkload(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",

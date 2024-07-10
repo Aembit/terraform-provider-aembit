@@ -252,7 +252,7 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegration(state.ID.ValueString(), nil)
+	_, err := r.client.DeleteIntegration(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
