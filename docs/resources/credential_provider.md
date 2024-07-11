@@ -195,7 +195,7 @@ Required:
 
 Optional:
 
-- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.
+- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Only `literal` is currently supported.
 
 
 
@@ -224,7 +224,7 @@ Required:
 
 Optional:
 
-- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.
+- `value_type` (String) Type of value for Custom Parameter of the OAuth Credential Provider. Only `literal` is currently supported.
 
 
 
