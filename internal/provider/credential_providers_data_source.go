@@ -198,13 +198,16 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 						"oauth_authorization_code": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
-								"oauth_url": schema.StringAttribute{
+								"oauth_discovery_url": schema.StringAttribute{
 									Computed: true,
 								},
-								"authorization_url": schema.StringAttribute{
+								"oauth_authorization_url": schema.StringAttribute{
 									Computed: true,
 								},
-								"token_url": schema.StringAttribute{
+								"oauth_token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"user_authorization_url": schema.StringAttribute{
 									Computed: true,
 								},
 								"client_id": schema.StringAttribute{

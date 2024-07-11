@@ -112,16 +112,17 @@ Read-Only:
 
 Read-Only:
 
-- `authorization_url` (String)
 - `callback_url` (String)
 - `client_id` (String)
 - `client_secret` (String, Sensitive)
 - `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code--custom_parameters))
 - `is_pkce_required` (Boolean)
-- `oauth_url` (String)
+- `oauth_authorization_url` (String)
+- `oauth_discovery_url` (String)
+- `oauth_token_url` (String)
 - `scopes` (String)
 - `state` (String)
-- `token_url` (String)
+- `user_authorization_url` (String)
 
 <a id="nestedatt--credential_providers--oauth_authorization_code--custom_parameters"></a>
 ### Nested Schema for `credential_providers.oauth_authorization_code.custom_parameters`
