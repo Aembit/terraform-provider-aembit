@@ -739,8 +739,6 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	model.UsernamePassword = nil
 	model.VaultClientToken = nil
 
-	fmt.Printf("type returned: %s", dto.Type)
-
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
 	case "aembit-access-token":
