@@ -166,12 +166,12 @@ Read-Only:
 
 Required:
 
-- `authorization_url` (String) Authorization URL for the OAuth Credential Provider.
 - `client_id` (String) Client ID for the OAuth Credential Provider.
 - `client_secret` (String, Sensitive) Client Secret for the OAuth Credential Provider.
-- `oauth_url` (String) OAuth URL for the OAuth Credential Provider.
+- `oauth_authorization_url` (String) Authorization URL for the OAuth Credential Provider.
+- `oauth_discovery_url` (String) OAuth URL for the OAuth Credential Provider.
+- `oauth_token_url` (String) Token URL for the OAuth Credential Provider.
 - `scopes` (String) Scopes for the OAuth Credential Provider.
-- `token_url` (String) Token URL for the OAuth Credential Provider.
 
 Optional:
 
@@ -184,6 +184,7 @@ Read-Only:
 	* https://AEMBIT_TENANT_ID.AEMBIT_STACK_DOMAIN/api/v1/credential-providers/RESOURCE_ID/callback 
 	* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource.
 - `state` (String) State for the OAuth Credential Provider.
+- `user_authorization_url` (String) 3rd Party Authorization URL for User Consent for the OAuth Credential Provider.
 
 <a id="nestedatt--oauth_authorization_code--custom_parameters"></a>
 ### Nested Schema for `oauth_authorization_code.custom_parameters`

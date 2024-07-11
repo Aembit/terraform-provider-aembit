@@ -70,16 +70,17 @@ type credentialProviderOAuthClientCredentialsModel struct {
 
 // credentialProviderOAuthAuthorizationCodeModel maps OAuth Authorization Code Flow configuration.
 type credentialProviderOAuthAuthorizationCodeModel struct {
-	OAuthUrl         types.String                                          `tfsdk:"oauth_url"`
-	AuthorizationUrl types.String                                          `tfsdk:"authorization_url"`
-	TokenUrl         types.String                                          `tfsdk:"token_url"`
-	ClientID         types.String                                          `tfsdk:"client_id"`
-	ClientSecret     types.String                                          `tfsdk:"client_secret"`
-	Scopes           types.String                                          `tfsdk:"scopes"`
-	CustomParameters []*credentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
-	IsPkceRequired   types.Bool                                            `tfsdk:"is_pkce_required"`
-	CallBackUrl      types.String                                          `tfsdk:"callback_url"`
-	State            types.String                                          `tfsdk:"state"`
+	OAuthDiscoveryUrl     types.String                                          `tfsdk:"oauth_discovery_url"`
+	OAuthAuthorizationUrl types.String                                          `tfsdk:"oauth_authorization_url"`
+	OAuthTokenUrl         types.String                                          `tfsdk:"oauth_token_url"`
+	UserAuthorizationUrl  types.String                                          `tfsdk:"user_authorization_url"`
+	ClientID              types.String                                          `tfsdk:"client_id"`
+	ClientSecret          types.String                                          `tfsdk:"client_secret"`
+	Scopes                types.String                                          `tfsdk:"scopes"`
+	CustomParameters      []*credentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
+	IsPkceRequired        types.Bool                                            `tfsdk:"is_pkce_required"`
+	CallBackUrl           types.String                                          `tfsdk:"callback_url"`
+	State                 types.String                                          `tfsdk:"state"`
 }
 
 type credentialProviderOAuthClientCustomParametersModel struct {

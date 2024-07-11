@@ -235,17 +235,21 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Description: "OAuth Authorization Code Flow type Credential Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"oauth_url": schema.StringAttribute{
+					"oauth_discovery_url": schema.StringAttribute{
 						Description: "OAuth URL for the OAuth Credential Provider.",
 						Required:    true,
 					},
-					"authorization_url": schema.StringAttribute{
+					"oauth_authorization_url": schema.StringAttribute{
 						Description: "Authorization URL for the OAuth Credential Provider.",
 						Required:    true,
 					},
-					"token_url": schema.StringAttribute{
+					"oauth_token_url": schema.StringAttribute{
 						Description: "Token URL for the OAuth Credential Provider.",
 						Required:    true,
+					},
+					"user_authorization_url": schema.StringAttribute{
+						Description: "3rd Party Authorization URL for User Consent for the OAuth Credential Provider.",
+						Computed:    true,
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the OAuth Credential Provider.",
@@ -671,12 +675,13 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 		credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
 		credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
 		credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-			OAuthUrl:         model.OAuthAuthorizationCode.OAuthUrl.ValueString(),
-			AuthorizationUrl: model.OAuthAuthorizationCode.AuthorizationUrl.ValueString(),
-			TokenUrl:         model.OAuthAuthorizationCode.TokenUrl.ValueString(),
-			IsPkceRequired:   model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
-			CallBackUrl:      model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
-			State:            model.OAuthAuthorizationCode.State.ValueString(),
+			OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
+			AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
+			TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
+			UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
+			IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
+			CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
+			State:                model.OAuthAuthorizationCode.State.ValueString(),
 		}
 		if len(model.ID.ValueString()) > 0 {
 			credential.EntityDTO.ExternalID = model.ID.ValueString()
@@ -849,9 +854,10 @@ func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO
 // Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
 func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderOAuthAuthorizationCodeModel {
 	value := credentialProviderOAuthAuthorizationCodeModel{ClientSecret: types.StringNull()}
-	value.OAuthUrl = types.StringValue(dto.OAuthUrl)
-	value.AuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
-	value.TokenUrl = types.StringValue(dto.TokenUrl)
+	value.OAuthDiscoveryUrl = types.StringValue(dto.OAuthUrl)
+	value.OAuthAuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
+	value.OAuthTokenUrl = types.StringValue(dto.TokenUrl)
+	value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
 	value.ClientID = types.StringValue(dto.ClientID)
 	value.Scopes = types.StringValue(dto.Scope)
 	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
