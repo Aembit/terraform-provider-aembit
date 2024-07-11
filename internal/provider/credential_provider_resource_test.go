@@ -316,6 +316,8 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
+					// Verify we get back a user_authorization_url
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "oauth_authorization_code.user_authorization_url"),
 				),
 			},
 			// ImportState testing
@@ -326,6 +328,8 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code - Modified"),
+					// Verify we get back a user_authorization_url
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "oauth_authorization_code.user_authorization_url"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
