@@ -15,11 +15,6 @@ resource "aembit_credential_provider" "oauth" {
 				key = "key"
 				value = "value"
 				value_type = "literal"
-			},
-			{
-				key = "key2"
-				value = "value2"
-				value_type = "dynamic"
 			}
 		]
 	}
