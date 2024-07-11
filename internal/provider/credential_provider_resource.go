@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"aembit.io/aembit"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -51,7 +53,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Credential Provider.",
+				Optional:    true,
 				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`),
+						"must be a valid uuid"),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
@@ -189,7 +196,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 					"scopes": schema.StringAttribute{
 						Description: "Scopes for the OAuth Credential Provider.",
-						Optional:    true,
+						Required:    true,
 					},
 					"credential_style": schema.StringAttribute{
 						Description: "Credential Style for the OAuth Credential Provider.",
@@ -209,19 +216,92 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 									Required:    true,
 								},
 								"value_type": schema.StringAttribute{
-									Description: "Type of value for Custom Parameter of the OAuth Credential Provider. Possible values are `literal` or `dynamic`.",
+									Description: "Type of value for Custom Parameter of the OAuth Credential Provider. Only `literal` is currently supported.",
 									Optional:    true,
 									Computed:    true,
 									Default:     stringdefault.StaticString("literal"),
 									Validators: []validator.String{
 										stringvalidator.OneOf([]string{
 											"literal",
-											"dynamic",
 										}...),
 									},
 								},
 							},
 						},
+					},
+				},
+			},
+			"oauth_authorization_code": schema.SingleNestedAttribute{
+				Description: "OAuth Authorization Code Flow type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oauth_url": schema.StringAttribute{
+						Description: "OAuth URL for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"authorization_url": schema.StringAttribute{
+						Description: "Authorization URL for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"token_url": schema.StringAttribute{
+						Description: "Token URL for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"client_id": schema.StringAttribute{
+						Description: "Client ID for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"client_secret": schema.StringAttribute{
+						Description: "Client Secret for the OAuth Credential Provider.",
+						Required:    true,
+						Sensitive:   true,
+					},
+					"scopes": schema.StringAttribute{
+						Description: "Scopes for the OAuth Credential Provider.",
+						Required:    true,
+					},
+					"custom_parameters": schema.SetNestedAttribute{
+						Description: "Set Custom Parameters for the OAuth Credential Provider.",
+						Optional:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"key": schema.StringAttribute{
+									Description: "Key for Custom Parameter of the OAuth Credential Provider.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "Value for Custom Parameter of the OAuth Credential Provider.",
+									Required:    true,
+								},
+								"value_type": schema.StringAttribute{
+									Description: "Type of value for Custom Parameter of the OAuth Credential Provider. Only `literal` is currently supported.",
+									Optional:    true,
+									Computed:    true,
+									Default:     stringdefault.StaticString("literal"),
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+										}...),
+									},
+								},
+							},
+						},
+					},
+					"is_pkce_required": schema.BoolAttribute{
+						Description: "PKCE required flag for the OAuth Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"callback_url": schema.StringAttribute{
+						Description: "Authorization Callback URL for the OAuth Credential Provider. Callback URL can be pre-generated by matching the following template; \n" +
+							"\t* https://AEMBIT_TENANT_ID.AEMBIT_STACK_DOMAIN/api/v1/credential-providers/RESOURCE_ID/callback \n" +
+							"\t* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource. \n",
+						Computed: true,
+					},
+					"state": schema.StringAttribute{
+						Description: "State for the OAuth Credential Provider.",
+						Computed:    true,
 					},
 				},
 			},
@@ -341,6 +421,7 @@ func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resou
 			path.MatchRoot("google_workload_identity"),
 			path.MatchRoot("snowflake_jwt"),
 			path.MatchRoot("oauth_client_credentials"),
+			path.MatchRoot("oauth_authorization_code"),
 			path.MatchRoot("username_password"),
 			path.MatchRoot("vault_client_token"),
 		),
@@ -572,13 +653,33 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 	// Handle the OAuth Client Credentials use case
 	if model.OAuthClientCredentials != nil {
 		credential.Type = "oauth-client-credential"
-		credential.CredentialOAuthClientCredentialDTO = aembit.CredentialOAuthClientCredentialDTO{
-			TokenURL:         model.OAuthClientCredentials.TokenURL.ValueString(),
-			ClientID:         model.OAuthClientCredentials.ClientID.ValueString(),
-			ClientSecret:     model.OAuthClientCredentials.ClientSecret.ValueString(),
-			Scope:            model.OAuthClientCredentials.Scopes.ValueString(),
-			CredentialStyle:  model.OAuthClientCredentials.CredentialStyle.ValueString(),
-			CustomParameters: convertCredentialOAuthCustomParameters(model),
+		credential.ClientID = model.OAuthClientCredentials.ClientID.ValueString()
+		credential.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
+		credential.Scope = model.OAuthClientCredentials.Scopes.ValueString()
+		credential.CustomParameters = convertCredentialOAuthClientCredentialsCustomParameters(model)
+		credential.CredentialOAuthClientCredentialV2DTO = aembit.CredentialOAuthClientCredentialV2DTO{
+			TokenURL:        model.OAuthClientCredentials.TokenURL.ValueString(),
+			CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
+		}
+	}
+
+	// Handle the OAuth Authorization Code use case
+	if model.OAuthAuthorizationCode != nil {
+		credential.Type = "oauth-authorization-code"
+		credential.ClientID = model.OAuthAuthorizationCode.ClientID.ValueString()
+		credential.ClientSecret = model.OAuthAuthorizationCode.ClientSecret.ValueString()
+		credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
+		credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
+		credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
+			OAuthUrl:         model.OAuthAuthorizationCode.OAuthUrl.ValueString(),
+			AuthorizationUrl: model.OAuthAuthorizationCode.AuthorizationUrl.ValueString(),
+			TokenUrl:         model.OAuthAuthorizationCode.TokenUrl.ValueString(),
+			IsPkceRequired:   model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
+			CallBackUrl:      model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
+			State:            model.OAuthAuthorizationCode.State.ValueString(),
+		}
+		if len(model.ID.ValueString()) > 0 {
+			credential.EntityDTO.ExternalID = model.ID.ValueString()
 		}
 	}
 
@@ -651,6 +752,8 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 		model.SnowflakeToken = convertSnowflakeTokenV2DTOToModel(dto)
 	case "oauth-client-credential":
 		model.OAuthClientCredentials = convertOAuthClientCredentialV2DTOToModel(dto, state)
+	case "oauth-authorization-code":
+		model.OAuthAuthorizationCode = convertOAuthAuthorizationCodeV2DTOToModel(dto, state)
 	case "username-password":
 		model.UsernamePassword = convertUserPassV2DTOToModel(dto, state)
 	case "vaultClientToken":
@@ -742,6 +845,36 @@ func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO
 	return &value
 }
 
+// convertOAuthAuthorizationCodeV2DTOToModel converts the OAuth Authorization Code state object into a model ready for terraform processing.
+// Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
+func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderOAuthAuthorizationCodeModel {
+	value := credentialProviderOAuthAuthorizationCodeModel{ClientSecret: types.StringNull()}
+	value.OAuthUrl = types.StringValue(dto.OAuthUrl)
+	value.AuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
+	value.TokenUrl = types.StringValue(dto.TokenUrl)
+	value.ClientID = types.StringValue(dto.ClientID)
+	value.Scopes = types.StringValue(dto.Scope)
+	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
+	value.CallBackUrl = types.StringValue(dto.CallBackUrl)
+	value.State = types.StringValue(dto.State)
+	if state.OAuthAuthorizationCode != nil {
+		value.ClientSecret = state.OAuthAuthorizationCode.ClientSecret
+	}
+
+	// Get the custom parameters to be injected into the model
+	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
+	for i, parameter := range dto.CustomParameters {
+		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
+			Key:       parameter.Key,
+			Value:     parameter.Value,
+			ValueType: parameter.ValueType,
+		}
+	}
+	value.CustomParameters = parameters
+
+	return &value
+}
+
 // convertUserPassV2DTOToModel converts the API Key state object into a model ready for terraform processing.
 // Note: Since Aembit vaults the Password and does not return it in the API, the DTO will never contain the stored value.
 func convertUserPassV2DTOToModel(dto aembit.CredentialProviderV2DTO, state credentialProviderResourceModel) *credentialProviderUserPassModel {
@@ -787,9 +920,22 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ c
 }
 
 // Get the custom parameters to be injected into the model.
-func convertCredentialOAuthCustomParameters(model credentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
+func convertCredentialOAuthClientCredentialsCustomParameters(model credentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
 	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthClientCredentials.CustomParameters))
 	for i, param := range model.OAuthClientCredentials.CustomParameters {
+		parameters[i] = aembit.CredentialOAuthParametersDTO{
+			Key:       param.Key,
+			Value:     param.Value,
+			ValueType: param.ValueType,
+		}
+	}
+	return parameters
+}
+
+// Get the custom parameters to be injected into the model.
+func convertCredentialOAuthAuthorizationCodeCustomParameters(model credentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
+	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthAuthorizationCode.CustomParameters))
+	for i, param := range model.OAuthAuthorizationCode.CustomParameters {
 		parameters[i] = aembit.CredentialOAuthParametersDTO{
 			Key:       param.Key,
 			Value:     param.Value,

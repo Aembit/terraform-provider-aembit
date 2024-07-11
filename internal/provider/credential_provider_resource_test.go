@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -226,8 +228,8 @@ const testOAuthClientCredentialsAuthHeader string = "aembit_credential_provider.
 const testOAuthClientCredentialsPostBody string = "aembit_credential_provider.oauth_postBody"
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tfmod")
+	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -260,8 +262,8 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testi
 }
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/credential/oauth/TestAccCredentialProviderResource.tfmod")
+	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -286,6 +288,44 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testOAuthClientCredentialsPostBody, "name", "TF Acceptance OAuth - Modified"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+const testOAuthAuthorizationCodeResourceName string = "aembit_credential_provider.oauth_authorization_code"
+
+func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tfmod")
+
+	newID := uuid.New().String()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.ReplaceAll(string(createFile), "replace-with-uuid", newID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code"),
+					//Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testOAuthAuthorizationCodeResourceName, ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
