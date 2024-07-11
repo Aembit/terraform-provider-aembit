@@ -51,7 +51,7 @@ resource "aembit_credential_provider" "oauth_postBody" {
 			{
 				key = "key2"
 				value = "value2"
-				value_type = "dynamic"
+				value_type = "literal"
 			}
 		]
 	}
