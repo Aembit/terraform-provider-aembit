@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -305,6 +307,19 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 					"state": schema.StringAttribute{
 						Description: "State for the OAuth Credential Provider.",
+						Computed:    true,
+					},
+					"lifetime": schema.Int64Attribute{
+						Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(31536000),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(86400),
+						},
+					},
+					"lifetime_expiration": schema.StringAttribute{
+						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
 						Computed:    true,
 					},
 				},
@@ -686,6 +701,8 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 		if len(model.ID.ValueString()) > 0 {
 			credential.EntityDTO.ExternalID = model.ID.ValueString()
 		}
+
+		credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime
 	}
 
 	// Handle the Username Password use case
@@ -877,6 +894,17 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 		}
 	}
 	value.CustomParameters = parameters
+
+	value.Lifetime = dto.LifetimeTimeSpanSeconds
+
+	if dto.LifetimeExpiration != nil {
+		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration)
+		if err != nil {
+			fmt.Println("Error parsing LifetimeExpiration:", err)
+		}
+
+		value.LifetimeExpiration = types.StringValue(timeParsed.Local().Format(time.RFC3339))
+	}
 
 	return &value
 }

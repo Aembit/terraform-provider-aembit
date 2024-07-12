@@ -81,6 +81,8 @@ type credentialProviderOAuthAuthorizationCodeModel struct {
 	IsPkceRequired        types.Bool                                            `tfsdk:"is_pkce_required"`
 	CallBackUrl           types.String                                          `tfsdk:"callback_url"`
 	State                 types.String                                          `tfsdk:"state"`
+	Lifetime              int64                                                 `tfsdk:"lifetime"`
+	LifetimeExpiration    types.String                                          `tfsdk:"lifetime_expiration"`
 }
 
 type credentialProviderOAuthClientCustomParametersModel struct {

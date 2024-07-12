@@ -229,6 +229,14 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"state": schema.StringAttribute{
 									Computed: true,
 								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
+									Required:    true,
+								},
+								"lifetime_expiration": schema.StringAttribute{
+									Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
+									Computed:    true,
+								},
 								"custom_parameters": schema.SetNestedAttribute{
 									Computed: true,
 									NestedObject: schema.NestedAttributeObject{
