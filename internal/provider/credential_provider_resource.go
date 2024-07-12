@@ -209,6 +209,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the OAuth Credential Provider.",
 						Optional:    true,
+						Computed:    true,
+						Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+							"key":        types.StringType,
+							"value":      types.StringType,
+							"value_type": types.StringType,
+						}}, []attr.Value{})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
