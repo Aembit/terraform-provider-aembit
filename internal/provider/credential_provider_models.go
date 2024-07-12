@@ -83,6 +83,7 @@ type credentialProviderOAuthAuthorizationCodeModel struct {
 	State                 types.String                                          `tfsdk:"state"`
 	Lifetime              int64                                                 `tfsdk:"lifetime"`
 	LifetimeType          types.String                                          `tfsdk:"lifetime_type"`
+	LifetimeExpiration    types.String                                          `tfsdk:"lifetime_expiration"`
 }
 
 type credentialProviderOAuthClientCustomParametersModel struct {

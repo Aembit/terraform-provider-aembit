@@ -237,6 +237,10 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Description: "Lifetime multiplier type(days, months, years) of the OAuth Authorization Code credentials requested by the Credential Provider.",
 									Required:    true,
 								},
+								"lifetime_expiration": schema.StringAttribute{
+									Description: "Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
+									Computed:    true,
+								},
 								"custom_parameters": schema.SetNestedAttribute{
 									Computed: true,
 									NestedObject: schema.NestedAttributeObject{

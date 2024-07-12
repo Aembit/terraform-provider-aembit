@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -325,6 +326,10 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 								"years",
 							}...),
 						},
+					},
+					"lifetime_expiration": schema.StringAttribute{
+						Description: "Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
+						Computed:    true,
 					},
 				},
 			},
@@ -918,6 +923,15 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 	} else if dto.LifetimeTimeSpanSeconds%daysInSeconds == 0 {
 		value.Lifetime = dto.LifetimeTimeSpanSeconds / daysInSeconds
 		value.LifetimeType = types.StringValue("days")
+	}
+
+	if dto.LifetimeExpiration != nil {
+		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration)
+		if err != nil {
+			fmt.Println("Error parsing LifetimeExpiration:", err)
+		}
+
+		value.LifetimeExpiration = types.StringValue(timeParsed.Local().Format(time.RFC3339))
 	}
 
 	return &value
