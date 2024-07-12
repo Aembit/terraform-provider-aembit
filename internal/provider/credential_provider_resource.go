@@ -11,11 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -269,6 +271,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the OAuth Credential Provider.",
 						Optional:    true,
+						Computed:    true,
+						Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+							"key":        types.StringType,
+							"value":      types.StringType,
+							"value_type": types.StringType,
+						}}, []attr.Value{})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -854,15 +862,17 @@ func convertOAuthClientCredentialV2DTOToModel(dto aembit.CredentialProviderV2DTO
 	}
 
 	// Get the custom parameters to be injected into the model
-	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
-	for i, parameter := range dto.CustomParameters {
-		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
-			Key:       parameter.Key,
-			Value:     parameter.Value,
-			ValueType: parameter.ValueType,
+	if len(dto.CustomParameters) > 0 {
+		parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
+		for i, parameter := range dto.CustomParameters {
+			parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
+				Key:       parameter.Key,
+				Value:     parameter.Value,
+				ValueType: parameter.ValueType,
+			}
 		}
+		value.CustomParameters = parameters
 	}
-	value.CustomParameters = parameters
 
 	return &value
 }
@@ -884,7 +894,6 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 		value.ClientSecret = state.OAuthAuthorizationCode.ClientSecret
 	}
 
-	// Get the custom parameters to be injected into the model
 	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
 	for i, parameter := range dto.CustomParameters {
 		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
