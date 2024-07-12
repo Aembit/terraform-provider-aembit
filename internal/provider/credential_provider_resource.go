@@ -919,7 +919,6 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 		}
 
 		value.LifetimeExpiration = types.StringValue(timeParsed.Local().Format(time.RFC3339))
-		fmt.Printf("Date expected %s: ", value.LifetimeExpiration)
 	}
 
 	return &value
