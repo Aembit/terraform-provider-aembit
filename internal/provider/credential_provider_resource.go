@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -312,23 +313,13 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
 						Optional:    true,
 						Computed:    true,
-						Default:     int64default.StaticInt64(1),
-					},
-					"lifetime_type": schema.StringAttribute{
-						Description: "Lifetime multiplier type(days, months, years) of the OAuth Authorization Code credentials requested by the Credential Provider.",
-						Optional:    true,
-						Computed:    true,
-						Default:     stringdefault.StaticString("years"),
-						Validators: []validator.String{
-							stringvalidator.OneOf([]string{
-								"days",
-								"months",
-								"years",
-							}...),
+						Default:     int64default.StaticInt64(31536000),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(86400),
 						},
 					},
 					"lifetime_expiration": schema.StringAttribute{
-						Description: "Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
+						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.",
 						Computed:    true,
 					},
 				},
@@ -609,10 +600,6 @@ func (r *credentialProviderResource) ImportState(ctx context.Context, req resour
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-const yearInSeconds = 60 * 60 * 24 * 30 * 12
-const monthInSeconds = 60 * 60 * 24 * 30
-const daysInSeconds = 60 * 60 * 24
-
 func convertCredentialProviderModelToV2DTO(ctx context.Context, model credentialProviderResourceModel, externalID *string, tenantID string, stackDomain string) aembit.CredentialProviderV2DTO {
 	var credential aembit.CredentialProviderV2DTO
 	credential.EntityDTO = aembit.EntityDTO{
@@ -715,13 +702,7 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 			credential.EntityDTO.ExternalID = model.ID.ValueString()
 		}
 
-		if model.OAuthAuthorizationCode.LifetimeType.ValueString() == "years" {
-			credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime * yearInSeconds
-		} else if model.OAuthAuthorizationCode.LifetimeType.ValueString() == "months" {
-			credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime * monthInSeconds
-		} else if model.OAuthAuthorizationCode.LifetimeType.ValueString() == "days" {
-			credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime * daysInSeconds
-		}
+		credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime
 	}
 
 	// Handle the Username Password use case
@@ -914,16 +895,7 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 	}
 	value.CustomParameters = parameters
 
-	if dto.LifetimeTimeSpanSeconds%yearInSeconds == 0 {
-		value.Lifetime = dto.LifetimeTimeSpanSeconds / yearInSeconds
-		value.LifetimeType = types.StringValue("years")
-	} else if dto.LifetimeTimeSpanSeconds%monthInSeconds == 0 {
-		value.Lifetime = dto.LifetimeTimeSpanSeconds / monthInSeconds
-		value.LifetimeType = types.StringValue("months")
-	} else if dto.LifetimeTimeSpanSeconds%daysInSeconds == 0 {
-		value.Lifetime = dto.LifetimeTimeSpanSeconds / daysInSeconds
-		value.LifetimeType = types.StringValue("days")
-	}
+	value.Lifetime = dto.LifetimeTimeSpanSeconds
 
 	if dto.LifetimeExpiration != nil {
 		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration)

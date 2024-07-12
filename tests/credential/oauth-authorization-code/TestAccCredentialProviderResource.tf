@@ -17,8 +17,7 @@ resource "aembit_credential_provider" "oauth_authorization_code" {
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		is_pkce_required = true
-		lifetime = 1
-		lifetime_type = "months"
+		lifetime = 31536000
 		custom_parameters = [
 			{
 				key = "key"
