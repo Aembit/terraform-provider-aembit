@@ -110,6 +110,11 @@ Read-Only:
 <a id="nestedatt--credential_providers--oauth_authorization_code"></a>
 ### Nested Schema for `credential_providers.oauth_authorization_code`
 
+Required:
+
+- `lifetime` (Number) Lifetime mulitplier of the OAuth Authorization Code credentials requested by the Credential Provider.
+- `lifetime_type` (String) Lifetime multiplier type(days, months, years) of the OAuth Authorization Code credentials requested by the Credential Provider.
+
 Read-Only:
 
 - `callback_url` (String)
@@ -117,6 +122,7 @@ Read-Only:
 - `client_secret` (String, Sensitive)
 - `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code--custom_parameters))
 - `is_pkce_required` (Boolean)
+- `lifetime_expiration` (String) Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.
 - `oauth_authorization_url` (String)
 - `oauth_discovery_url` (String)
 - `oauth_token_url` (String)
