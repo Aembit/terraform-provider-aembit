@@ -309,7 +309,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Computed:    true,
 					},
 					"lifetime": schema.Int64Attribute{
-						Description: "Lifetime multiplier of the OAuth Authorization Code credentials requested by the Credential Provider.",
+						Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(1),
