@@ -898,6 +898,7 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 		value.ClientSecret = state.OAuthAuthorizationCode.ClientSecret
 	}
 
+	// Get the custom parameters to be injected into the model
 	parameters := make([]*credentialProviderOAuthClientCustomParametersModel, len(dto.CustomParameters))
 	for i, parameter := range dto.CustomParameters {
 		parameters[i] = &credentialProviderOAuthClientCustomParametersModel{
