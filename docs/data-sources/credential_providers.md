@@ -112,7 +112,7 @@ Read-Only:
 
 Required:
 
-- `lifetime` (Number) Lifetime mulitplier of the OAuth Authorization Code credentials requested by the Credential Provider.
+- `lifetime` (Number) Lifetime multiplier of the OAuth Authorization Code credentials requested by the Credential Provider.
 - `lifetime_type` (String) Lifetime multiplier type(days, months, years) of the OAuth Authorization Code credentials requested by the Credential Provider.
 
 Read-Only:

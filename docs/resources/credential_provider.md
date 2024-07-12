@@ -177,7 +177,7 @@ Optional:
 
 - `custom_parameters` (Attributes Set) Set Custom Parameters for the OAuth Credential Provider. (see [below for nested schema](#nestedatt--oauth_authorization_code--custom_parameters))
 - `is_pkce_required` (Boolean) PKCE required flag for the OAuth Credential Provider.
-- `lifetime` (Number) Lifetime mulitplier of the OAuth Authorization Code credentials requested by the Credential Provider.
+- `lifetime` (Number) Lifetime multiplier of the OAuth Authorization Code credentials requested by the Credential Provider.
 - `lifetime_type` (String) Lifetime multiplier type(days, months, years) of the OAuth Authorization Code credentials requested by the Credential Provider.
 
 Read-Only:
