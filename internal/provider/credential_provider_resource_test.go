@@ -296,19 +296,21 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 }
 
 const testOAuthAuthorizationCodeResourceName string = "aembit_credential_provider.oauth_authorization_code"
+const testOAuthAuthorizationCodeEmptyCustomParametersResourceName string = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
 
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tfmod")
 
-	newID := uuid.New().String()
+	firstID := uuid.New().String()
+	secondID := uuid.New().String()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: strings.ReplaceAll(string(createFile), "replace-with-uuid", newID),
+				Config: strings.ReplaceAll(strings.ReplaceAll(string(createFile), "replace-with-uuid-first", firstID), "replace-with-uuid-second", secondID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code"),
@@ -318,6 +320,14 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
 					// Verify we get back a user_authorization_url
 					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "oauth_authorization_code.user_authorization_url"),
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "name", "TF Acceptance OAuth Authorization Code"),
+					//Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "id"),
+					// Verify we get back a user_authorization_url
+					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "oauth_authorization_code.user_authorization_url"),
 				),
 			},
 			// ImportState testing
