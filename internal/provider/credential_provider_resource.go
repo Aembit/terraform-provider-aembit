@@ -911,9 +911,9 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 
 	value.Lifetime = dto.LifetimeTimeSpanSeconds
 
-	if dto.LifetimeExpiration != nil {
+	if len(dto.LifetimeExpiration) > 0 {
 		// Add Z to indicate that Date string is in UTC format, API returns it without region info
-		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration+"Z")
+		timeParsed, err := time.Parse(time.RFC3339, dto.LifetimeExpiration+"Z")
 		if err != nil {
 			fmt.Println("Error parsing LifetimeExpiration:", err)
 		}
