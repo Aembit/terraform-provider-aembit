@@ -295,8 +295,9 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 	})
 }
 
-const testOAuthAuthorizationCodeResourceName string = "aembit_credential_provider.oauth_authorization_code"
-const testOAuthAuthorizationCodeEmptyCustomParametersResourceName string = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
+const testOAuthAuthCodeResource string = "aembit_credential_provider.oauth_authorization_code"
+const testOAuthAuthCodeEmptyCustomParameters string = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
+const testOAuthAuthCodeUserAuthUrl = "oauth_authorization_code.user_authorization_url"
 
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf")
@@ -313,33 +314,33 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 				Config: strings.ReplaceAll(strings.ReplaceAll(string(createFile), "replace-with-uuid-first", firstID), "replace-with-uuid-second", secondID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code"),
+					resource.TestCheckResourceAttr(testOAuthAuthCodeResource, "name", "TF Acceptance OAuth Authorization Code"),
 					//Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeResource, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeResource, "id"),
 					// Verify we get back a user_authorization_url
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "oauth_authorization_code.user_authorization_url"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeResource, testOAuthAuthCodeUserAuthUrl),
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "name", "TF Acceptance OAuth Authorization Code"),
+					resource.TestCheckResourceAttr(testOAuthAuthCodeEmptyCustomParameters, "name", "TF Acceptance OAuth Authorization Code"),
 					//Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeEmptyCustomParameters, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "id"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeEmptyCustomParameters, "id"),
 					// Verify we get back a user_authorization_url
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeEmptyCustomParametersResourceName, "oauth_authorization_code.user_authorization_url"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeEmptyCustomParameters, testOAuthAuthCodeUserAuthUrl),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testOAuthAuthorizationCodeResourceName, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testOAuthAuthCodeResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testOAuthAuthorizationCodeResourceName, "name", "TF Acceptance OAuth Authorization Code - Modified"),
+					resource.TestCheckResourceAttr(testOAuthAuthCodeResource, "name", "TF Acceptance OAuth Authorization Code - Modified"),
 					// Verify we get back a user_authorization_url
-					resource.TestCheckResourceAttrSet(testOAuthAuthorizationCodeResourceName, "oauth_authorization_code.user_authorization_url"),
+					resource.TestCheckResourceAttrSet(testOAuthAuthCodeResource, testOAuthAuthCodeUserAuthUrl),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
