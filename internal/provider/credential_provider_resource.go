@@ -11,11 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -207,6 +209,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the OAuth Credential Provider.",
 						Optional:    true,
+						Computed:    true,
+						Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+							"key":        types.StringType,
+							"value":      types.StringType,
+							"value_type": types.StringType,
+						}}, []attr.Value{})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -269,6 +277,12 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the OAuth Credential Provider.",
 						Optional:    true,
+						Computed:    true,
+						Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+							"key":        types.StringType,
+							"value":      types.StringType,
+							"value_type": types.StringType,
+						}}, []attr.Value{})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -898,7 +912,8 @@ func convertOAuthAuthorizationCodeV2DTOToModel(dto aembit.CredentialProviderV2DT
 	value.Lifetime = dto.LifetimeTimeSpanSeconds
 
 	if dto.LifetimeExpiration != nil {
-		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration)
+		// Add Z to indicate that Date string is in UTC format, API returns it without region info
+		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration+"Z")
 		if err != nil {
 			fmt.Println("Error parsing LifetimeExpiration:", err)
 		}
