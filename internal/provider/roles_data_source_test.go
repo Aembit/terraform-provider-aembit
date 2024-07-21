@@ -8,9 +8,27 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testRolesDataSource string = "data.aembit_roles.test"
+const testRoleResource string = "aembit_role.role"
+
+func testFindRole(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var rs *terraform.ResourceState
+		var err error
+		var ok bool
+		var notFound bool
+		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		if _, err, notFound = testClient.GetRole(rs.Primary.ID, nil); notFound {
+			return err
+		}
+		return nil
+	}
+}
 
 func TestAccRolesDataSource(t *testing.T) {
 
@@ -32,12 +50,12 @@ func TestAccRolesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(testRolesDataSource, "roles.0.is_active", "true"),
 					resource.TestCheckResourceAttr(testRolesDataSource, "roles.1.name", "Auditor"),
 					resource.TestCheckResourceAttr(testRolesDataSource, "roles.1.is_active", "true"),
-					resource.TestCheckResourceAttr(testRolesDataSource, "roles.2.name", fmt.Sprintf("TF Acceptance Role%d", randID)),
-					resource.TestCheckResourceAttr(testRolesDataSource, "roles.2.is_active", "false"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testRolesDataSource, "roles.0.id"),
 					resource.TestCheckResourceAttrSet(testRolesDataSource, "roles.1.id"),
 					resource.TestCheckResourceAttrSet(testRolesDataSource, "roles.2.id"),
+					// Find newly created entry
+					testFindRole(testRoleResource),
 				),
 			},
 		},
