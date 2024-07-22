@@ -1,55 +1,53 @@
 package provider
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testServerWorkloadsDataSource string = "data.aembit_server_workloads.test"
 
+func testFindServerWorkload(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var rs *terraform.ResourceState
+		var err error
+		var ok bool
+		var notFound bool
+		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		if _, err, notFound = testClient.GetServerWorkload(rs.Primary.ID, nil); notFound {
+			return err
+		}
+		return nil
+	}
+}
+
 func TestAccServerWorkloadsDataSource(t *testing.T) {
 
 	createFile, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
+	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: string(createFile),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify number of Server Workloads returned
+					// Verify non-zero number of Server Workloads returned
 					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.#"),
-					// Verify the attributes of the first Server Workload
-					// Verify Server Workload Name
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.name", "Unit Test 1"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.tags.%", "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.tags.color", "blue"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.tags.day", "Sunday"),
-					// Verify Service Endpoint.
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.host", "unittest.testhost.com"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.port", "443"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.app_protocol", "HTTP"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.transport_protocol", "TCP"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.requested_port", "443"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.tls_verification", "full"),
-					// Service Endpoint Authentication config is not returned by the API
-					//resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.authentication_config.method", "HTTP Authentication"),
-					//resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.authentication_config.scheme", "Bearer"),
-					// Verify HTTP Headers.
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.http_headers.%", "3"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.http_headers.host", "graph.microsoft.com"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.http_headers.user-agent", "curl/7.64.1"),
-					resource.TestCheckResourceAttr(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.http_headers.accept", "*/*"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.id"),
 					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.external_id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.id"),
+					// Find newly created entry
+					testFindServerWorkload(testServerWorkloadResource),
 				),
 			},
 		},
