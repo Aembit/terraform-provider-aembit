@@ -37,5 +37,3 @@ func newHTTPHeadersModel(ctx context.Context, headers []aembit.KeyValuePair) typ
 
 	return types.MapNull(types.StringType)
 }
-
-
