@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"os"
-	"testing"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/types"
