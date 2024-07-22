@@ -631,8 +631,8 @@ func isTokenValid(jwtToken string) bool {
 	}
 
 	if subClaim, ok = claims["sub"].(string); !ok || subClaim == "" {
-        return false
-    }
+		return false
+	}
 
 	if expClaim, ok = claims["exp"].(float64); !ok {
 		return false
