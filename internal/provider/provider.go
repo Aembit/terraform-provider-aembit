@@ -614,6 +614,7 @@ func isTokenValid(jwtToken string) bool {
 	var expClaim float64
 	var err error
 	var ok bool
+	var subClaim string
 
 	if jwtToken == "" || !strings.Contains(jwtToken, ".") || strings.Count(jwtToken, ".") != 2 {
 		return false
@@ -628,6 +629,10 @@ func isTokenValid(jwtToken string) bool {
 	if err := json.Unmarshal(payload, &claims); err != nil {
 		return false
 	}
+
+	if subClaim, ok = claims["sub"].(string); !ok || subClaim == "" {
+        return false
+    }
 
 	if expClaim, ok = claims["exp"].(float64); !ok {
 		return false
