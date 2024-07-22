@@ -40,8 +40,4 @@ func newHTTPHeadersModel(ctx context.Context, headers []aembit.KeyValuePair) typ
 	return types.MapNull(types.StringType)
 }
 
-func skipCI(t *testing.T) {
-	if os.Getenv("CI") != "" {
-		t.Skip("Skipping testing in CI environment")
-	}
-}
+
