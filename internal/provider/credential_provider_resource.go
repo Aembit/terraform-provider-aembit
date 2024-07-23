@@ -333,7 +333,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						},
 					},
 					"lifetime_expiration": schema.StringAttribute{
-						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This is based on the last successful Authorization of the Credential Provider",
+						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
 						Computed:    true,
 					},
 				},
