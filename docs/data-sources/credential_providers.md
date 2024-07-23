@@ -121,7 +121,7 @@ Read-Only:
 - `client_secret` (String, Sensitive)
 - `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code--custom_parameters))
 - `is_pkce_required` (Boolean)
-- `lifetime_expiration` (String) ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider.
+- `lifetime_expiration` (String) ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This is based on the last successful Authorization of the Credential Provider
 - `oauth_authorization_url` (String)
 - `oauth_discovery_url` (String)
 - `oauth_token_url` (String)
