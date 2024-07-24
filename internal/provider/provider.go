@@ -575,7 +575,13 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 		return "", fmt.Errorf("failed to parse response body: %w", err)
 	}
 
-	jsonBody["sub"] = "1"
+	claims, ok := jsonBody["claims"].(map[string]interface{})
+	if !ok {
+		claims = make(map[string]interface{})
+		jsonBody["claims"] = claims
+	}
+
+	claims["sub"] = "1"
 
 	GITHUB_ID_TOKEN, ok := jsonBody["value"].(string)
 	if !ok {
@@ -617,7 +623,6 @@ func isTokenValid(jwtToken string) bool {
 	var expClaim float64
 	var err error
 	var ok bool
-	var subClaim string
 
 	if jwtToken == "" || !strings.Contains(jwtToken, ".") || strings.Count(jwtToken, ".") != 2 {
 		return false
@@ -630,10 +635,6 @@ func isTokenValid(jwtToken string) bool {
 
 	var claims map[string]interface{}
 	if err := json.Unmarshal(payload, &claims); err != nil {
-		return false
-	}
-
-	if subClaim, ok = claims["sub"].(string); !ok || subClaim == "" {
 		return false
 	}
 
