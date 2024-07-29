@@ -457,6 +457,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 		idTokenType: map[string]interface{}{
 			"identityToken": idToken,
 		},
+		"sub": clientId,
 	}
 	attestationJSON, err := json.Marshal(attestationData)
 	if err != nil {
@@ -574,14 +575,6 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to parse response body: %w", err)
 	}
-
-	claims, ok := jsonBody["claims"].(map[string]interface{})
-	if !ok {
-		claims = make(map[string]interface{})
-		jsonBody["claims"] = claims
-	}
-
-	claims["sub"] = "1"
 
 	GITHUB_ID_TOKEN, ok := jsonBody["value"].(string)
 	if !ok {
