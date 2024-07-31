@@ -452,6 +452,7 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 	details := url.Values{}
 	details.Set("grant_type", "client_credentials")
 	details.Set("client_id", clientId)
+
 	attestationData := map[string]interface{}{
 		"version": "1.0.0",
 		idTokenType: map[string]interface{}{
@@ -579,6 +580,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("failed to parse response value: %w", err)
 	}
+
 	return GITHUB_ID_TOKEN, nil
 }
 
