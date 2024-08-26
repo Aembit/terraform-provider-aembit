@@ -28,7 +28,7 @@ jobs:
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
           fetch-depth: 0  # Allow goreleaser to access older tag information.
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      - uses: actions/setup-go@v5 # v5.x
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -39,7 +39,7 @@ jobs:
           gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
           #passphrase: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+        uses: goreleaser/goreleaser-action@v5 # v5.x
         with:
           args: release --clean
         env:

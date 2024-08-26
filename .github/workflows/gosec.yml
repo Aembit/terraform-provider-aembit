@@ -18,7 +18,7 @@ jobs:
             token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
             submodules: recursive
       - name: Setup Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        uses: actions/setup-go@v5 # v5.x
         with:
             go-version-file: 'go.mod'
             cache: true
