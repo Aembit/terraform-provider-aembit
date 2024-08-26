@@ -276,14 +276,14 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	}
 
 	policy.TrustProviders = make([]string, len(model.TrustProviders))
-	if model.TrustProviders != nil && len(model.TrustProviders) > 0 {
+	if len(model.TrustProviders) > 0 {
 		for i, trustProvider := range model.TrustProviders {
 			policy.TrustProviders[i] = trustProvider.ValueString()
 		}
 	}
 
 	policy.AccessConditions = make([]string, len(model.AccessConditions))
-	if model.AccessConditions != nil && len(model.AccessConditions) > 0 {
+	if len(model.AccessConditions) > 0 {
 		for i, accessConditions := range model.AccessConditions {
 			policy.AccessConditions[i] = accessConditions.ValueString()
 		}
@@ -305,14 +305,14 @@ func convertAccessPolicyDTOToModel(dto aembit.PolicyDTO) accessPolicyResourceMod
 	}
 
 	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
-	if dto.TrustProviders != nil && len(dto.TrustProviders) > 0 {
+	if len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider)
 		}
 	}
 
 	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
-	if dto.AccessConditions != nil && len(dto.AccessConditions) > 0 {
+	if len(dto.AccessConditions) > 0 {
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions)
 		}
@@ -334,14 +334,14 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.PolicyExternalDTO) accessP
 	}
 
 	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
-	if dto.TrustProviders != nil && len(dto.TrustProviders) > 0 {
+	if len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
 			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
 		}
 	}
 
 	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
-	if dto.AccessConditions != nil && len(dto.AccessConditions) > 0 {
+	if len(dto.AccessConditions) > 0 {
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
 		}

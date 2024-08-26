@@ -15,6 +15,8 @@ default: testacc
 
 # Run the GitHub CI Linters locally
 lint: 
+# Must use docker pull first to make sure we actually have the latest
+	docker pull golangci/golangci-lint:latest
 	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:latest golangci-lint run -v
 
 install:

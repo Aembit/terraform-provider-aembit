@@ -111,7 +111,7 @@ func convertResourceSetsDTOToModel(_ context.Context, dto []aembit.ResourceSetDT
 			Roles:       make([]types.String, len(resourceSet.Roles)),
 		}
 		model.ResourceSets[index].Roles = make([]types.String, len(resourceSet.Roles))
-		if resourceSet.Roles != nil && len(resourceSet.Roles) > 0 {
+		if len(resourceSet.Roles) > 0 {
 			for i, role := range resourceSet.Roles {
 				model.ResourceSets[index].Roles[i] = types.StringValue(role)
 			}
