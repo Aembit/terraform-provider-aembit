@@ -1,43 +1,41 @@
-provider "aembit" {
-}
+provider "aembit" {}
 
 variable "integrations" {
-   type = map(object({
+  type = list(object({
     name = string
     is_active = bool
-	  type = string
-	  sync_frequency = number
-	  endpoint = string
-    oauth_client_credentials = map(string)
+    type = string
+    sync_frequency = number
+    endpoint = string
+    token_url = string
+    client_id = string
+    client_secret = string
+    audience = string
   }))
-  default = {
-    wiz = {
+  default = [
+    {
+      name = "TF Acceptance Crowdstrike - Modified"
+      is_active = true
+      type = "CrowdStrike"
+      sync_frequency = 3600
+      endpoint = "https://endpoint"
+      token_url = "https://url/token"
+      client_id = "client_id"
+      client_secret = "client_secret"
+      audience = "audience"
+    },
+    {
       name = "TF Acceptance Wiz - Modified"
       is_active = true
-	    type = "WizIntegrationApi"
-	    sync_frequency = 3600
-	    endpoint = "https://endpoint"
-      oauth_client_credentials = {
-        token_url = "https://url/token"
-        client_id = "client_id"
-        client_secret = "client_secret"
-        audience = "audience"
-      }
+      type = "WizIntegrationApi"
+      sync_frequency = 3600
+      endpoint = "https://endpoint"
+      token_url = "https://url/token"
+      client_id = "client_id"
+      client_secret = "client_secret"
+      audience = "audience"
     }
-    crowdstrike = {
-      name = "TF Acceptance Crowdstrike - Modified"
-	    is_active = true
-	    type = "CrowdStrike"
-	    sync_frequency = 3600
-	    endpoint = "https://endpoint"
-      oauth_client_credentials = {
-        token_url = "https://url/token"
-        client_id = "client_id"
-        client_secret = "client_secret"
-        audience = "audience"
-      }
-    }
-  }
+  ]
 }
 
 variable "access_conditions" {
@@ -49,13 +47,13 @@ variable "access_conditions" {
     container_cluster_connected = optional(bool, null)
   }))
   default = {
-    crowdstrike = {
+    "crowdstrike" = {
       max_last_seen               = 3600
       match_hostname              = true
       match_serial_number         = true
       prevent_rfm                 = true
-    }
-    wiz = {
+    },
+    "wiz" = {
       max_last_seen               = 3600
       container_cluster_connected = true
     }
@@ -63,38 +61,43 @@ variable "access_conditions" {
 }
 
 resource "aembit_integration" "ac" {
-  for_each                  = var.integrations
-  name                      = each.value.name
-  is_active                 = each.value.is_active
-  type                      = each.value.type
-  sync_frequency            = each.value.sync_frequency
-  endpoint                  = each.value.endpoint
-  oauth_client_credentials  = each.value.oauth_client_credentials
+  count = length(var.integrations)
+
+  name           = var.integrations[count.index].name
+  type           = var.integrations[count.index].type
+  sync_frequency = var.integrations[count.index].sync_frequency
+  is_active      = var.integrations[count.index].is_active
+  endpoint       = var.integrations[count.index].endpoint
+  oauth_client_credentials = {
+    token_url     = var.integrations[count.index].token_url
+    client_id     = var.integrations[count.index].client_id
+    client_secret = var.integrations[count.index].client_secret
+    audience      = var.integrations[count.index].audience
+  }
 }
 
 resource "aembit_access_condition" "ac" {
-  for_each        = var.access_conditions
-  name            = "ac-${each.key}"
-  is_active       = each.value.is_active
-  integration_id  = aembit_integration.ac[each.key].id
-  
+  count = length(var.integrations)
+
+  name           = var.integrations[count.index].name
+  is_active      = var.integrations[count.index].is_active
+  integration_id = aembit_integration.ac[count.index].id
+
   dynamic "crowdstrike_conditions" {
-    count = var.integration_type == "CrowdStrike" ? 1 : 0
+    for_each = var.integrations[count.index].type == "CrowdStrike" ? [1] : []
     content {
-      max_last_seen       = each.value.max_last_seen
-      match_hostname      = each.value.match_hostname
-      match_serial_number = each.value.match_serial_number
-      prevent_rfm         = each.value.prevent_rfm
+      max_last_seen               = var.access_conditions["crowdstrike"].max_last_seen
+      match_hostname              = var.access_conditions["crowdstrike"].match_hostname
+      match_serial_number         = var.access_conditions["crowdstrike"].match_serial_number
+      prevent_rfm                 = var.access_conditions["crowdstrike"].prevent_rfm
     }
   }
 
   dynamic "wiz_conditions" {
-    count = var.integration_type == "WizIntegrationApi" ? 1 : 0
+    for_each = var.integrations[count.index].type == "WizIntegrationApi" ? [1] : []
     content {
-      max_last_seen               = each.value.max_last_seen
-      container_cluster_connected = each.value.container_cluster_connected
+      max_last_seen               = var.access_conditions["wiz"].max_last_seen
+      container_cluster_connected = var.access_conditions["wiz"].container_cluster_connected
     }
   }
 }
-
-

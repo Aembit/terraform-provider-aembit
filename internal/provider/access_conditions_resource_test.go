@@ -116,21 +116,21 @@ func TestAccAccessConditionResource_AC_Crowdstrike(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr("aembit_integration.ac[crowdstrike]", "name", "TF Acceptance Crowdstrike"),
+					resource.TestCheckResourceAttr("aembit_access_condition.ac[0]", "name", "TF Acceptance Crowdstrike"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_integration.ac[crowdstrike]", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_condition.ac[0]", "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_integration.ac[crowdstrike]", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_condition.ac[0]", "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_integration.ac[crowdstrike]", ImportState: true, ImportStateVerify: true},
+			{ResourceName: "aembit_access_condition.ac[0]", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_integration.ac[crowdstrike]", "name", "TF Acceptance Crowdstrike - Modified"),
+					resource.TestCheckResourceAttr("aembit_access_condition.ac[0]", "name", "TF Acceptance Crowdstrike - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -150,21 +150,21 @@ func TestAccAccessConditionResource_AC_Wiz(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr("aembit_integration.ac[wiz]", "name", "TF Acceptance Wiz"),
+					resource.TestCheckResourceAttr("aembit_access_condition.ac[1]", "name", "TF Acceptance Wiz"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_integration.ac[wiz]", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_condition.ac[1]", "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_integration.ac[wiz]", "id"),
+					resource.TestCheckResourceAttrSet("aembit_access_condition.ac[1]", "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_integration.ac[wiz]", ImportState: true, ImportStateVerify: true},
+			{ResourceName: "aembit_access_condition.ac[1]", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_integration.ac[wiz]", "name", "TF Acceptance Wiz - Modified"),
+					resource.TestCheckResourceAttr("aembit_access_condition.ac[1]", "name", "TF Acceptance Wiz - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
