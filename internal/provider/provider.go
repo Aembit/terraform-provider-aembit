@@ -375,7 +375,8 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	var credResponse *CredentialResponse
 
 	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false, MinVersion: tls.VersionTLS12})
-	if conn, err = grpc.Dial(fmt.Sprintf("%s.ec.%s:443", getAembitTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
+	conn, err = grpc.DialContext(context.Background(), fmt.Sprintf("%s.ec.%s:443", getAembitTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken}))
+	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
