@@ -14,7 +14,6 @@ var accessPolicyChecks = []resource.TestCheckFunc{
 	// Verify values for First Policy.
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
-	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
 }
 
@@ -53,13 +52,13 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
 	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
 	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
-	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
+	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "credential_providers.#", "1"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
 
 	// Verify values for Second Policy.
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
-	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
+	resource.TestCheckResourceAttr(AccessPolicyPathSecond, "credential_providers.#", "1"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
 }
 

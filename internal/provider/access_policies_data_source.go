@@ -73,8 +73,49 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							ElementType: types.StringType,
 						},
 						"credential_provider": schema.StringAttribute{
-							Description: "Credential Provider ID configured in the Access Policy.",
+							Description:        "Configured server workload of the access policy.",
+							Computed:           true,
+							DeprecationMessage: "Deprecated",
+						},
+						"credential_providers": schema.ListNestedAttribute{
+							Description: "Set of Credential Providers to enforce on the Access Policy.",
 							Computed:    true,
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"policy_id": schema.StringAttribute{
+										Description: "ID of access policy",
+										Optional:    true,
+									},
+									"credential_provider_id": schema.StringAttribute{
+										Description: "ID of credential provider.",
+										Required:    true,
+									},
+									"mapping_type": schema.StringAttribute{
+										Description: "Mapping type for the credential provider.",
+										Required:    true,
+									},
+									"header_name": schema.StringAttribute{
+										Description: "Name of the header for the credential provider.",
+										Optional:    true,
+									},
+									"header_value": schema.StringAttribute{
+										Description: "Value of the header for the credential provider.",
+										Optional:    true,
+									},
+									"httpbody_field_path": schema.StringAttribute{
+										Description: "Field path in the HTTP body for the credential provider.",
+										Optional:    true,
+									},
+									"httpbody_field_value": schema.StringAttribute{
+										Description: "Field value in the HTTP body for the credential provider.",
+										Optional:    true,
+									},
+									"account_name": schema.StringAttribute{
+										Description: "Name of the snowflake account for the credential provider.",
+										Optional:    true,
+									},
+								},
+							},
 						},
 						"server_workload": schema.StringAttribute{
 							Description: "Configured server workload of the access policy.",
@@ -91,7 +132,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state accessPoliciesDataSourceModel
 
-	accessPolicies, err := d.client.GetAccessPolicies(nil)
+	accessPolicies, err := d.client.GetAccessPoliciesV2(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Access Policies",
@@ -102,7 +143,16 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, accessPolicy := range accessPolicies {
-		accessPolicyState := convertAccessPolicyExternalDTOToModel(accessPolicy)
+		// fetch mappings values individually
+		credentialMappings, err, _ := d.client.GetAccessPolicyV2CredentialMappings(accessPolicy.ExternalID, nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error retrieving credential mappings",
+				"Could not get credential mappings, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		accessPolicyState := convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
 		state.AccessPolicies = append(state.AccessPolicies, accessPolicyState)
 	}
 
