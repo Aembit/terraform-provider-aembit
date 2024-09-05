@@ -357,17 +357,13 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	}
 
 	policy.TrustProviders = make([]string, len(model.TrustProviders))
-	if len(model.TrustProviders) > 0 {
-		for i, trustProvider := range model.TrustProviders {
-			policy.TrustProviders[i] = trustProvider.ValueString()
-		}
+	for i, trustProvider := range model.TrustProviders {
+		policy.TrustProviders[i] = trustProvider.ValueString()
 	}
 
 	policy.AccessConditions = make([]string, len(model.AccessConditions))
-	if len(model.AccessConditions) > 0 {
-		for i, accessConditions := range model.AccessConditions {
-			policy.AccessConditions[i] = accessConditions.ValueString()
-		}
+	for i, accessConditions := range model.AccessConditions {
+		policy.AccessConditions[i] = accessConditions.ValueString()
 	}
 
 	return policy
@@ -424,27 +420,25 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 
 	model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
-	if len(dto.CredentialProviders) > 0 {
-		for i, credentialProvider := range dto.CredentialProviders {
-			// find related mapping
-			relatedMapping := aembit.PolicyCredentialMappingDTO{}
+	for i, credentialProvider := range dto.CredentialProviders {
+		// find related mapping
+		relatedMapping := aembit.PolicyCredentialMappingDTO{}
 
-			for _, mapping := range credentialMappings {
-				if mapping.CredentialProviderId == credentialProvider.ExternalID {
-					relatedMapping = mapping
-					break
-				}
+		for _, mapping := range credentialMappings {
+			if mapping.CredentialProviderId == credentialProvider.ExternalID {
+				relatedMapping = mapping
+				break
 			}
+		}
 
-			model.CredentialProviders[i] = &policyCredentialMappingModel{
-				CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
-				MappingType:          types.StringValue(relatedMapping.MappingType),
-				AccountName:          types.StringValue(relatedMapping.AccountName),
-				HeaderName:           types.StringValue(relatedMapping.HeaderName),
-				HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
-				HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
-				HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
-			}
+		model.CredentialProviders[i] = &policyCredentialMappingModel{
+			CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
+			MappingType:          types.StringValue(relatedMapping.MappingType),
+			AccountName:          types.StringValue(relatedMapping.AccountName),
+			HeaderName:           types.StringValue(relatedMapping.HeaderName),
+			HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
+			HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
+			HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
 		}
 	}
 
