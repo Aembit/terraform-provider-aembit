@@ -22,12 +22,15 @@ Manages access policies.
 <a id="nestedatt--access_policies"></a>
 ### Nested Schema for `access_policies`
 
+Optional:
+
+- `credential_providers` (Attributes List) Set of Credential Providers to enforce on the Access Policy. (see [below for nested schema](#nestedatt--access_policies--credential_providers))
+
 Read-Only:
 
 - `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
 - `client_workload` (String) Configured client workload of the access policy.
 - `credential_provider` (String, Deprecated) Configured server workload of the access policy.
-- `credential_providers` (Attributes List) Set of Credential Providers to enforce on the Access Policy. (see [below for nested schema](#nestedatt--access_policies--credential_providers))
 - `id` (String) Unique identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
 - `name` (String) Placeholder name of the access policy.
