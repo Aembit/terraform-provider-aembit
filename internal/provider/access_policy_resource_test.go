@@ -9,6 +9,7 @@ import (
 
 const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
 const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
+const AccessPolicyPathThird string = "aembit_access_policy.third_policy"
 
 var accessPolicyChecks = []resource.TestCheckFunc{
 	// Verify values for First Policy.
@@ -60,6 +61,12 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
 	resource.TestCheckResourceAttr(AccessPolicyPathSecond, "credential_providers.#", "1"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
+
+	// Third values for Third Policy.
+	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "id"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "client_workload"),
+	resource.TestCheckResourceAttr(AccessPolicyPathThird, "credential_providers.#", "1"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "server_workload"),
 }
 
 func TestAccBasicAccessPolicyResource(t *testing.T) {
@@ -67,6 +74,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tfmod")
 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
 	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
+	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "thirdClientWorkloadNamespace")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -78,6 +86,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 					append(basicAccessPolicyChecks,
 						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "TF First Policy"),
 						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "TF Second Policy"),
+						resource.TestCheckResourceAttr(AccessPolicyPathThird, "name", "TF Third Policy"),
 					)...,
 				),
 			},
@@ -90,6 +99,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 					append(basicAccessPolicyChecks,
 						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "Placeholder"),
 						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "Placeholder"),
+						resource.TestCheckResourceAttr(AccessPolicyPathThird, "name", "Placeholder"),
 					)...,
 				),
 			},

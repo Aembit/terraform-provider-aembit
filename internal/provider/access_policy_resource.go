@@ -93,6 +93,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"credential_provider": schema.StringAttribute{
 				Description: "Credential Provider ID configured in the Access Policy.",
 				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -100,6 +101,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"credential_providers": schema.ListNestedAttribute{
 				Description: "Set of Credential Providers to enforce on the Access Policy.",
 				Optional:    true,
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"policy_id": schema.StringAttribute{
@@ -194,6 +196,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	// Get refreshed policy value from Aembit
 	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil)
+
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Access Policy",
@@ -377,9 +380,10 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload)
 
-	model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
-
 	if len(dto.CredentialProviders) > 0 {
+		model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].CredentialProviderId)
+
 		for i, credentialProvider := range dto.CredentialProviders {
 			model.CredentialProviders[i] = &policyCredentialMappingModel{
 				CredentialProviderId: types.StringValue(credentialProvider.CredentialProviderId),
@@ -418,27 +422,30 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 	model.ClientWorkload = types.StringValue(dto.ClientWorkload.ExternalID)
 	model.ServerWorkload = types.StringValue(dto.ServerWorkload.ExternalID)
 
-	model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+	if len(dto.CredentialProviders) > 0 {
+		model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].ExternalID)
 
-	for i, credentialProvider := range dto.CredentialProviders {
-		// find related mapping
-		relatedMapping := aembit.PolicyCredentialMappingDTO{}
+		for i, credentialProvider := range dto.CredentialProviders {
+			// find related mapping
+			relatedMapping := aembit.PolicyCredentialMappingDTO{}
 
-		for _, mapping := range credentialMappings {
-			if mapping.CredentialProviderId == credentialProvider.ExternalID {
-				relatedMapping = mapping
-				break
+			for _, mapping := range credentialMappings {
+				if mapping.CredentialProviderId == credentialProvider.ExternalID {
+					relatedMapping = mapping
+					break
+				}
 			}
-		}
 
-		model.CredentialProviders[i] = &policyCredentialMappingModel{
-			CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
-			MappingType:          types.StringValue(relatedMapping.MappingType),
-			AccountName:          types.StringValue(relatedMapping.AccountName),
-			HeaderName:           types.StringValue(relatedMapping.HeaderName),
-			HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
-			HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
-			HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
+			model.CredentialProviders[i] = &policyCredentialMappingModel{
+				CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
+				MappingType:          types.StringValue(relatedMapping.MappingType),
+				AccountName:          types.StringValue(relatedMapping.AccountName),
+				HeaderName:           types.StringValue(relatedMapping.HeaderName),
+				HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
+				HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
+				HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
+			}
 		}
 	}
 

@@ -79,6 +79,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 						},
 						"credential_providers": schema.ListNestedAttribute{
 							Description: "Set of Credential Providers to enforce on the Access Policy.",
+							Optional:    true,
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{

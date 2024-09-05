@@ -25,6 +25,18 @@ resource "aembit_client_workload" "second_client" {
     ]
 }
 
+resource "aembit_client_workload" "third_client" {
+    name = "third terraform client workload"
+    description = "new client workload for policy integration"
+    is_active = false
+    identities = [
+        {
+            type = "k8sNamespace"
+            value = "thirdClientWorkloadNamespace"
+        },
+    ]
+}
+
 resource "aembit_credential_provider" "snowflake1" {
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
@@ -83,3 +95,21 @@ resource "aembit_access_policy" "second_policy" {
 	}]
     server_workload = aembit_server_workload.first_server.id
 }
+
+resource "aembit_access_policy" "third_policy" {
+    is_active = false
+    name = "TF Third Policy"
+    client_workload = aembit_client_workload.third_client.id
+    credential_provider = aembit_credential_provider.snowflake1.id
+    credential_providers = [{
+		credential_provider_id = aembit_credential_provider.snowflake1.id,
+		mapping_type = "None",
+        header_name = "",
+        header_value = "",
+		account_name = "",
+		httpbody_field_path = "",
+        httpbody_field_value = ""
+	}]
+    server_workload = aembit_server_workload.first_server.id
+}
+
