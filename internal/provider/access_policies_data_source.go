@@ -73,7 +73,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							ElementType: types.StringType,
 						},
 						"credential_provider": schema.StringAttribute{
-							Description:        "Configured server workload of the access policy.",
+							Description:        "Configured Credential Provider of the access policy.",
 							Computed:           true,
 							DeprecationMessage: "Deprecated",
 						},
@@ -112,7 +112,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 										Optional:    true,
 									},
 									"account_name": schema.StringAttribute{
-										Description: "Name of the snowflake account for the credential provider.",
+										Description: "Name of the Snowflake account for the credential provider.",
 										Optional:    true,
 									},
 								},

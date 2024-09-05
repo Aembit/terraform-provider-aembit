@@ -43,7 +43,7 @@ Required:
 
 Optional:
 
-- `account_name` (String) Name of the snowflake account for the credential provider.
+- `account_name` (String) Name of the Snowflake account for the credential provider.
 - `header_name` (String) Name of the header for the credential provider.
 - `header_value` (String) Value of the header for the credential provider.
 - `httpbody_field_path` (String) Field path in the HTTP body for the credential provider.

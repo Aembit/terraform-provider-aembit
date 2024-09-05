@@ -30,7 +30,7 @@ Read-Only:
 
 - `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
 - `client_workload` (String) Configured client workload of the access policy.
-- `credential_provider` (String, Deprecated) Configured server workload of the access policy.
+- `credential_provider` (String, Deprecated) Configured Credential Provider of the access policy.
 - `id` (String) Unique identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
 - `name` (String) Placeholder name of the access policy.
@@ -47,7 +47,7 @@ Required:
 
 Optional:
 
-- `account_name` (String) Name of the snowflake account for the credential provider.
+- `account_name` (String) Name of the Snowflake account for the credential provider.
 - `header_name` (String) Name of the header for the credential provider.
 - `header_value` (String) Value of the header for the credential provider.
 - `httpbody_field_path` (String) Field path in the HTTP body for the credential provider.
