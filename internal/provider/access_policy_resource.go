@@ -180,7 +180,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	isSingleCpProvided := len(plan.CredentialProvider.ValueString()) > 0 && len(plan.CredentialProviders) == 0
 	initialOrderOfCpIds := make([]string, len(plan.CredentialProviders))
 
 	for i, cp := range plan.CredentialProviders {
@@ -203,7 +202,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	plan = convertAccessPolicyDTOToModel(*accessPolicy)
 	finalCredentialProviders := make([]*policyCredentialMappingModel, len(plan.CredentialProviders))
 
-	if len(plan.CredentialProviders) == len(initialOrderOfCpIds) && len(plan.CredentialProviders) > 1 {
+	if len(plan.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
 		for i := 0; i < len(plan.CredentialProviders); i++ {
 			for _, cp := range plan.CredentialProviders {
 				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
@@ -216,9 +215,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		plan.CredentialProviders = finalCredentialProviders
 	}
 
-	if isSingleCpProvided {
-		plan.CredentialProviders = nil
-	}
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -238,7 +234,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	isSingleCpProvided := len(state.CredentialProvider.ValueString()) > 0 && len(state.CredentialProviders) == 0
 	initialOrderOfCpIds := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
@@ -276,7 +271,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	finalCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
 
-	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(state.CredentialProviders) > 1 {
+	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
 		for i := 0; i < len(state.CredentialProviders); i++ {
 			for _, cp := range state.CredentialProviders {
 				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
@@ -287,10 +282,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		}
 
 		state.CredentialProviders = finalCredentialProviders
-	}
-
-	if isSingleCpProvided {
-		state.CredentialProviders = nil
 	}
 
 	// Set refreshed state
@@ -324,7 +315,6 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	isSingleCpProvided := len(state.CredentialProvider.ValueString()) > 0 && len(state.CredentialProviders) == 0
 	initialOrderOfCpIds := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
@@ -349,7 +339,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 
 	finalCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
 
-	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(state.CredentialProviders) > 1 {
+	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
 		for i := 0; i < len(state.CredentialProviders); i++ {
 			for _, cp := range state.CredentialProviders {
 				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
@@ -360,10 +350,6 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		}
 
 		state.CredentialProviders = finalCredentialProviders
-	}
-
-	if isSingleCpProvided {
-		state.CredentialProviders = nil
 	}
 
 	// Set state to fully populated data
@@ -424,8 +410,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
 
-	policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, len(model.CredentialProviders))
-
 	if len(model.CredentialProvider.ValueString()) > 0 {
 		policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, 1)
 		policy.CredentialProviders[0] = aembit.PolicyCredentialMappingDTO{
@@ -442,8 +426,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 		policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, len(model.CredentialProviders))
 
 		if len(model.CredentialProviders) > 0 {
-			model.CredentialProvider = model.CredentialProviders[0].CredentialProviderId
-
 			for i, credentialProvider := range model.CredentialProviders {
 				policy.CredentialProviders[i] = aembit.PolicyCredentialMappingDTO{
 					PolicyId:             "00000000-0000-0000-0000-000000000000",
@@ -487,21 +469,23 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 
 	if len(dto.CredentialProviders) > 0 {
 		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].CredentialProviderId)
-		model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
-		for i, credentialProvider := range dto.CredentialProviders {
-			model.CredentialProviders[i] = &policyCredentialMappingModel{
-				CredentialProviderId: types.StringValue(credentialProvider.CredentialProviderId),
-				MappingType:          types.StringValue(credentialProvider.MappingType),
-				AccountName:          types.StringValue(credentialProvider.AccountName),
-				HeaderName:           types.StringValue(credentialProvider.HeaderName),
-				HeaderValue:          types.StringValue(credentialProvider.HeaderValue),
-				HttpbodyFieldPath:    types.StringValue(credentialProvider.HttpbodyFieldPath),
-				HttpbodyFieldValue:   types.StringValue(credentialProvider.HttpbodyFieldValue),
-				PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
+		if len(dto.CredentialProviders) > 1 && dto.CredentialProviders[0].MappingType != "None" {
+			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+
+			for i, credentialProvider := range dto.CredentialProviders {
+				model.CredentialProviders[i] = &policyCredentialMappingModel{
+					CredentialProviderId: types.StringValue(credentialProvider.CredentialProviderId),
+					MappingType:          types.StringValue(credentialProvider.MappingType),
+					AccountName:          types.StringValue(credentialProvider.AccountName),
+					HeaderName:           types.StringValue(credentialProvider.HeaderName),
+					HeaderValue:          types.StringValue(credentialProvider.HeaderValue),
+					HttpbodyFieldPath:    types.StringValue(credentialProvider.HttpbodyFieldPath),
+					HttpbodyFieldValue:   types.StringValue(credentialProvider.HttpbodyFieldValue),
+					PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
+				}
 			}
 		}
-
 	}
 
 	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
@@ -527,30 +511,34 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 
 	if len(dto.CredentialProviders) > 0 {
 		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].ExternalID)
-		model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
-		for i, credentialProvider := range dto.CredentialProviders {
-			// find related mapping
-			relatedMapping := aembit.PolicyCredentialMappingDTO{}
+		if len(credentialMappings) > 1 && credentialMappings[0].MappingType != "None" {
+			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
-			for _, mapping := range credentialMappings {
-				if mapping.CredentialProviderId == credentialProvider.ExternalID {
-					relatedMapping = mapping
-					break
+			for i, credentialProvider := range dto.CredentialProviders {
+				// find related mapping
+				relatedMapping := aembit.PolicyCredentialMappingDTO{}
+
+				for _, mapping := range credentialMappings {
+					if mapping.CredentialProviderId == credentialProvider.ExternalID {
+						relatedMapping = mapping
+						break
+					}
+				}
+
+				model.CredentialProviders[i] = &policyCredentialMappingModel{
+					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
+					MappingType:          types.StringValue(relatedMapping.MappingType),
+					AccountName:          types.StringValue(relatedMapping.AccountName),
+					HeaderName:           types.StringValue(relatedMapping.HeaderName),
+					HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
+					HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
+					HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
+					PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
 				}
 			}
-
-			model.CredentialProviders[i] = &policyCredentialMappingModel{
-				CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
-				MappingType:          types.StringValue(relatedMapping.MappingType),
-				AccountName:          types.StringValue(relatedMapping.AccountName),
-				HeaderName:           types.StringValue(relatedMapping.HeaderName),
-				HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
-				HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
-				HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
-				PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
-			}
 		}
+
 	}
 
 	model.TrustProviders = make([]types.String, len(dto.TrustProviders))

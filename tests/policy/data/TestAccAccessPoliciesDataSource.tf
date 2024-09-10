@@ -75,6 +75,7 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
+	name = "TF First Policy"
     is_active = false
     client_workload = aembit_client_workload.first_client.id
     trust_providers = [
@@ -84,15 +85,7 @@ resource "aembit_access_policy" "first_policy" {
     access_conditions = [
         aembit_access_condition.wiz.id
     ]
-    credential_providers = [{
-		credential_provider_id = aembit_credential_provider.snowflake1.id,
-		mapping_type = "None",
-        header_name = "",
-        header_value = "",
-		account_name = "",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
-	}]
+    credential_provider = aembit_credential_provider.snowflake1.id
     server_workload = aembit_server_workload.first_server.id
 }
 

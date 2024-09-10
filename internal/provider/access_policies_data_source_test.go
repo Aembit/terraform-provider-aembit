@@ -32,7 +32,7 @@ func TestAccAccessPoliciesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.client_workload"),
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
-					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_providers.#"),
+					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.server_workload"),
 				),
 			},

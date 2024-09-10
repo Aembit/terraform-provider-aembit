@@ -16,6 +16,7 @@ var accessPolicyChecks = []resource.TestCheckFunc{
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "id"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "credential_provider"),
 }
 
 func TestAccAccessPolicyResource(t *testing.T) {
@@ -58,7 +59,7 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 	// Verify values for Second Policy.
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "id"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "client_workload"),
-	resource.TestCheckResourceAttr(AccessPolicyPathSecond, "credential_providers.#", "1"),
+	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "credential_provider"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathSecond, "server_workload"),
 
 	// Third values for Third Policy.

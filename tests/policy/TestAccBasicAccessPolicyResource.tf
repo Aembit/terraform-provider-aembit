@@ -77,15 +77,7 @@ resource "aembit_access_policy" "first_policy" {
     client_workload = aembit_client_workload.first_client.id
     trust_providers = []
     access_conditions = []
-    credential_providers = [{
-		credential_provider_id = aembit_credential_provider.snowflake1.id,
-		mapping_type = "None",
-        header_name = "",
-        header_value = "",
-		account_name = "",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
-	}]
+    credential_provider = aembit_credential_provider.snowflake1.id
     server_workload = aembit_server_workload.first_server.id
 }
 
@@ -93,15 +85,9 @@ resource "aembit_access_policy" "second_policy" {
     is_active = false
     name = "TF Second Policy"
     client_workload = aembit_client_workload.second_client.id
-    credential_providers = [{
-		credential_provider_id = aembit_credential_provider.snowflake1.id,
-		mapping_type = "None",
-        header_name = "",
-        header_value = "",
-		account_name = "",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
-	}]
+    trust_providers = []
+    access_conditions = []
+    credential_provider = aembit_credential_provider.snowflake2.id
     server_workload = aembit_server_workload.first_server.id
 }
 
@@ -112,8 +98,8 @@ resource "aembit_access_policy" "third_policy" {
     credential_providers = [{
 		credential_provider_id = aembit_credential_provider.snowflake1.id,
 		mapping_type = "HttpHeader",
-        header_name = "bb_test_header_name",
-        header_value = "bb_test_header_value",
+        header_name = "test_header_name",
+        header_value = "test_header_value",
 		account_name = "",
 		httpbody_field_path = "",
         httpbody_field_value = ""
@@ -124,8 +110,8 @@ resource "aembit_access_policy" "third_policy" {
         header_name = "",
         header_value = "",
         account_name = "",
-        httpbody_field_path = "field_path",
-        httpbody_field_value = "field_value"
+        httpbody_field_path = "test_field_path",
+        httpbody_field_value = "test_field_value"
 	}]
     server_workload = aembit_server_workload.first_server.id
 }
