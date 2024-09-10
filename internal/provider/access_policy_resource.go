@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -171,7 +170,6 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	fmt.Println("Entered Create")
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -180,10 +178,10 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	initialOrderOfCpIds := make([]string, len(plan.CredentialProviders))
+	initialOrderOfCredentialProviders := make([]string, len(plan.CredentialProviders))
 
 	for i, cp := range plan.CredentialProviders {
-		initialOrderOfCpIds[i] = cp.CredentialProviderId.ValueString()
+		initialOrderOfCredentialProviders[i] = cp.CredentialProviderId.ValueString()
 	}
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
@@ -200,19 +198,21 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessPolicyDTOToModel(*accessPolicy)
-	finalCredentialProviders := make([]*policyCredentialMappingModel, len(plan.CredentialProviders))
 
-	if len(plan.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
+	// make sure order of the credential providers stays the same after API call
+	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(plan.CredentialProviders))
+
+	if len(plan.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
 		for i := 0; i < len(plan.CredentialProviders); i++ {
 			for _, cp := range plan.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
-					finalCredentialProviders[i] = cp
+				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
+					finalOrderOfCredentialProviders[i] = cp
 					break
 				}
 			}
 		}
 
-		plan.CredentialProviders = finalCredentialProviders
+		plan.CredentialProviders = finalOrderOfCredentialProviders
 	}
 
 	// Set state to fully populated data
@@ -225,7 +225,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 
 // Read refreshes the Terraform state with the latest data.
 func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	fmt.Println("Entered Read")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -234,10 +233,10 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	initialOrderOfCpIds := make([]string, len(state.CredentialProviders))
+	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
-		initialOrderOfCpIds[i] = cp.CredentialProviderId.ValueString()
+		initialOrderOfCredentialProviders[i] = cp.CredentialProviderId.ValueString()
 	}
 
 	// Get refreshed policy value from Aembit
@@ -269,19 +268,20 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
 
-	finalCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
+	// make sure order of the credential providers stays the same after API call
+	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
 
-	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
+	if len(state.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
 		for i := 0; i < len(state.CredentialProviders); i++ {
 			for _, cp := range state.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
-					finalCredentialProviders[i] = cp
+				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
+					finalOrderOfCredentialProviders[i] = cp
 					break
 				}
 			}
 		}
 
-		state.CredentialProviders = finalCredentialProviders
+		state.CredentialProviders = finalOrderOfCredentialProviders
 	}
 
 	// Set refreshed state
@@ -294,8 +294,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	fmt.Println("Entered Update")
-
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -315,10 +313,10 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	initialOrderOfCpIds := make([]string, len(state.CredentialProviders))
+	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
-		initialOrderOfCpIds[i] = cp.CredentialProviderId.ValueString()
+		initialOrderOfCredentialProviders[i] = cp.CredentialProviderId.ValueString()
 	}
 
 	// Generate API request body from plan
@@ -337,19 +335,20 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessPolicyDTOToModel(*accessPolicy)
 
-	finalCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
+	// make sure order of the credential providers stays the same after API call
+	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
 
-	if len(state.CredentialProviders) == len(initialOrderOfCpIds) && len(finalCredentialProviders) > 1 {
+	if len(state.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
 		for i := 0; i < len(state.CredentialProviders); i++ {
 			for _, cp := range state.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCpIds[i] {
-					finalCredentialProviders[i] = cp
+				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
+					finalOrderOfCredentialProviders[i] = cp
 					break
 				}
 			}
 		}
 
-		state.CredentialProviders = finalCredentialProviders
+		state.CredentialProviders = finalOrderOfCredentialProviders
 	}
 
 	// Set state to fully populated data
@@ -362,7 +361,6 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	fmt.Println("Entered Delete")
 	// Retrieve values from state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -396,7 +394,6 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 
 // Imports an existing resource by passing externalId.
 func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	fmt.Println("Entered ImportState")
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -410,6 +407,7 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
 
+	// populate CredentialProviders statically if only credentialProvider provided
 	if len(model.CredentialProvider.ValueString()) > 0 {
 		policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, 1)
 		policy.CredentialProviders[0] = aembit.PolicyCredentialMappingDTO{
@@ -470,6 +468,7 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 	if len(dto.CredentialProviders) > 0 {
 		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].CredentialProviderId)
 
+		// discard credentialProvider mappings if there is a single credential provider
 		if len(dto.CredentialProviders) > 1 && dto.CredentialProviders[0].MappingType != "None" {
 			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
@@ -512,6 +511,7 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 	if len(dto.CredentialProviders) > 0 {
 		model.CredentialProvider = types.StringValue(dto.CredentialProviders[0].ExternalID)
 
+		// discard credentialProvider mappings if there is a single credential provider
 		if len(credentialMappings) > 1 && credentialMappings[0].MappingType != "None" {
 			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
 
