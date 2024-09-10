@@ -46,6 +46,15 @@ resource "aembit_credential_provider" "snowflake1" {
 	}
 }
 
+resource "aembit_credential_provider" "snowflake2" {
+	name = "TF Acceptance Snowflake Token 2"
+	is_active = true
+	snowflake_jwt = {
+		account_id = "account_id"
+		username = "username"
+	}
+}
+
 resource "aembit_server_workload" "first_server" {
     name = "first terraform server workload"
     description = "new server workload for policy integration"
@@ -95,17 +104,26 @@ resource "aembit_access_policy" "second_policy" {
 }
 
 resource "aembit_access_policy" "third_policy" {
-    is_active = false
+    is_active = true
     client_workload = aembit_client_workload.third_client.id
-    credential_provider = aembit_credential_provider.snowflake1.id
     credential_providers = [{
 		credential_provider_id = aembit_credential_provider.snowflake1.id,
-		mapping_type = "None",
-        header_name = "",
-        header_value = "",
+		mapping_type = "HttpHeader",
+        header_name = "bb_test_header_name",
+        header_value = "bb_test_header_value",
 		account_name = "",
 		httpbody_field_path = "",
         httpbody_field_value = ""
+	},
+	{
+		credential_provider_id = aembit_credential_provider.snowflake2.id,
+        mapping_type = "HttpBody",
+        header_name = "",
+        header_value = "",
+        account_name = "",
+        httpbody_field_path = "field_path",
+        httpbody_field_value = "field_value"
 	}]
     server_workload = aembit_server_workload.first_server.id
 }
+

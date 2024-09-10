@@ -86,6 +86,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 									"policy_id": schema.StringAttribute{
 										Description: "ID of access policy",
 										Optional:    true,
+										Computed:    true,
 									},
 									"credential_provider_id": schema.StringAttribute{
 										Description: "ID of credential provider.",
@@ -98,22 +99,27 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 									"header_name": schema.StringAttribute{
 										Description: "Name of the header for the credential provider.",
 										Optional:    true,
+										Computed:    true,
 									},
 									"header_value": schema.StringAttribute{
 										Description: "Value of the header for the credential provider.",
 										Optional:    true,
+										Computed:    true,
 									},
 									"httpbody_field_path": schema.StringAttribute{
 										Description: "Field path in the HTTP body for the credential provider.",
 										Optional:    true,
+										Computed:    true,
 									},
 									"httpbody_field_value": schema.StringAttribute{
 										Description: "Field value in the HTTP body for the credential provider.",
 										Optional:    true,
+										Computed:    true,
 									},
 									"account_name": schema.StringAttribute{
 										Description: "Name of the Snowflake account for the credential provider.",
 										Optional:    true,
+										Computed:    true,
 									},
 								},
 							},

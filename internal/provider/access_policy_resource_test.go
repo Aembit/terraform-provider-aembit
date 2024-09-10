@@ -64,7 +64,7 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 	// Third values for Third Policy.
 	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "id"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "client_workload"),
-	resource.TestCheckResourceAttr(AccessPolicyPathThird, "credential_providers.#", "1"),
+	resource.TestCheckResourceAttr(AccessPolicyPathThird, "credential_providers.#", "2"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathThird, "server_workload"),
 }
 

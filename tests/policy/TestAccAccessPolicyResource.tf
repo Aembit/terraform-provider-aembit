@@ -49,12 +49,10 @@ resource "aembit_access_condition" "wiz" {
 	}
 }
 
-resource "aembit_credential_provider" "snowflake1" {
-	name = "TF Acceptance Snowflake Token 1"
-	is_active = true
-	snowflake_jwt = {
-		account_id = "account_id"
-		username = "username"
+resource "aembit_credential_provider" "api_key" {
+	name = "TF Acceptance Policy CP"
+	api_key = {
+		api_key = "test"
 	}
 }
 
@@ -75,6 +73,7 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
+	name = "TF First Policy"
     is_active = false
     client_workload = aembit_client_workload.first_client.id
     trust_providers = [
@@ -84,14 +83,6 @@ resource "aembit_access_policy" "first_policy" {
     access_conditions = [
         aembit_access_condition.wiz.id
     ]
-    credential_providers = [{
-		credential_provider_id = aembit_credential_provider.snowflake1.id,
-		mapping_type = "None",
-        header_name = "",
-        header_value = "",
-		account_name = "",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
-	}]
+    credential_provider = aembit_credential_provider.api_key.id
     server_workload = aembit_server_workload.first_server.id
 }
