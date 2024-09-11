@@ -2,6 +2,7 @@ package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // accessPolicyResourceModel maps the resource schema.
@@ -11,11 +12,11 @@ type accessPolicyResourceModel struct {
 	Name                types.String                    `tfsdk:"name"`
 	IsActive            types.Bool                      `tfsdk:"is_active"`
 	ClientWorkload      types.String                    `tfsdk:"client_workload"`
-	TrustProviders      []types.String                  `tfsdk:"trust_providers"`
-	AccessConditions    []types.String                  `tfsdk:"access_conditions"`
 	CredentialProvider  types.String                    `tfsdk:"credential_provider"`
-	CredentialProviders []*policyCredentialMappingModel `tfsdk:"credential_providers"`
 	ServerWorkload      types.String                    `tfsdk:"server_workload"`
+	CredentialProviders []*policyCredentialMappingModel `tfsdk:"credential_providers"`
+	TrustProviders      basetypes.ListValue             `tfsdk:"trust_providers"`
+	AccessConditions    basetypes.ListValue             `tfsdk:"access_conditions"`
 }
 
 // accessPoliciesDataSourceModel maps the datasource schema.

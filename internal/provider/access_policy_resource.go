@@ -2,15 +2,16 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -70,24 +71,22 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"trust_providers": schema.SetAttribute{
+			"trust_providers": schema.ListAttribute{
 				Description: "Set of Trust Providers to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(), // Ensures state is used if the value is unknown
 				},
 			},
-			"access_conditions": schema.SetAttribute{
+			"access_conditions": schema.ListAttribute{
 				Description: "Set of Access Conditions to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(), // Ensures state is used if the value is unknown
 				},
 			},
 			"credential_provider": schema.StringAttribute{
@@ -103,17 +102,15 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Description: "Set of Credential Providers to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
-				Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"policy_id":              types.StringType,
-						"credential_provider_id": types.StringType,
-						"mapping_type":           types.StringType,
-						"header_name":            types.StringType,
-						"header_value":           types.StringType,
-						"httpbody_field_path":    types.StringType,
-						"httpbody_field_value":   types.StringType,
-					},
-				}, []attr.Value{})),
+				Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+					"policy_id":              types.StringType,
+					"credential_provider_id": types.StringType,
+					"mapping_type":           types.StringType,
+					"header_name":            types.StringType,
+					"header_value":           types.StringType,
+					"httpbody_field_path":    types.StringType,
+					"httpbody_field_value":   types.StringType,
+				}}, []attr.Value{})),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"policy_id": schema.StringAttribute{
@@ -173,6 +170,11 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
+	fmt.Printf("Create 1, %v\n", plan)
+
+	// plan.AccessConditions = []types.String{types.StringValue("d438d98c-ebca-42cf-a8ca-e86a41b6a3d5")}
+	// plan.TrustProviders = []types.String{types.StringValue("9c512286-48fc-4f59-9bbe-f9de2a099357")}
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -225,6 +227,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 
 // Read refreshes the Terraform state with the latest data.
 func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	fmt.Printf("Read start")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -232,6 +235,8 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	fmt.Printf("Read 1, %v\n", state.TrustProviders)
 
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
@@ -267,6 +272,8 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
+
+	fmt.Printf("Read 2, %v\n", state.TrustProviders)
 
 	// make sure order of the credential providers stays the same after API call
 	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
@@ -444,19 +451,17 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 		policy.EntityDTO.ExternalID = *externalID
 	}
 
-	policy.TrustProviders = make([]string, len(model.TrustProviders))
-	if len(model.TrustProviders) > 0 {
-		for i, trustProvider := range model.TrustProviders {
-			policy.TrustProviders[i] = trustProvider.ValueString()
-		}
+	policy.TrustProviders = make([]string, len(model.TrustProviders.Elements()))
+	for i, trustProvider := range model.TrustProviders.Elements() {
+		policy.TrustProviders[i] = trustProvider.String()
 	}
 
-	policy.AccessConditions = make([]string, len(model.AccessConditions))
-	if len(model.AccessConditions) > 0 {
-		for i, accessConditions := range model.AccessConditions {
-			policy.AccessConditions[i] = accessConditions.ValueString()
-		}
+	policy.AccessConditions = make([]string, len(model.AccessConditions.Elements()))
+
+	for i, accessCondition := range model.AccessConditions.Elements() {
+		policy.AccessConditions[i] = accessCondition.String()
 	}
+
 	return policy
 }
 
@@ -490,18 +495,19 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 		}
 	}
 
-	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	tempTrustProviders := make([]attr.Value, len(dto.TrustProviders))
 	if len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
-			model.TrustProviders[i] = types.StringValue(trustProvider)
+			tempTrustProviders[i] = types.StringValue(trustProvider)
 		}
 	}
-	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
-	if len(dto.AccessConditions) > 0 {
-		for i, accessConditions := range dto.AccessConditions {
-			model.AccessConditions[i] = types.StringValue(accessConditions)
-		}
+	model.TrustProviders = types.ListValueMust(types.StringType, tempTrustProviders)
+
+	tempAccessConditions := make([]attr.Value, len(dto.AccessConditions))
+	for i, accessCondition := range dto.AccessConditions {
+		tempAccessConditions[i] = types.StringValue(accessCondition)
 	}
+	model.AccessConditions = types.ListValueMust(types.StringType, tempAccessConditions)
 
 	return model
 }
@@ -547,19 +553,19 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 
 	}
 
-	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	tempTrustProviders := make([]attr.Value, len(dto.TrustProviders))
 	if len(dto.TrustProviders) > 0 {
 		for i, trustProvider := range dto.TrustProviders {
-			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
+			tempTrustProviders[i] = types.StringValue(trustProvider.ExternalID)
 		}
 	}
+	model.TrustProviders = types.ListValueMust(types.StringType, tempTrustProviders)
 
-	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
-	if len(dto.AccessConditions) > 0 {
-		for i, accessConditions := range dto.AccessConditions {
-			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
-		}
+	tempAccessConditions := make([]attr.Value, len(dto.AccessConditions))
+	for i, accessCondition := range dto.AccessConditions {
+		tempAccessConditions[i] = types.StringValue(accessCondition.ExternalID)
 	}
+	model.AccessConditions = types.ListValueMust(types.StringType, tempAccessConditions)
 
 	return model
 }
