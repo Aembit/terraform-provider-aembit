@@ -198,21 +198,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessPolicyDTOToModel(*accessPolicy)
 
-	// make sure order of the credential providers stays the same after API call
-	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(plan.CredentialProviders))
-
-	if len(plan.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
-		for i := 0; i < len(plan.CredentialProviders); i++ {
-			for _, cp := range plan.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
-					finalOrderOfCredentialProviders[i] = cp
-					break
-				}
-			}
-		}
-
-		plan.CredentialProviders = finalOrderOfCredentialProviders
-	}
+	plan.CredentialProviders = sortCredentialProviders(plan.CredentialProviders, initialOrderOfCredentialProviders)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -267,21 +253,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
 
-	// make sure order of the credential providers stays the same after API call
-	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
-
-	if len(state.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
-		for i := 0; i < len(state.CredentialProviders); i++ {
-			for _, cp := range state.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
-					finalOrderOfCredentialProviders[i] = cp
-					break
-				}
-			}
-		}
-
-		state.CredentialProviders = finalOrderOfCredentialProviders
-	}
+	state.CredentialProviders = sortCredentialProviders(state.CredentialProviders, initialOrderOfCredentialProviders)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -334,21 +306,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessPolicyDTOToModel(*accessPolicy)
 
-	// make sure order of the credential providers stays the same after API call
-	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
-
-	if len(state.CredentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
-		for i := 0; i < len(state.CredentialProviders); i++ {
-			for _, cp := range state.CredentialProviders {
-				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
-					finalOrderOfCredentialProviders[i] = cp
-					break
-				}
-			}
-		}
-
-		state.CredentialProviders = finalOrderOfCredentialProviders
-	}
+	state.CredentialProviders = sortCredentialProviders(state.CredentialProviders, initialOrderOfCredentialProviders)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -446,21 +404,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	policy.AccessConditions = convertListValueToStringArray(model.AccessConditions)
 
 	return policy
-}
-
-func convertListValueToStringArray(listValue basetypes.ListValue) []string {
-	if listValue.IsNull() || listValue.IsUnknown() {
-		return []string{}
-	}
-
-	var stringArray []string
-
-	for _, item := range listValue.Elements() {
-		var sanitaizedString = strings.ReplaceAll(item.String(), "\"", "")
-		stringArray = append(stringArray, sanitaizedString)
-	}
-
-	return stringArray
 }
 
 func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResourceModel {
@@ -566,4 +509,39 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 	model.AccessConditions = types.ListValueMust(types.StringType, tempAccessConditions)
 
 	return model
+}
+
+func sortCredentialProviders(credentialProviders []*policyCredentialMappingModel, initialOrderOfCredentialProviders []string) []*policyCredentialMappingModel {
+	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(credentialProviders))
+
+	// make sure the order is correct if there are more than 1 credential providers
+	if len(credentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {
+		for i := 0; i < len(credentialProviders); i++ {
+			for _, cp := range credentialProviders {
+				if cp.CredentialProviderId.ValueString() == initialOrderOfCredentialProviders[i] {
+					finalOrderOfCredentialProviders[i] = cp
+					break
+				}
+			}
+		}
+		return finalOrderOfCredentialProviders
+	}
+
+	// preserve the incoming order
+	return credentialProviders
+}
+
+func convertListValueToStringArray(listValue basetypes.ListValue) []string {
+	if listValue.IsNull() || listValue.IsUnknown() {
+		return []string{}
+	}
+
+	var stringArray []string
+
+	for _, item := range listValue.Elements() {
+		var sanitaizedString = strings.ReplaceAll(item.String(), "\"", "")
+		stringArray = append(stringArray, sanitaizedString)
+	}
+
+	return stringArray
 }
