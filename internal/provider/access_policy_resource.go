@@ -78,7 +78,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Computed:    true,
 				ElementType: types.StringType,
 				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(), // Ensures state is used if the value is unknown
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"access_conditions": schema.ListAttribute{
@@ -87,7 +87,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Computed:    true,
 				ElementType: types.StringType,
 				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(), // Ensures state is used if the value is unknown
+					listplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"credential_provider": schema.StringAttribute{

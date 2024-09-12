@@ -12,11 +12,11 @@ type accessPolicyResourceModel struct {
 	Name                types.String                    `tfsdk:"name"`
 	IsActive            types.Bool                      `tfsdk:"is_active"`
 	ClientWorkload      types.String                    `tfsdk:"client_workload"`
-	CredentialProvider  types.String                    `tfsdk:"credential_provider"`
-	ServerWorkload      types.String                    `tfsdk:"server_workload"`
-	CredentialProviders []*policyCredentialMappingModel `tfsdk:"credential_providers"`
 	TrustProviders      basetypes.ListValue             `tfsdk:"trust_providers"`
 	AccessConditions    basetypes.ListValue             `tfsdk:"access_conditions"`
+	CredentialProvider  types.String                    `tfsdk:"credential_provider"`
+	CredentialProviders []*policyCredentialMappingModel `tfsdk:"credential_providers"`
+	ServerWorkload      types.String                    `tfsdk:"server_workload"`
 }
 
 // accessPoliciesDataSourceModel maps the datasource schema.
