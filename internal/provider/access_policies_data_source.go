@@ -62,13 +62,15 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							Description: "Configured client workload of the access policy.",
 							Computed:    true,
 						},
-						"trust_providers": schema.SetAttribute{
+						"trust_providers": schema.ListAttribute{
 							Description: "Set of Trust Providers to enforce on the Access Policy.",
+							Optional:    true,
 							Computed:    true,
 							ElementType: types.StringType,
 						},
-						"access_conditions": schema.SetAttribute{
+						"access_conditions": schema.ListAttribute{
 							Description: "Set of Access Conditions to enforce on the Access Policy.",
+							Optional:    true,
 							Computed:    true,
 							ElementType: types.StringType,
 						},

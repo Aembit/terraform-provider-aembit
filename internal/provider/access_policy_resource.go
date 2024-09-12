@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -172,9 +174,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	diags := req.Plan.Get(ctx, &plan)
 	fmt.Printf("Create 1, %v\n", plan)
 
-	// plan.AccessConditions = []types.String{types.StringValue("d438d98c-ebca-42cf-a8ca-e86a41b6a3d5")}
-	// plan.TrustProviders = []types.String{types.StringValue("9c512286-48fc-4f59-9bbe-f9de2a099357")}
-
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -187,6 +186,9 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
+
+	fmt.Printf("Policy to Create TPS, %v, Lenght: %d\n", policy.TrustProviders, len(policy.TrustProviders))
+	fmt.Printf("Policy to Create ACS, %v\n", policy.AccessConditions)
 
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
@@ -227,7 +229,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 
 // Read refreshes the Terraform state with the latest data.
 func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	fmt.Printf("Read start")
+	fmt.Println("Read start")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -444,25 +446,51 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 				}
 			}
 		}
-
 	}
 
 	if externalID != nil {
 		policy.EntityDTO.ExternalID = *externalID
 	}
 
-	policy.TrustProviders = make([]string, len(model.TrustProviders.Elements()))
-	for i, trustProvider := range model.TrustProviders.Elements() {
-		policy.TrustProviders[i] = trustProvider.String()
-	}
+	policy.TrustProviders = convertListValueToStringArray(model.TrustProviders)
+	policy.AccessConditions = convertListValueToStringArray(model.AccessConditions)
 
-	policy.AccessConditions = make([]string, len(model.AccessConditions.Elements()))
+	// for _, trustProvider := range model.TrustProviders.Elements() {
+	// 	var test = types.StringValue(trustProvider.String())
+	// 	fmt.Printf("TrustProvider added : %s\n", test)
+	// 	policy.TrustProviders = append(policy.TrustProviders, test.ValueString())
+	// }
 
-	for i, accessCondition := range model.AccessConditions.Elements() {
-		policy.AccessConditions[i] = accessCondition.String()
-	}
+	// for _, accessCondition := range model.AccessConditions.Elements() {
+	// 	var test = types.StringValue(accessCondition.String())
+	// 	fmt.Printf("AccessCondition added : %s\n", test)
+	// 	policy.AccessConditions = append(policy.AccessConditions, test.ValueString())
+	// }
 
 	return policy
+}
+
+func convertListValueToStringArray(listValue basetypes.ListValue) []string {
+	// Check if the list is null or unknown
+	if listValue.IsNull() || listValue.IsUnknown() {
+		return []string{}
+	}
+
+	// Initialize the string array
+	var stringArray []string
+
+	// Extract the elements
+	for _, item := range listValue.Elements() {
+		// strVal := basetypes.NewStringValue(item.String())
+
+		// // Append the Go string to the array
+		// if !strVal.IsNull() && !strVal.IsUnknown() {
+		var sanitaizedString = strings.ReplaceAll(item.String(), "\"", "")
+		stringArray = append(stringArray, sanitaizedString)
+		//}
+	}
+
+	return stringArray
 }
 
 func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResourceModel {
