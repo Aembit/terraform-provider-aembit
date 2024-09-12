@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"aembit.io/aembit"
@@ -172,7 +171,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
-	fmt.Printf("Create 1, %v\n", plan)
 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -186,9 +184,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
-
-	fmt.Printf("Policy to Create TPS, %v, Lenght: %d\n", policy.TrustProviders, len(policy.TrustProviders))
-	fmt.Printf("Policy to Create ACS, %v\n", policy.AccessConditions)
 
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
@@ -229,7 +224,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 
 // Read refreshes the Terraform state with the latest data.
 func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	fmt.Println("Read start")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -237,8 +231,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	fmt.Printf("Read 1, %v\n", state.TrustProviders)
 
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
@@ -274,8 +266,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
-
-	fmt.Printf("Read 2, %v\n", state.TrustProviders)
 
 	// make sure order of the credential providers stays the same after API call
 	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(state.CredentialProviders))
@@ -455,39 +445,19 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	policy.TrustProviders = convertListValueToStringArray(model.TrustProviders)
 	policy.AccessConditions = convertListValueToStringArray(model.AccessConditions)
 
-	// for _, trustProvider := range model.TrustProviders.Elements() {
-	// 	var test = types.StringValue(trustProvider.String())
-	// 	fmt.Printf("TrustProvider added : %s\n", test)
-	// 	policy.TrustProviders = append(policy.TrustProviders, test.ValueString())
-	// }
-
-	// for _, accessCondition := range model.AccessConditions.Elements() {
-	// 	var test = types.StringValue(accessCondition.String())
-	// 	fmt.Printf("AccessCondition added : %s\n", test)
-	// 	policy.AccessConditions = append(policy.AccessConditions, test.ValueString())
-	// }
-
 	return policy
 }
 
 func convertListValueToStringArray(listValue basetypes.ListValue) []string {
-	// Check if the list is null or unknown
 	if listValue.IsNull() || listValue.IsUnknown() {
 		return []string{}
 	}
 
-	// Initialize the string array
 	var stringArray []string
 
-	// Extract the elements
 	for _, item := range listValue.Elements() {
-		// strVal := basetypes.NewStringValue(item.String())
-
-		// // Append the Go string to the array
-		// if !strVal.IsNull() && !strVal.IsUnknown() {
 		var sanitaizedString = strings.ReplaceAll(item.String(), "\"", "")
 		stringArray = append(stringArray, sanitaizedString)
-		//}
 	}
 
 	return stringArray
