@@ -436,19 +436,17 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 		}
 	}
 
-	tempTrustProviders := make([]attr.Value, len(dto.TrustProviders))
-	if len(dto.TrustProviders) > 0 {
-		for i, trustProvider := range dto.TrustProviders {
-			tempTrustProviders[i] = types.StringValue(trustProvider)
-		}
+	trustProviders := make([]attr.Value, len(dto.TrustProviders))
+	for i, trustProvider := range dto.TrustProviders {
+		trustProviders[i] = types.StringValue(trustProvider)
 	}
-	model.TrustProviders = types.ListValueMust(types.StringType, tempTrustProviders)
+	model.TrustProviders = types.ListValueMust(types.StringType, trustProviders)
 
-	tempAccessConditions := make([]attr.Value, len(dto.AccessConditions))
+	accessConditions := make([]attr.Value, len(dto.AccessConditions))
 	for i, accessCondition := range dto.AccessConditions {
-		tempAccessConditions[i] = types.StringValue(accessCondition)
+		accessConditions[i] = types.StringValue(accessCondition)
 	}
-	model.AccessConditions = types.ListValueMust(types.StringType, tempAccessConditions)
+	model.AccessConditions = types.ListValueMust(types.StringType, accessConditions)
 
 	return model
 }
@@ -494,19 +492,17 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 
 	}
 
-	tempTrustProviders := make([]attr.Value, len(dto.TrustProviders))
-	if len(dto.TrustProviders) > 0 {
-		for i, trustProvider := range dto.TrustProviders {
-			tempTrustProviders[i] = types.StringValue(trustProvider.ExternalID)
-		}
+	trustProviders := make([]attr.Value, len(dto.TrustProviders))
+	for i, trustProvider := range dto.TrustProviders {
+		trustProviders[i] = types.StringValue(trustProvider.ExternalID)
 	}
-	model.TrustProviders = types.ListValueMust(types.StringType, tempTrustProviders)
+	model.TrustProviders = types.ListValueMust(types.StringType, trustProviders)
 
-	tempAccessConditions := make([]attr.Value, len(dto.AccessConditions))
+	accessConditions := make([]attr.Value, len(dto.AccessConditions))
 	for i, accessCondition := range dto.AccessConditions {
-		tempAccessConditions[i] = types.StringValue(accessCondition.ExternalID)
+		accessConditions[i] = types.StringValue(accessCondition.ExternalID)
 	}
-	model.AccessConditions = types.ListValueMust(types.StringType, tempAccessConditions)
+	model.AccessConditions = types.ListValueMust(types.StringType, accessConditions)
 
 	return model
 }

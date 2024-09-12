@@ -101,8 +101,7 @@ resource "aembit_access_policy" "third_policy" {
 		account_name = "",
 		httpbody_field_path = "",
         httpbody_field_value = ""
-	},
-	{
+	}, {
 		credential_provider_id = aembit_credential_provider.snowflake2.id,
         mapping_type = "HttpBody",
         header_name = "",
