@@ -91,10 +91,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				},
 			},
 			"credential_provider": schema.StringAttribute{
-				Description:        "Credential Provider ID configured in the Access Policy.",
-				Optional:           true,
-				Computed:           true,
-				DeprecationMessage: "Deprecated",
+				Description: "Credential Provider ID configured in the Access Policy.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -104,7 +103,6 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional:    true,
 				Computed:    true,
 				Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
-					"policy_id":              types.StringType,
 					"credential_provider_id": types.StringType,
 					"mapping_type":           types.StringType,
 					"header_name":            types.StringType,
@@ -114,11 +112,6 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				}}, []attr.Value{})),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"policy_id": schema.StringAttribute{
-							Description: "ID of access policy",
-							Optional:    true,
-							Computed:    true,
-						},
 						"credential_provider_id": schema.StringAttribute{
 							Description: "ID of credential provider.",
 							Required:    true,
@@ -430,7 +423,6 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 					HeaderValue:          types.StringValue(credentialProvider.HeaderValue),
 					HttpbodyFieldPath:    types.StringValue(credentialProvider.HttpbodyFieldPath),
 					HttpbodyFieldValue:   types.StringValue(credentialProvider.HttpbodyFieldValue),
-					PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
 				}
 			}
 		}
@@ -485,7 +477,6 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 					HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
 					HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
 					HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
-					PolicyId:             types.StringValue(dto.EntityDTO.ExternalID),
 				}
 			}
 		}

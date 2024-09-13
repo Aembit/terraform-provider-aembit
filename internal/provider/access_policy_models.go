@@ -26,7 +26,6 @@ type accessPoliciesDataSourceModel struct {
 
 type policyCredentialMappingModel struct {
 	CredentialProviderId types.String `tfsdk:"credential_provider_id"`
-	PolicyId             types.String `tfsdk:"policy_id"`
 	MappingType          types.String `tfsdk:"mapping_type"`
 	AccountName          types.String `tfsdk:"account_name"`
 	HeaderName           types.String `tfsdk:"header_name"`

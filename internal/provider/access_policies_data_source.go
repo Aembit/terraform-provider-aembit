@@ -75,9 +75,8 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							ElementType: types.StringType,
 						},
 						"credential_provider": schema.StringAttribute{
-							Description:        "Configured Credential Provider of the access policy.",
-							Computed:           true,
-							DeprecationMessage: "Deprecated",
+							Description: "Configured Credential Provider of the access policy.",
+							Computed:    true,
 						},
 						"credential_providers": schema.ListNestedAttribute{
 							Description: "Set of Credential Providers to enforce on the Access Policy.",
@@ -85,11 +84,6 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
-									"policy_id": schema.StringAttribute{
-										Description: "ID of access policy",
-										Optional:    true,
-										Computed:    true,
-									},
 									"credential_provider_id": schema.StringAttribute{
 										Description: "ID of credential provider.",
 										Required:    true,

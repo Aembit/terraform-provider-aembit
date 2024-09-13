@@ -31,7 +31,7 @@ Optional:
 Read-Only:
 
 - `client_workload` (String) Configured client workload of the access policy.
-- `credential_provider` (String, Deprecated) Configured Credential Provider of the access policy.
+- `credential_provider` (String) Configured Credential Provider of the access policy.
 - `id` (String) Unique identifier of the access policy.
 - `is_active` (Boolean) Active/Inactive status of the access policy.
 - `name` (String) Placeholder name of the access policy.
@@ -52,4 +52,3 @@ Optional:
 - `header_value` (String) Value of the header for the credential provider.
 - `httpbody_field_path` (String) Field path in the HTTP body for the credential provider.
 - `httpbody_field_value` (String) Field value in the HTTP body for the credential provider.
-- `policy_id` (String) ID of access policy
