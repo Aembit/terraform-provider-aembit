@@ -134,7 +134,9 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 }
 
 // TestAccClientWorkloadResource_k8sPodName_CustomResourceSet tests resource creation within a custom resource set.
-func TestAccClientWorkloadResource_k8sPodName_CustomResourceSet(t *testing.T) {
+func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T) {
+	skipNotCI(t)
+
 	createFile, _ := os.ReadFile("../../tests/client/resourceSet/TestAccClientWorkloadCustomResourceSet.tf")
 	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "custom_resource_set")
 
