@@ -20,7 +20,7 @@ To get started using the Aembit Terraform provider, first you'll need an active 
 Aembit supports authentication to the Aembit API using a native authentication capability which utilizes OIDC (Open ID Connect tokens) ID Tokens. This capability requires configuring your Aembit tenant with the appropriate components as follows:
 * **Client Workload:** This workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
 * **Trust Provider:** This component ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
-  * Match Rules can be configured for platform-specific restrictions, for example repository on GitHub or workspace ID on Terraform Cloud.
+  * Match Rules can be configured for platform-specific restrictions, for example a repository on GitHub or workspace ID on Terraform Cloud.
 * **Credential Provider:** Using the *Aembit Access Token* Credential Provider type, configured with an Aembit Role that has permissions for the types of resources you want to configure.
   * Notes:
     * The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
@@ -47,8 +47,13 @@ terraform {
 
 provider "aembit" {
   # This client_id configuration may be set here or in the AEMBIT_CLIENT_ID environment variable.
-  # Note: This is a sample value and must be replaced with the Aembit Trust Provider generated value.
+  # Note: This is a sample value and must be replaced with your Aembit Trust Provider generated value.
   client_id = "aembit:useast2:tenant:identity:github_idtoken:0bc4dbcd-e9c8-445b-ac90-28f47b8649cc"
+
+  # Optional, defaults to the Default Resource Set
+  # This resource_set_id configuration may be set here or in the AEMBIT_RESOURCE_SET_ID environment variable.
+  # Note: This is a sample value and must be replaced with your generated Resource Set ID.
+  resource_set_id = "d67afe77-6313-4b18-9b64-c0949b75bd1c"
 }
 
 resource "aembit_client_workload" "client" {
