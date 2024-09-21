@@ -21,8 +21,10 @@ Aembit supports authentication to the Aembit API using a native authentication c
 * **Client Workload:** This workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
 * **Trust Provider:** This component ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
   * Match Rules can be configured for platform-specific restrictions, for example repository on GitHub or workspace ID on Terraform Cloud.
-* **Credential Provider:** This associates the Client Workload with an Aembit Role to ensure that the Client Workload has access to only the applicable Aembit resources.
-  * Note: The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
+* **Credential Provider:** Using the *Aembit Access Token* Credential Provider type, configured with an Aembit Role that has permissions for the types of resources you want to configure.
+  * Notes:
+    * The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
+    * Configuring your Credential Provider with the *Aembit Access Token* type requires that you have the **read** permission for **Roles**.
 * **Server Workload:** This workload identifies the Aembit tenant-specific API endpoint.
 * **Access Policy:** This policy associates the previously configured components and ensures that only this specific workload has the intended access as defined.
 
