@@ -35,5 +35,8 @@ build: testacc
 	go install github.com/goreleaser/goreleaser@latest
 	goreleaser build --snapshot --clean
 
+# Generate updated docs bundle
+#   Individual docs files can be tested using the Terraform Registry Docs Preview
+#		available at https://registry.terraform.io/tools/doc-preview
 docs:
 	go generate ./...

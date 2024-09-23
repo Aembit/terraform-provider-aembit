@@ -18,18 +18,21 @@ To get started using the Aembit Terraform provider, first you'll need an active 
 ### Authenticate using Aembit native authentication
 
 Aembit supports authentication to the Aembit API using a native authentication capability which utilizes OIDC (Open ID Connect tokens) ID Tokens. This capability requires configuring your Aembit tenant with the appropriate components as follows:
-* **Client Workload:** This workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
-* **Trust Provider:** This component ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
+* **Client Workload:** This Workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
+* **Trust Provider:** This Trust Provider ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
   * Match Rules can be configured for platform-specific restrictions, for example a repository on GitHub or workspace ID on Terraform Cloud.
-* **Credential Provider:** Using the *Aembit Access Token* Credential Provider type, configured with an Aembit Role that has permissions for the types of resources you want to configure.
-  * Notes:
-    * The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
-    * Configuring your Credential Provider with the *Aembit Access Token* type requires that you have the **read** permission for **Roles**.
-* **Server Workload:** This workload identifies the Aembit tenant-specific API endpoint.
-* **Access Policy:** This policy associates the previously configured components and ensures that only this specific workload has the intended access as defined.
+* **Credential Provider:** Created using the *Aembit Access Token* Credential Provider type, this Credential Provider can be configured with an Aembit Role that has permissions for the types of resources you want to configure.
+  * **Prerequisite**: Configuring your Credential Provider with the *Aembit Access Token* type requires that you have the **read** permission for **Roles**.
+  * **Note**: The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
+* **Server Workload:** This Workload identifies the Aembit tenant-specific API endpoint.
+* **Access Policy:** This policy associates the previously configured elements and ensures that only the specific Terraform provider workload has access as defined.
 
 After configuring these Aembit resources, the Client ID from the Trust Provider can be configured for the Aembit Terraform Provider, enabling automatic native authentication for the configured Workload.
 The Client ID can be configured using the `client_id` field in the Aembit provider configuration block or with the `AEMBIT_CLIENT_ID` environment variable.
+
+->**Resource Set Scoping**
+When specifying the resource_set_id configuration to a custom Resource Set, the Aembit Cloud Terraform Provider authenticates using entities in the custom Resource Set. 
+Please ensure that the entities you created above are in the same custom Resource Set.
 
 ->**Terraform Cloud Configuration**
 Setting the environment variable TFC_WORKLOAD_IDENTITY_AUDIENCE is required for Terraform Cloud Workspace ID Tokens. The value for this variable will be provided by your Aembit Cloud tenant Trust Provider and references your tenant-specific endpoint.
