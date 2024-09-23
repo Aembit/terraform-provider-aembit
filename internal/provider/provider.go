@@ -180,7 +180,7 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tenant := os.Getenv("AEMBIT_TENANT_ID")
 	token := os.Getenv("AEMBIT_TOKEN")
 	stackDomain := os.Getenv("AEMBIT_STACK_DOMAIN")
-	resourceSetId := ""
+	resourceSetId := os.Getenv("AEMBIT_RESOURCE_SET_ID")
 	if len(stackDomain) == 0 {
 		stackDomain = "useast2.aembit.io"
 	}
@@ -203,10 +203,22 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
-		if token, err = getToken(ctx, aembitClientID, stackDomain); err != nil {
+
+		// Try with the resourceSetId first
+		if token, err = getToken(ctx, aembitClientID, stackDomain, resourceSetId, p.version); err != nil {
 			tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
 				"error": err,
 			})
+		}
+
+		// If there was an error, try again without the resourceSetId
+		// LEGACY: This is included to authenticate to the default resource set if resource_set_id is specified in the provider
+		if err != nil {
+			if token, err = getToken(ctx, aembitClientID, stackDomain, "", p.version); err != nil {
+				tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
+					"error": err,
+				})
+			}
 		}
 	}
 
@@ -339,10 +351,10 @@ func (tokenAuth) RequireTransportSecurity() bool {
 	return true
 }
 
-func getToken(ctx context.Context, aembitClientID, stackDomain string) (string, error) {
+func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, version string) (string, error) {
 	idToken, err := getIdentityToken(aembitClientID, stackDomain)
 	if err == nil {
-		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken)
+		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken, resourceSetId, version)
 		if err == nil {
 			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
 			if err == nil {
@@ -432,7 +444,7 @@ func getWorkloadAssessment(clientId, idToken string) (string, error) {
 	return string(assessment), nil
 }
 
-func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
+func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version string) (string, error) {
 	if isTokenValid(AEMBIT_TOKEN) {
 		return AEMBIT_TOKEN, nil
 	}
@@ -471,6 +483,12 @@ func getAembitToken(clientId, stackDomain, idToken string) (string, error) {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
+	req.Header.Set("User-Agent", fmt.Sprintf("AembitTerraformProvider/%s", version))
+
+	// Add the Aembit Resource Set if it's been configured in the environment
+	if len(resourceSetId) > 0 {
+		req.Header.Set("X-Aembit-ResourceSet", resourceSetId)
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

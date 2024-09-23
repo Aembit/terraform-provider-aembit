@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"os"
+	"testing"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,4 +38,11 @@ func newHTTPHeadersModel(ctx context.Context, headers []aembit.KeyValuePair) typ
 	}
 
 	return types.MapNull(types.StringType)
+}
+
+// skipNotCI can be used to skip tests which can ONLY run on GitHub.
+func skipNotCI(t *testing.T) {
+	if os.Getenv("CI") == "" {
+		t.Skip("Skipping testing in CI environment")
+	}
 }

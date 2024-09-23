@@ -29,3 +29,20 @@ terraform {
 provider "aembit" {
 }
 ```
+
+### Testing
+
+The Aembit Terraform Provider is regularly tested with every Aembit Cloud and Terraform Provider update through the use of Acceptance Testing.
+These test can be run locally on your desktop and are additionally run automatically in the GitHub CI/CD pipeline using Aembit native authentication.
+
+When running locally on your desktop, be sure to set the necessary environment variables:
+```bash
+export AEMBIT_TENANT_ID=<tenant-d>
+export AEMBIT_TOKEN=<access-token-from-console>
+```
+
+### Documentation
+
+
+
+Documentation can be verified using the [Terraform Registry Doc Preview](https://registry.terraform.io/tools/doc-preview).
