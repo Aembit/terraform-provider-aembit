@@ -28,7 +28,7 @@ func init() {
 	if token == "" {
 		aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
 		tenant = getAembitTenantId(aembitClientID)
-		token, _ = getToken(context.Background(), aembitClientID, stackDomain)
+		token, _ = getToken(context.Background(), aembitClientID, stackDomain, "", "test")
 	}
 	testClient, _ = aembit.NewClient(aembit.URLBuilder{}, &token, "", "test")
 	testClient.Tenant = tenant
