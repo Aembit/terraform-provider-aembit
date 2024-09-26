@@ -203,22 +203,23 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
+		tflog.Debug(ctx, "Using Aembit Native Authentication", map[string]interface{}{"tenantId": tenant})
 
 		// Try with the resourceSetId first
 		if token, err = getToken(ctx, aembitClientID, stackDomain, resourceSetId, p.version); err != nil {
-			tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
-				"error": err,
-			})
+			tflog.Warn(ctx, "Failed to get Aembit Auth Token", map[string]interface{}{"error": err})
+		} else {
+			tflog.Debug(ctx, "Retrieved Aembit Auth Token for ResourceSet", map[string]interface{}{"resourceSetId": resourceSetId})
 		}
 
 		// If there was an error, try again without the resourceSetId
 		// LEGACY: This is included to authenticate to the default resource set if resource_set_id is specified in the provider
-		if err != nil {
+		if token == "" {
 			if token, err = getToken(ctx, aembitClientID, stackDomain, "", p.version); err != nil {
-				tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
-					"error": err,
-				})
+				tflog.Warn(ctx, "Failed to get Aembit Auth Token", map[string]interface{}{"error": err})
 			}
+		} else {
+			tflog.Debug(ctx, "Retrieved Aembit Auth Token for Default ResourceSet")
 		}
 	}
 
@@ -335,6 +336,15 @@ type WorkloadAssessment struct {
 	GCP       WorkloadAssessmentIdToken `json:"gcp,omitempty"`
 	GitHub    WorkloadAssessmentIdToken `json:"github,omitempty"`
 	Terraform WorkloadAssessmentIdToken `json:"terraform,omitempty"`
+	OS        OperatingSystemData       `json:"os,omitempty"`
+}
+
+type OperatingSystemData struct {
+	Environment EnvironmentVariablesData `json:"environment,omitempty"`
+}
+
+type EnvironmentVariablesData struct {
+	ResourceSet string `json:"AEMBIT_RESOURCE_SET_ID,omitempty"`
 }
 
 type tokenAuth struct {
@@ -356,7 +366,7 @@ func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, v
 	if err == nil {
 		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken, resourceSetId, version)
 		if err == nil {
-			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken, resourceSetId)
 			if err == nil {
 				return roleToken, nil
 			} else {
@@ -379,7 +389,7 @@ func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, v
 	}
 }
 
-func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
+func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken, resourceSetId string) (string, error) {
 	var err error
 	var clientRequest, workloadAssessment string
 	var conn *grpc.ClientConn
@@ -395,7 +405,7 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	if clientRequest, err = getClientRequest(targetHost, targetPort); err != nil {
 		return "", err
 	}
-	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken); err != nil {
+	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken, resourceSetId); err != nil {
 		return "", err
 	}
 
@@ -422,7 +432,7 @@ func getClientRequest(targetHost string, targetPort int16) (string, error) {
 	return string(request), nil
 }
 
-func getWorkloadAssessment(clientId, idToken string) (string, error) {
+func getWorkloadAssessment(clientId, idToken, resourceSetId string) (string, error) {
 	var assessment []byte
 	var err error
 	var workload WorkloadAssessment
@@ -436,6 +446,15 @@ func getWorkloadAssessment(clientId, idToken string) (string, error) {
 		workload = WorkloadAssessment{Version: "1.0.0", Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken}}
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
+	}
+
+	// Add the Aembit Resource Set if it's been configured in the environment
+	if len(resourceSetId) > 0 {
+		workload.OS = OperatingSystemData{
+			Environment: EnvironmentVariablesData{
+				ResourceSet: resourceSetId,
+			},
+		}
 	}
 
 	if assessment, err = json.Marshal(workload); err != nil {
