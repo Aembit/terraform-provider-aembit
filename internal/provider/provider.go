@@ -28,7 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
 )
 
 // Ensure AembitProvider satisfies various provider interfaces.
@@ -336,6 +335,15 @@ type WorkloadAssessment struct {
 	GCP       WorkloadAssessmentIdToken `json:"gcp,omitempty"`
 	GitHub    WorkloadAssessmentIdToken `json:"github,omitempty"`
 	Terraform WorkloadAssessmentIdToken `json:"terraform,omitempty"`
+	OS        OperatingSystemData       `json:"os,omitempty"`
+}
+
+type OperatingSystemData struct {
+	Environment EnvironmentVariablesData `json:"environment,omitempty"`
+}
+
+type EnvironmentVariablesData struct {
+	ResourceSet string `json:"AEMBIT_RESOURCE_SET_ID,omitempty"`
 }
 
 type tokenAuth struct {
@@ -396,18 +404,12 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 	if clientRequest, err = getClientRequest(targetHost, targetPort); err != nil {
 		return "", err
 	}
-	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken); err != nil {
+	if workloadAssessment, err = getWorkloadAssessment(clientId, idToken, resourceSetId); err != nil {
 		return "", err
 	}
 
-	ctx := context.Background()
-	// Add the Aembit Resource Set if it's been configured in the environment
-	if len(resourceSetId) > 0 {
-		ctx = metadata.AppendToOutgoingContext(ctx, "X-Aembit-ResourceSet", "resourceSetId")
-	}
-
 	aembitClient = NewEdgeCommanderClient(conn)
-	if credResponse, err = aembitClient.GetCredential(ctx, &CredentialRequest{
+	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
 		ClientRequest:      clientRequest,
 		AgentAssessment:    workloadAssessment,
 		WorkloadAssessment: workloadAssessment,
@@ -429,7 +431,7 @@ func getClientRequest(targetHost string, targetPort int16) (string, error) {
 	return string(request), nil
 }
 
-func getWorkloadAssessment(clientId, idToken string) (string, error) {
+func getWorkloadAssessment(clientId, idToken, resourceSetId string) (string, error) {
 	var assessment []byte
 	var err error
 	var workload WorkloadAssessment
@@ -443,6 +445,15 @@ func getWorkloadAssessment(clientId, idToken string) (string, error) {
 		workload = WorkloadAssessment{Version: "1.0.0", Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken}}
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
+	}
+
+	// Add the Aembit Resource Set if it's been configured in the environment
+	if len(resourceSetId) > 0 {
+		workload.OS = OperatingSystemData{
+			Environment: EnvironmentVariablesData{
+				ResourceSet: resourceSetId,
+			},
+		}
 	}
 
 	if assessment, err = json.Marshal(workload); err != nil {
