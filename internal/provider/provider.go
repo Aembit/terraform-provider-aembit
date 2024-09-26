@@ -203,22 +203,27 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
+		tflog.Debug(ctx, "Using Aembit Native Authentication for Tenant %s", map[string]interface{}{"tenantId": tenant})
 
 		// Try with the resourceSetId first
 		if token, err = getToken(ctx, aembitClientID, stackDomain, resourceSetId, p.version); err != nil {
 			tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
 				"error": err,
 			})
+		} else {
+			tflog.Debug(ctx, "Retrieved Aembit Auth Token for ResourceSet %s", map[string]interface{}{"resourceSetId": resourceSetId})
 		}
 
 		// If there was an error, try again without the resourceSetId
 		// LEGACY: This is included to authenticate to the default resource set if resource_set_id is specified in the provider
-		if err != nil {
+		if token == "" {
 			if token, err = getToken(ctx, aembitClientID, stackDomain, "", p.version); err != nil {
 				tflog.Warn(ctx, "Failed to get Aembit Auth Token: %v", map[string]interface{}{
 					"error": err,
 				})
 			}
+		} else {
+			tflog.Debug(ctx, "Retrieved Aembit Auth Token for Default ResourceSet")
 		}
 	}
 
