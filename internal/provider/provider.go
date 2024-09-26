@@ -28,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 // Ensure AembitProvider satisfies various provider interfaces.
@@ -356,7 +357,7 @@ func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, v
 	if err == nil {
 		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken, resourceSetId, version)
 		if err == nil {
-			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken)
+			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken, resourceSetId)
 			if err == nil {
 				return roleToken, nil
 			} else {
@@ -379,7 +380,7 @@ func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, v
 	}
 }
 
-func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken string) (string, error) {
+func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken, resourceSetId string) (string, error) {
 	var err error
 	var clientRequest, workloadAssessment string
 	var conn *grpc.ClientConn
@@ -399,8 +400,14 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 		return "", err
 	}
 
+	ctx := context.Background()
+	// Add the Aembit Resource Set if it's been configured in the environment
+	if len(resourceSetId) > 0 {
+		ctx = metadata.AppendToOutgoingContext(ctx, "X-Aembit-ResourceSet", "resourceSetId")
+	}
+
 	aembitClient = NewEdgeCommanderClient(conn)
-	if credResponse, err = aembitClient.GetCredential(context.Background(), &CredentialRequest{
+	if credResponse, err = aembitClient.GetCredential(ctx, &CredentialRequest{
 		ClientRequest:      clientRequest,
 		AgentAssessment:    workloadAssessment,
 		WorkloadAssessment: workloadAssessment,
