@@ -39,8 +39,9 @@ jobs:
           gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
           #passphrase: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5 # v5.x
+        uses: goreleaser/goreleaser-action@v6 # v6.x
         with:
+          version: '~> v2'
           args: release --clean
         env:
           # GitHub sets the GITHUB_TOKEN secret automatically.
