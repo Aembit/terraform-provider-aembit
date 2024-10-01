@@ -23,6 +23,9 @@ Aembit supports authentication to the Aembit API using a native authentication c
   * **Prerequisite**: Configuring your Credential Provider with the *Aembit Access Token* type requires that you have the **read** permission for [**Roles**](https://docs.aembit.io/administration/roles/overview).
   * **Note**: The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
 * **Server Workload:** This Workload identifies the Aembit tenant-specific API endpoint.
+  * The Host value can be copied from the Audience value of the Credential Provider.
+  * The Port values should be set to 443 with TLS encryption for both the Port and Forward to Port options.
+  * The Authentication section should be configured for *HTTP Authentication* with the *Bearer* authentication scheme. 
 * **Access Policy:** This policy associates the previously configured elements and ensures that only the specific Terraform provider workload has access as defined.
 
 After configuring these Aembit resources, the Client ID from the Trust Provider can be configured for the Aembit Terraform Provider, enabling automatic native authentication for the configured Workload.
