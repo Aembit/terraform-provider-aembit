@@ -361,7 +361,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	if len(model.CredentialProvider.ValueString()) > 0 {
 		policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, 1)
 		policy.CredentialProviders[0] = aembit.PolicyCredentialMappingDTO{
-			PolicyId:             "00000000-0000-0000-0000-000000000000",
 			CredentialProviderId: model.CredentialProvider.ValueString(),
 			MappingType:          "None",
 			AccountName:          "",
@@ -376,7 +375,6 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 		if len(model.CredentialProviders) > 0 {
 			for i, credentialProvider := range model.CredentialProviders {
 				policy.CredentialProviders[i] = aembit.PolicyCredentialMappingDTO{
-					PolicyId:             "00000000-0000-0000-0000-000000000000",
 					CredentialProviderId: credentialProvider.CredentialProviderId.ValueString(),
 					MappingType:          credentialProvider.MappingType.ValueString(),
 					AccountName:          credentialProvider.AccountName.ValueString(),
