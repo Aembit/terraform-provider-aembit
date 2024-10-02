@@ -2,20 +2,18 @@ package provider
 
 import (
 	"context"
-	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -72,22 +70,24 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"trust_providers": schema.ListAttribute{
+			"trust_providers": schema.SetAttribute{
 				Description: "Set of Trust Providers to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
 				},
 			},
-			"access_conditions": schema.ListAttribute{
+			"access_conditions": schema.SetAttribute{
 				Description: "Set of Access Conditions to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
 				},
 			},
 			"credential_provider": schema.StringAttribute{
@@ -171,7 +171,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	initialOrderOfCredentialProviders := make([]string, len(plan.CredentialProviders))
-
 	for i, cp := range plan.CredentialProviders {
 		initialOrderOfCredentialProviders[i] = cp.CredentialProviderId.ValueString()
 	}
@@ -189,12 +188,12 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessPolicyDTOToModel(*accessPolicy)
-
+	plan = convertAccessPolicyDTOToModel(plan, *accessPolicy)
 	plan.CredentialProviders = sortCredentialProviders(plan.CredentialProviders, initialOrderOfCredentialProviders)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -245,7 +244,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
-
 	state.CredentialProviders = sortCredentialProviders(state.CredentialProviders, initialOrderOfCredentialProviders)
 
 	// Set refreshed state
@@ -297,7 +295,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessPolicyDTOToModel(*accessPolicy)
+	state = convertAccessPolicyDTOToModel(plan, *accessPolicy)
 
 	state.CredentialProviders = sortCredentialProviders(state.CredentialProviders, initialOrderOfCredentialProviders)
 
@@ -354,8 +352,25 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 		Name:     model.Name.ValueString(),
 		IsActive: model.IsActive.ValueBool(),
 	}
+	if externalID != nil {
+		policy.EntityDTO.ExternalID = *externalID
+	}
+
 	policy.ClientWorkload = model.ClientWorkload.ValueString()
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
+	policy.TrustProviders = make([]string, len(model.TrustProviders))
+	policy.AccessConditions = make([]string, len(model.AccessConditions))
+
+	if len(model.TrustProviders) > 0 {
+		for i, trustProvider := range model.TrustProviders {
+			policy.TrustProviders[i] = trustProvider.ValueString()
+		}
+	}
+	if len(model.AccessConditions) > 0 {
+		for i, accessConditions := range model.AccessConditions {
+			policy.AccessConditions[i] = accessConditions.ValueString()
+		}
+	}
 
 	// populate CredentialProviders statically if only credentialProvider provided
 	if len(model.CredentialProvider.ValueString()) > 0 {
@@ -387,17 +402,10 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 		}
 	}
 
-	if externalID != nil {
-		policy.EntityDTO.ExternalID = *externalID
-	}
-
-	policy.TrustProviders = convertListValueToStringArray(model.TrustProviders)
-	policy.AccessConditions = convertListValueToStringArray(model.AccessConditions)
-
 	return policy
 }
 
-func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResourceModel {
+func convertAccessPolicyDTOToModel(plan accessPolicyResourceModel, dto aembit.CreatePolicyDTO) accessPolicyResourceModel {
 	var model accessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -426,17 +434,26 @@ func convertAccessPolicyDTOToModel(dto aembit.CreatePolicyDTO) accessPolicyResou
 		}
 	}
 
-	trustProviders := make([]attr.Value, len(dto.TrustProviders))
-	for i, trustProvider := range dto.TrustProviders {
-		trustProviders[i] = types.StringValue(trustProvider)
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	if len(dto.TrustProviders) > 0 {
+		for i, trustProvider := range dto.TrustProviders {
+			model.TrustProviders[i] = types.StringValue(trustProvider)
+		}
 	}
-	model.TrustProviders = types.ListValueMust(types.StringType, trustProviders)
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+	if len(dto.AccessConditions) > 0 {
+		for i, accessConditions := range dto.AccessConditions {
+			model.AccessConditions[i] = types.StringValue(accessConditions)
+		}
+	}
 
-	accessConditions := make([]attr.Value, len(dto.AccessConditions))
-	for i, accessCondition := range dto.AccessConditions {
-		accessConditions[i] = types.StringValue(accessCondition)
+	// Handle cases where the plan does not specify TrustProviders or AccessConditions at all
+	if plan.TrustProviders == nil {
+		model.TrustProviders = nil
 	}
-	model.AccessConditions = types.ListValueMust(types.StringType, accessConditions)
+	if plan.AccessConditions == nil {
+		model.AccessConditions = nil
+	}
 
 	return model
 }
@@ -478,20 +495,20 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 				}
 			}
 		}
-
 	}
 
-	trustProviders := make([]attr.Value, len(dto.TrustProviders))
-	for i, trustProvider := range dto.TrustProviders {
-		trustProviders[i] = types.StringValue(trustProvider.ExternalID)
+	model.TrustProviders = make([]types.String, len(dto.TrustProviders))
+	if len(dto.TrustProviders) > 0 {
+		for i, trustProvider := range dto.TrustProviders {
+			model.TrustProviders[i] = types.StringValue(trustProvider.ExternalID)
+		}
 	}
-	model.TrustProviders = types.ListValueMust(types.StringType, trustProviders)
-
-	accessConditions := make([]attr.Value, len(dto.AccessConditions))
-	for i, accessCondition := range dto.AccessConditions {
-		accessConditions[i] = types.StringValue(accessCondition.ExternalID)
+	model.AccessConditions = make([]types.String, len(dto.AccessConditions))
+	if len(dto.AccessConditions) > 0 {
+		for i, accessConditions := range dto.AccessConditions {
+			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
+		}
 	}
-	model.AccessConditions = types.ListValueMust(types.StringType, accessConditions)
 
 	return model
 }
@@ -514,19 +531,4 @@ func sortCredentialProviders(credentialProviders []*policyCredentialMappingModel
 
 	// preserve the incoming order
 	return credentialProviders
-}
-
-func convertListValueToStringArray(listValue basetypes.ListValue) []string {
-	if listValue.IsNull() || listValue.IsUnknown() {
-		return []string{}
-	}
-
-	var stringArray []string
-
-	for _, item := range listValue.Elements() {
-		var sanitaizedString = strings.ReplaceAll(item.String(), "\"", "")
-		stringArray = append(stringArray, sanitaizedString)
-	}
-
-	return stringArray
 }

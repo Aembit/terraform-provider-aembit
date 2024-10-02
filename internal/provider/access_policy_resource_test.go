@@ -11,6 +11,7 @@ const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
 const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
 const AccessPolicyPathMultiCPFirst string = "aembit_access_policy.multi_cp_first_policy"
 const AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
+const CredentialProvidersCount string = "credential_providers.#"
 
 var accessPolicyChecks = []resource.TestCheckFunc{
 	// Verify values for First Policy.
@@ -114,10 +115,10 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "credential_providers.#", "2"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
 
 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "credential_providers.#", "3"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
 				),
 			},
 			// ImportState testing
@@ -127,10 +128,10 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "credential_providers.#", "2"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
 
 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "credential_providers.#", "2"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "2"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
