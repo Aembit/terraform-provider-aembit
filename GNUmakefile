@@ -28,6 +28,7 @@ testacc: .check-env-vars install
 	cd internal/provider
 	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage.out
 	go tool cover -html coverage.out -o coverage.html
+	printf 'REMINDER: To run specific tests, use \e[36mTESTARGS="-run REGEX"\e[0m\n'
 
 # Locally create a build for local/qa testing using GoReleaser
 #	Reference: https://developer.hashicorp.com/terraform/registry/providers/publishing#using-goreleaser-locally

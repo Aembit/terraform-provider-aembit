@@ -25,10 +25,33 @@ resource "aembit_client_workload" "second_client" {
     ]
 }
 
-resource "aembit_credential_provider" "api_key" {
-	name = "TF Acceptance Policy CP"
-	api_key = {
-		api_key = "test"
+resource "aembit_client_workload" "third_client" {
+    name = "third terraform client workload"
+    description = "new client workload for policy integration"
+    is_active = false
+    identities = [
+        {
+            type = "k8sNamespace"
+            value = "thirdClientWorkloadNamespace"
+        },
+    ]
+}
+
+resource "aembit_credential_provider" "snowflake1" {
+	name = "TF Acceptance Snowflake Token 1"
+	is_active = true
+	snowflake_jwt = {
+		account_id = "account_id"
+		username = "username"
+	}
+}
+
+resource "aembit_credential_provider" "snowflake2" {
+	name = "TF Acceptance Snowflake Token 2"
+	is_active = true
+	snowflake_jwt = {
+		account_id = "account_id"
+		username = "username"
 	}
 }
 
@@ -54,7 +77,7 @@ resource "aembit_access_policy" "first_policy" {
     client_workload = aembit_client_workload.first_client.id
     trust_providers = []
     access_conditions = []
-    credential_provider = aembit_credential_provider.api_key.id
+    credential_provider = aembit_credential_provider.snowflake1.id
     server_workload = aembit_server_workload.first_server.id
 }
 
@@ -62,6 +85,6 @@ resource "aembit_access_policy" "second_policy" {
     is_active = false
     name = "TF Second Policy"
     client_workload = aembit_client_workload.second_client.id
-    credential_provider = aembit_credential_provider.api_key.id
+    credential_provider = aembit_credential_provider.snowflake2.id
     server_workload = aembit_server_workload.first_server.id
 }

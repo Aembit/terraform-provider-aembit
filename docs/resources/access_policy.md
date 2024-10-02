@@ -24,6 +24,7 @@ description: |-
 
 - `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
 - `credential_provider` (String) Credential Provider ID configured in the Access Policy.
+- `credential_providers` (Attributes Set) Set of Credential Providers to enforce on the Access Policy. (see [below for nested schema](#nestedatt--credential_providers))
 - `is_active` (Boolean) Active/Inactive status of the Access Policy.
 - `name` (String) Name for the Access Policy.
 - `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.
@@ -31,3 +32,19 @@ description: |-
 ### Read-Only
 
 - `id` (String) Unique identifier of the Access Policy.
+
+<a id="nestedatt--credential_providers"></a>
+### Nested Schema for `credential_providers`
+
+Required:
+
+- `credential_provider_id` (String) ID of credential provider.
+- `mapping_type` (String) Mapping type for the credential provider.
+
+Optional:
+
+- `account_name` (String) Name of the Snowflake account for the credential provider.
+- `header_name` (String) Name of the header for the credential provider.
+- `header_value` (String) Value of the header for the credential provider.
+- `httpbody_field_path` (String) Field path in the HTTP body for the credential provider.
+- `httpbody_field_value` (String) Field value in the HTTP body for the credential provider.
