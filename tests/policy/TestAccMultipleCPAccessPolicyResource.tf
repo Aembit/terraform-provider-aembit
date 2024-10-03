@@ -79,16 +79,10 @@ resource "aembit_access_policy" "multi_cp_first_policy" {
 		credential_provider_id = aembit_credential_provider.snowflake1.id,
 		mapping_type = "HttpHeader",
         header_name = "test_header_name",
-        header_value = "test_header_value",
-		account_name = "",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
+        header_value = "test_header_value"
 	}, {
 		credential_provider_id = aembit_credential_provider.snowflake2.id,
         mapping_type = "HttpBody",
-        header_name = "",
-        header_value = "",
-        account_name = "",
         httpbody_field_path = "test_field_path",
         httpbody_field_value = "test_field_value"
 	}]
@@ -102,27 +96,15 @@ resource "aembit_access_policy" "multi_cp_second_policy" {
     credential_providers = [{
 		credential_provider_id = aembit_credential_provider.snowflake1.id,
 		mapping_type = "AccountName",
-        header_name = "",
-        header_value = "",
-		account_name = "account_name_1",
-		httpbody_field_path = "",
-        httpbody_field_value = ""
+		account_name = "account_name_1"
 	}, {
 		credential_provider_id = aembit_credential_provider.snowflake2.id,
         mapping_type = "AccountName",
-        header_name = "",
-        header_value = "",
-        account_name = "account_name_2",
-        httpbody_field_path = "",
-        httpbody_field_value = ""
+        account_name = "account_name_2"
 	}, {
 		credential_provider_id = aembit_credential_provider.snowflake3.id,
         mapping_type = "AccountName",
-        header_name = "",
-        header_value = "",
-        account_name = "account_name_3",
-        httpbody_field_path = "",
-        httpbody_field_value = ""
+        account_name = "account_name_3"
 	}]
     server_workload = aembit_server_workload.first_server.id
 }
