@@ -12,6 +12,7 @@ import (
 
 const trustProviderPathRole string = "aembit_trust_provider.aws_role"
 const trustProviderPathAzure string = "aembit_trust_provider.azure"
+const trustProviderGitLab string = "aembit_trust_provider.gitlab"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -220,23 +221,23 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.gitlab", "name", "TF Acceptance GitLab Job"),
+					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_trust_provider.gitlab", ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderGitLab, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_trust_provider.gitlab", "name", "TF Acceptance GitLab Job - Modified"),
+					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
