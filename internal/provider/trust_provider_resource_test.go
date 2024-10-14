@@ -208,6 +208,42 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 	})
 }
 
+func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.gitlab", "name", "TF Acceptance GitLab Job"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: "aembit_trust_provider.gitlab", ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr("aembit_trust_provider.gitlab", "name", "TF Acceptance GitLab Job - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.gitlab", "id"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/kerberos/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/kerberos/TestAccTrustProviderResource.tfmod")

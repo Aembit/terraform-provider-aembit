@@ -213,16 +213,20 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "GitLab Job type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"actor": schema.StringAttribute{
-						Description: "The GitHub Actor which initiated the GitHub Action.",
+					"namespace_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
-					"repository": schema.StringAttribute{
-						Description: "The GitHub Repository associated with the GitHub Action ID Token.",
+					"project_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
-					"workflow": schema.StringAttribute{
-						Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
+					"ref_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"subject": schema.StringAttribute{
+						Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
 						Optional:    true,
 					},
 				},

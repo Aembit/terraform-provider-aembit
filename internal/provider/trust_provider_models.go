@@ -87,10 +87,10 @@ type trustProviderGitHubActionModel struct {
 }
 
 type trustProviderGitLabJobModel struct {
-	Subject       types.String `tfsdk:"subject"`
-	ProjectPath   types.String `tfsdk:"project_path"`
 	NamespacePath types.String `tfsdk:"namespace_path"`
+	ProjectPath   types.String `tfsdk:"project_path"`
 	RefPath       types.String `tfsdk:"ref_path"`
+	Subject       types.String `tfsdk:"subject"`
 }
 
 type trustProviderTerraformModel struct {
