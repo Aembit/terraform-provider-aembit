@@ -151,6 +151,28 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								},
 							},
 						},
+						"gitlab_job": schema.SingleNestedAttribute{
+							Description: "GitLab Job type Trust Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"namespace_path": schema.StringAttribute{
+									Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
+									Optional:    true,
+								},
+								"project_path": schema.StringAttribute{
+									Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
+									Optional:    true,
+								},
+								"ref_path": schema.StringAttribute{
+									Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
+									Optional:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
+									Optional:    true,
+								},
+							},
+						},
 						"kerberos": schema.SingleNestedAttribute{
 							Description: "Kerberos type Trust Provider configuration.",
 							Computed:    true,
