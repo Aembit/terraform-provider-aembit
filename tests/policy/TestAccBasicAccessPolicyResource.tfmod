@@ -25,18 +25,6 @@ resource "aembit_client_workload" "second_client" {
     ]
 }
 
-resource "aembit_client_workload" "third_client" {
-    name = "third terraform client workload"
-    description = "new client workload for policy integration"
-    is_active = false
-    identities = [
-        {
-            type = "k8sNamespace"
-            value = "thirdClientWorkloadNamespace"
-        },
-    ]
-}
-
 resource "aembit_credential_provider" "snowflake1" {
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
