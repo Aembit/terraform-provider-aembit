@@ -13,8 +13,9 @@ import (
 const testCWResource string = "aembit_client_workload.test"
 const testCWResourceDescription string = "Acceptance Test client workload"
 const testCWResourceIdentitiesCount string = "identities.#"
-const testCWResourceIdentitiesType string = "identities.0.type"
-const testCWResourceIdentitiesValue string = "identities.0.value"
+
+var testCWResourceIdentitiesType = []string{"identities.0.type", "identities.1.type", "identities.2.type", "identities.3.type"}
+var testCWResourceIdentitiesValue = []string{"identities.0.value", "identities.1.value", "identities.2.value", "identities.3.value"}
 
 func testDeleteClientWorkload() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -49,8 +50,8 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sNamespace"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "k8sNamespace"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
@@ -102,8 +103,8 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sPodName"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "k8sPodName"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
@@ -152,8 +153,8 @@ func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "k8sPodName"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "k8sPodName"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
@@ -187,8 +188,8 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType, "awsLambdaArn"),
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue, newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "awsLambdaArn"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
@@ -205,6 +206,61 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - awsLambdaArn - modified"),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/client/gitLabJob/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/client/gitLabJob/TestAccClientWorkloadResource.tfmod")
+	createFileConfig, modifyFileConfig, newSubject := randomizeFileConfigs(string(createFile), string(modifyFile), "subject")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - gitLabJob"),
+					resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "4"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "gitlabIdTokenNamespacePath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], "namespacePath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[1], "gitlabIdTokenProjectPath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[1], "projectPath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[2], "gitlabIdTokenRefPath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[2], "refPath"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[3], "gitlabIdTokenSubject"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[3], newSubject),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - gitLabJob - modified"),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
 					// Verify Tags.

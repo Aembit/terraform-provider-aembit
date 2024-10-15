@@ -12,6 +12,7 @@ import (
 
 const trustProviderPathRole string = "aembit_trust_provider.aws_role"
 const trustProviderPathAzure string = "aembit_trust_provider.azure"
+const trustProviderGitLab string = "aembit_trust_provider.gitlab"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -201,6 +202,42 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 					resource.TestCheckResourceAttr("aembit_trust_provider.github", "name", "TF Acceptance GitHub Action - Modified"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.github", "id"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: trustProviderGitLab, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

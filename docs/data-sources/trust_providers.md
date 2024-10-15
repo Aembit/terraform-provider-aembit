@@ -22,6 +22,10 @@ Manages an trust provider.
 <a id="nestedatt--trust_providers"></a>
 ### Nested Schema for `trust_providers`
 
+Optional:
+
+- `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gitlab_job))
+
 Read-Only:
 
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
@@ -37,6 +41,17 @@ Read-Only:
 - `name` (String) User-provided name of the trust provider.
 - `tags` (Map of String)
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
+
+<a id="nestedatt--trust_providers--gitlab_job"></a>
+### Nested Schema for `trust_providers.gitlab_job`
+
+Optional:
+
+- `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
+- `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
+- `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
+- `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
+
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`

@@ -79,6 +79,10 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								"\t* `gcpIdentityToken`\n" +
 								"\t* `githubIdTokenRepository`\n" +
 								"\t* `githubIdTokenSubject`\n" +
+								"\t* `gitlabIdTokenSubject`\n" +
+								"\t* `gitlabIdTokenProjectPath`\n" +
+								"\t* `gitlabIdTokenNamespacePath`\n" +
+								"\t* `gitlabIdTokenRefPath`\n" +
 								"\t* `hostname`\n" +
 								"\t* `k8sNamespace`\n" +
 								"\t* `k8sPodName`\n" +
@@ -101,6 +105,10 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									"gcpIdentityToken",
 									"githubIdTokenRepository",
 									"githubIdTokenSubject",
+									"gitlabIdTokenSubject",
+									"gitlabIdTokenProjectPath",
+									"gitlabIdTokenNamespacePath",
+									"gitlabIdTokenRefPath",
 									"hostname",
 									"k8sNamespace",
 									"k8sPodName",

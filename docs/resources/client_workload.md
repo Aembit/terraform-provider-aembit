@@ -55,6 +55,10 @@ Required:
 	* `gcpIdentityToken`
 	* `githubIdTokenRepository`
 	* `githubIdTokenSubject`
+	* `gitlabIdTokenSubject`
+	* `gitlabIdTokenProjectPath`
+	* `gitlabIdTokenNamespacePath`
+	* `gitlabIdTokenRefPath`
 	* `hostname`
 	* `k8sNamespace`
 	* `k8sPodName`

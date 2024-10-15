@@ -17,6 +17,7 @@ type trustProviderResourceModel struct {
 	AwsMetadata        *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
 	GcpIdentity        *trustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
 	GitHubAction       *trustProviderGitHubActionModel  `tfsdk:"github_action"`
+	GitLabJob          *trustProviderGitLabJobModel     `tfsdk:"gitlab_job"`
 	Kerberos           *trustProviderKerberosModel      `tfsdk:"kerberos"`
 	KubernetesService  *trustProviderKubernetesModel    `tfsdk:"kubernetes_service_account"`
 	TerraformWorkspace *trustProviderTerraformModel     `tfsdk:"terraform_workspace"`
@@ -83,6 +84,13 @@ type trustProviderGitHubActionModel struct {
 	Actor      types.String `tfsdk:"actor"`
 	Repository types.String `tfsdk:"repository"`
 	Workflow   types.String `tfsdk:"workflow"`
+}
+
+type trustProviderGitLabJobModel struct {
+	NamespacePath types.String `tfsdk:"namespace_path"`
+	ProjectPath   types.String `tfsdk:"project_path"`
+	RefPath       types.String `tfsdk:"ref_path"`
+	Subject       types.String `tfsdk:"subject"`
 }
 
 type trustProviderTerraformModel struct {

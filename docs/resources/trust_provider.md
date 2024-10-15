@@ -92,6 +92,7 @@ resource "aembit_trust_provider" "kerberos" {
 - `description` (String) Description for the Trust Provider.
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--gcp_identity))
 - `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--github_action))
+- `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--gitlab_job))
 - `is_active` (Boolean) Active status of the Trust Provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--kerberos))
 - `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--kubernetes_service_account))
@@ -161,6 +162,17 @@ Optional:
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+
+
+<a id="nestedatt--gitlab_job"></a>
+### Nested Schema for `gitlab_job`
+
+Optional:
+
+- `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
+- `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
+- `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
+- `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
 
 
 <a id="nestedatt--kerberos"></a>

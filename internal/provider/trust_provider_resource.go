@@ -209,6 +209,28 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
+			"gitlab_job": schema.SingleNestedAttribute{
+				Description: "GitLab Job type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"namespace_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"project_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"ref_path": schema.StringAttribute{
+						Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"subject": schema.StringAttribute{
+						Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
+						Optional:    true,
+					},
+				},
+			},
 			"kerberos": schema.SingleNestedAttribute{
 				Description: "Kerberos type Trust Provider configuration.",
 				Optional:    true,
@@ -300,6 +322,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("azure_metadata"),
 			path.MatchRoot("gcp_identity"),
 			path.MatchRoot("github_action"),
+			path.MatchRoot("gitlab_job"),
 			path.MatchRoot("kerberos"),
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
@@ -499,6 +522,9 @@ func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderReso
 	if model.GitHubAction != nil {
 		convertGitHubActionModelToDTO(model, &trust)
 	}
+	if model.GitLabJob != nil {
+		convertGitLabJobModelToDTO(model, &trust)
+	}
 	if model.Kerberos != nil {
 		convertKerberosModelToDTO(model, &trust)
 	}
@@ -578,6 +604,16 @@ func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Workflow, "GithubWorkflow")
 }
 
+func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+	dto.Provider = "GitLabIdentityToken"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.Subject, "GitLabSubject")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.ProjectPath, "GitLabProjectPath")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.NamespacePath, "GitLabNamespacePath")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.RefPath, "GitLabRefPath")
+}
+
 func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "Kerberos"
 	dto.AgentControllerIDs = make([]string, len(model.Kerberos.AgentControllerIDs))
@@ -636,6 +672,8 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 		model.GcpIdentity = convertGcpIdentityDTOToModel(dto)
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto)
+	case "GitLabIdentityToken":
+		model.GitLabJob = convertGitLabJobDTOToModel(dto)
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
@@ -834,6 +872,29 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 			model.Repository = types.StringValue(rule.Value)
 		case "GithubWorkflow":
 			model.Workflow = types.StringValue(rule.Value)
+		}
+	}
+	return model
+}
+
+func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLabJobModel {
+	model := &trustProviderGitLabJobModel{
+		Subject:       types.StringNull(),
+		ProjectPath:   types.StringNull(),
+		NamespacePath: types.StringNull(),
+		RefPath:       types.StringNull(),
+	}
+
+	for _, rule := range dto.MatchRules {
+		switch rule.Attribute {
+		case "GitLabSubject":
+			model.Subject = types.StringValue(rule.Value)
+		case "GitLabProjectPath":
+			model.ProjectPath = types.StringValue(rule.Value)
+		case "GitLabNamespacePath":
+			model.NamespacePath = types.StringValue(rule.Value)
+		case "GitLabRefPath":
+			model.RefPath = types.StringValue(rule.Value)
 		}
 	}
 	return model
