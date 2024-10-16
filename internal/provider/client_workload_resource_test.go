@@ -88,7 +88,7 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tfmod")
-	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1podname")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1podname1")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -102,9 +102,11 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 					resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Workload Identity.
-					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "k8sPodName"),
 					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[1], "k8sPodName"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[1], "unittest1podname2"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
