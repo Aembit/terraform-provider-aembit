@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -213,6 +214,12 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "GitLab Job type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
+					"oidc_endpoint": schema.StringAttribute{
+						Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("https://gitlab.com"),
+					},
 					"namespace_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
@@ -607,6 +614,7 @@ func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit
 func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "GitLabIdentityToken"
 
+	dto.OidcUrl = model.GitLabJob.OIDCEndpoint.ValueString()
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.Subject, "GitLabSubject")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.ProjectPath, "GitLabProjectPath")
@@ -879,6 +887,7 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 
 func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLabJobModel {
 	model := &trustProviderGitLabJobModel{
+		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
 		ProjectPath:   types.StringNull(),
 		NamespacePath: types.StringNull(),
