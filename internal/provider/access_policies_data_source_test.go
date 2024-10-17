@@ -30,9 +30,10 @@ func TestAccAccessPoliciesDataSource(t *testing.T) {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.id"),
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.client_workload"),
-					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
-					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
-					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
+					// Commented out as access policies can be created without trust provider(s)/access condition(s)/credential provider(s)
+					//resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
+					//resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
+					//resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
 					resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.server_workload"),
 				),
 			},
