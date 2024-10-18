@@ -22,10 +22,6 @@ Manages an trust provider.
 <a id="nestedatt--trust_providers"></a>
 ### Nested Schema for `trust_providers`
 
-Optional:
-
-- `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gitlab_job))
-
 Read-Only:
 
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
@@ -34,6 +30,7 @@ Read-Only:
 - `description` (String) User-provided description of the trust provider.
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gcp_identity))
 - `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--github_action))
+- `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gitlab_job))
 - `id` (String) Unique identifier of the trust provider.
 - `is_active` (Boolean) Active/Inactive status of the trust provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kerberos))
@@ -41,18 +38,6 @@ Read-Only:
 - `name` (String) User-provided name of the trust provider.
 - `tags` (Map of String)
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
-
-<a id="nestedatt--trust_providers--gitlab_job"></a>
-### Nested Schema for `trust_providers.gitlab_job`
-
-Optional:
-
-- `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
-- `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.
-- `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
-- `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
-- `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
-
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
@@ -113,6 +98,18 @@ Read-Only:
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+
+
+<a id="nestedatt--trust_providers--gitlab_job"></a>
+### Nested Schema for `trust_providers.gitlab_job`
+
+Optional:
+
+- `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
+- `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.
+- `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
+- `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
+- `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
 
 
 <a id="nestedatt--trust_providers--kerberos"></a>
