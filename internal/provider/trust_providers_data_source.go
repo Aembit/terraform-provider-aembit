@@ -171,16 +171,36 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 									Computed:    true,
 								},
+								"namespace_paths": schema.SetAttribute{
+									Description: "The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
 								"project_path": schema.StringAttribute{
 									Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
+									Computed:    true,
+								},
+								"project_paths": schema.SetAttribute{
+									Description: "The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.",
+									ElementType: types.StringType,
 									Computed:    true,
 								},
 								"ref_path": schema.StringAttribute{
 									Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
 									Computed:    true,
 								},
+								"ref_paths": schema.SetAttribute{
+									Description: "The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
 								"subject": schema.StringAttribute{
 									Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
+									Computed:    true,
+								},
+								"subjects": schema.SetAttribute{
+									Description: "The set of accepted GitLab ID Token Subjects which initiated the GitLab Job.",
+									ElementType: types.StringType,
 									Computed:    true,
 								},
 							},
