@@ -103,9 +103,11 @@ Read-Only:
 <a id="nestedatt--trust_providers--gitlab_job"></a>
 ### Nested Schema for `trust_providers.gitlab_job`
 
-Optional:
+Read-Only:
 
 - `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
+- `oidc_audience` (String) The audience value required for the GitLab Job ID Token.
+- `oidc_client_id` (String) The OAuth Client ID value required for authenticating a GitLab Job.
 - `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.
 - `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
 - `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
