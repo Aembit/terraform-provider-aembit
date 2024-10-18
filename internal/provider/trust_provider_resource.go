@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -224,16 +225,36 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
+					"namespace_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
+						Optional:    true,
+					},
 					"project_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"project_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
 						Optional:    true,
 					},
 					"ref_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
+					"ref_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
+						Optional:    true,
+					},
 					"subject": schema.StringAttribute{
 						Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Subjects which initiated the GitLab Job.",
+						ElementType: types.StringType,
 						Optional:    true,
 					},
 				},
@@ -361,7 +382,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -396,7 +417,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(ctx, trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, trustProvider, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -441,7 +462,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, *trustProvider, &state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -554,6 +575,17 @@ func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, valu
 	return matchRules
 }
 
+func appendMatchRulesIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, values []basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
+	if len(values) > 0 {
+		for _, value := range values {
+			return append(matchRules, aembit.TrustProviderMatchRuleDTO{
+				Attribute: attrName, Value: value.ValueString(),
+			})
+		}
+	}
+	return matchRules
+}
+
 func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
 
@@ -617,9 +649,13 @@ func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 	dto.OidcUrl = model.GitLabJob.OIDCEndpoint.ValueString()
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.Subject, "GitLabSubject")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.Subjects, "GitLabSubject")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.ProjectPath, "GitLabProjectPath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.ProjectPaths, "GitLabProjectPath")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.NamespacePath, "GitLabNamespacePath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.NamespacePaths, "GitLabNamespacePath")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.RefPath, "GitLabRefPath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.RefPaths, "GitLabRefPath")
 }
 
 func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -661,7 +697,7 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 }
 
 // DTO to Model conversion methods.
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, preModel *trustProviderResourceModel) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -681,7 +717,7 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto)
 	case "GitLabIdentityToken":
-		model.GitLabJob = convertGitLabJobDTOToModel(dto)
+		model.GitLabJob = convertGitLabJobDTOToModel(dto, *preModel.GitLabJob)
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
@@ -885,7 +921,7 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 	return model
 }
 
-func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLabJobModel {
+func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, preModel trustProviderGitLabJobModel) *trustProviderGitLabJobModel {
 	model := &trustProviderGitLabJobModel{
 		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
@@ -895,15 +931,32 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLa
 	}
 
 	for _, rule := range dto.MatchRules {
+		fmt.Printf("Adding MatchRule: %s / %s\n", rule.Attribute, rule.Value)
 		switch rule.Attribute {
 		case "GitLabSubject":
-			model.Subject = types.StringValue(rule.Value)
+			if preModel.Subject.IsNull() {
+				model.Subjects = append(model.Subjects, types.StringValue(rule.Value))
+			} else {
+				model.Subject = types.StringValue(rule.Value)
+			}
 		case "GitLabProjectPath":
-			model.ProjectPath = types.StringValue(rule.Value)
+			if preModel.ProjectPath.IsNull() {
+				model.ProjectPaths = append(model.ProjectPaths, types.StringValue(rule.Value))
+			} else {
+				model.ProjectPath = types.StringValue(rule.Value)
+			}
 		case "GitLabNamespacePath":
-			model.NamespacePath = types.StringValue(rule.Value)
+			if preModel.NamespacePath.IsNull() {
+				model.NamespacePaths = append(model.NamespacePaths, types.StringValue(rule.Value))
+			} else {
+				model.NamespacePath = types.StringValue(rule.Value)
+			}
 		case "GitLabRefPath":
-			model.RefPath = types.StringValue(rule.Value)
+			if preModel.RefPath.IsNull() {
+				model.RefPaths = append(model.RefPaths, types.StringValue(rule.Value))
+			} else {
+				model.RefPath = types.StringValue(rule.Value)
+			}
 		}
 	}
 	return model

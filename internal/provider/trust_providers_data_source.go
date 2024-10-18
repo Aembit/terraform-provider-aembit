@@ -265,7 +265,7 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
-		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider)
+		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider, nil)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

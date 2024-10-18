@@ -87,11 +87,15 @@ type trustProviderGitHubActionModel struct {
 }
 
 type trustProviderGitLabJobModel struct {
-	OIDCEndpoint  types.String `tfsdk:"oidc_endpoint"`
-	NamespacePath types.String `tfsdk:"namespace_path"`
-	ProjectPath   types.String `tfsdk:"project_path"`
-	RefPath       types.String `tfsdk:"ref_path"`
-	Subject       types.String `tfsdk:"subject"`
+	OIDCEndpoint   types.String   `tfsdk:"oidc_endpoint"`
+	NamespacePath  types.String   `tfsdk:"namespace_path"`
+	NamespacePaths []types.String `tfsdk:"namespace_paths"`
+	ProjectPath    types.String   `tfsdk:"project_path"`
+	ProjectPaths   []types.String `tfsdk:"project_paths"`
+	RefPath        types.String   `tfsdk:"ref_path"`
+	RefPaths       []types.String `tfsdk:"ref_paths"`
+	Subject        types.String   `tfsdk:"subject"`
+	Subjects       []types.String `tfsdk:"subjects"`
 }
 
 type trustProviderTerraformModel struct {
