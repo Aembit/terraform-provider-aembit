@@ -391,7 +391,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, &plan, r.client.Tenant, r.client.StackDomain)
+	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -426,7 +426,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(ctx, trustProvider, &state, r.client.Tenant, r.client.StackDomain)
+	state = convertTrustProviderDTOToModel(ctx, trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -471,7 +471,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(ctx, *trustProvider, &state, r.client.Tenant, r.client.StackDomain)
+	state = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -706,7 +706,7 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 }
 
 // DTO to Model conversion methods.
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, preModel *trustProviderResourceModel, tenant, stackDomain string) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, tenant, stackDomain string) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -726,11 +726,7 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto)
 	case "GitLabIdentityToken":
-		var gitLabModel *trustProviderGitLabJobModel = nil
-		if preModel != nil {
-			gitLabModel = preModel.GitLabJob
-		}
-		model.GitLabJob = convertGitLabJobDTOToModel(dto, gitLabModel, tenant, stackDomain)
+		model.GitLabJob = convertGitLabJobDTOToModel(dto, tenant, stackDomain)
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
@@ -934,7 +930,7 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 	return model
 }
 
-func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, preModel *trustProviderGitLabJobModel, tenant, stackDomain string) *trustProviderGitLabJobModel {
+func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain string) *trustProviderGitLabJobModel {
 	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
 	stack := strings.Split(stackDomain, ".")[0]
 	model := &trustProviderGitLabJobModel{
