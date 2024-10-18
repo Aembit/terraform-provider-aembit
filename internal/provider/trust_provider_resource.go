@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -578,7 +577,7 @@ func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, valu
 func appendMatchRulesIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, values []basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
 	if len(values) > 0 {
 		for _, value := range values {
-			return append(matchRules, aembit.TrustProviderMatchRuleDTO{
+			matchRules = append(matchRules, aembit.TrustProviderMatchRuleDTO{
 				Attribute: attrName, Value: value.ValueString(),
 			})
 		}
@@ -931,7 +930,6 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, preModel trustProvi
 	}
 
 	for _, rule := range dto.MatchRules {
-		fmt.Printf("Adding MatchRule: %s / %s\n", rule.Attribute, rule.Value)
 		switch rule.Attribute {
 		case "GitLabSubject":
 			if preModel.Subject.IsNull() {
