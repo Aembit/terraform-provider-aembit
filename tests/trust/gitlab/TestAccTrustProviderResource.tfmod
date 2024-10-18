@@ -1,7 +1,7 @@
 provider "aembit" {
 }
 
-resource "aembit_trust_provider" "gitlab" {
+resource "aembit_trust_provider" "gitlab1" {
 	name = "TF Acceptance GitLab Job - Modified"
 	is_active = true
 	gitlab_job = {
