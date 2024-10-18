@@ -170,10 +170,14 @@ Optional:
 Optional:
 
 - `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
+- `namespace_paths` (Set of String) The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.
 - `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.
 - `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
+- `project_paths` (Set of String) The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.
 - `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
+- `ref_paths` (Set of String) The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job.
 - `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
+- `subjects` (Set of String) The set of accepted GitLab ID Token Subjects which initiated the GitLab Job.
 
 Read-Only:
 
