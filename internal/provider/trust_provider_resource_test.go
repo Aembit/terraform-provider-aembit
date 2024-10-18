@@ -228,6 +228,8 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderGitLab1, "id"),
 					resource.TestCheckResourceAttrSet(trustProviderGitLab2, "id"),
 					// Verify placeholder ID is set
+					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.namespace_path", "namespace_path"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.0", "namespace_path1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.1", "namespace_path2"),

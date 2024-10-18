@@ -217,7 +217,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"oidc_endpoint": schema.StringAttribute{
-						Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.",
+						Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens. Default: `https://gitlab.com`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("https://gitlab.com"),
