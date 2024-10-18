@@ -233,6 +233,9 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.namespace_path", "namespace_path"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.0", "namespace_path1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.1", "namespace_path2"),
+					// Check read-only values
+					checkValidClientID(trustProviderGitLab1, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
+					checkValidClientID(trustProviderGitLab2, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
 				),
 			},
 			// ImportState testing

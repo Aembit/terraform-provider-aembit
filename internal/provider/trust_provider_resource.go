@@ -935,52 +935,40 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 }
 
 func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, preModel *trustProviderGitLabJobModel, tenant, stackDomain string) *trustProviderGitLabJobModel {
+	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
+	stack := strings.Split(stackDomain, ".")[0]
 	model := &trustProviderGitLabJobModel{
 		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
 		ProjectPath:   types.StringNull(),
 		NamespacePath: types.StringNull(),
 		RefPath:       types.StringNull(),
+		OIDCClientID:  types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gitlab_idtoken:%s", stack, tenant, dto.ExternalID)),
+		OIDCAudience:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 	}
-	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
-	stack := strings.Split(stackDomain, ".")[0]
-	model.OIDCClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gitlab_idtoken:%s", stack, tenant, dto.ExternalID))
-	model.OIDCAudience = types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain))
 
 	for _, rule := range dto.MatchRules {
 		switch rule.Attribute {
 		case "GitLabSubject":
-			if preModel != nil && preModel.Subject.IsNull() {
-				if model.Subjects == nil {
-					model.Subjects = make([]basetypes.StringValue, 0)
-				}
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
 				model.Subjects = append(model.Subjects, types.StringValue(rule.Value))
 			} else {
 				model.Subject = types.StringValue(rule.Value)
 			}
 		case "GitLabProjectPath":
-			if preModel != nil && preModel.ProjectPath.IsNull() {
-				if model.ProjectPaths == nil {
-					model.ProjectPaths = make([]basetypes.StringValue, 0)
-				}
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
 				model.ProjectPaths = append(model.ProjectPaths, types.StringValue(rule.Value))
 			} else {
 				model.ProjectPath = types.StringValue(rule.Value)
 			}
 		case "GitLabNamespacePath":
-			if preModel != nil && preModel.NamespacePath.IsNull() {
-				if model.NamespacePaths == nil {
-					model.NamespacePaths = make([]basetypes.StringValue, 0)
-				}
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
 				model.NamespacePaths = append(model.NamespacePaths, types.StringValue(rule.Value))
 			} else {
 				model.NamespacePath = types.StringValue(rule.Value)
 			}
 		case "GitLabRefPath":
-			if preModel != nil && preModel.RefPath.IsNull() {
-				if model.RefPaths == nil {
-					model.RefPaths = make([]basetypes.StringValue, 0)
-				}
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
 				model.RefPaths = append(model.RefPaths, types.StringValue(rule.Value))
 			} else {
 				model.RefPath = types.StringValue(rule.Value)
@@ -1008,4 +996,14 @@ func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerra
 		}
 	}
 	return model
+}
+
+func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attribute string) int {
+	count := 0
+	for _, rule := range matchRules {
+		if rule.Attribute == attribute {
+			count++
+		}
+	}
+	return count
 }
