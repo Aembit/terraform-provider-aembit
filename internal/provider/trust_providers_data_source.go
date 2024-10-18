@@ -157,24 +157,31 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Attributes: map[string]schema.Attribute{
 								"oidc_endpoint": schema.StringAttribute{
 									Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.",
-									Optional:    true,
+									Computed:    true,
+								},
+								"oidc_client_id": schema.StringAttribute{
+									Description: "The OAuth Client ID value required for authenticating a GitLab Job.",
+									Computed:    true,
+								},
+								"oidc_audience": schema.StringAttribute{
+									Description: "The audience value required for the GitLab Job ID Token.",
 									Computed:    true,
 								},
 								"namespace_path": schema.StringAttribute{
 									Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"project_path": schema.StringAttribute{
 									Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"ref_path": schema.StringAttribute{
 									Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"subject": schema.StringAttribute{
 									Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -265,7 +272,7 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
-		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider)
+		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider, d.client.Tenant, d.client.StackDomain)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

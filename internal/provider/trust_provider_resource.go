@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
+	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -220,6 +222,14 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Computed:    true,
 						Default:     stringdefault.StaticString("https://gitlab.com"),
 					},
+					"oidc_client_id": schema.StringAttribute{
+						Description: "The OAuth Client ID value required for authenticating a GitLab Job.",
+						Computed:    true,
+					},
+					"oidc_audience": schema.StringAttribute{
+						Description: "The audience value required for the GitLab Job ID Token.",
+						Computed:    true,
+					},
 					"namespace_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
@@ -361,7 +371,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -396,7 +406,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state = convertTrustProviderDTOToModel(ctx, trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -441,7 +451,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertTrustProviderDTOToModel(ctx, *trustProvider)
+	state = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -661,7 +671,7 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 }
 
 // DTO to Model conversion methods.
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO) trustProviderResourceModel {
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, tenant, stackDomain string) trustProviderResourceModel {
 	var model trustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -681,7 +691,7 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto)
 	case "GitLabIdentityToken":
-		model.GitLabJob = convertGitLabJobDTOToModel(dto)
+		model.GitLabJob = convertGitLabJobDTOToModel(dto, tenant, stackDomain)
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
@@ -885,7 +895,7 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 	return model
 }
 
-func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLabJobModel {
+func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain string) *trustProviderGitLabJobModel {
 	model := &trustProviderGitLabJobModel{
 		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
@@ -893,6 +903,9 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitLa
 		NamespacePath: types.StringNull(),
 		RefPath:       types.StringNull(),
 	}
+	stack := strings.Split(stackDomain, ".")[0]
+	model.OIDCClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gitlab_idtoken:%s", stack, tenant, dto.ExternalID))
+	model.OIDCAudience = types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain))
 
 	for _, rule := range dto.MatchRules {
 		switch rule.Attribute {

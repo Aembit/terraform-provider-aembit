@@ -88,6 +88,8 @@ type trustProviderGitHubActionModel struct {
 
 type trustProviderGitLabJobModel struct {
 	OIDCEndpoint  types.String `tfsdk:"oidc_endpoint"`
+	OIDCClientID  types.String `tfsdk:"oidc_client_id"`
+	OIDCAudience  types.String `tfsdk:"oidc_audience"`
 	NamespacePath types.String `tfsdk:"namespace_path"`
 	ProjectPath   types.String `tfsdk:"project_path"`
 	RefPath       types.String `tfsdk:"ref_path"`

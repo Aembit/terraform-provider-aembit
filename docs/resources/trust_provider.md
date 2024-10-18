@@ -175,6 +175,11 @@ Optional:
 - `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
 - `subject` (String) The GitLab ID Token Subject which initiated the GitLab Job.
 
+Read-Only:
+
+- `oidc_audience` (String) The audience value required for the GitLab Job ID Token.
+- `oidc_client_id` (String) The OAuth Client ID value required for authenticating a GitLab Job.
+
 
 <a id="nestedatt--kerberos"></a>
 ### Nested Schema for `kerberos`
