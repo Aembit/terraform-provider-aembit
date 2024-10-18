@@ -153,7 +153,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 						},
 						"gitlab_job": schema.SingleNestedAttribute{
 							Description: "GitLab Job type Trust Provider configuration.",
-							Optional:    true,
+							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"oidc_endpoint": schema.StringAttribute{
 									Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.",
