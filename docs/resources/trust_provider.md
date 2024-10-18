@@ -171,7 +171,7 @@ Optional:
 
 - `namespace_path` (String) The GitLab ID Token Namespace Path which initiated the GitLab Job.
 - `namespace_paths` (Set of String) The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.
-- `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.
+- `oidc_endpoint` (String) The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens. Default: `https://gitlab.com`.
 - `project_path` (String) The GitLab ID Token Project Path which initiated the GitLab Job.
 - `project_paths` (Set of String) The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.
 - `ref_path` (String) The GitLab ID Token Ref Path which initiated the GitLab Job.
