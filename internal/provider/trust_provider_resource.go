@@ -726,7 +726,11 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto)
 	case "GitLabIdentityToken":
-		model.GitLabJob = convertGitLabJobDTOToModel(dto, preModel.GitLabJob, tenant, stackDomain)
+		var gitLabModel *trustProviderGitLabJobModel = nil
+		if preModel != nil {
+			gitLabModel = preModel.GitLabJob
+		}
+		model.GitLabJob = convertGitLabJobDTOToModel(dto, gitLabModel, tenant, stackDomain)
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
