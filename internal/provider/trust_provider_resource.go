@@ -587,9 +587,7 @@ func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, valu
 func appendMatchRulesIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, values []basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
 	if len(values) > 0 {
 		for _, value := range values {
-			matchRules = append(matchRules, aembit.TrustProviderMatchRuleDTO{
-				Attribute: attrName, Value: value.ValueString(),
-			})
+			matchRules = appendMatchRuleIfExists(matchRules, value, attrName)
 		}
 	}
 	return matchRules
