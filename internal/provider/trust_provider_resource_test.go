@@ -12,7 +12,8 @@ import (
 
 const trustProviderPathRole string = "aembit_trust_provider.aws_role"
 const trustProviderPathAzure string = "aembit_trust_provider.azure"
-const trustProviderGitLab string = "aembit_trust_provider.gitlab"
+const trustProviderGitLab1 string = "aembit_trust_provider.gitlab1"
+const trustProviderGitLab2 string = "aembit_trust_provider.gitlab2"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -221,23 +222,32 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job"),
+					resource.TestCheckResourceAttr(trustProviderGitLab1, "name", "TF Acceptance GitLab Job1"),
+					resource.TestCheckResourceAttr(trustProviderGitLab2, "name", "TF Acceptance GitLab Job2"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab1, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab2, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
+					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
+					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.namespace_path", "namespace_path"),
+					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.0", "namespace_path1"),
+					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.1", "namespace_path2"),
+					// Check read-only values
+					checkValidClientID(trustProviderGitLab1, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
+					checkValidClientID(trustProviderGitLab2, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGitLab, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderGitLab1, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(trustProviderGitLab, "name", "TF Acceptance GitLab Job - Modified"),
+					resource.TestCheckResourceAttr(trustProviderGitLab1, "name", "TF Acceptance GitLab Job - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(trustProviderGitLab, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLab1, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

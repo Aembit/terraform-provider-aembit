@@ -217,7 +217,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"oidc_endpoint": schema.StringAttribute{
-						Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens.",
+						Description: "The GitLab OIDC Endpoint used for validating GitLab Job generated ID Tokens. Default: `https://gitlab.com`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("https://gitlab.com"),
@@ -234,16 +234,36 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
+					"namespace_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
+						Optional:    true,
+					},
 					"project_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"project_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
 						Optional:    true,
 					},
 					"ref_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
 						Optional:    true,
 					},
+					"ref_paths": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job.",
+						ElementType: types.StringType,
+						Optional:    true,
+					},
 					"subject": schema.StringAttribute{
 						Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
+						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted GitLab ID Token Subjects which initiated the GitLab Job.",
+						ElementType: types.StringType,
 						Optional:    true,
 					},
 				},
@@ -564,6 +584,15 @@ func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, valu
 	return matchRules
 }
 
+func appendMatchRulesIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, values []basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
+	if len(values) > 0 {
+		for _, value := range values {
+			matchRules = appendMatchRuleIfExists(matchRules, value, attrName)
+		}
+	}
+	return matchRules
+}
+
 func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
 
@@ -627,9 +656,13 @@ func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 	dto.OidcUrl = model.GitLabJob.OIDCEndpoint.ValueString()
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.Subject, "GitLabSubject")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.Subjects, "GitLabSubject")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.ProjectPath, "GitLabProjectPath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.ProjectPaths, "GitLabProjectPath")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.NamespacePath, "GitLabNamespacePath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.NamespacePaths, "GitLabNamespacePath")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitLabJob.RefPath, "GitLabRefPath")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.RefPaths, "GitLabRefPath")
 }
 
 func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -896,27 +929,44 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 }
 
 func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain string) *trustProviderGitLabJobModel {
+	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
+	stack := strings.Split(stackDomain, ".")[0]
 	model := &trustProviderGitLabJobModel{
 		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
 		ProjectPath:   types.StringNull(),
 		NamespacePath: types.StringNull(),
 		RefPath:       types.StringNull(),
+		OIDCClientID:  types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gitlab_idtoken:%s", stack, tenant, dto.ExternalID)),
+		OIDCAudience:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 	}
-	stack := strings.Split(stackDomain, ".")[0]
-	model.OIDCClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gitlab_idtoken:%s", stack, tenant, dto.ExternalID))
-	model.OIDCAudience = types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain))
 
 	for _, rule := range dto.MatchRules {
 		switch rule.Attribute {
 		case "GitLabSubject":
-			model.Subject = types.StringValue(rule.Value)
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
+				model.Subjects = append(model.Subjects, types.StringValue(rule.Value))
+			} else {
+				model.Subject = types.StringValue(rule.Value)
+			}
 		case "GitLabProjectPath":
-			model.ProjectPath = types.StringValue(rule.Value)
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
+				model.ProjectPaths = append(model.ProjectPaths, types.StringValue(rule.Value))
+			} else {
+				model.ProjectPath = types.StringValue(rule.Value)
+			}
 		case "GitLabNamespacePath":
-			model.NamespacePath = types.StringValue(rule.Value)
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
+				model.NamespacePaths = append(model.NamespacePaths, types.StringValue(rule.Value))
+			} else {
+				model.NamespacePath = types.StringValue(rule.Value)
+			}
 		case "GitLabRefPath":
-			model.RefPath = types.StringValue(rule.Value)
+			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
+				model.RefPaths = append(model.RefPaths, types.StringValue(rule.Value))
+			} else {
+				model.RefPath = types.StringValue(rule.Value)
+			}
 		}
 	}
 	return model
@@ -940,4 +990,14 @@ func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerra
 		}
 	}
 	return model
+}
+
+func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attribute string) int {
+	count := 0
+	for _, rule := range matchRules {
+		if rule.Attribute == attribute {
+			count++
+		}
+	}
+	return count
 }
