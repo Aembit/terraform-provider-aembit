@@ -25,7 +25,7 @@ resource "aembit_server_workload" "test" {
 		requested_port = 443
         requested_tls = true
 		tls_verification = "full"
-		workload_service_authentication = {
+		authentication_config = {
 			"method" = "HTTP Authentication"
 			"scheme" = "Bearer"
 		}
