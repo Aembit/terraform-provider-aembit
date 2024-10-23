@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -258,6 +259,37 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 			},
 			// Delete testing automatically occurs in TestCase
 		},
+	})
+}
+
+func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
+	invalidNameFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfinvalid")
+
+	regexChecks := []string{
+		// Protect against empty strings
+		`Attribute gitlab_job.namespace_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.ref_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.project_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.subject string length must be at least 1, got: 0`,
+		// Protect against sets with fewer than 2 items
+		`Attribute gitlab_job.namespace_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.ref_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.project_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.subjects set must contain at least 2 elements`,
+		// Protect against conflicts
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.namespace_path,gitlab_job.namespace_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.ref_path,gitlab_job.ref_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.project_path,gitlab_job.project_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.subject,gitlab_job.subjects]`,
+	}
+	validationChecks := []resource.TestStep{}
+	for _, check := range regexChecks {
+		validationChecks = append(validationChecks, resource.TestStep{Config: string(invalidNameFile), ExpectError: regexp.MustCompile(check)})
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps:                    validationChecks,
 	})
 }
 
