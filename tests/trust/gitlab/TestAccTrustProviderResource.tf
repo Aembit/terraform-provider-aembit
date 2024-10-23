@@ -29,6 +29,6 @@ resource "aembit_trust_provider" "gitlab_mixed" {
 	gitlab_job = {
 		namespace_path = "namespace_path1"
 		ref_path = "ref_path1"
-		subjects = ["subject1","subject2"]
+		subjects = ["subject1","subject2","subject3","subject4"]
 	}
 }

@@ -291,7 +291,6 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						},
 					},
 				},
-				//Validators: []resource.ConfigValidator {},
 			},
 			"kerberos": schema.SingleNestedAttribute{
 				Description: "Kerberos type Trust Provider configuration.",
@@ -388,6 +387,23 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kerberos"),
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
+		),
+		// For the GitLab Job type, ensure we don't have conflicting single and multiple match rule configurations
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gitlab_job").AtName("namespace_path"),
+			path.MatchRoot("gitlab_job").AtName("namespace_paths"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gitlab_job").AtName("ref_path"),
+			path.MatchRoot("gitlab_job").AtName("ref_paths"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gitlab_job").AtName("project_path"),
+			path.MatchRoot("gitlab_job").AtName("project_paths"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gitlab_job").AtName("subject"),
+			path.MatchRoot("gitlab_job").AtName("subjects"),
 		),
 	}
 }
