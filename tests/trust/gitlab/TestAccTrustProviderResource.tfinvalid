@@ -37,3 +37,14 @@ resource "aembit_trust_provider" "gitlab_conflicting" {
 		subjects = ["subject1","subject2"]
 	}
 }
+
+resource "aembit_trust_provider" "gitlab_set_strings" {
+	name = "TF Acceptance GitLab Set Strings"
+	is_active = true
+	gitlab_job = {
+		namespace_paths = ["namespace_path1",""]
+		ref_paths = ["ref_path1",""]
+		project_paths = ["project_path1",""]
+		subjects = ["subject1",""]
+	}
+}

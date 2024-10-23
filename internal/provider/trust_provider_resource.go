@@ -243,6 +243,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
 					"project_path": schema.StringAttribute{
@@ -258,6 +259,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
 					"ref_path": schema.StringAttribute{
@@ -273,6 +275,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
 					"subject": schema.StringAttribute{
@@ -288,6 +291,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
 				},
