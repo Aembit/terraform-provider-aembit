@@ -276,6 +276,8 @@ func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
 		`Attribute gitlab_job.ref_paths set must contain at least 2 elements`,
 		`Attribute gitlab_job.project_paths set must contain at least 2 elements`,
 		`Attribute gitlab_job.subjects set must contain at least 2 elements`,
+		// Protect against sets with empty strings
+		`(?s)Error: Invalid Attribute Value Length(.*)with aembit_trust_provider.gitlab_set_strings,`,
 		// Protect against conflicts
 		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.namespace_path,gitlab_job.namespace_paths]`,
 		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.ref_path,gitlab_job.ref_paths]`,
