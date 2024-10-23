@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,6 +15,9 @@ const trustProviderPathRole string = "aembit_trust_provider.aws_role"
 const trustProviderPathAzure string = "aembit_trust_provider.azure"
 const trustProviderGitLab1 string = "aembit_trust_provider.gitlab1"
 const trustProviderGitLab2 string = "aembit_trust_provider.gitlab2"
+const trustProviderGitLabMixed string = "aembit_trust_provider.gitlab_mixed"
+const gitLabOidcClientID string = "gitlab_job.oidc_client_id"
+const gitLabIdentityArnMatch string = ":identity:gitlab_idtoken:"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -224,9 +228,11 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "name", "TF Acceptance GitLab Job1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "name", "TF Acceptance GitLab Job2"),
+					resource.TestCheckResourceAttr(trustProviderGitLabMixed, "name", "TF Acceptance GitLab Mixed"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(trustProviderGitLab1, "id"),
 					resource.TestCheckResourceAttrSet(trustProviderGitLab2, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLabMixed, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
@@ -234,8 +240,9 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.0", "namespace_path1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.1", "namespace_path2"),
 					// Check read-only values
-					checkValidClientID(trustProviderGitLab1, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
-					checkValidClientID(trustProviderGitLab2, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
+					checkValidClientID(trustProviderGitLab1, gitLabOidcClientID, gitLabIdentityArnMatch),
+					checkValidClientID(trustProviderGitLab2, gitLabOidcClientID, gitLabIdentityArnMatch),
+					checkValidClientID(trustProviderGitLabMixed, gitLabOidcClientID, gitLabIdentityArnMatch),
 				),
 			},
 			// ImportState testing
@@ -252,6 +259,37 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 			},
 			// Delete testing automatically occurs in TestCase
 		},
+	})
+}
+
+func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
+	invalidNameFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfinvalid")
+
+	regexChecks := []string{
+		// Protect against empty strings
+		`Attribute gitlab_job.namespace_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.ref_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.project_path string length must be at least 1, got: 0`,
+		`Attribute gitlab_job.subject string length must be at least 1, got: 0`,
+		// Protect against sets with fewer than 2 items
+		`Attribute gitlab_job.namespace_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.ref_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.project_paths set must contain at least 2 elements`,
+		`Attribute gitlab_job.subjects set must contain at least 2 elements`,
+		// Protect against conflicts
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.namespace_path,gitlab_job.namespace_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.ref_path,gitlab_job.ref_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.project_path,gitlab_job.project_paths]`,
+		`(?s)These attributes cannot be configured together:(.{2})[gitlab_job.subject,gitlab_job.subjects]`,
+	}
+	validationChecks := []resource.TestStep{}
+	for _, check := range regexChecks {
+		validationChecks = append(validationChecks, resource.TestStep{Config: string(invalidNameFile), ExpectError: regexp.MustCompile(check)})
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps:                    validationChecks,
 	})
 }
 

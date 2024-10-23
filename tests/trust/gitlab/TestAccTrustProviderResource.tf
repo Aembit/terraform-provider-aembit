@@ -22,3 +22,13 @@ resource "aembit_trust_provider" "gitlab2" {
 		subjects = ["subject1","subject2"]
 	}
 }
+
+resource "aembit_trust_provider" "gitlab_mixed" {
+	name = "TF Acceptance GitLab Mixed"
+	is_active = true
+	gitlab_job = {
+		namespace_path = "namespace_path1"
+		ref_path = "ref_path1"
+		subjects = ["subject1","subject2","subject3","subject4"]
+	}
+}
