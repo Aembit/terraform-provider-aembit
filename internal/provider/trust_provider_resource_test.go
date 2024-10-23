@@ -15,6 +15,8 @@ const trustProviderPathAzure string = "aembit_trust_provider.azure"
 const trustProviderGitLab1 string = "aembit_trust_provider.gitlab1"
 const trustProviderGitLab2 string = "aembit_trust_provider.gitlab2"
 const trustProviderGitLabMixed string = "aembit_trust_provider.gitlab_mixed"
+const gitLabOidcClientID string = "gitlab_job.oidc_client_id"
+const gitLabIdentityArnMatch string = ":identity:gitlab_idtoken:"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -237,9 +239,9 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.0", "namespace_path1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.namespace_paths.1", "namespace_path2"),
 					// Check read-only values
-					checkValidClientID(trustProviderGitLab1, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
-					checkValidClientID(trustProviderGitLab2, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
-					checkValidClientID(trustProviderGitLabMixed, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
+					checkValidClientID(trustProviderGitLab1, gitLabOidcClientID, gitLabIdentityArnMatch),
+					checkValidClientID(trustProviderGitLab2, gitLabOidcClientID, gitLabIdentityArnMatch),
+					checkValidClientID(trustProviderGitLabMixed, gitLabOidcClientID, gitLabIdentityArnMatch),
 				),
 			},
 			// ImportState testing
