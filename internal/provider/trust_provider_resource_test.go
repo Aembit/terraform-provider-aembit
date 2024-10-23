@@ -14,6 +14,7 @@ const trustProviderPathRole string = "aembit_trust_provider.aws_role"
 const trustProviderPathAzure string = "aembit_trust_provider.azure"
 const trustProviderGitLab1 string = "aembit_trust_provider.gitlab1"
 const trustProviderGitLab2 string = "aembit_trust_provider.gitlab2"
+const trustProviderGitLabMixed string = "aembit_trust_provider.gitlab_mixed"
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -224,9 +225,11 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "name", "TF Acceptance GitLab Job1"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "name", "TF Acceptance GitLab Job2"),
+					resource.TestCheckResourceAttr(trustProviderGitLabMixed, "name", "TF Acceptance GitLab Mixed"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(trustProviderGitLab1, "id"),
 					resource.TestCheckResourceAttrSet(trustProviderGitLab2, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitLabMixed, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttr(trustProviderGitLab1, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
 					resource.TestCheckResourceAttr(trustProviderGitLab2, "gitlab_job.oidc_endpoint", "https://gitlab.com"),
@@ -236,6 +239,7 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 					// Check read-only values
 					checkValidClientID(trustProviderGitLab1, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
 					checkValidClientID(trustProviderGitLab2, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
+					checkValidClientID(trustProviderGitLabMixed, "gitlab_job.oidc_client_id", ":identity:gitlab_idtoken:"),
 				),
 			},
 			// ImportState testing

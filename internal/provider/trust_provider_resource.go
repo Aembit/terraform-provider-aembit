@@ -233,40 +233,65 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					"namespace_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"namespace_paths": schema.SetAttribute{
-						Description: "The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job.",
+						Description: "The set of accepted GitLab ID Token Namespace Paths which initiated the GitLab Job. Used only for cases where multiple GitLab ID Token Namespace Paths can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+						},
 					},
 					"project_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Project Path which initiated the GitLab Job.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"project_paths": schema.SetAttribute{
-						Description: "The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job.",
+						Description: "The set of accepted GitLab ID Token Project Paths which initiated the GitLab Job. Used only for cases where multiple GitLab ID Token Project Paths can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+						},
 					},
 					"ref_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Ref Path which initiated the GitLab Job.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"ref_paths": schema.SetAttribute{
-						Description: "The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job.",
+						Description: "The set of accepted GitLab ID Token Ref Paths which initiated the GitLab Job. Used only for cases where multiple GitLab ID Token Ref Paths can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+						},
 					},
 					"subject": schema.StringAttribute{
 						Description: "The GitLab ID Token Subject which initiated the GitLab Job.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"subjects": schema.SetAttribute{
-						Description: "The set of accepted GitLab ID Token Subjects which initiated the GitLab Job.",
+						Description: "The set of accepted GitLab ID Token Subjects which initiated the GitLab Job. Used only for cases where multiple GitLab ID Token Subjects can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+						},
 					},
 				},
+				//Validators: []resource.ConfigValidator {},
 			},
 			"kerberos": schema.SingleNestedAttribute{
 				Description: "Kerberos type Trust Provider configuration.",
