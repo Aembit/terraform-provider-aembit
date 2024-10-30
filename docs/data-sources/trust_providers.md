@@ -85,6 +85,10 @@ Read-Only:
 <a id="nestedatt--trust_providers--gcp_identity"></a>
 ### Nested Schema for `trust_providers.gcp_identity`
 
+Optional:
+
+- `emails` (Set of String) The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.
+
 Read-Only:
 
 - `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
@@ -93,11 +97,14 @@ Read-Only:
 <a id="nestedatt--trust_providers--github_action"></a>
 ### Nested Schema for `trust_providers.github_action`
 
-Read-Only:
+Optional:
 
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
+- `actors` (Set of String) The set of accepted GitHub ID Token Actors which initiated the GitHub Action.
+- `repositories` (Set of String) The set of accepted GitHub ID Token Repositories which initiated the GitHub Action.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+- `workflows` (Set of String) The set of accepted GitHub ID Token Workflows which initiated the GitHub Action.
 
 
 <a id="nestedatt--trust_providers--gitlab_job"></a>
@@ -146,8 +153,11 @@ Read-Only:
 <a id="nestedatt--trust_providers--terraform_workspace"></a>
 ### Nested Schema for `trust_providers.terraform_workspace`
 
-Read-Only:
+Optional:
 
 - `organization_id` (String) The Organization ID of the calling Terraform Workspace.
+- `organization_ids` (Set of String) The set of accepted Organization ID values of the calling Terraform Workspace.
 - `project_id` (String) The Project ID of the calling Terraform Workspace.
+- `project_ids` (Set of String) The set of accepted Project ID values of the calling Terraform Workspace.
 - `workspace_id` (String) The Workspace ID of the calling Terraform Workspace.
+- `workspace_ids` (Set of String) The set of accepted Workspace ID values of the calling Terraform Workspace.

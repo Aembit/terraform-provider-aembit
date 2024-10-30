@@ -152,6 +152,7 @@ Optional:
 Optional:
 
 - `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
+- `emails` (Set of String) The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.
 
 
 <a id="nestedatt--github_action"></a>
@@ -160,8 +161,11 @@ Optional:
 Optional:
 
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
+- `actors` (Set of String) The set of accepted GitHub ID Token Actors which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Actors can be matched.
+- `repositories` (Set of String) The set of accepted GitHub ID Token Repositories which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Repositories can be matched.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
+- `workflows` (Set of String) The set of accepted GitHub ID Token Workflows which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Workflows can be matched.
 
 
 <a id="nestedatt--gitlab_job"></a>
@@ -219,7 +223,10 @@ Optional:
 Optional:
 
 - `organization_id` (String) The Organization ID of the calling Terraform Workspace.
+- `organization_ids` (Set of String) The set of accepted Organization ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Organization IDs can be matched.
 - `project_id` (String) The Project ID of the calling Terraform Workspace.
+- `project_ids` (Set of String) The set of accepted Project ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Project IDs can be matched.
 - `workspace_id` (String) The Workspace ID of the calling Terraform Workspace.
+- `workspace_ids` (Set of String) The set of accepted Workspace ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Workspace IDs can be matched.
 
 
