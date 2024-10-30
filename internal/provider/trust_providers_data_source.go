@@ -131,6 +131,11 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									Description: "The Email of the GCP Service Account used by the associated GCP resource.",
 									Computed:    true,
 								},
+								"emails": schema.SetAttribute{
+									Description: "The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.",
+									ElementType: types.StringType,
+									Optional:    true,
+								},
 							},
 						},
 						"github_action": schema.SingleNestedAttribute{
@@ -139,15 +144,30 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Attributes: map[string]schema.Attribute{
 								"actor": schema.StringAttribute{
 									Description: "The GitHub Actor which initiated the GitHub Action.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"actors": schema.SetAttribute{
+									Description: "The set of accepted GitHub ID Token Actors which initiated the GitHub Action.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 								"repository": schema.StringAttribute{
 									Description: "The GitHub Repository associated with the GitHub Action ID Token.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"repositories": schema.SetAttribute{
+									Description: "The set of accepted GitHub ID Token Repositories which initiated the GitHub Action.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 								"workflow": schema.StringAttribute{
 									Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"workflows": schema.SetAttribute{
+									Description: "The set of accepted GitHub ID Token Workflows which initiated the GitHub Action.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 							},
 						},
@@ -258,15 +278,30 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Attributes: map[string]schema.Attribute{
 								"organization_id": schema.StringAttribute{
 									Description: "The Organization ID of the calling Terraform Workspace.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"organization_ids": schema.SetAttribute{
+									Description: "The set of accepted Organization ID values of the calling Terraform Workspace.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 								"project_id": schema.StringAttribute{
 									Description: "The Project ID of the calling Terraform Workspace.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"project_ids": schema.SetAttribute{
+									Description: "The set of accepted Project ID values of the calling Terraform Workspace.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 								"workspace_id": schema.StringAttribute{
 									Description: "The Workspace ID of the calling Terraform Workspace.",
-									Computed:    true,
+									Optional:    true,
+								},
+								"workspace_ids": schema.SetAttribute{
+									Description: "The set of accepted Workspace ID values of the calling Terraform Workspace.",
+									ElementType: types.StringType,
+									Optional:    true,
 								},
 							},
 						},

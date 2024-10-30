@@ -77,13 +77,17 @@ type trustProviderKubernetesModel struct {
 }
 
 type trustProviderGcpIdentityModel struct {
-	EMail types.String `tfsdk:"email"`
+	EMail  types.String   `tfsdk:"email"`
+	EMails []types.String `tfsdk:"emails"`
 }
 
 type trustProviderGitHubActionModel struct {
-	Actor      types.String `tfsdk:"actor"`
-	Repository types.String `tfsdk:"repository"`
-	Workflow   types.String `tfsdk:"workflow"`
+	Actor        types.String   `tfsdk:"actor"`
+	Actors       []types.String `tfsdk:"actors"`
+	Repository   types.String   `tfsdk:"repository"`
+	Repositories []types.String `tfsdk:"repositories"`
+	Workflow     types.String   `tfsdk:"workflow"`
+	Workflows    []types.String `tfsdk:"workflows"`
 }
 
 type trustProviderGitLabJobModel struct {
@@ -101,7 +105,10 @@ type trustProviderGitLabJobModel struct {
 }
 
 type trustProviderTerraformModel struct {
-	OrganizationID types.String `tfsdk:"organization_id"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	WorkspaceID    types.String `tfsdk:"workspace_id"`
+	OrganizationID  types.String   `tfsdk:"organization_id"`
+	OrganizationIDs []types.String `tfsdk:"organization_ids"`
+	ProjectID       types.String   `tfsdk:"project_id"`
+	ProjectIDs      []types.String `tfsdk:"project_ids"`
+	WorkspaceID     types.String   `tfsdk:"workspace_id"`
+	WorkspaceIDs    []types.String `tfsdk:"workspace_ids"`
 }

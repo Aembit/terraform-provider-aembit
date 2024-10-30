@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"slices"
 	"strings"
 
 	"aembit.io/aembit"
@@ -192,6 +193,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Email of the GCP Service Account used by the associated GCP resource.",
 						Optional:    true,
 					},
+					"emails": schema.SetAttribute{
+						Description: "The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 				},
 			},
 			"github_action": schema.SingleNestedAttribute{
@@ -202,13 +212,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The GitHub Actor which initiated the GitHub Action.",
 						Optional:    true,
 					},
+					"actors": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Actors which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Actors can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"repository": schema.StringAttribute{
 						Description: "The GitHub Repository associated with the GitHub Action ID Token.",
 						Optional:    true,
 					},
+					"repositories": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Repositories which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Repositories can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"workflow": schema.StringAttribute{
 						Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
 						Optional:    true,
+					},
+					"workflows": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Workflows which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Workflows can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -364,13 +401,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Organization ID of the calling Terraform Workspace.",
 						Optional:    true,
 					},
+					"organization_ids": schema.SetAttribute{
+						Description: "The set of accepted Organization ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Organization IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"project_id": schema.StringAttribute{
 						Description: "The Project ID of the calling Terraform Workspace.",
 						Optional:    true,
 					},
+					"project_ids": schema.SetAttribute{
+						Description: "The set of accepted Project ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Project IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"workspace_id": schema.StringAttribute{
 						Description: "The Workspace ID of the calling Terraform Workspace.",
 						Optional:    true,
+					},
+					"workspace_ids": schema.SetAttribute{
+						Description: "The set of accepted Workspace ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Workspace IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -684,6 +748,7 @@ func convertGcpIdentityModelToDTO(model trustProviderResourceModel, dto *aembit.
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GcpIdentity.EMail, "Email")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GcpIdentity.EMails, "Email")
 }
 
 func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -691,8 +756,11 @@ func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Actor, "GithubActor")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Actors, "GithubActor")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Repository, "GithubRepository")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Repositories, "GithubRepository")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Workflow, "GithubWorkflow")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Workflows, "GithubWorkflow")
 }
 
 func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -744,8 +812,11 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.OrganizationID, "TerraformOrganizationId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.OrganizationIDs, "TerraformOrganizationId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.ProjectID, "TerraformProjectId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.ProjectIDs, "TerraformProjectId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.WorkspaceID, "TerraformWorkspaceId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.WorkspaceIDs, "TerraformWorkspaceId")
 }
 
 // DTO to Model conversion methods.
@@ -944,11 +1015,8 @@ func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGcp
 		EMail: types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "Email":
-			model.EMail = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Email")) {
+		model.EMail, model.EMails = extractMatchRules(dto.MatchRules, "Email")
 	}
 	return model
 }
@@ -960,15 +1028,14 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 		Workflow:   types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "GithubActor":
-			model.Actor = types.StringValue(rule.Value)
-		case "GithubRepository":
-			model.Repository = types.StringValue(rule.Value)
-		case "GithubWorkflow":
-			model.Workflow = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubActor")) {
+		model.Actor, model.Actors = extractMatchRules(dto.MatchRules, "GithubActor")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubRepository")) {
+		model.Repository, model.Repositories = extractMatchRules(dto.MatchRules, "GithubRepository")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubWorkflow")) {
+		model.Workflow, model.Workflows = extractMatchRules(dto.MatchRules, "GithubWorkflow")
 	}
 	return model
 }
@@ -986,33 +1053,17 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain
 		OIDCAudience:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "GitLabSubject":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.Subjects = append(model.Subjects, types.StringValue(rule.Value))
-			} else {
-				model.Subject = types.StringValue(rule.Value)
-			}
-		case "GitLabProjectPath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.ProjectPaths = append(model.ProjectPaths, types.StringValue(rule.Value))
-			} else {
-				model.ProjectPath = types.StringValue(rule.Value)
-			}
-		case "GitLabNamespacePath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.NamespacePaths = append(model.NamespacePaths, types.StringValue(rule.Value))
-			} else {
-				model.NamespacePath = types.StringValue(rule.Value)
-			}
-		case "GitLabRefPath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.RefPaths = append(model.RefPaths, types.StringValue(rule.Value))
-			} else {
-				model.RefPath = types.StringValue(rule.Value)
-			}
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "GitLabSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabProjectPath")) {
+		model.ProjectPath, model.ProjectPaths = extractMatchRules(dto.MatchRules, "GitLabProjectPath")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabNamespacePath")) {
+		model.NamespacePath, model.NamespacePaths = extractMatchRules(dto.MatchRules, "GitLabNamespacePath")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabRefPath")) {
+		model.RefPath, model.RefPaths = extractMatchRules(dto.MatchRules, "GitLabRefPath")
 	}
 	return model
 }
@@ -1024,25 +1075,50 @@ func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerra
 		WorkspaceID:    types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "TerraformOrganizationId":
-			model.OrganizationID = types.StringValue(rule.Value)
-		case "TerraformProjectId":
-			model.ProjectID = types.StringValue(rule.Value)
-		case "TerraformWorkspaceId":
-			model.WorkspaceID = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformOrganizationId")) {
+		model.OrganizationID, model.OrganizationIDs = extractMatchRules(dto.MatchRules, "TerraformOrganizationId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformProjectId")) {
+		model.ProjectID, model.ProjectIDs = extractMatchRules(dto.MatchRules, "TerraformProjectId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformWorkspaceId")) {
+		model.WorkspaceID, model.WorkspaceIDs = extractMatchRules(dto.MatchRules, "TerraformWorkspaceId")
 	}
 	return model
 }
 
-func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attribute string) int {
+// matchRuleOccurrences returns the number of match rules with a specific attributeName.
+func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attributeName string) int {
 	count := 0
 	for _, rule := range matchRules {
-		if rule.Attribute == attribute {
+		if rule.Attribute == attributeName {
 			count++
 		}
 	}
 	return count
+}
+
+// matchRuleAttributeFunc provides a function that can be used by the slices.ContainsFunc utility to determine if a slice of TrustProviderMatchRuleDTO contains a specific attribute.
+func matchRuleAttributeFunc(attributeName string) func(aembit.TrustProviderMatchRuleDTO) bool {
+	return func(matchRule aembit.TrustProviderMatchRuleDTO) bool {
+		return matchRule.Attribute == attributeName
+	}
+}
+
+// extractMatchRules pulls out the match rules with the specified attribute name.
+func extractMatchRules(matchRules []aembit.TrustProviderMatchRuleDTO, attributeName string) (types.String, []types.String) {
+	var singleValue types.String = types.StringNull()
+	var multiValue []types.String = nil
+	var multipleMatchRules bool = matchRuleOccurrences(matchRules, attributeName) > 1
+
+	for _, rule := range matchRules {
+		if rule.Attribute == attributeName {
+			if multipleMatchRules {
+				multiValue = append(multiValue, types.StringValue(rule.Value))
+			} else {
+				singleValue = types.StringValue(rule.Value)
+			}
+		}
+	}
+	return singleValue, multiValue
 }
