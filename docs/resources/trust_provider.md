@@ -109,19 +109,24 @@ resource "aembit_trust_provider" "kerberos" {
 Optional:
 
 - `account_id` (String) The ID of the AWS account that launched the instance.
+- `account_ids` (Set of String) The set of accepted AWS account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS account IDs can be matched.
 - `architecture` (String) The architecture of the AMI used to launch the instance (i386 | x86_64 | arm64).
 - `availability_zone` (String) The Availability Zone in which the instance is running.
+- `availability_zones` (Set of String) The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.
 - `billing_products` (String) The billing products of the instance.
 - `certificate` (String) PEM Certificate to be used for Signature verification.
 - `image_id` (String) The ID of the AMI used to launch the instance.
 - `instance_id` (String) The ID of the instance.
+- `instance_ids` (Set of String) The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.
 - `instance_type` (String) The instance type of the instance.
+- `instance_types` (Set of String) The set of accepted AWS Instance types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance types can be matched.
 - `kernel_id` (String) The ID of the kernel associated with the instance, if applicable.
 - `marketplace_product_codes` (String) The AWS Marketplace product code of the AMI used to launch the instance.
 - `pending_time` (String) The date and time that the instance was launched.
 - `private_ip` (String) The private IPv4 address of the instance.
 - `ramdisk_id` (String) The ID of the RAM disk associated with the instance, if applicable.
 - `region` (String) The Region in which the instance is running.
+- `regions` (Set of String) The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.
 - `version` (String) The version of the instance identity document format.
 
 
@@ -131,9 +136,13 @@ Optional:
 Optional:
 
 - `account_id` (String) The ID of the AWS account that is hosting the Client Workload.
+- `account_ids` (Set of String) The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.
 - `assumed_role` (String) The Name of the AWS IAM Role which is running the Client Workload.
+- `assumed_roles` (Set of String) The set of accepted AWS Assumed Roles which are hosting the Client Workloads. Used only for cases where multiple AWS Assumed Roles can be matched.
 - `role_arn` (String) The ARN of the AWS IAM Role which is running the Client Workload.
-- `username` (String) The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).
+- `role_arns` (Set of String) The set of accepted Role ARNs which are hosting the Client Workloads. Used only for cases where multiple Role ARNs can be matched.
+- `username` (String) The UserID of the AWS IAM Account which is running the Client Workload (not commonly used).
+- `usernames` (Set of String) The set of accepted AWS UserIDs which are hosting the Client Workloads. Used only for cases where multiple AWS UserIDs can be matched.
 
 
 <a id="nestedatt--azure_metadata"></a>
@@ -142,8 +151,11 @@ Optional:
 Optional:
 
 - `sku` (String) Specific SKU for the Virtual Machine image.
+- `skus` (Set of String) The set of accepted Azure SKUs which are hosting the Client Workloads. Used only for cases where multiple Azure SKUs can be matched.
 - `subscription_id` (String) Azure subscription for the Virtual Machine.
+- `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs which are hosting the Client Workloads. Used only for cases where multiple Azure Subscription IDs can be matched.
 - `vm_id` (String) Unique identifier for the Virtual Machine.
+- `vm_ids` (Set of String) The set of accepted Azure VM IDs which are hosting the Client Workloads. Used only for cases where multiple Azure VM IDs can be matched.
 
 
 <a id="nestedatt--gcp_identity"></a>
@@ -199,8 +211,11 @@ Required:
 Optional:
 
 - `principal` (String) The Kerberos Principal of the authenticated Agent Proxy.
+- `principals` (Set of String) The set of accepted Kerberos Principals which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Principals can be matched.
 - `realm` (String) The Kerberos Realm of the authenticated Agent Proxy.
+- `realms` (Set of String) The set of accepted Kerberos Realms which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Realms can be matched.
 - `source_ip` (String) The Source IP Address of the authenticated Agent Proxy.
+- `source_ips` (Set of String) The set of accepted Source IPs which initiated the authenticated Agent Proxy. Used only for cases where multiple Source IPs can be matched.
 
 
 <a id="nestedatt--kubernetes_service_account"></a>
@@ -209,12 +224,17 @@ Optional:
 Optional:
 
 - `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated Kubernetes Service Account Token. Used only for cases where multiple Issuers can be matched.
 - `namespace` (String) The Namespace of the Kubernetes Service Account Token.
+- `namespaces` (Set of String) The set of accepted Namespace values of the associated Kubernetes Service Account Token. Used only for cases where multiple Namespaces can be matched.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
 - `pod_name` (String) The Pod Name of the Kubernetes Service Account Token.
+- `pod_names` (Set of String) The set of accepted Pod Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Pod Names can be matched.
 - `public_key` (String) The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.
 - `service_account_name` (String) The Service Account Name of the Kubernetes Service Account Token.
+- `service_account_names` (Set of String) The set of accepted Service Account Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Service Account Names can be matched.
 - `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
+- `subjects` (Set of String) The set of accepted Subject values of the associated Kubernetes Service Account Token. Used only for cases where multiple Subjects can be matched.
 
 
 <a id="nestedatt--terraform_workspace"></a>

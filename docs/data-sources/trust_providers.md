@@ -42,6 +42,14 @@ Read-Only:
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
 
+Optional:
+
+- `account_ids` (Set of String) The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.
+- `availability_zones` (Set of String) The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.
+- `instance_ids` (Set of String) The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.
+- `instance_types` (Set of String) The set of accepted AWS Instance Types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance Types can be matched.
+- `regions` (Set of String) The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.
+
 Read-Only:
 
 - `account_id` (String)
@@ -64,16 +72,29 @@ Read-Only:
 <a id="nestedatt--trust_providers--aws_role"></a>
 ### Nested Schema for `trust_providers.aws_role`
 
+Optional:
+
+- `account_ids` (Set of String) The set of accepted AWS account IDs that are hosting the Client Workloads.
+- `assumed_roles` (Set of String) The set of accepted AWS IAM Roles that are hosting the Client Workloads.
+- `role_arns` (Set of String) The set of accepted AWS IAM Role ARNs that are hosting the Client Workloads.
+- `usernames` (Set of String) The set of accepted AWS IAM Account UserIDs that are hosting the Client Workloads.
+
 Read-Only:
 
 - `account_id` (String) The ID of the AWS account that is hosting the Client Workload.
 - `assumed_role` (String) The Name of the AWS IAM Role which is running the Client Workload.
 - `role_arn` (String) The ARN of the AWS IAM Role which is running the Client Workload.
-- `username` (String) The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).
+- `username` (String) The UserID of the AWS IAM Account which is running the Client Workload (not commonly used).
 
 
 <a id="nestedatt--trust_providers--azure_metadata"></a>
 ### Nested Schema for `trust_providers.azure_metadata`
+
+Optional:
+
+- `skus` (Set of String) The set of accepted Azure SKUs that are hosting the Client Workloads.
+- `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs that are hosting the Client Workloads.
+- `vm_ids` (Set of String) The set of accepted Azure VM IDs that are hosting the Client Workloads.
 
 Read-Only:
 
@@ -132,8 +153,11 @@ Read-Only:
 
 - `agent_controller_ids` (Set of String)
 - `principal` (String)
+- `principals` (Set of String) The set of accepted Kerberos Principals of the authenticated Agent Proxy.
 - `realm` (String)
+- `realms` (Set of String) The set of accepted Kerberos Realms of the authenticated Agent Proxy.
 - `source_ip` (String)
+- `source_ips` (Set of String) The set of accepted Source IPs of the authenticated Agent Proxy.
 
 
 <a id="nestedatt--trust_providers--kubernetes_service_account"></a>
@@ -142,12 +166,17 @@ Read-Only:
 Read-Only:
 
 - `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
+- `issuers` (Set of String) The set of accepted Issuer values of the Kubernetes Service Account Token.
 - `namespace` (String) The Namespace of the Kubernetes Service Account Token.
+- `namespaces` (Set of String) The set of accepted Namespace values of the Kubernetes Service Account Token.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
 - `pod_name` (String) The Pod Name of the Kubernetes Service Account Token.
+- `pod_names` (Set of String) The set of accepted Pod Name values of the Kubernetes Service Account Token.
 - `public_key` (String) The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.
 - `service_account_name` (String) The Service Account Name of the Kubernetes Service Account Token.
+- `service_account_names` (Set of String) The set of accepted Service Account Name values of the Kubernetes Service Account Token.
 - `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
+- `subjects` (Set of String) The set of accepted Subject values of the Kubernetes Service Account Token.
 
 
 <a id="nestedatt--trust_providers--terraform_workspace"></a>
