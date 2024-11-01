@@ -636,7 +636,110 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
 		),
-		// For the GitLab Job type, ensure we don't have conflicting single and multiple match rule configurations
+		// Ensure we don't have conflicting single and multiple match rule configurations (Azure Metadata)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("sku"),
+			path.MatchRoot("azure_metadata").AtName("skus"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("vm_id"),
+			path.MatchRoot("azure_metadata").AtName("vm_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("subscription_id"),
+			path.MatchRoot("azure_metadata").AtName("subscription_ids"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (AWS Role)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("account_id"),
+			path.MatchRoot("aws_role").AtName("account_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("assumed_role"),
+			path.MatchRoot("aws_role").AtName("assumed_roles"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("role_arn"),
+			path.MatchRoot("aws_role").AtName("role_arns"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("username"),
+			path.MatchRoot("aws_role").AtName("usernames"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (AWS Metadata)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("account_id"),
+			path.MatchRoot("aws_metadata").AtName("account_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("availability_zone"),
+			path.MatchRoot("aws_metadata").AtName("availability_zones"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("instance_id"),
+			path.MatchRoot("aws_metadata").AtName("instance_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("instance_type"),
+			path.MatchRoot("aws_metadata").AtName("instance_types"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("region"),
+			path.MatchRoot("aws_metadata").AtName("regions"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Kerberos)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("principal"),
+			path.MatchRoot("kerberos").AtName("principals"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("realm"),
+			path.MatchRoot("kerberos").AtName("realms"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("source_ip"),
+			path.MatchRoot("kerberos").AtName("source_ips"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Kubernetes Service Account)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("issuer"),
+			path.MatchRoot("kubernetes_service_account").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("namespace"),
+			path.MatchRoot("kubernetes_service_account").AtName("namespaces"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("pod_name"),
+			path.MatchRoot("kubernetes_service_account").AtName("pod_names"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("service_account_name"),
+			path.MatchRoot("kubernetes_service_account").AtName("service_account_names"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("subject"),
+			path.MatchRoot("kubernetes_service_account").AtName("subjects"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GCP Identity)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_identity").AtName("email"),
+			path.MatchRoot("gcp_identity").AtName("emails"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GitHub Action)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("actor"),
+			path.MatchRoot("github_action").AtName("actors"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("repository"),
+			path.MatchRoot("github_action").AtName("repositories"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("workflow"),
+			path.MatchRoot("github_action").AtName("workflows"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GitLab Job)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("gitlab_job").AtName("namespace_path"),
 			path.MatchRoot("gitlab_job").AtName("namespace_paths"),
@@ -652,6 +755,19 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("gitlab_job").AtName("subject"),
 			path.MatchRoot("gitlab_job").AtName("subjects"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Terraform Cloud)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("organization_id"),
+			path.MatchRoot("terraform_workspace").AtName("organization_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("project_id"),
+			path.MatchRoot("terraform_workspace").AtName("project_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("workspace_id"),
+			path.MatchRoot("terraform_workspace").AtName("workspace_ids"),
 		),
 	}
 }
