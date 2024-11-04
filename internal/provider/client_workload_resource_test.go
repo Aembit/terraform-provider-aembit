@@ -89,7 +89,7 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tfmod")
 	createFileConfig, modifyFileConfig, newNamePod1 := randomizeFileConfigs(string(createFile), string(modifyFile), "unittest1podname1")
-	createFileConfig, modifyFileConfig, newNamePod2 := randomizeFileConfigs(string(createFileConfig), string(modifyFileConfig), "unittest1podname2")
+	createFileConfig, modifyFileConfig, newNamePod2 := randomizeFileConfigs(createFileConfig, modifyFileConfig, "unittest1podname2")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
