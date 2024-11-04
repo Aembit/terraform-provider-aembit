@@ -5,8 +5,8 @@ resource "aembit_trust_provider" "terraform" {
 	name = "TF Acceptance Terraform Workspace - Modified"
 	is_active = true
 	terraform_workspace = {
-		organization_id = "organization_id"
-		project_id = "project_id"
-		workspace_id = "workspace_id"
+		organization_ids = ["organization_id","organization_id2"]
+		project_ids = ["project_id","project_id2"]
+		workspace_ids = ["workspace_id","workspace_id2"]
 	}
 }

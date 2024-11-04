@@ -1038,7 +1038,7 @@ func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.BillingProducts, "AwsBillingProducts")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.ImageID, "AwsImageId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceID, "AwsInstanceId")
-	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.InstanceIDs, "AwsInstanceIds")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.InstanceIDs, "AwsInstanceId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceType, "AwsInstanceType")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.InstanceTypes, "AwsInstanceType")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.KernelID, "AwsKernelId")

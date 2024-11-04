@@ -22,11 +22,11 @@ resource "aembit_trust_provider" "kubernetes_key" {
 	name = "TF Acceptance Kubernetes Key - Modified"
 	is_active = true
 	kubernetes_service_account = {
-		issuer = "issuer"
-		namespace = "namespace"
-		pod_name = "pod_name"
-		service_account_name = "service_account_name"
-		subject = "subject"
+		issuers = ["issuer","issuer2"]
+		namespaces = ["namespace","namespace2"]
+		pod_names = ["pod_name","pod_name2"]
+		service_account_names = ["service_account_name","service_account_name2"]
+		subjects = ["subject","subject2"]
 		public_key = <<-EOT
 -----BEGIN PUBLIC KEY-----
 MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAXWRPQyGlEY+SXz8Uslhe+MLjTgWd8lf/

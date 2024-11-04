@@ -5,9 +5,9 @@ resource "aembit_trust_provider" "aws_role" {
 	name = "TF Acceptance AWS Role - Modified"
 	is_active = true
 	aws_role = {
-		account_id = "account_id"
-		assumed_role = "assumed_role"
-		role_arn = "role_arn"
-		username = "username"
+		account_ids = ["account_id","account_id2"]
+		assumed_roles = ["assumed_role","assumed_role2"]
+		role_arns = ["role_arn","role_arn2"]
+		usernames = ["username","username2"]
 	}
 }
