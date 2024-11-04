@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"slices"
 	"strings"
 
 	"aembit.io/aembit"
@@ -86,13 +87,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "Specific SKU for the Virtual Machine image.",
 						Optional:    true,
 					},
+					"skus": schema.SetAttribute{
+						Description: "The set of accepted Azure SKUs which are hosting the Client Workloads. Used only for cases where multiple Azure SKUs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"vm_id": schema.StringAttribute{
 						Description: "Unique identifier for the Virtual Machine.",
 						Optional:    true,
 					},
+					"vm_ids": schema.SetAttribute{
+						Description: "The set of accepted Azure VM IDs which are hosting the Client Workloads. Used only for cases where multiple Azure VM IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"subscription_id": schema.StringAttribute{
 						Description: "Azure subscription for the Virtual Machine.",
 						Optional:    true,
+					},
+					"subscription_ids": schema.SetAttribute{
+						Description: "The set of accepted Azure Subscription IDs which are hosting the Client Workloads. Used only for cases where multiple Azure Subscription IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -104,17 +132,53 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The ID of the AWS account that is hosting the Client Workload.",
 						Optional:    true,
 					},
+					"account_ids": schema.SetAttribute{
+						Description: "The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"assumed_role": schema.StringAttribute{
 						Description: "The Name of the AWS IAM Role which is running the Client Workload.",
 						Optional:    true,
+					},
+					"assumed_roles": schema.SetAttribute{
+						Description: "The set of accepted AWS Assumed Roles which are hosting the Client Workloads. Used only for cases where multiple AWS Assumed Roles can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"role_arn": schema.StringAttribute{
 						Description: "The ARN of the AWS IAM Role which is running the Client Workload.",
 						Optional:    true,
 					},
-					"username": schema.StringAttribute{
-						Description: "The UsernID of the AWS IAM Account which is running the Client Workload (not commonly used).",
+					"role_arns": schema.SetAttribute{
+						Description: "The set of accepted Role ARNs which are hosting the Client Workloads. Used only for cases where multiple Role ARNs can be matched.",
+						ElementType: types.StringType,
 						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"username": schema.StringAttribute{
+						Description: "The UserID of the AWS IAM Account which is running the Client Workload (not commonly used).",
+						Optional:    true,
+					},
+					"usernames": schema.SetAttribute{
+						Description: "The set of accepted AWS UserIDs which are hosting the Client Workloads. Used only for cases where multiple AWS UserIDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -130,6 +194,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The ID of the AWS account that launched the instance.",
 						Optional:    true,
 					},
+					"account_ids": schema.SetAttribute{
+						Description: "The set of accepted AWS account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS account IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"architecture": schema.StringAttribute{
 						Description: "The architecture of the AMI used to launch the instance (i386 | x86_64 | arm64).",
 						Optional:    true,
@@ -137,6 +210,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					"availability_zone": schema.StringAttribute{
 						Description: "The Availability Zone in which the instance is running.",
 						Optional:    true,
+					},
+					"availability_zones": schema.SetAttribute{
+						Description: "The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"billing_products": schema.StringAttribute{
 						Description: "The billing products of the instance.",
@@ -150,9 +232,27 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The ID of the instance.",
 						Optional:    true,
 					},
+					"instance_ids": schema.SetAttribute{
+						Description: "The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"instance_type": schema.StringAttribute{
 						Description: "The instance type of the instance.",
 						Optional:    true,
+					},
+					"instance_types": schema.SetAttribute{
+						Description: "The set of accepted AWS Instance types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance types can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"kernel_id": schema.StringAttribute{
 						Description: "The ID of the kernel associated with the instance, if applicable.",
@@ -178,6 +278,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Region in which the instance is running.",
 						Optional:    true,
 					},
+					"regions": schema.SetAttribute{
+						Description: "The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"version": schema.StringAttribute{
 						Description: "The version of the instance identity document format.",
 						Optional:    true,
@@ -192,6 +301,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Email of the GCP Service Account used by the associated GCP resource.",
 						Optional:    true,
 					},
+					"emails": schema.SetAttribute{
+						Description: "The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 				},
 			},
 			"github_action": schema.SingleNestedAttribute{
@@ -202,13 +320,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The GitHub Actor which initiated the GitHub Action.",
 						Optional:    true,
 					},
+					"actors": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Actors which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Actors can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"repository": schema.StringAttribute{
 						Description: "The GitHub Repository associated with the GitHub Action ID Token.",
 						Optional:    true,
 					},
+					"repositories": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Repositories which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Repositories can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"workflow": schema.StringAttribute{
 						Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
 						Optional:    true,
+					},
+					"workflows": schema.SetAttribute{
+						Description: "The set of accepted GitHub ID Token Workflows which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Workflows can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -312,13 +457,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Kerberos Principal of the authenticated Agent Proxy.",
 						Optional:    true,
 					},
+					"principals": schema.SetAttribute{
+						Description: "The set of accepted Kerberos Principals which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Principals can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"realm": schema.StringAttribute{
 						Description: "The Kerberos Realm of the authenticated Agent Proxy.",
 						Optional:    true,
 					},
+					"realms": schema.SetAttribute{
+						Description: "The set of accepted Kerberos Realms which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Realms can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"source_ip": schema.StringAttribute{
 						Description: "The Source IP Address of the authenticated Agent Proxy.",
 						Optional:    true,
+					},
+					"source_ips": schema.SetAttribute{
+						Description: "The set of accepted Source IPs which initiated the authenticated Agent Proxy. Used only for cases where multiple Source IPs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -330,21 +502,66 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Issuer (`iss` claim) of the Kubernetes Service Account Token.",
 						Optional:    true,
 					},
+					"issuers": schema.SetAttribute{
+						Description: "The set of accepted Issuer values of the associated Kubernetes Service Account Token. Used only for cases where multiple Issuers can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"namespace": schema.StringAttribute{
 						Description: "The Namespace of the Kubernetes Service Account Token.",
 						Optional:    true,
+					},
+					"namespaces": schema.SetAttribute{
+						Description: "The set of accepted Namespace values of the associated Kubernetes Service Account Token. Used only for cases where multiple Namespaces can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"pod_name": schema.StringAttribute{
 						Description: "The Pod Name of the Kubernetes Service Account Token.",
 						Optional:    true,
 					},
+					"pod_names": schema.SetAttribute{
+						Description: "The set of accepted Pod Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Pod Names can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"service_account_name": schema.StringAttribute{
 						Description: "The Service Account Name of the Kubernetes Service Account Token.",
 						Optional:    true,
 					},
+					"service_account_names": schema.SetAttribute{
+						Description: "The set of accepted Service Account Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Service Account Names can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"subject": schema.StringAttribute{
 						Description: "The Subject (`sub` claim) of the Kubernetes Service Account Token.",
 						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted Subject values of the associated Kubernetes Service Account Token. Used only for cases where multiple Subjects can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"oidc_endpoint": schema.StringAttribute{
 						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
@@ -364,13 +581,40 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Organization ID of the calling Terraform Workspace.",
 						Optional:    true,
 					},
+					"organization_ids": schema.SetAttribute{
+						Description: "The set of accepted Organization ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Organization IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"project_id": schema.StringAttribute{
 						Description: "The Project ID of the calling Terraform Workspace.",
 						Optional:    true,
 					},
+					"project_ids": schema.SetAttribute{
+						Description: "The set of accepted Project ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Project IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
 					"workspace_id": schema.StringAttribute{
 						Description: "The Workspace ID of the calling Terraform Workspace.",
 						Optional:    true,
+					},
+					"workspace_ids": schema.SetAttribute{
+						Description: "The set of accepted Workspace ID values of the calling Terraform Workspace. Used only for cases where multiple Terraform ID Token Workspace IDs can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 				},
 			},
@@ -392,7 +636,110 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
 		),
-		// For the GitLab Job type, ensure we don't have conflicting single and multiple match rule configurations
+		// Ensure we don't have conflicting single and multiple match rule configurations (Azure Metadata)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("sku"),
+			path.MatchRoot("azure_metadata").AtName("skus"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("vm_id"),
+			path.MatchRoot("azure_metadata").AtName("vm_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("azure_metadata").AtName("subscription_id"),
+			path.MatchRoot("azure_metadata").AtName("subscription_ids"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (AWS Role)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("account_id"),
+			path.MatchRoot("aws_role").AtName("account_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("assumed_role"),
+			path.MatchRoot("aws_role").AtName("assumed_roles"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("role_arn"),
+			path.MatchRoot("aws_role").AtName("role_arns"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_role").AtName("username"),
+			path.MatchRoot("aws_role").AtName("usernames"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (AWS Metadata)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("account_id"),
+			path.MatchRoot("aws_metadata").AtName("account_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("availability_zone"),
+			path.MatchRoot("aws_metadata").AtName("availability_zones"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("instance_id"),
+			path.MatchRoot("aws_metadata").AtName("instance_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("instance_type"),
+			path.MatchRoot("aws_metadata").AtName("instance_types"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_metadata").AtName("region"),
+			path.MatchRoot("aws_metadata").AtName("regions"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Kerberos)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("principal"),
+			path.MatchRoot("kerberos").AtName("principals"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("realm"),
+			path.MatchRoot("kerberos").AtName("realms"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kerberos").AtName("source_ip"),
+			path.MatchRoot("kerberos").AtName("source_ips"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Kubernetes Service Account)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("issuer"),
+			path.MatchRoot("kubernetes_service_account").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("namespace"),
+			path.MatchRoot("kubernetes_service_account").AtName("namespaces"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("pod_name"),
+			path.MatchRoot("kubernetes_service_account").AtName("pod_names"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("service_account_name"),
+			path.MatchRoot("kubernetes_service_account").AtName("service_account_names"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("subject"),
+			path.MatchRoot("kubernetes_service_account").AtName("subjects"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GCP Identity)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_identity").AtName("email"),
+			path.MatchRoot("gcp_identity").AtName("emails"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GitHub Action)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("actor"),
+			path.MatchRoot("github_action").AtName("actors"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("repository"),
+			path.MatchRoot("github_action").AtName("repositories"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("github_action").AtName("workflow"),
+			path.MatchRoot("github_action").AtName("workflows"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (GitLab Job)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("gitlab_job").AtName("namespace_path"),
 			path.MatchRoot("gitlab_job").AtName("namespace_paths"),
@@ -408,6 +755,19 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("gitlab_job").AtName("subject"),
 			path.MatchRoot("gitlab_job").AtName("subjects"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Terraform Cloud)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("organization_id"),
+			path.MatchRoot("terraform_workspace").AtName("organization_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("project_id"),
+			path.MatchRoot("terraform_workspace").AtName("project_ids"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("terraform_workspace").AtName("workspace_id"),
+			path.MatchRoot("terraform_workspace").AtName("workspace_ids"),
 		),
 	}
 }
@@ -643,8 +1003,11 @@ func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembi
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.Sku, "AzureSku")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AzureMetadata.Skus, "AzureSku")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.VMID, "AzureVmId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AzureMetadata.VMIDs, "AzureVmId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.SubscriptionID, "AzureSubscriptionId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AzureMetadata.SubscriptionIDs, "AzureSubscriptionId")
 }
 
 func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -652,9 +1015,13 @@ func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.Trus
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.AccountIDs, "AwsAccountId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.AssumedRole, "AwsAssumedRole")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.AssumedRoles, "AwsAssumedRole")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.RoleARN, "AwsRoleARN")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.RoleARNs, "AwsRoleARN")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.Username, "AwsUsername")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.Usernames, "AwsUsername")
 }
 
 func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -664,18 +1031,23 @@ func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.AccountID, "AwsAccountId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.AccountIDs, "AwsAccountId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Architecture, "AwsArchitecture")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.AvailabilityZone, "AwsAvailabilityZone")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.AvailabilityZones, "AwsAvailabilityZone")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.BillingProducts, "AwsBillingProducts")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.ImageID, "AwsImageId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceID, "AwsInstanceId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.InstanceIDs, "AwsInstanceId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.InstanceType, "AwsInstanceType")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.InstanceTypes, "AwsInstanceType")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.KernelID, "AwsKernelId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.MarketplaceProductCodes, "AwsMarketplaceProductCodes")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.PendingTime, "AwsPendingTime")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.PrivateIP, "AwsPrivateIp")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.RamdiskID, "AwsRamdiskId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Region, "AwsRegion")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsMetadata.Regions, "AwsRegion")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Version, "AwsVersion")
 }
 
@@ -684,6 +1056,7 @@ func convertGcpIdentityModelToDTO(model trustProviderResourceModel, dto *aembit.
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GcpIdentity.EMail, "Email")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GcpIdentity.EMails, "Email")
 }
 
 func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -691,8 +1064,11 @@ func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Actor, "GithubActor")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Actors, "GithubActor")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Repository, "GithubRepository")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Repositories, "GithubRepository")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GitHubAction.Workflow, "GithubWorkflow")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Workflows, "GithubWorkflow")
 }
 
 func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -719,8 +1095,11 @@ func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.Tru
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Principal, "Principal")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.Principals, "Principal")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Realm, "Realm")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.Realms, "Realm")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.SourceIP, "SourceIp")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.SourceIPs, "SourceIp")
 }
 
 func convertKubernetesModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -733,10 +1112,15 @@ func convertKubernetesModelToDTO(model trustProviderResourceModel, dto *aembit.T
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Issuer, "KubernetesIss")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Issuers, "KubernetesIss")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Namespace, "KubernetesIoNamespace")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Namespaces, "KubernetesIoNamespace")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.PodName, "KubernetesIoPodName")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.PodNames, "KubernetesIoPodName")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.ServiceAccountName, "KubernetesIoServiceAccountName")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.ServiceAccountNames, "KubernetesIoServiceAccountName")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Subject, "KubernetesSub")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Subjects, "KubernetesSub")
 }
 
 func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -744,8 +1128,11 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.OrganizationID, "TerraformOrganizationId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.OrganizationIDs, "TerraformOrganizationId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.ProjectID, "TerraformProjectId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.ProjectIDs, "TerraformProjectId")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.TerraformWorkspace.WorkspaceID, "TerraformWorkspaceId")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.TerraformWorkspace.WorkspaceIDs, "TerraformWorkspaceId")
 }
 
 // DTO to Model conversion methods.
@@ -788,15 +1175,14 @@ func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderA
 		SubscriptionID: types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "AzureSku":
-			model.Sku = types.StringValue(rule.Value)
-		case "AzureVmId":
-			model.VMID = types.StringValue(rule.Value)
-		case "AzureSubscriptionId":
-			model.SubscriptionID = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AzureSku")) {
+		model.Sku, model.Skus = extractMatchRules(dto.MatchRules, "AzureSku")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AzureVmId")) {
+		model.VMID, model.VMIDs = extractMatchRules(dto.MatchRules, "AzureVmId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AzureSubscriptionId")) {
+		model.SubscriptionID, model.SubscriptionIDs = extractMatchRules(dto.MatchRules, "AzureSubscriptionId")
 	}
 	return model
 }
@@ -809,17 +1195,17 @@ func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsRole
 		Username:    types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "AwsAccountId":
-			model.AccountID = types.StringValue(rule.Value)
-		case "AwsAssumedRole":
-			model.AssumedRole = types.StringValue(rule.Value)
-		case "AwsRoleARN":
-			model.RoleARN = types.StringValue(rule.Value)
-		case "AwsUsername":
-			model.Username = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAccountId")) {
+		model.AccountID, model.AccountIDs = extractMatchRules(dto.MatchRules, "AwsAccountId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAssumedRole")) {
+		model.AssumedRole, model.AssumedRoles = extractMatchRules(dto.MatchRules, "AwsAssumedRole")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsRoleARN")) {
+		model.RoleARN, model.RoleARNs = extractMatchRules(dto.MatchRules, "AwsRoleARN")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsUsername")) {
+		model.Username, model.Usernames = extractMatchRules(dto.MatchRules, "AwsUsername")
 	}
 	return model
 }
@@ -845,37 +1231,47 @@ func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAws
 		Version:                 types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "AwsAccountId":
-			model.AccountID = types.StringValue(rule.Value)
-		case "AwsArchitecture":
-			model.Architecture = types.StringValue(rule.Value)
-		case "AwsAvailabilityZone":
-			model.AvailabilityZone = types.StringValue(rule.Value)
-		case "AwsBillingProducts":
-			model.BillingProducts = types.StringValue(rule.Value)
-		case "AwsImageId":
-			model.ImageID = types.StringValue(rule.Value)
-		case "AwsInstanceId":
-			model.InstanceID = types.StringValue(rule.Value)
-		case "AwsInstanceType":
-			model.InstanceType = types.StringValue(rule.Value)
-		case "AwsKernelId":
-			model.KernelID = types.StringValue(rule.Value)
-		case "AwsMarketplaceProductCodes":
-			model.MarketplaceProductCodes = types.StringValue(rule.Value)
-		case "AwsPendingTime":
-			model.PendingTime = types.StringValue(rule.Value)
-		case "AwsPrivateIp":
-			model.PrivateIP = types.StringValue(rule.Value)
-		case "AwsRamdiskId":
-			model.RamdiskID = types.StringValue(rule.Value)
-		case "AwsRegion":
-			model.Region = types.StringValue(rule.Value)
-		case "AwsVersion":
-			model.Version = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAccountId")) {
+		model.AccountID, model.AccountIDs = extractMatchRules(dto.MatchRules, "AwsAccountId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsArchitecture")) {
+		model.Architecture, _ = extractMatchRules(dto.MatchRules, "AwsArchitecture")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAvailabilityZone")) {
+		model.AvailabilityZone, model.AvailabilityZones = extractMatchRules(dto.MatchRules, "AwsAvailabilityZone")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsBillingProducts")) {
+		model.BillingProducts, _ = extractMatchRules(dto.MatchRules, "AwsBillingProducts")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsImageId")) {
+		model.ImageID, _ = extractMatchRules(dto.MatchRules, "AwsImageId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsInstanceId")) {
+		model.InstanceID, model.InstanceIDs = extractMatchRules(dto.MatchRules, "AwsInstanceId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsInstanceType")) {
+		model.InstanceType, model.InstanceTypes = extractMatchRules(dto.MatchRules, "AwsInstanceType")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsKernelId")) {
+		model.KernelID, _ = extractMatchRules(dto.MatchRules, "AwsKernelId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsMarketplaceProductCodes")) {
+		model.MarketplaceProductCodes, _ = extractMatchRules(dto.MatchRules, "AwsMarketplaceProductCodes")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsPendingTime")) {
+		model.PendingTime, _ = extractMatchRules(dto.MatchRules, "AwsPendingTime")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsPrivateIp")) {
+		model.PrivateIP, _ = extractMatchRules(dto.MatchRules, "AwsPrivateIp")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsRamdiskId")) {
+		model.RamdiskID, _ = extractMatchRules(dto.MatchRules, "AwsRamdiskId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsRegion")) {
+		model.Region, model.Regions = extractMatchRules(dto.MatchRules, "AwsRegion")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsVersion")) {
+		model.Version, _ = extractMatchRules(dto.MatchRules, "AwsVersion")
 	}
 	return model
 }
@@ -891,15 +1287,14 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerber
 		model.AgentControllerIDs[i] = types.StringValue(controllerID)
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "Principal":
-			model.Principal = types.StringValue(rule.Value)
-		case "Realm":
-			model.Realm = types.StringValue(rule.Value)
-		case "SourceIp":
-			model.SourceIP = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Principal")) {
+		model.Principal, model.Principals = extractMatchRules(dto.MatchRules, "Principal")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Realm")) {
+		model.Realm, model.Realms = extractMatchRules(dto.MatchRules, "Realm")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("SourceIp")) {
+		model.SourceIP, model.SourceIPs = extractMatchRules(dto.MatchRules, "SourceIp")
 	}
 	return model
 }
@@ -922,19 +1317,20 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKube
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "KubernetesIss":
-			model.Issuer = types.StringValue(rule.Value)
-		case "KubernetesIoNamespace":
-			model.Namespace = types.StringValue(rule.Value)
-		case "KubernetesIoPodName":
-			model.PodName = types.StringValue(rule.Value)
-		case "KubernetesIoServiceAccountName":
-			model.ServiceAccountName = types.StringValue(rule.Value)
-		case "KubernetesSub":
-			model.Subject = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
+		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "KubernetesIss")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIoNamespace")) {
+		model.Namespace, model.Namespaces = extractMatchRules(dto.MatchRules, "KubernetesIoNamespace")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIoPodName")) {
+		model.PodName, model.PodNames = extractMatchRules(dto.MatchRules, "KubernetesIoPodName")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIoServiceAccountName")) {
+		model.ServiceAccountName, model.ServiceAccountNames = extractMatchRules(dto.MatchRules, "KubernetesIoServiceAccountName")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesSub")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "KubernetesSub")
 	}
 	return model
 }
@@ -944,11 +1340,8 @@ func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGcp
 		EMail: types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "Email":
-			model.EMail = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Email")) {
+		model.EMail, model.EMails = extractMatchRules(dto.MatchRules, "Email")
 	}
 	return model
 }
@@ -960,15 +1353,14 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 		Workflow:   types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "GithubActor":
-			model.Actor = types.StringValue(rule.Value)
-		case "GithubRepository":
-			model.Repository = types.StringValue(rule.Value)
-		case "GithubWorkflow":
-			model.Workflow = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubActor")) {
+		model.Actor, model.Actors = extractMatchRules(dto.MatchRules, "GithubActor")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubRepository")) {
+		model.Repository, model.Repositories = extractMatchRules(dto.MatchRules, "GithubRepository")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubWorkflow")) {
+		model.Workflow, model.Workflows = extractMatchRules(dto.MatchRules, "GithubWorkflow")
 	}
 	return model
 }
@@ -986,33 +1378,17 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain
 		OIDCAudience:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "GitLabSubject":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.Subjects = append(model.Subjects, types.StringValue(rule.Value))
-			} else {
-				model.Subject = types.StringValue(rule.Value)
-			}
-		case "GitLabProjectPath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.ProjectPaths = append(model.ProjectPaths, types.StringValue(rule.Value))
-			} else {
-				model.ProjectPath = types.StringValue(rule.Value)
-			}
-		case "GitLabNamespacePath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.NamespacePaths = append(model.NamespacePaths, types.StringValue(rule.Value))
-			} else {
-				model.NamespacePath = types.StringValue(rule.Value)
-			}
-		case "GitLabRefPath":
-			if matchRuleOccurrences(dto.MatchRules, rule.Attribute) > 1 {
-				model.RefPaths = append(model.RefPaths, types.StringValue(rule.Value))
-			} else {
-				model.RefPath = types.StringValue(rule.Value)
-			}
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "GitLabSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabProjectPath")) {
+		model.ProjectPath, model.ProjectPaths = extractMatchRules(dto.MatchRules, "GitLabProjectPath")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabNamespacePath")) {
+		model.NamespacePath, model.NamespacePaths = extractMatchRules(dto.MatchRules, "GitLabNamespacePath")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GitLabRefPath")) {
+		model.RefPath, model.RefPaths = extractMatchRules(dto.MatchRules, "GitLabRefPath")
 	}
 	return model
 }
@@ -1024,25 +1400,50 @@ func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerra
 		WorkspaceID:    types.StringNull(),
 	}
 
-	for _, rule := range dto.MatchRules {
-		switch rule.Attribute {
-		case "TerraformOrganizationId":
-			model.OrganizationID = types.StringValue(rule.Value)
-		case "TerraformProjectId":
-			model.ProjectID = types.StringValue(rule.Value)
-		case "TerraformWorkspaceId":
-			model.WorkspaceID = types.StringValue(rule.Value)
-		}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformOrganizationId")) {
+		model.OrganizationID, model.OrganizationIDs = extractMatchRules(dto.MatchRules, "TerraformOrganizationId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformProjectId")) {
+		model.ProjectID, model.ProjectIDs = extractMatchRules(dto.MatchRules, "TerraformProjectId")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("TerraformWorkspaceId")) {
+		model.WorkspaceID, model.WorkspaceIDs = extractMatchRules(dto.MatchRules, "TerraformWorkspaceId")
 	}
 	return model
 }
 
-func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attribute string) int {
+// matchRuleOccurrences returns the number of match rules with a specific attributeName.
+func matchRuleOccurrences(matchRules []aembit.TrustProviderMatchRuleDTO, attributeName string) int {
 	count := 0
 	for _, rule := range matchRules {
-		if rule.Attribute == attribute {
+		if rule.Attribute == attributeName {
 			count++
 		}
 	}
 	return count
+}
+
+// matchRuleAttributeFunc provides a function that can be used by the slices.ContainsFunc utility to determine if a slice of TrustProviderMatchRuleDTO contains a specific attribute.
+func matchRuleAttributeFunc(attributeName string) func(aembit.TrustProviderMatchRuleDTO) bool {
+	return func(matchRule aembit.TrustProviderMatchRuleDTO) bool {
+		return matchRule.Attribute == attributeName
+	}
+}
+
+// extractMatchRules pulls out the match rules with the specified attribute name.
+func extractMatchRules(matchRules []aembit.TrustProviderMatchRuleDTO, attributeName string) (types.String, []types.String) {
+	var singleValue types.String = types.StringNull()
+	var multiValue []types.String = nil
+	var multipleMatchRules bool = matchRuleOccurrences(matchRules, attributeName) > 1
+
+	for _, rule := range matchRules {
+		if rule.Attribute == attributeName {
+			if multipleMatchRules {
+				multiValue = append(multiValue, types.StringValue(rule.Value))
+			} else {
+				singleValue = types.StringValue(rule.Value)
+			}
+		}
+	}
+	return singleValue, multiValue
 }

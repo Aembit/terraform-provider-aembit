@@ -29,61 +29,85 @@ type trustProvidersDataSourceModel struct {
 }
 
 type trustProviderAzureMetadataModel struct {
-	Sku            types.String `tfsdk:"sku"`
-	VMID           types.String `tfsdk:"vm_id"`
-	SubscriptionID types.String `tfsdk:"subscription_id"`
+	Sku             types.String   `tfsdk:"sku"`
+	Skus            []types.String `tfsdk:"skus"`
+	VMID            types.String   `tfsdk:"vm_id"`
+	VMIDs           []types.String `tfsdk:"vm_ids"`
+	SubscriptionID  types.String   `tfsdk:"subscription_id"`
+	SubscriptionIDs []types.String `tfsdk:"subscription_ids"`
 }
 
 type trustProviderAwsRoleModel struct {
-	AccountID   types.String `tfsdk:"account_id"`
-	AssumedRole types.String `tfsdk:"assumed_role"`
-	RoleARN     types.String `tfsdk:"role_arn"`
-	Username    types.String `tfsdk:"username"`
+	AccountID    types.String   `tfsdk:"account_id"`
+	AccountIDs   []types.String `tfsdk:"account_ids"`
+	AssumedRole  types.String   `tfsdk:"assumed_role"`
+	AssumedRoles []types.String `tfsdk:"assumed_roles"`
+	RoleARN      types.String   `tfsdk:"role_arn"`
+	RoleARNs     []types.String `tfsdk:"role_arns"`
+	Username     types.String   `tfsdk:"username"`
+	Usernames    []types.String `tfsdk:"usernames"`
 }
 
 type trustProviderAwsMetadataModel struct {
-	Certificate             types.String `tfsdk:"certificate"`
-	AccountID               types.String `tfsdk:"account_id"`
-	Architecture            types.String `tfsdk:"architecture"`
-	AvailabilityZone        types.String `tfsdk:"availability_zone"`
-	BillingProducts         types.String `tfsdk:"billing_products"`
-	ImageID                 types.String `tfsdk:"image_id"`
-	InstanceID              types.String `tfsdk:"instance_id"`
-	InstanceType            types.String `tfsdk:"instance_type"`
-	KernelID                types.String `tfsdk:"kernel_id"`
-	MarketplaceProductCodes types.String `tfsdk:"marketplace_product_codes"`
-	PendingTime             types.String `tfsdk:"pending_time"`
-	PrivateIP               types.String `tfsdk:"private_ip"`
-	RamdiskID               types.String `tfsdk:"ramdisk_id"`
-	Region                  types.String `tfsdk:"region"`
-	Version                 types.String `tfsdk:"version"`
+	Certificate             types.String   `tfsdk:"certificate"`
+	AccountID               types.String   `tfsdk:"account_id"`
+	AccountIDs              []types.String `tfsdk:"account_ids"`
+	Architecture            types.String   `tfsdk:"architecture"`
+	AvailabilityZone        types.String   `tfsdk:"availability_zone"`
+	AvailabilityZones       []types.String `tfsdk:"availability_zones"`
+	BillingProducts         types.String   `tfsdk:"billing_products"`
+	ImageID                 types.String   `tfsdk:"image_id"`
+	InstanceID              types.String   `tfsdk:"instance_id"`
+	InstanceIDs             []types.String `tfsdk:"instance_ids"`
+	InstanceType            types.String   `tfsdk:"instance_type"`
+	InstanceTypes           []types.String `tfsdk:"instance_types"`
+	KernelID                types.String   `tfsdk:"kernel_id"`
+	MarketplaceProductCodes types.String   `tfsdk:"marketplace_product_codes"`
+	PendingTime             types.String   `tfsdk:"pending_time"`
+	PrivateIP               types.String   `tfsdk:"private_ip"`
+	RamdiskID               types.String   `tfsdk:"ramdisk_id"`
+	Region                  types.String   `tfsdk:"region"`
+	Regions                 []types.String `tfsdk:"regions"`
+	Version                 types.String   `tfsdk:"version"`
 }
 
 type trustProviderKerberosModel struct {
 	AgentControllerIDs []types.String `tfsdk:"agent_controller_ids"`
 	Principal          types.String   `tfsdk:"principal"`
+	Principals         []types.String `tfsdk:"principals"`
 	Realm              types.String   `tfsdk:"realm"`
+	Realms             []types.String `tfsdk:"realms"`
 	SourceIP           types.String   `tfsdk:"source_ip"`
+	SourceIPs          []types.String `tfsdk:"source_ips"`
 }
 
 type trustProviderKubernetesModel struct {
-	Issuer             types.String `tfsdk:"issuer"`
-	Namespace          types.String `tfsdk:"namespace"`
-	PodName            types.String `tfsdk:"pod_name"`
-	ServiceAccountName types.String `tfsdk:"service_account_name"`
-	Subject            types.String `tfsdk:"subject"`
-	OIDCEndpoint       types.String `tfsdk:"oidc_endpoint"`
-	PublicKey          types.String `tfsdk:"public_key"`
+	Issuer              types.String   `tfsdk:"issuer"`
+	Issuers             []types.String `tfsdk:"issuers"`
+	Namespace           types.String   `tfsdk:"namespace"`
+	Namespaces          []types.String `tfsdk:"namespaces"`
+	PodName             types.String   `tfsdk:"pod_name"`
+	PodNames            []types.String `tfsdk:"pod_names"`
+	ServiceAccountName  types.String   `tfsdk:"service_account_name"`
+	ServiceAccountNames []types.String `tfsdk:"service_account_names"`
+	Subject             types.String   `tfsdk:"subject"`
+	Subjects            []types.String `tfsdk:"subjects"`
+	OIDCEndpoint        types.String   `tfsdk:"oidc_endpoint"`
+	PublicKey           types.String   `tfsdk:"public_key"`
 }
 
 type trustProviderGcpIdentityModel struct {
-	EMail types.String `tfsdk:"email"`
+	EMail  types.String   `tfsdk:"email"`
+	EMails []types.String `tfsdk:"emails"`
 }
 
 type trustProviderGitHubActionModel struct {
-	Actor      types.String `tfsdk:"actor"`
-	Repository types.String `tfsdk:"repository"`
-	Workflow   types.String `tfsdk:"workflow"`
+	Actor        types.String   `tfsdk:"actor"`
+	Actors       []types.String `tfsdk:"actors"`
+	Repository   types.String   `tfsdk:"repository"`
+	Repositories []types.String `tfsdk:"repositories"`
+	Workflow     types.String   `tfsdk:"workflow"`
+	Workflows    []types.String `tfsdk:"workflows"`
 }
 
 type trustProviderGitLabJobModel struct {
@@ -101,7 +125,10 @@ type trustProviderGitLabJobModel struct {
 }
 
 type trustProviderTerraformModel struct {
-	OrganizationID types.String `tfsdk:"organization_id"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	WorkspaceID    types.String `tfsdk:"workspace_id"`
+	OrganizationID  types.String   `tfsdk:"organization_id"`
+	OrganizationIDs []types.String `tfsdk:"organization_ids"`
+	ProjectID       types.String   `tfsdk:"project_id"`
+	ProjectIDs      []types.String `tfsdk:"project_ids"`
+	WorkspaceID     types.String   `tfsdk:"workspace_id"`
+	WorkspaceIDs    []types.String `tfsdk:"workspace_ids"`
 }

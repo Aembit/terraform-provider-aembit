@@ -28,19 +28,19 @@ uy16zlW2rUwNgW/Bgl8RLuf3gZnUStBoLV3xqIA3BibEp4DpYLj4AKz16LM/b/33
 sfa3cNOSjZ3VJtS4B9JoBHh6RrAIxSk2Hoz9dTTDrp61oz3Lrw==
 -----END CERTIFICATE-----
 EOT
-		account_id = "account_id"
+		account_ids = ["account_id1","account_id2"]
 		architecture = "architecture"
-		availability_zone = "availability_zone"
+		availability_zones = ["az1","az2","az3"]
 		billing_products = "billing_products"
 		image_id = "image_id"
-		instance_id = "instance_id"
-		instance_type = "instance_type"
+		instance_ids = ["instance_id","instance_id2"]
+		instance_types = ["instance_type","instance_type2"]
 		kernel_id = "kernel_id"
 		marketplace_product_codes = "marketplace_product_codes"
 		pending_time = "pending_time"
 		private_ip = "private_ip"
 		ramdisk_id = "ramdisk_id"
-		region = "region"
+		regions = ["region","region2"]
 		version = "version"
 	}
 }

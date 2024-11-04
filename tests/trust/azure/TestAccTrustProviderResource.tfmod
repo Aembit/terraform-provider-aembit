@@ -5,6 +5,8 @@ resource "aembit_trust_provider" "azure" {
 	name = "TF Acceptance Azure - Modified"
 	is_active = true
 	azure_metadata = {
-		subscription_id = "subscription_id"
+		subscription_ids = ["subscription_id","subscription_id2"]
+		skus = ["sku","sku2"]
+		vm_ids = ["vm_id","vm_id2"]
 	}
 }
