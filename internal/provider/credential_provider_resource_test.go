@@ -228,8 +228,8 @@ const testOAuthClientCredentialsAuthHeader string = "aembit_credential_provider.
 const testOAuthClientCredentialsPostBody string = "aembit_credential_provider.oauth_postBody"
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tfmod")
+	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/auth-header/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/auth-header/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -239,7 +239,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testi
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(testOAuthClientCredentialsAuthHeader, "name", "TF Acceptance OAuth"),
+					resource.TestCheckResourceAttr(testOAuthClientCredentialsAuthHeader, "name", "TF Acceptance OAuth header"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testOAuthClientCredentialsAuthHeader, "id"),
 					// Verify placeholder ID is set
@@ -253,7 +253,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testi
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testOAuthClientCredentialsAuthHeader, "name", "TF Acceptance OAuth - Modified"),
+					resource.TestCheckResourceAttr(testOAuthClientCredentialsAuthHeader, "name", "TF Acceptance OAuth header - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -262,8 +262,8 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testi
 }
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tfmod")
+	createFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/post-body/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oauth-client-credentials/post-body/TestAccCredentialProviderResource.tfmod")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -273,7 +273,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(testOAuthClientCredentialsPostBody, "name", "TF Acceptance OAuth"),
+					resource.TestCheckResourceAttr(testOAuthClientCredentialsPostBody, "name", "TF Acceptance OAuth body"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testOAuthClientCredentialsPostBody, "id"),
 					// Verify placeholder ID is set
@@ -287,7 +287,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testOAuthClientCredentialsPostBody, "name", "TF Acceptance OAuth - Modified"),
+					resource.TestCheckResourceAttr(testOAuthClientCredentialsPostBody, "name", "TF Acceptance OAuth body - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
