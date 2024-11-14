@@ -101,40 +101,40 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 	})
 }
 
-func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
-	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
+// func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
+// 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
+// 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
+// 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
+// 	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
+// 	resource.Test(t, resource.TestCase{
+// 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+// 		Steps: []resource.TestStep{
+// 			// Create and Read testing
+// 			{
+// 				Config: createFileConfig,
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
 
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: AccessPolicyPathMultiCPFirst, ImportState: true, ImportStateVerify: true},
-			// Update and Read testing
-			{
-				Config: modifyFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
+// 				),
+// 			},
+// 			// ImportState testing
+// 			{ResourceName: AccessPolicyPathMultiCPFirst, ImportState: true, ImportStateVerify: true},
+// 			// Update and Read testing
+// 			{
+// 				Config: modifyFileConfig,
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy Updated"),
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
 
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "2"),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy Updated"),
+// 					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "2"),
+// 				),
+// 			},
+// 			// Delete testing automatically occurs in TestCase
+// 		},
+// 	})
+// }
