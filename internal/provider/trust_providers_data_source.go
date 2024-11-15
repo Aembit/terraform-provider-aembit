@@ -74,19 +74,19 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"skus": schema.SetAttribute{
 									Description: "The set of accepted Azure SKUs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"vm_id": schema.StringAttribute{Computed: true},
 								"vm_ids": schema.SetAttribute{
 									Description: "The set of accepted Azure VM IDs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"subscription_id": schema.StringAttribute{Computed: true},
 								"subscription_ids": schema.SetAttribute{
 									Description: "The set of accepted Azure Subscription IDs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -101,7 +101,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"account_ids": schema.SetAttribute{
 									Description: "The set of accepted AWS account IDs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"assumed_role": schema.StringAttribute{
 									Description: "The Name of the AWS IAM Role which is running the Client Workload.",
@@ -110,7 +110,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"assumed_roles": schema.SetAttribute{
 									Description: "The set of accepted AWS IAM Roles that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"role_arn": schema.StringAttribute{
 									Description: "The ARN of the AWS IAM Role which is running the Client Workload.",
@@ -119,7 +119,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"role_arns": schema.SetAttribute{
 									Description: "The set of accepted AWS IAM Role ARNs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"username": schema.StringAttribute{
 									Description: "The UserID of the AWS IAM Account which is running the Client Workload (not commonly used).",
@@ -128,7 +128,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"usernames": schema.SetAttribute{
 									Description: "The set of accepted AWS IAM Account UserIDs that are hosting the Client Workloads.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -144,14 +144,14 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"account_ids": schema.SetAttribute{
 									Description: "The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"architecture":      schema.StringAttribute{Computed: true},
 								"availability_zone": schema.StringAttribute{Computed: true},
 								"availability_zones": schema.SetAttribute{
 									Description: "The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"billing_products": schema.StringAttribute{Computed: true},
 								"image_id":         schema.StringAttribute{Computed: true},
@@ -159,13 +159,13 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"instance_ids": schema.SetAttribute{
 									Description: "The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"instance_type": schema.StringAttribute{Computed: true},
 								"instance_types": schema.SetAttribute{
 									Description: "The set of accepted AWS Instance Types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance Types can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"kernel_id":                 schema.StringAttribute{Computed: true},
 								"marketplace_product_codes": schema.StringAttribute{Computed: true},
@@ -176,7 +176,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"regions": schema.SetAttribute{
 									Description: "The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"version": schema.StringAttribute{Computed: true},
 							},
@@ -192,7 +192,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								"emails": schema.SetAttribute{
 									Description: "The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -202,30 +202,30 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Attributes: map[string]schema.Attribute{
 								"actor": schema.StringAttribute{
 									Description: "The GitHub Actor which initiated the GitHub Action.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"actors": schema.SetAttribute{
 									Description: "The set of accepted GitHub ID Token Actors which initiated the GitHub Action.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"repository": schema.StringAttribute{
 									Description: "The GitHub Repository associated with the GitHub Action ID Token.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"repositories": schema.SetAttribute{
 									Description: "The set of accepted GitHub ID Token Repositories which initiated the GitHub Action.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"workflow": schema.StringAttribute{
 									Description: "The GitHub Workflow execution associated with the GitHub Action ID Token.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"workflows": schema.SetAttribute{
 									Description: "The set of accepted GitHub ID Token Workflows which initiated the GitHub Action.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -376,30 +376,30 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							Attributes: map[string]schema.Attribute{
 								"organization_id": schema.StringAttribute{
 									Description: "The Organization ID of the calling Terraform Workspace.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"organization_ids": schema.SetAttribute{
 									Description: "The set of accepted Organization ID values of the calling Terraform Workspace.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"project_id": schema.StringAttribute{
 									Description: "The Project ID of the calling Terraform Workspace.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"project_ids": schema.SetAttribute{
 									Description: "The set of accepted Project ID values of the calling Terraform Workspace.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 								"workspace_id": schema.StringAttribute{
 									Description: "The Workspace ID of the calling Terraform Workspace.",
-									Optional:    true,
+									Computed:    true,
 								},
 								"workspace_ids": schema.SetAttribute{
 									Description: "The set of accepted Workspace ID values of the calling Terraform Workspace.",
 									ElementType: types.StringType,
-									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
