@@ -61,11 +61,11 @@ func (d *routingsDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Description: "Active/Inactive status of the routing.",
 							Computed:    true,
 						},
-						"proxyUrl": schema.StringAttribute{
+						"proxy_url": schema.StringAttribute{
 							Description: "User-provided proxyUrl of the routing.",
 							Computed:    true,
 						},
-						"resourceSetName": schema.StringAttribute{
+						"resource_set_name": schema.StringAttribute{
 							Description: "User-provided resourceSetName of the routing.",
 							Computed:    true,
 						},
@@ -91,7 +91,7 @@ func (d *routingsDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Map response body to model
 	for _, routing := range routings {
-		routingState := convertListRoutingDTOToModel(routing, routingResourceModel{})
+		routingState := convertListRoutingDTOToModel(routing, routingListResourceModel{})
 		state.Routings = append(state.Routings, routingState)
 	}
 

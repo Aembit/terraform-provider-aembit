@@ -65,12 +65,12 @@ func (r *routingResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
-			"proxyUrl": schema.StringAttribute{
+			"proxy_url": schema.StringAttribute{
 				Description: "Proxy URL for the Routing.",
 				Optional:    true,
 				Computed:    true,
 			},
-			"resourceSetId": schema.StringAttribute{
+			"resource_set_id": schema.StringAttribute{
 				Description: "ResourceSet Id for the Routing.",
 				Optional:    true,
 				Computed:    true,
@@ -262,8 +262,8 @@ func convertRoutingDTOToModel(dto aembit.RoutingDTO, _ routingResourceModel) rou
 	return model
 }
 
-func convertListRoutingDTOToModel(dto aembit.ListRoutingDTO, _ routingResourceModel) routingResourceModel {
-	var model routingResourceModel
+func convertListRoutingDTOToModel(dto aembit.ListRoutingDTO, _ routingListResourceModel) routingListResourceModel {
+	var model routingListResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
