@@ -1,7 +1,7 @@
 provider "aembit" {
 }
 
-resource "aembit_routing" "default" {
+resource "aembit_routing" "routing" {
 	name = "TF Acceptance Routing"
 	is_active = false
 	proxy_url = "http://test.com:9876"

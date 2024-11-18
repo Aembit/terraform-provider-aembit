@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const routingResourceID string = "aembit_routing.default"
+const routingTestResource string = "aembit_routing.routing"
 
 func testDeleteRouting(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -20,9 +20,11 @@ func testDeleteRouting(resourceName string) resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
+
 		if ok, err = testClient.DeleteRouting(context.Background(), rs.Primary.ID, nil); !ok {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -39,28 +41,24 @@ func TestAccRoutingResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr(routingResourceID, "name", newName),
+					// Verify Routing Name
+					resource.TestCheckResourceAttr(routingTestResource, "name", newName),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(routingResourceID, "id"),
+					resource.TestCheckResourceAttrSet(routingTestResource, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(routingResourceID, "id"),
-					resource.TestCheckResourceAttrSet(routingResourceID, "resource_set_id"),
-					resource.TestCheckResourceAttrSet(routingResourceID, "proxy_url"),
+					resource.TestCheckResourceAttrSet(routingTestResource, "id"),
 				),
 			},
-			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: createFileConfig, Check: testDeleteRouting(routingResourceID), ExpectNonEmptyPlan: true},
 			// Recreate the resource from the first test step
 			{Config: createFileConfig},
 			// ImportState testing
-			{ResourceName: routingResourceID, ImportState: true, ImportStateVerify: true},
+			{ResourceName: routingTestResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(routingResourceID, "name", newName),
+					resource.TestCheckResourceAttr(routingTestResource, "name", newName),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

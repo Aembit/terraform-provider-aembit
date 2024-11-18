@@ -10,7 +10,7 @@ import (
 )
 
 const testRoutingsDataSource string = "data.aembit_routings.test"
-const testRoutingResource string = "aembit_routing.default"
+const testRoutingResource string = "aembit_routing.routing"
 
 func testFindRouting(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

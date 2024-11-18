@@ -103,7 +103,7 @@ func (r *routingResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertRoutingDTOToModel(*routing, plan)
+	plan = convertRoutingDTOToModel(*routing)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -138,7 +138,7 @@ func (r *routingResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	state = convertRoutingDTOToModel(routing, state)
+	state = convertRoutingDTOToModel(routing)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -183,7 +183,7 @@ func (r *routingResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertRoutingDTOToModel(*routing, state)
+	state = convertRoutingDTOToModel(*routing)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -250,9 +250,9 @@ func convertRoutingModelToDTO(model routingResourceModel, externalID *string) ae
 	return routing
 }
 
-func convertRoutingDTOToModel(dto aembit.RoutingDTO, _ routingResourceModel) routingResourceModel {
+func convertRoutingDTOToModel(dto aembit.RoutingDTO) routingResourceModel {
 	var model routingResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
+	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
