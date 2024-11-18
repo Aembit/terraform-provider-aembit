@@ -1,33 +1,13 @@
 package provider
 
 import (
-	"context"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const routingTestResource string = "aembit_routing.routing"
-
-func testDeleteRouting(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		var rs *terraform.ResourceState
-		var ok bool
-		var err error
-		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-
-		if ok, err = testClient.DeleteRouting(context.Background(), rs.Primary.ID, nil); !ok {
-			return err
-		}
-
-		return nil
-	}
-}
 
 func TestAccRoutingResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/routing/TestAccRoutingResource.tf")
