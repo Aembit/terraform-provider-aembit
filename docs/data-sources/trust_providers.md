@@ -42,83 +42,71 @@ Read-Only:
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
 
-Optional:
-
-- `account_ids` (Set of String) The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.
-- `availability_zones` (Set of String) The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.
-- `instance_ids` (Set of String) The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.
-- `instance_types` (Set of String) The set of accepted AWS Instance Types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance Types can be matched.
-- `regions` (Set of String) The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.
-
 Read-Only:
 
 - `account_id` (String)
+- `account_ids` (Set of String) The set of accepted AWS Account IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Account IDs can be matched.
 - `architecture` (String)
 - `availability_zone` (String)
+- `availability_zones` (Set of String) The set of accepted AWS Availability Zones which are hosting the Client Workloads. Used only for cases where multiple AWS Availability Zones can be matched.
 - `billing_products` (String)
 - `certificate` (String) PEM Certificate to be used for Signature verification
 - `image_id` (String)
 - `instance_id` (String)
+- `instance_ids` (Set of String) The set of accepted AWS Instance IDs which are hosting the Client Workloads. Used only for cases where multiple AWS Instance IDs can be matched.
 - `instance_type` (String)
+- `instance_types` (Set of String) The set of accepted AWS Instance Types which are hosting the Client Workloads. Used only for cases where multiple AWS Instance Types can be matched.
 - `kernel_id` (String)
 - `marketplace_product_codes` (String)
 - `pending_time` (String)
 - `private_ip` (String)
 - `ramdisk_id` (String)
 - `region` (String)
+- `regions` (Set of String) The set of accepted AWS Regions which are hosting the Client Workloads. Used only for cases where multiple AWS Regions can be matched.
 - `version` (String)
 
 
 <a id="nestedatt--trust_providers--aws_role"></a>
 ### Nested Schema for `trust_providers.aws_role`
 
-Optional:
-
-- `account_ids` (Set of String) The set of accepted AWS account IDs that are hosting the Client Workloads.
-- `assumed_roles` (Set of String) The set of accepted AWS IAM Roles that are hosting the Client Workloads.
-- `role_arns` (Set of String) The set of accepted AWS IAM Role ARNs that are hosting the Client Workloads.
-- `usernames` (Set of String) The set of accepted AWS IAM Account UserIDs that are hosting the Client Workloads.
-
 Read-Only:
 
 - `account_id` (String) The ID of the AWS account that is hosting the Client Workload.
+- `account_ids` (Set of String) The set of accepted AWS account IDs that are hosting the Client Workloads.
 - `assumed_role` (String) The Name of the AWS IAM Role which is running the Client Workload.
+- `assumed_roles` (Set of String) The set of accepted AWS IAM Roles that are hosting the Client Workloads.
 - `role_arn` (String) The ARN of the AWS IAM Role which is running the Client Workload.
+- `role_arns` (Set of String) The set of accepted AWS IAM Role ARNs that are hosting the Client Workloads.
 - `username` (String) The UserID of the AWS IAM Account which is running the Client Workload (not commonly used).
+- `usernames` (Set of String) The set of accepted AWS IAM Account UserIDs that are hosting the Client Workloads.
 
 
 <a id="nestedatt--trust_providers--azure_metadata"></a>
 ### Nested Schema for `trust_providers.azure_metadata`
 
-Optional:
-
-- `skus` (Set of String) The set of accepted Azure SKUs that are hosting the Client Workloads.
-- `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs that are hosting the Client Workloads.
-- `vm_ids` (Set of String) The set of accepted Azure VM IDs that are hosting the Client Workloads.
-
 Read-Only:
 
 - `sku` (String)
+- `skus` (Set of String) The set of accepted Azure SKUs that are hosting the Client Workloads.
 - `subscription_id` (String)
+- `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs that are hosting the Client Workloads.
 - `vm_id` (String)
+- `vm_ids` (Set of String) The set of accepted Azure VM IDs that are hosting the Client Workloads.
 
 
 <a id="nestedatt--trust_providers--gcp_identity"></a>
 ### Nested Schema for `trust_providers.gcp_identity`
 
-Optional:
-
-- `emails` (Set of String) The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.
-
 Read-Only:
 
 - `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
+- `emails` (Set of String) The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.
 
 
 <a id="nestedatt--trust_providers--github_action"></a>
 ### Nested Schema for `trust_providers.github_action`
 
-Optional:
+Read-Only:
 
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
 - `actors` (Set of String) The set of accepted GitHub ID Token Actors which initiated the GitHub Action.
@@ -182,7 +170,7 @@ Read-Only:
 <a id="nestedatt--trust_providers--terraform_workspace"></a>
 ### Nested Schema for `trust_providers.terraform_workspace`
 
-Optional:
+Read-Only:
 
 - `organization_id` (String) The Organization ID of the calling Terraform Workspace.
 - `organization_ids` (Set of String) The set of accepted Organization ID values of the calling Terraform Workspace.
