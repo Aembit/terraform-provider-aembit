@@ -57,7 +57,7 @@ func getTerraformVersion() string {
 	// Handle errors
 	if err != nil {
 		fmt.Printf("Error executing command: %v\n", err)
-		return "1.6" // return the lowest version if something goes wrong
+		return "v1.6" // return the lowest version if something goes wrong
 	}
 
 	terraformVersion := strings.Split(strings.TrimSpace(string(output)), "\n")[0]

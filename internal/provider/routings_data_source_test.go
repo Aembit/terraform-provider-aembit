@@ -35,7 +35,6 @@ func TestAccRoutingsDataSource(t *testing.T) {
 
 	if os.Getenv("CI") != "" { // indicates it is running in CI
 		terraformVersion := getTerraformVersion()
-		fmt.Printf("Terraform version detected, %s\n", terraformVersion)
 		resourceSetId := "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
 		if strings.Contains(terraformVersion, "v1.6") {
@@ -46,7 +45,6 @@ func TestAccRoutingsDataSource(t *testing.T) {
 			resourceSetId = "e3c81619-f708-47d4-a72f-0b6a296c5833"
 		}
 
-		fmt.Printf("ResourceSet with ID %s is selected", resourceSetId)
 		createFileConfig = strings.ReplaceAll(string(createFile), "ffffffff-ffff-ffff-ffff-ffffffffffff", resourceSetId)
 	}
 
