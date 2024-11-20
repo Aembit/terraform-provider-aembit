@@ -24,7 +24,7 @@ func TestAccRoutingResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Routing Name
+					// Verify Routing Name testing
 					resource.TestCheckResourceAttr(routingTestResource, "name", newName),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(routingTestResource, "id"),
