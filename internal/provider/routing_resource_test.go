@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -13,6 +14,8 @@ func TestAccRoutingResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/routing/TestAccRoutingResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/routing/TestAccRoutingResource.tfmod")
 	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Routing")
+
+	fmt.Println(os.Environ())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

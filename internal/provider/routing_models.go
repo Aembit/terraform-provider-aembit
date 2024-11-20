@@ -15,7 +15,6 @@ type routingListResourceModel struct {
 	ResourceSetName types.String `tfsdk:"resource_set_name"`
 }
 
-// routingListResourceModel maps the resource schema.
 type routingResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID            types.String `tfsdk:"id"`
