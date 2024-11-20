@@ -15,9 +15,10 @@ func TestAccRoutingResource(t *testing.T) {
 	modifyFile, _ := os.ReadFile("../../tests/routing/TestAccRoutingResource.tfmod")
 	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Routing")
 
+	defaultResourceSetId := "ffffffff-ffff-ffff-ffff-ffffffffffff"
 	if os.Getenv("CI") != "" { // indicates it is running in CI
 		terraformVersion := getTerraformVersion()
-		resourceSetId := "ffffffff-ffff-ffff-ffff-ffffffffffff"
+		resourceSetId := defaultResourceSetId
 
 		if strings.Contains(terraformVersion, "v1.6") {
 			resourceSetId = "9538a706-936f-4fb9-8710-cc8f3096fd9b"
@@ -27,8 +28,8 @@ func TestAccRoutingResource(t *testing.T) {
 			resourceSetId = "e3c81619-f708-47d4-a72f-0b6a296c5833"
 		}
 
-		createFileConfig = strings.ReplaceAll(createFileConfig, "ffffffff-ffff-ffff-ffff-ffffffffffff", resourceSetId)
-		modifyFileConfig = strings.ReplaceAll(modifyFileConfig, "ffffffff-ffff-ffff-ffff-ffffffffffff", resourceSetId)
+		createFileConfig = strings.ReplaceAll(createFileConfig, defaultResourceSetId, resourceSetId)
+		modifyFileConfig = strings.ReplaceAll(modifyFileConfig, defaultResourceSetId, resourceSetId)
 	}
 
 	resource.Test(t, resource.TestCase{
