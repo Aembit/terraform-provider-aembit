@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -30,13 +31,31 @@ func testFindRouting(resourceName string) resource.TestCheckFunc {
 
 func TestAccRoutingsDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/routing/data/TestAccRoutingDataSource.tf")
+	createFileConfig := string(createFile)
+
+	if os.Getenv("CI") != "" { // indicates it is running in CI
+		terraformVersion := getTerraformVersion()
+		fmt.Printf("Terraform version detected, %s\n", terraformVersion)
+		resourceSetId := "ffffffff-ffff-ffff-ffff-ffffffffffff"
+
+		if strings.Contains(terraformVersion, "v1.6") {
+			resourceSetId = "9538a706-936f-4fb9-8710-cc8f3096fd9b"
+		} else if strings.Contains(terraformVersion, "v1.8") {
+			resourceSetId = "a2302939-1232-4d40-8d0a-5af08115aa06"
+		} else if strings.Contains(terraformVersion, "v1.9") {
+			resourceSetId = "e3c81619-f708-47d4-a72f-0b6a296c5833"
+		}
+
+		fmt.Printf("ResourceSet with ID %s is selected", resourceSetId)
+		createFileConfig = strings.ReplaceAll(string(createFile), "ffffffff-ffff-ffff-ffff-ffffffffffff", resourceSetId)
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Read testing
 			{
-				Config: string(createFile),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Server Workloads returned
 					resource.TestCheckResourceAttrSet(testRoutingsDataSource, "routings.#"),
