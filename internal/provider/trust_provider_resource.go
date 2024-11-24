@@ -298,11 +298,11 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"email": schema.StringAttribute{
-						Description: "The Email of the GCP Service Account used by the associated GCP resource.",
+						Description: "The GCP Service Account email address associated with the resource.",
 						Optional:    true,
 					},
 					"emails": schema.SetAttribute{
-						Description: "The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.",
+						Description: "A set of GCP Service Account email addresses that are associated with the resource(s).",
 						ElementType: types.StringType,
 						Optional:    true,
 						Validators: []validator.Set{
