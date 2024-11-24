@@ -163,8 +163,8 @@ Optional:
 
 Optional:
 
-- `email` (String) The Email of the GCP Service Account used by the associated GCP resource.
-- `emails` (Set of String) The set of accepted GCP Service Account emails which initiated the GCP Service. Used only for cases where multiple GCP Service Accounts can be matched.
+- `email` (String) The GCP Service Account email address associated with the resource.
+- `emails` (Set of String) A set of GCP Service Account email addresses that are associated with the resource(s).
 
 
 <a id="nestedatt--github_action"></a>
