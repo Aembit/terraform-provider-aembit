@@ -10,6 +10,8 @@ import (
 const testSignInPolicy string = "aembit_signin_policy.test"
 
 func TestAccSigninPolicy(t *testing.T) {
+	skipCI(t)
+
 	createFile, _ := os.ReadFile("../../tests/signin_policy/TestAccSignInPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/signin_policy/TestAccSignInPolicyResource.tfmod")
 

@@ -43,6 +43,13 @@ func newHTTPHeadersModel(ctx context.Context, headers []aembit.KeyValuePair) typ
 // skipNotCI can be used to skip tests which can ONLY run on GitHub.
 func skipNotCI(t *testing.T) {
 	if os.Getenv("CI") == "" {
+		t.Skip("Skipping testing in non CI environment")
+	}
+}
+
+// skipCI can be used to skip tests which can not be run on GitHub.
+func skipCI(t *testing.T) {
+	if os.Getenv("CI") != "" {
 		t.Skip("Skipping testing in CI environment")
 	}
 }
