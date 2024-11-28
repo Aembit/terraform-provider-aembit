@@ -46,3 +46,13 @@ func skipNotCI(t *testing.T) {
 		t.Skip("Skipping testing in CI environment")
 	}
 }
+
+func getTenantId() string {
+	tenantId := os.Getenv("AEMBIT_TENANT_ID")
+
+	if len(tenantId) == 0 { // get the tenant from clientId
+		tenantId = getAembitTenantId(os.Getenv("AEMBIT_CLIENT_ID"))
+	}
+
+	return tenantId
+}
