@@ -2,6 +2,7 @@ package provider
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,7 +12,7 @@ const testSignInPolicy string = "aembit_signin_policy.test"
 
 func TestAccSigninPolicy(t *testing.T) {
 	tfVersion := getTerraformVersion()
-	if tfVersion != "v1.9" {
+	if !strings.Contains(tfVersion, "v1.9") {
 		t.Skip("Skipping testing in Terraform version " + tfVersion)
 	}
 
