@@ -72,15 +72,7 @@ func (r *SignInPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	// Get refreshed signInPolicy value from Aembit
-	signInPolicy, err, _ := r.client.GetSignInPolicy(nil)
-	if err != nil {
-		resp.Diagnostics.AddWarning(
-			"Error reading Aembit SignInPolicy",
-			err.Error(),
-		)
-		return
-	}
-
+	signInPolicy, _, _ := r.client.GetSignInPolicy(nil)
 	state = convertSignInPolicyDTOToModel(ctx, signInPolicy)
 
 	// Set refreshed state
@@ -94,7 +86,6 @@ func (r *SignInPolicyResource) Read(ctx context.Context, req resource.ReadReques
 func (r *SignInPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Get refreshed signInPolicy value from Aembit
 	signInPolicy, _, _ := r.client.GetSignInPolicy(nil)
-
 	state := convertSignInPolicyDTOToModel(ctx, signInPolicy)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
