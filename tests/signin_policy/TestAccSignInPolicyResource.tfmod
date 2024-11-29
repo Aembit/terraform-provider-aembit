@@ -1,0 +1,7 @@
+provider "aembit" {
+}
+
+resource "aembit_signin_policy" "test" {
+	sso_required = false
+	mfa_required = true
+}
