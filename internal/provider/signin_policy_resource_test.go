@@ -2,6 +2,7 @@ package provider
 
 import (
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -43,6 +44,41 @@ func TestAccSigninPolicy(t *testing.T) {
 				ResourceName: testSignInPolicy,
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccSigninPolicy_MissingRequiredAttributes(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: `
+resource "aembit_signin_policy" "test" {
+  // Missing required attributes: sso_required, mfa_required
+}
+`,
+				ExpectError: regexp.MustCompile("Missing required argument"),
+			},
+		},
+	})
+}
+
+func TestAccSigninPolicy_InvalidAttributes(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: `
+resource "aembit_signin_policy" "test" {
+    sso_required = "invalid_bool" // Should be a boolean
+  	mfa_required  = true
+}
+`,
+				ExpectError: regexp.MustCompile(`Inappropriate value for attribute`),
+			},
 		},
 	})
 }
