@@ -10,7 +10,10 @@ import (
 const testSignInPolicy string = "aembit_signin_policy.test"
 
 func TestAccSigninPolicy(t *testing.T) {
-	skipCI(t)
+	tfVersion := getTerraformVersion()
+	if tfVersion != "v1.9" {
+		t.Skip("Skipping testing in Terraform version " + tfVersion)
+	}
 
 	createFile, _ := os.ReadFile("../../tests/signin_policy/TestAccSignInPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/signin_policy/TestAccSignInPolicyResource.tfmod")
