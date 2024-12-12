@@ -102,7 +102,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Description: "Set of Credential Providers to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
-				Default: setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+				Default: setdefault.StaticValue(types.SetNull(types.ObjectType{AttrTypes: map[string]attr.Type{
 					"credential_provider_id": types.StringType,
 					"mapping_type":           types.StringType,
 					"header_name":            types.StringType,
@@ -110,7 +110,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 					"httpbody_field_path":    types.StringType,
 					"httpbody_field_value":   types.StringType,
 					"account_name":           types.StringType,
-				}}, []attr.Value{})),
+				}})),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"credential_provider_id": schema.StringAttribute{
