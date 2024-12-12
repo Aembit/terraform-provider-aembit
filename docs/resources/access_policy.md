@@ -38,7 +38,7 @@ description: |-
 
 Required:
 
-- `credential_provider_id` (String) ID of credential provider.
+- `credential_provider_id` (String) ID of associated Credential Provider.
 - `mapping_type` (String) Mapping type for the credential provider.
 
 Optional:

@@ -85,7 +85,7 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"credential_provider_id": schema.StringAttribute{
-										Description: "ID of credential provider.",
+										Description: "ID of associated Credential Provider.",
 										Required:    true,
 									},
 									"mapping_type": schema.StringAttribute{
