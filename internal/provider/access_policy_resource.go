@@ -109,11 +109,12 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 					"header_value":           types.StringType,
 					"httpbody_field_path":    types.StringType,
 					"httpbody_field_value":   types.StringType,
+					"account_name":           types.StringType,
 				}}, []attr.Value{})),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"credential_provider_id": schema.StringAttribute{
-							Description: "ID of credential provider.",
+							Description: "ID of associated Credential Provider.",
 							Required:    true,
 						},
 						"mapping_type": schema.StringAttribute{
