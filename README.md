@@ -43,6 +43,13 @@ export AEMBIT_TOKEN=<access-token-from-console>
 
 ### Documentation
 
-
-
 Documentation can be verified using the [Terraform Registry Doc Preview](https://registry.terraform.io/tools/doc-preview).
+
+### Upgrading Depedencies
+
+From time to time, we need to upgrade all dependencies to ensure we are running the latest and greatest versions and any vulnerabilities are patched.
+This can be completed with the following commands.
+```bash
+go get -u
+go mod tidy
+```
