@@ -20,6 +20,12 @@ var (
 	_ resource.ResourceWithImportState = &roleResource{}
 )
 
+const (
+	SignOnPolicyPermissionName = "SignOn Policy"
+	RoutingPermissiongName     = "Routing Configuration"
+	ResourceSetsPermissionName = "Resource Sets"
+)
+
 // NewRoleResource is a helper function to simplify the provider implementation.
 func NewRoleResource() resource.Resource {
 	return &roleResource{}
@@ -86,9 +92,9 @@ func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"roles":                       definePermissionAttribute("Role", false),
 			"log_streams":                 definePermissionAttribute("Log Stream", false),
 			"identity_providers":          definePermissionAttribute("Identity Provider", false),
-			"signon_policy":               definePermissionAttribute("SignOn Policy", false),
-			"resource_sets":               definePermissionAttribute("ResourceSets", false),
-			"routing":                     definePermissionAttribute("Routing", false),
+			"signon_policy":               definePermissionAttribute(SignOnPolicyPermissionName, false),
+			"resource_sets":               definePermissionAttribute("Resource Set", false),
+			"routing":                     definePermissionAttribute(RoutingPermissiongName, false),
 		},
 	}
 }
@@ -304,7 +310,7 @@ func convertRoleModelToDTO(ctx context.Context, model roleResourceModel, externa
 
 	dto.Permissions = make([]aembit.RolePermissionDTO, 0)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Access Policies", model.AccessPolicies)
-	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Routing Configuration", model.Routing)
+	dto.Permissions = appendPermissionToDTO(dto.Permissions, RoutingPermissiongName, model.Routing)
 
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Client Workloads", model.AccessPolicies)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Trust Providers", model.ClientWorkloads)
@@ -320,9 +326,9 @@ func convertRoleModelToDTO(ctx context.Context, model roleResourceModel, externa
 	dto.Permissions = appendReadOnlyPermissionToDTO(dto.Permissions, "Workload Events", model.WorkloadEvents)
 
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Users", model.Users)
-	dto.Permissions = appendPermissionToDTO(dto.Permissions, "SignOn Policy", model.SignOnPolicy)
+	dto.Permissions = appendPermissionToDTO(dto.Permissions, SignOnPolicyPermissionName, model.SignOnPolicy)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Roles", model.Roles)
-	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Resource Sets", model.ResourceSets)
+	dto.Permissions = appendPermissionToDTO(dto.Permissions, ResourceSetsPermissionName, model.ResourceSets)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Log Streams", model.LogStreams)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Identity Providers", model.IdentityProviders)
 
@@ -385,7 +391,7 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) roleResource
 			model.WorkloadEvents = convertPermissionDTOToReadOnlyPermission(permission)
 		case "Users":
 			model.Users = convertPermissionDTOToPermission(permission)
-		case "SignOn Policy":
+		case SignOnPolicyPermissionName:
 			model.SignOnPolicy = convertPermissionDTOToPermission(permission)
 		case "Roles":
 			model.Roles = convertPermissionDTOToPermission(permission)
@@ -393,9 +399,9 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) roleResource
 			model.LogStreams = convertPermissionDTOToPermission(permission)
 		case "Identity Providers":
 			model.IdentityProviders = convertPermissionDTOToPermission(permission)
-		case "Routing Configuration":
+		case RoutingPermissiongName:
 			model.Routing = convertPermissionDTOToPermission(permission)
-		case "Resource Sets":
+		case ResourceSetsPermissionName:
 			model.ResourceSets = convertPermissionDTOToPermission(permission)
 		}
 	}
