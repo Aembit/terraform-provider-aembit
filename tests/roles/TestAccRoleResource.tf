@@ -5,6 +5,7 @@ resource "aembit_role" "role" {
 	name = "TF Acceptance Role"
 	is_active = false
 	access_policies = { read = true, write = true }
+	routing = { read = true, write = true }
 	client_workloads = { read = true, write = true }
 	trust_providers = { read = true, write = true }
 	access_conditions = { read = true, write = true }
@@ -19,7 +20,9 @@ resource "aembit_role" "role" {
 	workload_events = { read = true }
 
 	users = { read = true, write = true }
+	signon_policy = { read = true, write = true }
 	roles = { read = true, write = true }
+	resource_sets = { read = true, write = true }
 	log_streams = { read = true, write = true }
 	identity_providers = { read = true, write = true }
 }

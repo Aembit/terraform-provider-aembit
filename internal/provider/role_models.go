@@ -13,6 +13,7 @@ type roleResourceModel struct {
 	IsActive       types.Bool      `tfsdk:"is_active"`
 	Tags           types.Map       `tfsdk:"tags"`
 	AccessPolicies *rolePermission `tfsdk:"access_policies"`
+	Routing        *rolePermission `tfsdk:"routing"`
 
 	ClientWorkloads     *rolePermission `tfsdk:"client_workloads"`
 	TrustProviders      *rolePermission `tfsdk:"trust_providers"`
@@ -28,7 +29,9 @@ type roleResourceModel struct {
 	WorkloadEvents            *roleReadOnlyPermission `tfsdk:"workload_events"`
 
 	Users             *rolePermission `tfsdk:"users"`
+	SignOnPolicy      *rolePermission `tfsdk:"signon_policy"`
 	Roles             *rolePermission `tfsdk:"roles"`
+	ResourceSets      *rolePermission `tfsdk:"resource_sets"`
 	LogStreams        *rolePermission `tfsdk:"log_streams"`
 	IdentityProviders *rolePermission `tfsdk:"identity_providers"`
 }
