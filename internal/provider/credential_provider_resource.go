@@ -438,6 +438,10 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 							}...),
 						},
 					},
+					"vault_private_network_access": schema.BoolAttribute{
+						Description: "Indicates if the Vault instance operates within a private network.",
+						Required:    true,
+					},
 				},
 			},
 		},
@@ -735,15 +739,16 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 		credential.Subject = model.VaultClientToken.Subject
 		credential.Lifetime = model.VaultClientToken.Lifetime
 		credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
-			SubjectType:        model.VaultClientToken.SubjectType,
-			CustomClaims:       make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
-			VaultHost:          model.VaultClientToken.VaultHost,
-			Port:               model.VaultClientToken.VaultPort,
-			TLS:                model.VaultClientToken.VaultTLS,
-			Namespace:          model.VaultClientToken.VaultNamespace,
-			Role:               model.VaultClientToken.VaultRole,
-			AuthenticationPath: model.VaultClientToken.VaultPath,
-			ForwardingConfig:   model.VaultClientToken.VaultForwarding,
+			SubjectType:          model.VaultClientToken.SubjectType,
+			CustomClaims:         make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
+			VaultHost:            model.VaultClientToken.VaultHost,
+			Port:                 model.VaultClientToken.VaultPort,
+			TLS:                  model.VaultClientToken.VaultTLS,
+			Namespace:            model.VaultClientToken.VaultNamespace,
+			Role:                 model.VaultClientToken.VaultRole,
+			AuthenticationPath:   model.VaultClientToken.VaultPath,
+			ForwardingConfig:     model.VaultClientToken.VaultForwarding,
+			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess,
 		}
 		for i, claim := range model.VaultClientToken.CustomClaims {
 			credential.CredentialVaultClientTokenV2DTO.CustomClaims[i] = aembit.CredentialVaultClientTokenClaimsDTO{
@@ -940,17 +945,17 @@ func convertUserPassV2DTOToModel(dto aembit.CredentialProviderV2DTO, state crede
 // convertVaultClientTokenV2DTOToModel converts the VaultClientToken state object into a model ready for terraform processing.
 func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ credentialProviderResourceModel) *credentialProviderVaultClientTokenModel {
 	value := credentialProviderVaultClientTokenModel{
-		Subject:     dto.Subject,
-		SubjectType: dto.SubjectType,
-		Lifetime:    dto.Lifetime,
-
-		VaultHost:       dto.VaultHost,
-		VaultPort:       dto.Port,
-		VaultTLS:        dto.TLS,
-		VaultNamespace:  dto.Namespace,
-		VaultRole:       dto.Role,
-		VaultPath:       dto.AuthenticationPath,
-		VaultForwarding: dto.ForwardingConfig,
+		Subject:                   dto.Subject,
+		SubjectType:               dto.SubjectType,
+		Lifetime:                  dto.Lifetime,
+		VaultHost:                 dto.VaultHost,
+		VaultPort:                 dto.Port,
+		VaultTLS:                  dto.TLS,
+		VaultNamespace:            dto.Namespace,
+		VaultRole:                 dto.Role,
+		VaultPath:                 dto.AuthenticationPath,
+		VaultForwarding:           dto.ForwardingConfig,
+		VaultPrivateNetworkAccess: dto.PrivateNetworkAccess,
 	}
 
 	// Get the custom claims to be injected into the model

@@ -177,6 +177,7 @@ Read-Only:
 - `vault_namespace` (String)
 - `vault_path` (String)
 - `vault_port` (Number)
+- `vault_private_network_access` (Boolean)
 - `vault_role` (String)
 - `vault_tls` (Boolean)
 

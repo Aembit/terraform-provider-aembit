@@ -264,6 +264,7 @@ Required:
 - `vault_host` (String) Hostname of the Vault Cluster to be used for executing the login API.
 - `vault_path` (String) Path to utilize when executing the login API on the Vault Cluster.
 - `vault_port` (Number) Port of the Vault Cluster to be used for executing the login API.
+- `vault_private_network_access` (Boolean) Indicates if the Vault instance operates within a private network.
 - `vault_tls` (Boolean) Configuration to utilize TLS for connectivity to the Vault Cluster.
 
 Optional:

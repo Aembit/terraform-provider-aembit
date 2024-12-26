@@ -319,6 +319,9 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"vault_forwarding": schema.StringAttribute{
 									Computed: true,
 								},
+								"vault_private_network_access": schema.BoolAttribute{
+									Computed: true,
+								},
 							},
 						},
 					},
