@@ -264,7 +264,6 @@ Required:
 - `vault_host` (String) Hostname of the Vault Cluster to be used for executing the login API.
 - `vault_path` (String) Path to utilize when executing the login API on the Vault Cluster.
 - `vault_port` (Number) Port of the Vault Cluster to be used for executing the login API.
-- `vault_private_network_access` (Boolean) Indicates if the Vault instance operates within a private network.
 - `vault_tls` (Boolean) Configuration to utilize TLS for connectivity to the Vault Cluster.
 
 Optional:
@@ -272,6 +271,7 @@ Optional:
 - `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster. (see [below for nested schema](#nestedatt--vault_client_token--custom_claims))
 - `vault_forwarding` (String) If Vault Forwarding is required, this configuration can be set to `unconditional` or `conditional`.
 - `vault_namespace` (String) Namespace to utilize when executing the login API on the Vault Cluster.
+- `vault_private_network_access` (Boolean) Indicates if the Vault instance operates within a private network.
 - `vault_role` (String) Role to utilize when executing the login API on the Vault Cluster.
 
 <a id="nestedatt--vault_client_token--custom_claims"></a>

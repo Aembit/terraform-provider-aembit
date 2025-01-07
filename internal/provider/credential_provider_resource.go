@@ -440,7 +440,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 					"vault_private_network_access": schema.BoolAttribute{
 						Description: "Indicates if the Vault instance operates within a private network.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
