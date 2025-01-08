@@ -98,17 +98,18 @@ type credentialProviderUserPassModel struct {
 
 // credentialProviderVaultClientTokenModel maps Vault Client configuration.
 type credentialProviderVaultClientTokenModel struct {
-	Subject         string                                                 `tfsdk:"subject"`
-	SubjectType     string                                                 `tfsdk:"subject_type"`
-	CustomClaims    []*credentialProviderVaultClientTokenCustomClaimsModel `tfsdk:"custom_claims"`
-	Lifetime        int32                                                  `tfsdk:"lifetime"`
-	VaultHost       string                                                 `tfsdk:"vault_host"`
-	VaultTLS        bool                                                   `tfsdk:"vault_tls"`
-	VaultPort       int32                                                  `tfsdk:"vault_port"`
-	VaultNamespace  string                                                 `tfsdk:"vault_namespace"`
-	VaultRole       string                                                 `tfsdk:"vault_role"`
-	VaultPath       string                                                 `tfsdk:"vault_path"`
-	VaultForwarding string                                                 `tfsdk:"vault_forwarding"`
+	Subject                   string                                                 `tfsdk:"subject"`
+	SubjectType               string                                                 `tfsdk:"subject_type"`
+	CustomClaims              []*credentialProviderVaultClientTokenCustomClaimsModel `tfsdk:"custom_claims"`
+	Lifetime                  int32                                                  `tfsdk:"lifetime"`
+	VaultHost                 string                                                 `tfsdk:"vault_host"`
+	VaultTLS                  bool                                                   `tfsdk:"vault_tls"`
+	VaultPort                 int32                                                  `tfsdk:"vault_port"`
+	VaultNamespace            string                                                 `tfsdk:"vault_namespace"`
+	VaultRole                 string                                                 `tfsdk:"vault_role"`
+	VaultPath                 string                                                 `tfsdk:"vault_path"`
+	VaultForwarding           string                                                 `tfsdk:"vault_forwarding"`
+	VaultPrivateNetworkAccess bool                                                   `tfsdk:"vault_private_network_access"`
 }
 
 type credentialProviderVaultClientTokenCustomClaimsModel struct {
