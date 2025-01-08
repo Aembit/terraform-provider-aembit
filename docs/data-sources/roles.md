@@ -34,8 +34,11 @@ Required:
 - `identity_providers` (Attributes) Permissions for Identity Provider resources. (see [below for nested schema](#nestedatt--roles--identity_providers))
 - `integrations` (Attributes) Permissions for Integration resources. (see [below for nested schema](#nestedatt--roles--integrations))
 - `log_streams` (Attributes) Permissions for Log Stream resources. (see [below for nested schema](#nestedatt--roles--log_streams))
+- `resource_sets` (Attributes) Permissions for Resource Sets resources. (see [below for nested schema](#nestedatt--roles--resource_sets))
 - `roles` (Attributes) Permissions for Role resources. (see [below for nested schema](#nestedatt--roles--roles))
+- `routing` (Attributes) Permissions for Routing Configuration resources. (see [below for nested schema](#nestedatt--roles--routing))
 - `server_workloads` (Attributes) Permissions for Server Workload resources. (see [below for nested schema](#nestedatt--roles--server_workloads))
+- `signon_policy` (Attributes) Permissions for SignOn Policy resources. (see [below for nested schema](#nestedatt--roles--signon_policy))
 - `trust_providers` (Attributes) Permissions for Trust Provider resources. (see [below for nested schema](#nestedatt--roles--trust_providers))
 - `users` (Attributes) Permissions for User resources. (see [below for nested schema](#nestedatt--roles--users))
 - `workload_events` (Attributes) Permissions for Workload Event resources. (see [below for nested schema](#nestedatt--roles--workload_events))
@@ -136,6 +139,15 @@ Read-Only:
 - `write` (Boolean) True if this Role should be able to create and update Log Stream resources.
 
 
+<a id="nestedatt--roles--resource_sets"></a>
+### Nested Schema for `roles.resource_sets`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Resource Sets resources.
+- `write` (Boolean) True if this Role should be able to create and update Resource Sets resources.
+
+
 <a id="nestedatt--roles--roles"></a>
 ### Nested Schema for `roles.roles`
 
@@ -145,6 +157,15 @@ Read-Only:
 - `write` (Boolean) True if this Role should be able to create and update Role resources.
 
 
+<a id="nestedatt--roles--routing"></a>
+### Nested Schema for `roles.routing`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Routing Configuration resources.
+- `write` (Boolean) True if this Role should be able to create and update Routing Configuration resources.
+
+
 <a id="nestedatt--roles--server_workloads"></a>
 ### Nested Schema for `roles.server_workloads`
 
@@ -152,6 +173,15 @@ Read-Only:
 
 - `read` (Boolean) Trust if this Role should be able to query and view Server Workload resources.
 - `write` (Boolean) True if this Role should be able to create and update Server Workload resources.
+
+
+<a id="nestedatt--roles--signon_policy"></a>
+### Nested Schema for `roles.signon_policy`
+
+Read-Only:
+
+- `read` (Boolean) Trust if this Role should be able to query and view SignOn Policy resources.
+- `write` (Boolean) True if this Role should be able to create and update SignOn Policy resources.
 
 
 <a id="nestedatt--roles--trust_providers"></a>
