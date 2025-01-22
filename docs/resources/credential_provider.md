@@ -158,7 +158,7 @@ Required:
 
 Read-Only:
 
-- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 
 
 <a id="nestedatt--google_workload_identity"></a>
@@ -175,7 +175,7 @@ Optional:
 
 Read-Only:
 
-- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.
 
 
 <a id="nestedatt--oauth_authorization_code"></a>

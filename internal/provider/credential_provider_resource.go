@@ -30,6 +30,10 @@ var (
 	_ resource.ResourceWithImportState = &credentialProviderResource{}
 )
 
+const uuidRegexString string = `^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`
+const uuidRegexError string = "must be a valid uuid"
+const oidcIssuerTemplate string = "https://%s.id.%s"
+
 // NewCredentialProviderResource is a helper function to simplify the provider implementation.
 func NewCredentialProviderResource() resource.Resource {
 	return &credentialProviderResource{}
@@ -60,8 +64,8 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`),
-						"must be a valid uuid"),
+					stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
+						uuidRegexError),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -144,7 +148,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"oidc_issuer": schema.StringAttribute{
-						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Description: "OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.",
 						Computed:    true,
 					},
 					"audience": schema.StringAttribute{
@@ -168,7 +172,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"oidc_issuer": schema.StringAttribute{
-						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Description: "OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Computed:    true,
 					},
 					"audience": schema.StringAttribute{
@@ -186,10 +190,18 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"azure_tenant": schema.StringAttribute{
 						Description: "Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
+								uuidRegexError),
+						},
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
+								uuidRegexError),
+						},
 					},
 				},
 			},
@@ -875,7 +887,7 @@ func convertAPIKeyV2DTOToModel(_ aembit.CredentialProviderV2DTO, state credentia
 // convertAwsSTSV2DTOToModel converts the AWS STS state object into a model ready for terraform processing.
 func convertAwsSTSV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderAwsSTSModel {
 	value := credentialProviderAwsSTSModel{
-		OIDCIssuer:    types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		OIDCIssuer:    types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
 		TokenAudience: types.StringValue("sts.amazonaws.com"),
 		RoleARN:       types.StringValue(dto.RoleArn),
 		Lifetime:      dto.Lifetime,
@@ -886,7 +898,7 @@ func convertAwsSTSV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stack
 // convertGoogleWorkloadV2DTOToModel converts the Google Workload state object into a model ready for terraform processing.
 func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderGoogleWorkloadModel {
 	value := credentialProviderGoogleWorkloadModel{
-		OIDCIssuer:     types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		OIDCIssuer:     types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
 		Audience:       types.StringValue(dto.Audience),
 		ServiceAccount: types.StringValue(dto.ServiceAccount),
 		Lifetime:       dto.Lifetime,
@@ -897,7 +909,7 @@ func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenan
 // convertAzureEntraWorkloadV2DTOTOModel converts the Azure Entra Workload state object into a model ready for terraform processing.
 func convertAzureEntraWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderAzureEntraWorkloadModel {
 	value := credentialProviderAzureEntraWorkloadModel{
-		OIDCIssuer:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		OIDCIssuer:  types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
 		Audience:    types.StringValue(dto.Audience),
 		Subject:     types.StringValue(dto.Subject),
 		Scope:       types.StringValue(dto.Scope),

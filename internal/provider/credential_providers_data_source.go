@@ -122,7 +122,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"oidc_issuer": schema.StringAttribute{
-									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Description: "OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.",
 									Computed:    true,
 								},
 								"audience": schema.StringAttribute{
@@ -145,7 +145,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"oidc_issuer": schema.StringAttribute{
-									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Description: "OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 									Computed:    true,
 								},
 								"audience": schema.StringAttribute{

@@ -75,7 +75,7 @@ Read-Only:
 - `audience` (String) Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `azure_tenant` (String) Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `client_id` (String) Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
-- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `scope` (String) Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `subject` (String) Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 
@@ -90,7 +90,7 @@ Optional:
 Read-Only:
 
 - `audience` (String) Audience for GCP Workload Identity Federation configuration of the Credential Provider.
-- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.
 - `service_account` (String) Service Account email of the GCP Session credentials requested by the Credential Provider.
 
 
