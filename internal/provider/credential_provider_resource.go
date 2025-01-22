@@ -30,7 +30,7 @@ var (
 	_ resource.ResourceWithImportState = &credentialProviderResource{}
 )
 
-const uuidRegexString string = `^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`
+const uuidRegexString string = `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
 const uuidRegexError string = "must be a valid uuid"
 const oidcIssuerTemplate string = "https://%s.id.%s"
 
@@ -64,7 +64,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`),
 						uuidRegexError),
 				},
 			},
