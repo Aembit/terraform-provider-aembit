@@ -163,6 +163,36 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 				},
 			},
+			"azure_entra_workload_identity": schema.SingleNestedAttribute{
+				Description: "Azure Entra Workload Identity Federation type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oidc_issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"subject": schema.StringAttribute{
+						Description: "Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"scope": schema.StringAttribute{
+						Description: "Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"azure_tenant": schema.StringAttribute{
+						Description: "Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"client_id": schema.StringAttribute{
+						Description: "Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+						Required:    true,
+					},
+				},
+			},
 			"snowflake_jwt": schema.SingleNestedAttribute{
 				Description: "JSON Web Token type Credential Provider configuration.",
 				Optional:    true,
@@ -458,6 +488,7 @@ func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resou
 			path.MatchRoot("api_key"),
 			path.MatchRoot("aws_sts"),
 			path.MatchRoot("google_workload_identity"),
+			path.MatchRoot("azure_entra_workload_identity"),
 			path.MatchRoot("snowflake_jwt"),
 			path.MatchRoot("oauth_client_credentials"),
 			path.MatchRoot("oauth_authorization_code"),
@@ -677,6 +708,18 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model credential
 		}
 	}
 
+	// Handle the Azure Entra Workload Identity Federation use case
+	if model.AzureEntraWorkload != nil {
+		credential.Type = "azure-entra-federation"
+		credential.Audience = model.AzureEntraWorkload.Audience.ValueString()
+		credential.Subject = model.AzureEntraWorkload.Subject.ValueString()
+		credential.Scope = model.AzureEntraWorkload.Scope.ValueString()
+		credential.ClientID = model.AzureEntraWorkload.ClientID.ValueString()
+		credential.CredentialAzureEntraWorkloadV2DTO = aembit.CredentialAzureEntraWorkloadV2DTO{
+			AzureTenant: model.AzureEntraWorkload.AzureTenant.ValueString(),
+		}
+	}
+
 	// Handle the Snowflake JWT use case
 	if model.SnowflakeToken != nil {
 		credential.Type = "signed-jwt"
@@ -777,6 +820,7 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	model.APIKey = nil
 	model.AwsSTS = nil
 	model.GoogleWorkload = nil
+	model.AzureEntraWorkload = nil
 	model.OAuthClientCredentials = nil
 	model.UsernamePassword = nil
 	model.VaultClientToken = nil
@@ -791,6 +835,8 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 		model.AwsSTS = convertAwsSTSV2DTOToModel(dto, tenant, stackDomain)
 	case "gcp-identity-federation":
 		model.GoogleWorkload = convertGoogleWorkloadV2DTOToModel(dto, tenant, stackDomain)
+	case "azure-entra-federation":
+		model.AzureEntraWorkload = convertAzureEntraWorkloadV2DTOToModel(dto, tenant, stackDomain)
 	case "signed-jwt":
 		model.SnowflakeToken = convertSnowflakeTokenV2DTOToModel(dto)
 	case "oauth-client-credential":
@@ -844,6 +890,19 @@ func convertGoogleWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenan
 		Audience:       types.StringValue(dto.Audience),
 		ServiceAccount: types.StringValue(dto.ServiceAccount),
 		Lifetime:       dto.Lifetime,
+	}
+	return &value
+}
+
+// convertAzureEntraWorkloadV2DTOTOModel converts the Azure Entra Workload state object into a model ready for terraform processing.
+func convertAzureEntraWorkloadV2DTOToModel(dto aembit.CredentialProviderV2DTO, tenant, stackDomain string) *credentialProviderAzureEntraWorkloadModel {
+	value := credentialProviderAzureEntraWorkloadModel{
+		OIDCIssuer:  types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
+		Audience:    types.StringValue(dto.Audience),
+		Subject:     types.StringValue(dto.Subject),
+		Scope:       types.StringValue(dto.Scope),
+		AzureTenant: types.StringValue(dto.AzureTenant),
+		ClientID:    types.StringValue(dto.ClientID),
 	}
 	return &value
 }

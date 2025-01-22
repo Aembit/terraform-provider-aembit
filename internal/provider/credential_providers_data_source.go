@@ -140,6 +140,36 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								},
 							},
 						},
+						"azure_entra_workload_identity": schema.SingleNestedAttribute{
+							Description: "Azure Entra Workload Identity Federation type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"oidc_issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"scope": schema.StringAttribute{
+									Description: "Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"azure_tenant": schema.StringAttribute{
+									Description: "Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"client_id": schema.StringAttribute{
+									Description: "Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+							},
+						},
 						"snowflake_jwt": schema.SingleNestedAttribute{
 							Description: "JSON Web Token type Credential Provider configuration.",
 							Optional:    true,

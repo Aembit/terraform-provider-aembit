@@ -95,6 +95,7 @@ resource "aembit_credential_provider" "vault" {
 - `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--aembit_access_token))
 - `api_key` (Attributes) API Key type Credential Provider configuration. (see [below for nested schema](#nestedatt--api_key))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--aws_sts))
+- `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--azure_entra_workload_identity))
 - `description` (String) Description for the Credential Provider.
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
@@ -142,6 +143,22 @@ Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
 - `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.
+
+
+<a id="nestedatt--azure_entra_workload_identity"></a>
+### Nested Schema for `azure_entra_workload_identity`
+
+Required:
+
+- `audience` (String) Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `azure_tenant` (String) Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `client_id` (String) Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `scope` (String) Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `subject` (String) Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+
+Read-Only:
+
+- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
 
 
 <a id="nestedatt--google_workload_identity"></a>
