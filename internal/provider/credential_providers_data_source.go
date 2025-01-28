@@ -122,7 +122,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"oidc_issuer": schema.StringAttribute{
-									Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
+									Description: "OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.",
 									Computed:    true,
 								},
 								"audience": schema.StringAttribute{
@@ -136,6 +136,36 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"lifetime": schema.Int64Attribute{
 									Description: "Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.",
 									Optional:    true,
+									Computed:    true,
+								},
+							},
+						},
+						"azure_entra_workload_identity": schema.SingleNestedAttribute{
+							Description: "Azure Entra Workload Identity Federation type Credential Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"oidc_issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"scope": schema.StringAttribute{
+									Description: "Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"azure_tenant": schema.StringAttribute{
+									Description: "Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"client_id": schema.StringAttribute{
+									Description: "Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 									Computed:    true,
 								},
 							},

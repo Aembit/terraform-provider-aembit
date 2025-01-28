@@ -186,6 +186,55 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 	})
 }
 
+func TestAccCredentialProviderResource_AzureEntraToken(t *testing.T) {
+	const credentialProviderName string = "aembit_credential_provider.ae"
+	createFile, _ := os.ReadFile("../../tests/credential/azure-entra/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/azure-entra/TestAccCredentialProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider set values
+					resource.TestCheckResourceAttr(credentialProviderName, "name", "TF Acceptance Azure Entra Workload"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.audience", "audience"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.subject", "subject"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.scope", "scope"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.azure_tenant", "00000000-0000-0000-0000-000000000000"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.client_id", "00000000-0000-0000-0000-000000000000"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(credentialProviderName, "azure_entra_workload_identity.oidc_issuer"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(credentialProviderName, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: credentialProviderName, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(credentialProviderName, "name", "TF Acceptance Azure Entra Workload - Modified"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.audience", "new audience"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.subject", "new subject"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.scope", "new scope"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.azure_tenant", "11111111-1111-1111-1111-111111111111"),
+					resource.TestCheckResourceAttr(credentialProviderName, "azure_entra_workload_identity.client_id", "11111111-1111-1111-1111-111111111111"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(credentialProviderName, "azure_entra_workload_identity.oidc_issuer"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(credentialProviderName, "id"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/snowflake/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/snowflake/TestAccCredentialProviderResource.tfmod")

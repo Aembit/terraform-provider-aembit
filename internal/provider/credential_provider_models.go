@@ -16,6 +16,7 @@ type credentialProviderResourceModel struct {
 	APIKey                 *credentialProviderAPIKeyModel                 `tfsdk:"api_key"`
 	AwsSTS                 *credentialProviderAwsSTSModel                 `tfsdk:"aws_sts"`
 	GoogleWorkload         *credentialProviderGoogleWorkloadModel         `tfsdk:"google_workload_identity"`
+	AzureEntraWorkload     *credentialProviderAzureEntraWorkloadModel     `tfsdk:"azure_entra_workload_identity"`
 	SnowflakeToken         *credentialProviderSnowflakeTokenModel         `tfsdk:"snowflake_jwt"`
 	OAuthClientCredentials *credentialProviderOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
 	OAuthAuthorizationCode *credentialProviderOAuthAuthorizationCodeModel `tfsdk:"oauth_authorization_code"`
@@ -50,6 +51,15 @@ type credentialProviderGoogleWorkloadModel struct {
 	Audience       types.String `tfsdk:"audience"`
 	ServiceAccount types.String `tfsdk:"service_account"`
 	Lifetime       int32        `tfsdk:"lifetime"`
+}
+
+type credentialProviderAzureEntraWorkloadModel struct {
+	OIDCIssuer  types.String `tfsdk:"oidc_issuer"`
+	Audience    types.String `tfsdk:"audience"`
+	Subject     types.String `tfsdk:"subject"`
+	Scope       types.String `tfsdk:"scope"`
+	AzureTenant types.String `tfsdk:"azure_tenant"`
+	ClientID    types.String `tfsdk:"client_id"`
 }
 
 type credentialProviderSnowflakeTokenModel struct {

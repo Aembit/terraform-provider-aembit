@@ -26,6 +26,7 @@ Optional:
 
 - `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aembit_access_token))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aws_sts))
+- `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--azure_entra_workload_identity))
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--snowflake_jwt))
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--username_password))
@@ -66,6 +67,19 @@ Read-Only:
 - `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.
 
 
+<a id="nestedatt--credential_providers--azure_entra_workload_identity"></a>
+### Nested Schema for `credential_providers.azure_entra_workload_identity`
+
+Read-Only:
+
+- `audience` (String) Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `azure_tenant` (String) Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `client_id` (String) Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `scope` (String) Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+- `subject` (String) Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+
+
 <a id="nestedatt--credential_providers--google_workload_identity"></a>
 ### Nested Schema for `credential_providers.google_workload_identity`
 
@@ -76,7 +90,7 @@ Optional:
 Read-Only:
 
 - `audience` (String) Audience for GCP Workload Identity Federation configuration of the Credential Provider.
-- `oidc_issuer` (String) OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.
+- `oidc_issuer` (String) OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.
 - `service_account` (String) Service Account email of the GCP Session credentials requested by the Credential Provider.
 
 
