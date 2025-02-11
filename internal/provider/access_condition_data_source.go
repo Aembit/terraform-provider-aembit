@@ -123,6 +123,35 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 								},
 							},
 						},
+						"timezone_conditions": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"schedule": schema.ListNestedAttribute{
+									Required: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"start_time": schema.StringAttribute{
+												Required: true,
+											},
+											"end_time": schema.StringAttribute{
+												Required: true,
+											},
+											"day": schema.StringAttribute{
+												Required: true,
+											},
+										},
+									},
+								},
+								"timezone": schema.SingleNestedAttribute{
+									Required: true,
+									Attributes: map[string]schema.Attribute{
+										"timezone": schema.StringAttribute{
+											Required: true,
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -145,7 +174,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{}, d.client)
+		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

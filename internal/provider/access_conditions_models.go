@@ -16,6 +16,7 @@ type accessConditionResourceModel struct {
 	Wiz           *accessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *accessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
 	GeoIp         *accessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
+	TimeZone      *accessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
 }
 
 type accessConditionWizModel struct {
@@ -44,6 +45,21 @@ type geoIpLocationModel struct {
 	Alpha2Code   types.String             `tfsdk:"alpha2_code"`
 	ShortName    types.String             `tfsdk:"short_name"`
 	Subdivisions []*geoIpSubdivisionModel `tfsdk:"subdivisions"`
+}
+
+type accessConditionTimeZoneModel struct {
+	Schedule []*scheduleModel `tfsdk:"schedule"`
+	TimeZone *timeZoneModel   `tfsdk:"timezone"`
+}
+
+type scheduleModel struct {
+	EndTime   types.String `tfsdk:"end_time"`
+	StartTime types.String `tfsdk:"start_time"`
+	Day       types.String `tfsdk:"day"`
+}
+
+type timeZoneModel struct {
+	TimeZone types.String `tfsdk:"timezone"`
 }
 
 // accessConditionDataSourceModel maps the datasource schema.

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -145,6 +146,35 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 					},
 				},
 			},
+			"timezone_conditions": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"schedule": schema.ListNestedAttribute{
+						Required: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"start_time": schema.StringAttribute{
+									Required: true,
+								},
+								"end_time": schema.StringAttribute{
+									Required: true,
+								},
+								"day": schema.StringAttribute{
+									Required: true,
+								},
+							},
+						},
+					},
+					"timezone": schema.SingleNestedAttribute{
+						Required: true,
+						Attributes: map[string]schema.Attribute{
+							"timezone": schema.StringAttribute{
+								Required: true,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -156,6 +186,7 @@ func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource
 			path.MatchRoot("wiz_conditions"),
 			path.MatchRoot("crowdstrike_conditions"),
 			path.MatchRoot("geoip_conditions"),
+			path.MatchRoot("timezone_conditions"),
 		),
 	}
 }
@@ -171,7 +202,7 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, nil, r.client)
+	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, nil)
 
 	// Create new AccessCondition
 	accessCondition, err := r.client.CreateAccessCondition(dto, nil)
@@ -184,7 +215,7 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, plan, r.client)
+	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -219,7 +250,7 @@ func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	state = convertAccessConditionDTOToModel(ctx, accessCondition, state, r.client)
+	state = convertAccessConditionDTOToModel(ctx, accessCondition, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -251,7 +282,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &externalID, r.client)
+	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &externalID)
 
 	// Update AccessCondition
 	accessCondition, err := r.client.UpdateAccessCondition(dto, nil)
@@ -264,7 +295,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessConditionDTOToModel(ctx, *accessCondition, state, r.client)
+	state = convertAccessConditionDTOToModel(ctx, *accessCondition, state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -313,7 +344,7 @@ func (r *accessConditionResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string, client *aembit.CloudClient) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -364,18 +395,29 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 			}
 
 			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
+		}
+	}
+	if model.TimeZone != nil {
+		accessCondition.Conditions.TimeZone = &aembit.TimeZoneDTO{
+			TimeZone: model.TimeZone.TimeZone.TimeZone.ValueString(),
+		}
 
-			// find the AembitGeoIPCondition integrationId from API
-			// integrations, _ := client.GetIntegrations(nil)
-			// geoIpIntegrationIndex := slices.IndexFunc(integrations, func(dto aembit.IntegrationDTO) bool { return dto.Type == "AembitGeoIPCondition" })
-			// accessCondition.IntegrationID = integrations[geoIpIntegrationIndex].ExternalID
+		for _, schedule := range model.TimeZone.Schedule {
+			accessCondition.Conditions.Schedule = append(accessCondition.Conditions.Schedule, aembit.ScheduleDTO{
+				StartTime: schedule.StartTime.ValueString(),
+				EndTime:   schedule.EndTime.ValueString(),
+				WeekDay: &aembit.WeekDayDTO{
+					Name:    schedule.Day.ValueString(),
+					Ordinal: findOrdinal(schedule.Day.ValueString()),
+				},
+			})
 		}
 	}
 
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel, client *aembit.CloudClient) accessConditionResourceModel {
+func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
 	var model accessConditionResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -402,11 +444,6 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 			PreventRestrictedFunctionalityMode: types.BoolValue(dto.Conditions.PreventRestrictedFunctionalityMode),
 		}
 	case "AembitGeoIPCondition":
-		// find the AembitGeoIPCondition integrationId from API
-		// integrations, _ := client.GetIntegrations(nil)
-		// geoIpIntegrationIndex := slices.IndexFunc(integrations, func(dto aembit.IntegrationDTO) bool { return dto.Type == "AembitGeoIPCondition" })
-		// model.IntegrationID = types.StringValue(integrations[geoIpIntegrationIndex].ExternalID)
-
 		geoIpModel := accessConditionGeoIpModel{}
 
 		for _, location := range dto.Conditions.Locations {
@@ -428,7 +465,37 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 		}
 
 		model.GeoIp = &geoIpModel
+	case "AembitTimeCondition":
+		acTimeZone := accessConditionTimeZoneModel{}
+
+		for _, schedule := range dto.Conditions.Schedule {
+			acTimeZone.Schedule = append(acTimeZone.Schedule, &scheduleModel{
+				StartTime: types.StringValue(schedule.StartTime),
+				EndTime:   types.StringValue(schedule.EndTime),
+				Day:       types.StringValue(schedule.WeekDay.Name),
+			})
+		}
+
+		acTimeZone.TimeZone = &timeZoneModel{
+			TimeZone: types.StringValue(dto.Conditions.TimeZone.TimeZone),
+		}
+
+		model.TimeZone = &acTimeZone
 	}
 
 	return model
+}
+
+func findOrdinal(weekDay string) int {
+	weekdays := map[string]int{
+		"sunday":    0,
+		"monday":    1,
+		"tuesday":   2,
+		"wednesday": 3,
+		"thursday":  4,
+		"friday":    5,
+		"saturday":  6,
+	}
+
+	return weekdays[strings.ToLower(weekDay)]
 }
