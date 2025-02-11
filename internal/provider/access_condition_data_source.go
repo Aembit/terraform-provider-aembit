@@ -89,6 +89,40 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 								"prevent_rfm":         schema.BoolAttribute{Required: true},
 							},
 						},
+						"geoip_conditions": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"locations": schema.ListNestedAttribute{
+									Required: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"alpha2_code": schema.StringAttribute{
+												Required: true,
+											},
+											"short_name": schema.StringAttribute{
+												Required: true,
+											},
+											"subdivisions": schema.ListNestedAttribute{
+												Optional: true,
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"name": schema.StringAttribute{
+															Required: true,
+														},
+														"alpha2_code": schema.StringAttribute{
+															Required: true,
+														},
+														"subdivision_code": schema.StringAttribute{
+															Required: true,
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -111,7 +145,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
+		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{}, d.client)
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 
