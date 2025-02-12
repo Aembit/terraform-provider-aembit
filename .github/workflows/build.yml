@@ -67,3 +67,22 @@ jobs:
           name: terraform-provider-aembit-docs
           path: docs
           retention-days: 14
+  
+  validate:
+    name: Validate Build/Merge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          submodules: recursive
+
+      # These Job Steps verify that the Aembit submodules are up to date with main
+      - name: Check Submodule aembit_api_client
+        run: |
+          git submodule status
+          BRANCH=$(git submodule status | grep "aembit_api_client" | awk -F ' ' '{print $3}')
+          if [ "${BRANCH}" != "(heads/main)" ]; then
+            printf "aembit_api_client is currently on the ${s} branch and needs to be updated\n"
+            exit 1
+          fi
