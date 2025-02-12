@@ -18,9 +18,7 @@ resource "aembit_access_condition" "timezone" {
                 start_time: "08:00"
             },
 		]
-		timezone = {
-            timezone: "Europe/Istanbul"
-        }
+		timezone = "Europe/Istanbul"
 	}
     tags = {
         color = "blue"

@@ -165,13 +165,8 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 							},
 						},
 					},
-					"timezone": schema.SingleNestedAttribute{
+					"timezone": schema.StringAttribute{
 						Required: true,
-						Attributes: map[string]schema.Attribute{
-							"timezone": schema.StringAttribute{
-								Required: true,
-							},
-						},
 					},
 				},
 			},
@@ -399,7 +394,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	}
 	if model.TimeZone != nil {
 		accessCondition.Conditions.TimeZone = &aembit.TimeZoneDTO{
-			TimeZone: model.TimeZone.TimeZone.TimeZone.ValueString(),
+			TimeZone: model.TimeZone.TimeZone.ValueString(),
 		}
 
 		for _, schedule := range model.TimeZone.Schedule {
@@ -476,9 +471,7 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 			})
 		}
 
-		acTimeZone.TimeZone = &timeZoneModel{
-			TimeZone: types.StringValue(dto.Conditions.TimeZone.TimeZone),
-		}
+		acTimeZone.TimeZone = types.StringValue(dto.Conditions.TimeZone.TimeZone)
 
 		model.TimeZone = &acTimeZone
 	}

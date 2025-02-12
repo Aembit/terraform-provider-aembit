@@ -49,17 +49,13 @@ type geoIpLocationModel struct {
 
 type accessConditionTimeZoneModel struct {
 	Schedule []*scheduleModel `tfsdk:"schedule"`
-	TimeZone *timeZoneModel   `tfsdk:"timezone"`
+	TimeZone types.String     `tfsdk:"timezone"`
 }
 
 type scheduleModel struct {
 	EndTime   types.String `tfsdk:"end_time"`
 	StartTime types.String `tfsdk:"start_time"`
 	Day       types.String `tfsdk:"day"`
-}
-
-type timeZoneModel struct {
-	TimeZone types.String `tfsdk:"timezone"`
 }
 
 // accessConditionDataSourceModel maps the datasource schema.

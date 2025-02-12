@@ -142,13 +142,8 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 										},
 									},
 								},
-								"timezone": schema.SingleNestedAttribute{
+								"timezone": schema.StringAttribute{
 									Required: true,
-									Attributes: map[string]schema.Attribute{
-										"timezone": schema.StringAttribute{
-											Required: true,
-										},
-									},
 								},
 							},
 						},

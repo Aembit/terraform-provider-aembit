@@ -5,7 +5,7 @@ resource "aembit_access_condition" "timezone" {
 	name = "TF Acceptance TimeZone"
 	is_active = true
 	integration_id = "aa7c2571-4a39-4eff-a4b2-92b0df0a9540"
-		timezone_conditions = {
+	timezone_conditions = {
 		schedule = [
 			{
                 end_time: "17:00",
@@ -18,9 +18,7 @@ resource "aembit_access_condition" "timezone" {
                 start_time: "08:00"
             },
 		]
-		timezone = {
-            timezone: "America/Metlakatla"
-        }
+		timezone = "America/Metlakatla"
 	}
     tags = {
         color = "blue"
