@@ -1,10 +1,21 @@
 provider "aembit" {
 }
 
+data "aembit_timezones" "all" {
+}
+
+output "all_timezones" {
+  value = data.aembit_timezones.all
+}
+
+data "aembit_integrations" "filtered" {
+	type = "AembitGeoIPCondition"
+}
+
 resource "aembit_access_condition" "geoip" {
 	name = "TF Acceptance GeoIp"
 	is_active = true
-	integration_id = "426efdca-4626-4730-8264-44d6fc6f8553"
+	integration_id = data.aembit_integrations.filtered.integrations[0].id
 	geoip_conditions = {
 		locations = [
 			{

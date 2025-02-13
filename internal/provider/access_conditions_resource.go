@@ -375,7 +375,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	}
 	if model.GeoIp != nil {
 		for _, location := range model.GeoIp.Locations {
-			loc := aembit.LocationDTO{
+			loc := aembit.CountryDTO{
 				Alpha2Code:   location.Alpha2Code.ValueString(),
 				ShortName:    location.ShortName.ValueString(),
 				Subdivisions: []aembit.SubdivisionDTO{},
@@ -392,12 +392,12 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
 		}
 	}
-	if model.TimeZone != nil {
-		accessCondition.Conditions.TimeZone = &aembit.TimeZoneDTO{
-			TimeZone: model.TimeZone.TimeZone.ValueString(),
+	if model.Timezone != nil {
+		accessCondition.Conditions.Timezone = &aembit.TimezoneDTO{
+			Timezone: model.Timezone.Timezone.ValueString(),
 		}
 
-		for _, schedule := range model.TimeZone.Schedule {
+		for _, schedule := range model.Timezone.Schedule {
 			accessCondition.Conditions.Schedule = append(accessCondition.Conditions.Schedule, aembit.ScheduleDTO{
 				StartTime: schedule.StartTime.ValueString(),
 				EndTime:   schedule.EndTime.ValueString(),
@@ -471,9 +471,9 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 			})
 		}
 
-		acTimeZone.TimeZone = types.StringValue(dto.Conditions.TimeZone.TimeZone)
+		acTimeZone.Timezone = types.StringValue(dto.Conditions.Timezone.Timezone)
 
-		model.TimeZone = &acTimeZone
+		model.Timezone = &acTimeZone
 	}
 
 	return model

@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -9,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -42,6 +45,10 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Manages an integration.",
 		Attributes: map[string]schema.Attribute{
+			"type": schema.StringAttribute{
+				Optional:    true,
+				Description: "Filter integrations by type",
+			},
 			"integrations": schema.ListNestedAttribute{
 				Description: "List of integrations.",
 				Computed:    true,
@@ -108,7 +115,22 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state integrationsDataSourceModel
 
+	req.Config.Get(ctx, &state)
+
+	allowedFilterTypes := []string{"AembitTimeCondition", "AembitGeoIPCondition"}
+
+	if !state.Type.IsNull() &&
+		slices.IndexFunc(allowedFilterTypes, func(conditionType string) bool { return conditionType == state.Type.ValueString() }) == -1 {
+		resp.Diagnostics.AddError(
+			"Incorrect Integration Type",
+			"Only AembitTimeCondition and AembitGeoIPCondition types can be used as filter parameters",
+		)
+		return
+	}
+
+	// include staticIntegrations if a type is filtered
 	integrations, err := d.client.GetIntegrations(nil)
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",
@@ -119,8 +141,17 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	// Map response body to model
 	for _, integration := range integrations {
+		// check if we have a filter on type
+		if !state.Type.IsNull() && !state.Type.IsUnknown() {
+			if integration.Type != state.Type.ValueString() {
+				continue
+			}
+		}
+
 		integrationState := convertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
+
+		tflog.Error(ctx, fmt.Sprintf("State is: %v", state))
 	}
 
 	// Set state

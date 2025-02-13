@@ -16,7 +16,7 @@ type accessConditionResourceModel struct {
 	Wiz           *accessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *accessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
 	GeoIp         *accessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
-	TimeZone      *accessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
+	Timezone      *accessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
 }
 
 type accessConditionWizModel struct {
@@ -49,7 +49,7 @@ type geoIpLocationModel struct {
 
 type accessConditionTimeZoneModel struct {
 	Schedule []*scheduleModel `tfsdk:"schedule"`
-	TimeZone types.String     `tfsdk:"timezone"`
+	Timezone types.String     `tfsdk:"timezone"`
 }
 
 type scheduleModel struct {

@@ -156,7 +156,7 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance TimeZone"),
+					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance Timezone"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, tagsColor, "blue"),
@@ -174,7 +174,7 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance TimeZone - Modified"),
+					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance Timezone - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

@@ -1,10 +1,14 @@
 provider "aembit" {
 }
 
+data "aembit_integrations" "filtered" {
+	type = "AembitTimeCondition"
+}
+
 resource "aembit_access_condition" "timezone" {
-	name = "TF Acceptance TimeZone"
+	name = "TF Acceptance Timezone"
 	is_active = true
-	integration_id = "aa7c2571-4a39-4eff-a4b2-92b0df0a9540"
+	integration_id = data.aembit_integrations.filtered.integrations[0].id
 	timezone_conditions = {
 		schedule = [
 			{

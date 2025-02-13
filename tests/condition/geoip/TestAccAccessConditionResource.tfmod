@@ -1,10 +1,14 @@
 provider "aembit" {
 }
 
+data "aembit_integrations" "filtered" {
+	type = "AembitGeoIPCondition"
+}
+
 resource "aembit_access_condition" "geoip" {
 	name = "TF Acceptance GeoIp - Modified"
 	is_active = true
-	integration_id = "426efdca-4626-4730-8264-44d6fc6f8553"
+	integration_id = data.aembit_integrations.filtered.integrations[0].id
 	geoip_conditions = {
 		locations = [
 			{
