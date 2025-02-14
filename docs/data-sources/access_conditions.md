@@ -26,11 +26,13 @@ Read-Only:
 
 - `crowdstrike_conditions` (Attributes) CrowdStrike Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--access_conditions--crowdstrike_conditions))
 - `description` (String) User-provided description of the accessCondition.
+- `geoip_conditions` (Attributes) (see [below for nested schema](#nestedatt--access_conditions--geoip_conditions))
 - `id` (String) Unique identifier of the accessCondition.
 - `integration_id` (String) ID of the Integration used by the Access Condition.
 - `is_active` (Boolean) Active/Inactive status of the accessCondition.
 - `name` (String) User-provided name of the accessCondition.
 - `tags` (Map of String) Tags are key-value pairs.
+- `timezone_conditions` (Attributes) (see [below for nested schema](#nestedatt--access_conditions--timezone_conditions))
 - `wiz_conditions` (Attributes) Wiz Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--access_conditions--wiz_conditions))
 
 <a id="nestedatt--access_conditions--crowdstrike_conditions"></a>
@@ -42,6 +44,53 @@ Required:
 - `match_serial_number` (Boolean)
 - `max_last_seen` (Number)
 - `prevent_rfm` (Boolean)
+
+
+<a id="nestedatt--access_conditions--geoip_conditions"></a>
+### Nested Schema for `access_conditions.geoip_conditions`
+
+Required:
+
+- `locations` (Attributes List) (see [below for nested schema](#nestedatt--access_conditions--geoip_conditions--locations))
+
+<a id="nestedatt--access_conditions--geoip_conditions--locations"></a>
+### Nested Schema for `access_conditions.geoip_conditions.locations`
+
+Required:
+
+- `alpha2_code` (String) Country alpha2Code
+
+Optional:
+
+- `subdivisions` (Attributes List) Country sub-divisions (see [below for nested schema](#nestedatt--access_conditions--geoip_conditions--locations--subdivisions))
+
+<a id="nestedatt--access_conditions--geoip_conditions--locations--subdivisions"></a>
+### Nested Schema for `access_conditions.geoip_conditions.locations.subdivisions`
+
+Required:
+
+- `subdivision_code` (String) subdivisionCode
+
+
+
+
+<a id="nestedatt--access_conditions--timezone_conditions"></a>
+### Nested Schema for `access_conditions.timezone_conditions`
+
+Required:
+
+- `schedule` (Attributes List) (see [below for nested schema](#nestedatt--access_conditions--timezone_conditions--schedule))
+- `timezone` (String) Timezone value such as America/Chicago, Europe/Istanbul
+
+<a id="nestedatt--access_conditions--timezone_conditions--schedule"></a>
+### Nested Schema for `access_conditions.timezone_conditions.schedule`
+
+Required:
+
+- `day` (String) Weekday i.e. Monday, Tuesday
+- `end_time` (String) End time
+- `start_time` (String) Start time
+
 
 
 <a id="nestedatt--access_conditions--wiz_conditions"></a>
