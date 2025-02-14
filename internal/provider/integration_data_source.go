@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"slices"
 
 	"aembit.io/aembit"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -150,8 +148,6 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 		integrationState := convertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
-
-		tflog.Error(ctx, fmt.Sprintf("State is: %v", state))
 	}
 
 	// Set state

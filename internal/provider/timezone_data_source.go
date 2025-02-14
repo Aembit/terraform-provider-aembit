@@ -46,15 +46,15 @@ func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"timezone": schema.StringAttribute{
-							Description: "timezone",
+							Description: "Timezone value such as America/Chicago, Europe/Istanbul",
 							Computed:    true,
 						},
 						"group": schema.StringAttribute{
-							Description: "group",
+							Description: "Group",
 							Computed:    true,
 						},
 						"label": schema.StringAttribute{
-							Description: "label",
+							Description: "Label",
 							Computed:    true,
 						},
 					},

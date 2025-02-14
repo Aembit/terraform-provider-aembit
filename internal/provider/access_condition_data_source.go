@@ -97,23 +97,17 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"alpha2_code": schema.StringAttribute{
-												Required: true,
-											},
-											"short_name": schema.StringAttribute{
-												Required: true,
+												Description: "Country alpha2Code",
+												Required:    true,
 											},
 											"subdivisions": schema.ListNestedAttribute{
-												Optional: true,
+												Description: "Country sub-divisions",
+												Optional:    true,
 												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
-														"name": schema.StringAttribute{
-															Required: true,
-														},
-														"alpha2_code": schema.StringAttribute{
-															Required: true,
-														},
 														"subdivision_code": schema.StringAttribute{
-															Required: true,
+															Description: "subdivisionCode",
+															Required:    true,
 														},
 													},
 												},
@@ -131,19 +125,23 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"start_time": schema.StringAttribute{
-												Required: true,
+												Description: "Start time",
+												Required:    true,
 											},
 											"end_time": schema.StringAttribute{
-												Required: true,
+												Description: "End time",
+												Required:    true,
 											},
 											"day": schema.StringAttribute{
-												Required: true,
+												Description: "Weekday i.e. Monday, Tuesday",
+												Required:    true,
 											},
 										},
 									},
 								},
 								"timezone": schema.StringAttribute{
-									Required: true,
+									Description: "Timezone value such as America/Chicago, Europe/Istanbul",
+									Required:    true,
 								},
 							},
 						},

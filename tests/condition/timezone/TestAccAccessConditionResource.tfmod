@@ -13,7 +13,7 @@ resource "aembit_access_condition" "timezone" {
 		schedule = [
 			{
                 end_time: "17:00",
-                day: "Thuesday",
+                day: "Tuesday",
                 start_time: "08:00"
             },
             {

@@ -46,20 +46,20 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"alpha2_code": schema.StringAttribute{
-							Description: "alpha2Code",
+							Description: "Country alpha2Code",
 							Computed:    true,
 						},
 						"short_name": schema.StringAttribute{
-							Description: "shortName",
+							Description: "Country shortName",
 							Computed:    true,
 						},
 						"subdivisions": schema.ListNestedAttribute{
-							Description: "subdivisions",
+							Description: "Country sub-divisions",
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"alpha2_code": schema.StringAttribute{
-										Description: "alpha2Code",
+										Description: "alpha2Code of the parent Country",
 										Computed:    true,
 									},
 									"name": schema.StringAttribute{
@@ -67,7 +67,7 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 										Computed:    true,
 									},
 									"subdivision_code": schema.StringAttribute{
-										Description: "subdivisioncode",
+										Description: "subdivisionCode",
 										Computed:    true,
 									},
 								},
