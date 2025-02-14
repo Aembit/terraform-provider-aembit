@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"strings"
 
 	"aembit.io/aembit"
@@ -122,19 +124,10 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 								"alpha2_code": schema.StringAttribute{
 									Required: true,
 								},
-								"short_name": schema.StringAttribute{
-									Required: true,
-								},
 								"subdivisions": schema.ListNestedAttribute{
 									Optional: true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
-											"name": schema.StringAttribute{
-												Required: true,
-											},
-											"alpha2_code": schema.StringAttribute{
-												Required: true,
-											},
 											"subdivision_code": schema.StringAttribute{
 												Required: true,
 											},
@@ -197,7 +190,14 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, nil)
+	dto, err := convertAccessConditionModelToDTO(ctx, plan, nil, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating Access Condition",
+			err.Error(),
+		)
+		return
+	}
 
 	// Create new AccessCondition
 	accessCondition, err := r.client.CreateAccessCondition(dto, nil)
@@ -277,7 +277,14 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &externalID)
+	dto, err := convertAccessConditionModelToDTO(ctx, plan, &externalID, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating Access Condition",
+			err.Error(),
+		)
+		return
+	}
 
 	// Update AccessCondition
 	accessCondition, err := r.client.UpdateAccessCondition(dto, nil)
@@ -339,7 +346,7 @@ func (r *accessConditionResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string, client *aembit.CloudClient) (aembit.AccessConditionDTO, error) {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -374,18 +381,44 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
 	}
 	if model.GeoIp != nil {
+		// retrieve countries datasource for validation
+		countriesResource := GetCountries(client)
+
 		for _, location := range model.GeoIp.Locations {
+			alpha2CodeInput := location.Alpha2Code.ValueString()
+
+			countryIndex := slices.IndexFunc(countriesResource.Countries, func(c *countryResourceModel) bool {
+				return c.Alpha2Code.ValueString() == alpha2CodeInput
+			})
+
+			if countryIndex == -1 {
+				return accessCondition, fmt.Errorf("%v is not a valid Alpha2Code", alpha2CodeInput)
+			}
+
+			countryFound := countriesResource.Countries[countryIndex]
+
 			loc := aembit.CountryDTO{
-				Alpha2Code:   location.Alpha2Code.ValueString(),
-				ShortName:    location.ShortName.ValueString(),
-				Subdivisions: []aembit.SubdivisionDTO{},
+				Alpha2Code: countryFound.Alpha2Code.ValueString(),
+				ShortName:  countryFound.ShortName.ValueString(),
 			}
 
 			for _, subDivision := range location.Subdivisions {
+				subDivisionInput := subDivision.SubdivisionCode.ValueString()
+
+				subDivisionIndex := slices.IndexFunc(countryFound.Subdivisions, func(s *countrySubdivisionResourceModel) bool {
+					return s.SubdivisionCode.ValueString() == subDivisionInput
+				})
+
+				if subDivisionIndex == -1 {
+					return accessCondition, fmt.Errorf("%v is not a valid SubdivisionCode", subDivisionInput)
+				}
+
+				subdivisionFound := countryFound.Subdivisions[subDivisionIndex]
+
 				loc.Subdivisions = append(loc.Subdivisions, aembit.SubdivisionDTO{
-					Alpha2Code:      subDivision.Alpha2Code.ValueString(),
-					Name:            subDivision.Name.ValueString(),
-					SubdivisionCode: subDivision.SubdivisionCode.ValueString(),
+					SubdivisionCode: subdivisionFound.SubdivisionCode.ValueString(),
+					Alpha2Code:      subdivisionFound.Alpha2Code.ValueString(),
+					Name:            subdivisionFound.Name.ValueString(),
 				})
 			}
 
@@ -393,23 +426,46 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 		}
 	}
 	if model.Timezone != nil {
+		// retrieve timezones datasource for validation
+		timezoneResource := GetTimezones(client)
+
+		timezoneInput := model.Timezone.Timezone.ValueString()
+
+		tsIndex := slices.IndexFunc(timezoneResource.Timezones, func(ts *timezoneResourceModel) bool {
+			return ts.Timezone.ValueString() == timezoneInput
+		})
+
+		if tsIndex == -1 {
+			return accessCondition, fmt.Errorf("%v is not a valid timezone", timezoneInput)
+		}
+
+		timeZoneFound := timezoneResource.Timezones[tsIndex]
+
 		accessCondition.Conditions.Timezone = &aembit.TimezoneDTO{
-			Timezone: model.Timezone.Timezone.ValueString(),
+			Timezone: timeZoneFound.Timezone.ValueString(),
+			Group:    timeZoneFound.Group.ValueString(),
+			Label:    timeZoneFound.Label.ValueString(),
 		}
 
 		for _, schedule := range model.Timezone.Schedule {
+			ordinal, err := findOrdinal(schedule.Day.ValueString())
+
+			if err != nil {
+				return accessCondition, err
+			}
+
 			accessCondition.Conditions.Schedule = append(accessCondition.Conditions.Schedule, aembit.ScheduleDTO{
 				StartTime: schedule.StartTime.ValueString(),
 				EndTime:   schedule.EndTime.ValueString(),
 				WeekDay: &aembit.WeekDayDTO{
 					Name:    schedule.Day.ValueString(),
-					Ordinal: findOrdinal(schedule.Day.ValueString()),
+					Ordinal: ordinal,
 				},
 			})
 		}
 	}
 
-	return accessCondition
+	return accessCondition, nil
 }
 
 func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
@@ -444,14 +500,11 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 		for _, location := range dto.Conditions.Locations {
 			loc := geoIpLocationModel{
 				Alpha2Code:   types.StringValue(location.Alpha2Code),
-				ShortName:    types.StringValue(location.ShortName),
 				Subdivisions: []*geoIpSubdivisionModel{},
 			}
 
 			for _, subDivision := range location.Subdivisions {
 				loc.Subdivisions = append(loc.Subdivisions, &geoIpSubdivisionModel{
-					Alpha2Code:      types.StringValue(subDivision.Alpha2Code),
-					Name:            types.StringValue(subDivision.Name),
 					SubdivisionCode: types.StringValue(subDivision.SubdivisionCode),
 				})
 			}
@@ -479,7 +532,7 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 	return model
 }
 
-func findOrdinal(weekDay string) int {
+func findOrdinal(weekDay string) (int, error) {
 	weekdays := map[string]int{
 		"sunday":    0,
 		"monday":    1,
@@ -490,5 +543,9 @@ func findOrdinal(weekDay string) int {
 		"saturday":  6,
 	}
 
-	return weekdays[strings.ToLower(weekDay)]
+	if val, ok := weekdays[strings.ToLower(weekDay)]; ok {
+		return val, nil
+	}
+
+	return 0, fmt.Errorf("%v is not a valid weekday name", weekDay)
 }

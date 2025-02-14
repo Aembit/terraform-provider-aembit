@@ -19,8 +19,7 @@ resource "aembit_access_condition" "geoip" {
 	geoip_conditions = {
 		locations = [
 			{
-				alpha2_code = "Türkiye",
-				short_name = "TR",
+				alpha2_code = "TR",
 				subdivisions = []
 			}
 		]

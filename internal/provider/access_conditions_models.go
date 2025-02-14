@@ -36,14 +36,11 @@ type accessConditionGeoIpModel struct {
 }
 
 type geoIpSubdivisionModel struct {
-	Alpha2Code      types.String `tfsdk:"alpha2_code"`
-	Name            types.String `tfsdk:"name"`
 	SubdivisionCode types.String `tfsdk:"subdivision_code"`
 }
 
 type geoIpLocationModel struct {
 	Alpha2Code   types.String             `tfsdk:"alpha2_code"`
-	ShortName    types.String             `tfsdk:"short_name"`
 	Subdivisions []*geoIpSubdivisionModel `tfsdk:"subdivisions"`
 }
 

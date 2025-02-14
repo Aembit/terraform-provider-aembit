@@ -82,18 +82,20 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 
 // Read refreshes the Terraform state with the latest data.
 func (d *countriesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	state := GetCountries(d.client)
+	// Set state
+	diags := resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func GetCountries(client *aembit.CloudClient) countriesDataSourceModel {
 	var state countriesDataSourceModel
 
 	// include staticcountries if a type is filtered
-	countries, err := d.client.GetCountries(nil)
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Aembit countries",
-			err.Error(),
-		)
-		return
-	}
+	countries, _ := client.GetCountries(nil)
 
 	// Map response body to model
 	for _, country := range countries {
@@ -112,10 +114,5 @@ func (d *countriesDataSource) Read(ctx context.Context, req datasource.ReadReque
 		state.Countries = append(state.Countries, &model)
 	}
 
-	// Set state
-	diags := resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	return state
 }

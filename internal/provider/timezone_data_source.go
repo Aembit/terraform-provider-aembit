@@ -66,19 +66,19 @@ func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 
 // Read refreshes the Terraform state with the latest data.
 func (d *timezonesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state timezonesDataSourceModel
-
-	// include statictimeZones if a type is filtered
-	timeZones, err := d.client.GetTimezones(nil)
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Aembit timeZones",
-			err.Error(),
-		)
+	state := GetTimezones(d.client)
+	// Set state
+	diags := resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
+}
 
+func GetTimezones(client *aembit.CloudClient) timezonesDataSourceModel {
+	var state timezonesDataSourceModel
+
+	timeZones, _ := client.GetTimezones(nil)
 	// Map response body to model
 	for _, tz := range timeZones {
 		model := timezoneResourceModel{}
@@ -89,10 +89,5 @@ func (d *timezonesDataSource) Read(ctx context.Context, req datasource.ReadReque
 		state.Timezones = append(state.Timezones, &model)
 	}
 
-	// Set state
-	diags := resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	return state
 }
