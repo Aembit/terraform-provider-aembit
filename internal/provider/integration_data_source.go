@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"slices"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -45,7 +44,10 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{
 				Optional:    true,
-				Description: "Filter integrations by type",
+				Description: "Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)",
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"AembitTimeCondition", "AembitGeoIPCondition"}...),
+				},
 			},
 			"integrations": schema.ListNestedAttribute{
 				Description: "List of integrations.",
@@ -115,18 +117,6 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	req.Config.Get(ctx, &state)
 
-	allowedFilterTypes := []string{"AembitTimeCondition", "AembitGeoIPCondition"}
-
-	if !state.Type.IsNull() &&
-		slices.IndexFunc(allowedFilterTypes, func(conditionType string) bool { return conditionType == state.Type.ValueString() }) == -1 {
-		resp.Diagnostics.AddError(
-			"Incorrect Integration Type",
-			"Only AembitTimeCondition and AembitGeoIPCondition types can be used as filter parameters",
-		)
-		return
-	}
-
-	// include staticIntegrations if a type is filtered
 	integrations, err := d.client.GetIntegrations(nil)
 
 	if err != nil {

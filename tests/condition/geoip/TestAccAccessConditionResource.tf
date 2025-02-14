@@ -1,13 +1,6 @@
 provider "aembit" {
 }
 
-data "aembit_timezones" "all" {
-}
-
-output "all_timezones" {
-  value = data.aembit_timezones.all
-}
-
 data "aembit_integrations" "filtered" {
 	type = "AembitGeoIPCondition"
 }
