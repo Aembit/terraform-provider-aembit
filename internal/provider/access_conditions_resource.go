@@ -402,26 +402,10 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 				ShortName:  countryFound.ShortName.ValueString(),
 			}
 
-			for _, subDivision := range location.Subdivisions {
-				subDivisionInput := subDivision.SubdivisionCode.ValueString()
-
-				subDivisionIndex := slices.IndexFunc(countryFound.Subdivisions, func(s *countrySubdivisionResourceModel) bool {
-					return s.SubdivisionCode.ValueString() == subDivisionInput
-				})
-
-				if subDivisionIndex == -1 {
-					return accessCondition, fmt.Errorf("%v is not a valid SubdivisionCode", subDivisionInput)
-				}
-
-				subdivisionFound := countryFound.Subdivisions[subDivisionIndex]
-
-				loc.Subdivisions = append(loc.Subdivisions, aembit.SubdivisionDTO{
-					SubdivisionCode: subdivisionFound.SubdivisionCode.ValueString(),
-					Alpha2Code:      subdivisionFound.Alpha2Code.ValueString(),
-					Name:            subdivisionFound.Name.ValueString(),
-				})
+			err := FillSubdivisions(&loc, location.Subdivisions, countryFound)
+			if err != nil {
+				return accessCondition, err
 			}
-
 			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
 		}
 	}
@@ -466,6 +450,30 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	}
 
 	return accessCondition, nil
+}
+
+func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*geoIpSubdivisionModel, countryFound *countryResourceModel) error {
+	for _, subDivision := range subDivisions {
+		subDivisionInput := subDivision.SubdivisionCode.ValueString()
+
+		subDivisionIndex := slices.IndexFunc(countryFound.Subdivisions, func(s *countrySubdivisionResourceModel) bool {
+			return s.SubdivisionCode.ValueString() == subDivisionInput
+		})
+
+		if subDivisionIndex == -1 {
+			return fmt.Errorf("%v is not a valid SubdivisionCode", subDivisionInput)
+		}
+
+		subdivisionFound := countryFound.Subdivisions[subDivisionIndex]
+
+		loc.Subdivisions = append(loc.Subdivisions, aembit.SubdivisionDTO{
+			SubdivisionCode: subdivisionFound.SubdivisionCode.ValueString(),
+			Alpha2Code:      subdivisionFound.Alpha2Code.ValueString(),
+			Name:            subdivisionFound.Name.ValueString(),
+		})
+	}
+
+	return nil
 }
 
 func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
@@ -547,5 +555,5 @@ func findOrdinal(weekDay string) (int, error) {
 		return val, nil
 	}
 
-	return 0, fmt.Errorf("%v is not a valid weekday name", weekDay)
+	return -1, fmt.Errorf("%v is not a valid weekday name", weekDay)
 }
