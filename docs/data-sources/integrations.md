@@ -17,7 +17,7 @@ Manages an integration.
 
 ### Optional
 
-- `type` (String) Filter integrations by type
+- `type` (String) Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)
 
 ### Read-Only
 
