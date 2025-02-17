@@ -142,13 +142,14 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 
 func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings.tf")
+	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "clientworkloadNamespace")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config:      string(createFile),
+				Config:      createFileConfig,
 				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
 			},
 			// Delete testing automatically occurs in TestCase
