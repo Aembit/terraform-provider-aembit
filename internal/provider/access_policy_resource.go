@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -178,6 +179,16 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
 
+	err := validateDTO(&policy)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error validating access policy",
+			err.Error(),
+		)
+		return
+	}
+
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
 	if err != nil {
@@ -285,6 +296,16 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
+	err := validateDTO(&policy)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error validating access policy",
+			err.Error(),
+		)
+		return
+	}
+
 	// Update Access Policy
 	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil)
 	if err != nil {
@@ -345,6 +366,22 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func validateDTO(policyDTO *aembit.CreatePolicyDTO) error {
+	// Credential provider mappings should not be duplicate
+	uniqueMap := make(map[string]bool)
+	for _, cp := range policyDTO.CredentialProviders {
+		mapValue := cp.AccountName + cp.HeaderName + cp.HeaderValue + cp.HttpbodyFieldPath + cp.HttpbodyFieldValue
+		_, found := uniqueMap[mapValue]
+
+		if found {
+			return fmt.Errorf("duplicate credential provider mapping already exists")
+		}
+		uniqueMap[mapValue] = true
+	}
+
+	return nil
 }
 
 func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.CreatePolicyDTO {
