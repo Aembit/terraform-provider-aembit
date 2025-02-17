@@ -140,10 +140,9 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 	})
 }
 
-func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings(t *testing.T) {
+func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "clientworkloadNamespace")
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -152,7 +151,36 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings(t *testing.T) 
 				Config:      createFileConfig,
 				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
 			},
-			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Update(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings.tfmod")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
+
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
+					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: AccessPolicyPathMultiCPFirst, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config:      modifyFileConfig,
+				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
+			},
 		},
 	})
 }

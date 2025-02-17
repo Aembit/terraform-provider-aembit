@@ -34,7 +34,6 @@ resource "aembit_server_workload" "snowflake_server" {
     }
 }
 
-
 resource "aembit_client_workload" "first_client" {
     name = "first terraform client workload"
     description = "new client workload for policy integration"
