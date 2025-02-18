@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -163,6 +164,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	tflog.Error(ctx, "Create worked")
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -268,6 +270,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	tflog.Error(ctx, "Update worked")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)

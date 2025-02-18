@@ -12,6 +12,7 @@ const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
 const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
 const AccessPolicyPathMultiCPFirst string = "aembit_access_policy.multi_cp_first_policy"
 const AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
+const tessttt = "aembit_access_policy.multi_cp_duplicate_policy_2"
 const CredentialProvidersCount string = "credential_providers.#"
 
 var accessPolicyChecks = []resource.TestCheckFunc{
@@ -180,9 +181,11 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Update(t *test
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("aembit_access_policy.multi_cp_duplicate_policy_2", "name", "TF Multi CP Duplicate Policy"),
+					resource.TestCheckResourceAttr(tessttt, "name", "TF Multi CP Duplicate Policy"),
 				),
 			},
+			// ImportState testing
+			{ResourceName: tessttt, ImportState: true, ImportStateVerify: true},
 			{
 				Config:      modifyFileConfig,
 				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
