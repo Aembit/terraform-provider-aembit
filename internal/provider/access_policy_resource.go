@@ -201,16 +201,6 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
 
-	// err := validateDTO(&policy)
-
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error validating access policy",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
-
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
 	if err != nil {
@@ -318,16 +308,6 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, &externalID)
-
-	// err := validateDTO(&policy)
-
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error validating access policy",
-	// 		err.Error(),
-	// 	)
-	// 	return
-	// }
 
 	// Update Access Policy
 	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil)

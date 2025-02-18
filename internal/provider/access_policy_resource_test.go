@@ -12,7 +12,6 @@ const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
 const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
 const AccessPolicyPathMultiCPFirst string = "aembit_access_policy.multi_cp_first_policy"
 const AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
-const tessttt = "aembit_access_policy.multi_cp_duplicate_policy_2"
 const CredentialProvidersCount string = "credential_providers.#"
 
 var accessPolicyChecks = []resource.TestCheckFunc{
