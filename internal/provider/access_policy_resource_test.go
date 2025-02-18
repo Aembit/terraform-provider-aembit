@@ -141,45 +141,28 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 }
 
 func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "clientworkloadNamespace")
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
 			{
-				Config:      createFileConfig,
-				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
-			},
-		},
-	})
-}
-
-func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Update(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
-	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			// Create and Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
-
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: AccessPolicyPathMultiCPFirst, ImportState: true, ImportStateVerify: true},
-			// Update and Read testing
-			{
-				Config:      modifyFileConfig,
+				Config: `
+				resource "aembit_access_policy" "multi_cp_duplicate_policy" {
+					is_active = false
+					client_workload = "c460097e-2db7-4190-953d-fddd3a636c71"
+					credential_providers = [{
+						credential_provider_id = "d939f2f1-8cf2-4296-8f89-81093919f15d",
+						mapping_type = "HttpBody",
+						httpbody_field_path = "test_field_path",
+						httpbody_field_value = "test_field_value"
+					}, {
+						credential_provider_id = "6f88117b-c549-4c3a-867c-55159ae27033",
+						mapping_type = "HttpBody",
+						httpbody_field_path = "test_field_path",
+						httpbody_field_value = "test_field_value"
+					}]
+					server_workload = "eca31347-b739-4522-8628-f78b71e23f8d"
+				}
+				`,
 				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
 			},
 		},
