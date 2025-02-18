@@ -146,7 +146,7 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *test
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "aembit_access_policy" "multi_cp_duplicate_policy" {
+				resource "aembit_access_policy" "multi_cp_duplicate_policy_1" {
 					is_active = false
 					client_workload = "c460097e-2db7-4190-953d-fddd3a636c71"
 					credential_providers = [{
@@ -163,6 +163,28 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *test
 					server_workload = "eca31347-b739-4522-8628-f78b71e23f8d"
 				}
 				`,
+				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
+			},
+		},
+	})
+}
+
+func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Update(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_DuplicateMappings.tf")
+	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_DuplicateMappings.tfmod")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("aembit_access_policy.multi_cp_duplicate_policy_2", "name", "TF Multi CP Duplicate Policy"),
+				),
+			},
+			{
+				Config:      modifyFileConfig,
 				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
 			},
 		},
