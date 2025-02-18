@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -33,6 +32,28 @@ func NewAccessPolicyResource() resource.Resource {
 // accessPolicyResource is the resource implementation.
 type accessPolicyResource struct {
 	client *aembit.CloudClient
+}
+
+func (r *accessPolicyResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var plan accessPolicyResourceModel
+	diags := req.Config.Get(ctx, &plan)
+
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
+
+	err := validateDTO(&policy)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error validating access policy",
+			err.Error(),
+		)
+		return
+	}
 }
 
 // Metadata returns the resource type name.
@@ -164,7 +185,6 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Error(ctx, "Create worked")
 	// Retrieve values from plan
 	var plan accessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -181,15 +201,15 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
 
-	err := validateDTO(&policy)
+	// err := validateDTO(&policy)
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error validating access policy",
-			err.Error(),
-		)
-		return
-	}
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Error validating access policy",
+	// 		err.Error(),
+	// 	)
+	// 	return
+	// }
 
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
@@ -262,6 +282,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -270,7 +291,6 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Error(ctx, "Update worked")
 	// Get current state
 	var state accessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -299,15 +319,15 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	// Generate API request body from plan
 	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
-	err := validateDTO(&policy)
+	// err := validateDTO(&policy)
 
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error validating access policy",
-			err.Error(),
-		)
-		return
-	}
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Error validating access policy",
+	// 		err.Error(),
+	// 	)
+	// 	return
+	// }
 
 	// Update Access Policy
 	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil)
@@ -326,6 +346,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

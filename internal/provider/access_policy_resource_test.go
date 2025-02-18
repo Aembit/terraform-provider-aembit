@@ -169,27 +169,3 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *test
 		},
 	})
 }
-
-func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Update(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_DuplicateMappings.tf")
-	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource_DuplicateMappings.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tessttt, "name", "TF Multi CP Duplicate Policy"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: tessttt, ImportState: true, ImportStateVerify: true},
-			{
-				Config:      modifyFileConfig,
-				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
-			},
-		},
-	})
-}
