@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -32,28 +32,6 @@ func NewAccessPolicyResource() resource.Resource {
 // accessPolicyResource is the resource implementation.
 type accessPolicyResource struct {
 	client *aembit.CloudClient
-}
-
-func (r *accessPolicyResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var plan accessPolicyResourceModel
-	diags := req.Config.Get(ctx, &plan)
-
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
-
-	err := validateDTO(&policy)
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error validating access policy",
-			err.Error(),
-		)
-		return
-	}
 }
 
 // Metadata returns the resource type name.
@@ -170,6 +148,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 							Computed:    true,
 						},
 					},
+				},
+				Validators: []validator.Set{
+					NewCredentialProviderMappingValidator(),
 				},
 			},
 			"server_workload": schema.StringAttribute{
@@ -370,22 +351,6 @@ func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-func validateDTO(policyDTO *aembit.CreatePolicyDTO) error {
-	// Credential provider mappings should not be duplicate
-	uniqueMap := make(map[string]bool)
-	for _, cp := range policyDTO.CredentialProviders {
-		mapValue := cp.AccountName + cp.HeaderName + cp.HeaderValue + cp.HttpbodyFieldPath + cp.HttpbodyFieldValue
-		_, found := uniqueMap[mapValue]
-
-		if found {
-			return fmt.Errorf("duplicate credential provider mapping already exists")
-		}
-		uniqueMap[mapValue] = true
-	}
-
-	return nil
 }
 
 func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.CreatePolicyDTO {
