@@ -1,11 +1,11 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // accessPolicyResourceModel maps the resource schema.
-type accessPolicyResourceModel struct {
+type AccessPolicyResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                  types.String                    `tfsdk:"id"`
 	Name                types.String                    `tfsdk:"name"`
@@ -14,16 +14,16 @@ type accessPolicyResourceModel struct {
 	TrustProviders      []types.String                  `tfsdk:"trust_providers"`
 	AccessConditions    []types.String                  `tfsdk:"access_conditions"`
 	CredentialProvider  types.String                    `tfsdk:"credential_provider"`
-	CredentialProviders []*policyCredentialMappingModel `tfsdk:"credential_providers"`
+	CredentialProviders []*PolicyCredentialMappingModel `tfsdk:"credential_providers"`
 	ServerWorkload      types.String                    `tfsdk:"server_workload"`
 }
 
 // accessPoliciesDataSourceModel maps the datasource schema.
-type accessPoliciesDataSourceModel struct {
-	AccessPolicies []accessPolicyResourceModel `tfsdk:"access_policies"`
+type AccessPoliciesDataSourceModel struct {
+	AccessPolicies []AccessPolicyResourceModel `tfsdk:"access_policies"`
 }
 
-type policyCredentialMappingModel struct {
+type PolicyCredentialMappingModel struct {
 	CredentialProviderId types.String `tfsdk:"credential_provider_id"`
 	MappingType          types.String `tfsdk:"mapping_type"`
 	AccountName          types.String `tfsdk:"account_name"`

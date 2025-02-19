@@ -1,10 +1,10 @@
-package provider
+package validators
 
 import (
 	"context"
 	"fmt"
 
-	"aembit.io/aembit"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
@@ -24,19 +24,17 @@ func (v CredentialProviderMappingValidator) ValidateSet(ctx context.Context, req
 		return
 	}
 
-	var plan accessPolicyResourceModel
-	diags := req.Config.Get(ctx, &plan)
+	var credentialProviders []models.PolicyCredentialMappingModel
+	diags := req.ConfigValue.ElementsAs(ctx, &credentialProviders, false)
 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var policy aembit.CreatePolicyDTO = convertAccessPolicyModelToPolicyDTO(plan, nil)
-
 	uniqueMap := make(map[string]bool)
-	for _, cp := range policy.CredentialProviders {
-		mapValue := cp.AccountName + cp.HeaderName + cp.HeaderValue + cp.HttpbodyFieldPath + cp.HttpbodyFieldValue
+	for _, cp := range credentialProviders {
+		mapValue := cp.AccountName.ValueString() + cp.HeaderName.ValueString() + cp.HeaderValue.ValueString() + cp.HttpbodyFieldPath.ValueString() + cp.HttpbodyFieldValue.ValueString()
 		_, found := uniqueMap[mapValue]
 
 		if found {
