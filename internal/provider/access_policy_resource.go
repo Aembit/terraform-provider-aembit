@@ -441,21 +441,11 @@ func convertAccessPolicyDTOToModel(plan models.AccessPolicyResourceModel, dto ae
 					HttpbodyFieldValue:   types.StringValue(""),
 				}
 
-				if len(credentialProvider.AccountName) > 0 {
-					model.CredentialProviders[i].AccountName = types.StringValue(credentialProvider.AccountName)
-				}
-				if len(credentialProvider.HeaderName) > 0 {
-					model.CredentialProviders[i].HeaderName = types.StringValue(credentialProvider.HeaderName)
-				}
-				if len(credentialProvider.HeaderValue) > 0 {
-					model.CredentialProviders[i].HeaderValue = types.StringValue(credentialProvider.HeaderValue)
-				}
-				if len(credentialProvider.HttpbodyFieldPath) > 0 {
-					model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(credentialProvider.HttpbodyFieldPath)
-				}
-				if len(credentialProvider.HttpbodyFieldValue) > 0 {
-					model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(credentialProvider.HttpbodyFieldValue)
-				}
+				model.CredentialProviders[i].AccountName = types.StringValue(credentialProvider.AccountName)
+				model.CredentialProviders[i].HeaderName = types.StringValue(credentialProvider.HeaderName)
+				model.CredentialProviders[i].HeaderValue = types.StringValue(credentialProvider.HeaderValue)
+				model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(credentialProvider.HttpbodyFieldPath)
+				model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(credentialProvider.HttpbodyFieldValue)
 			}
 		}
 	}
