@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -143,7 +144,7 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 // Create creates the resource and sets the initial Terraform state.
 func (r *clientWorkloadResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan clientWorkloadResourceModel
+	var plan models.ClientWorkloadResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -177,7 +178,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 // Read refreshes the Terraform state with the latest data.
 func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state clientWorkloadResourceModel
+	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -213,7 +214,7 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *clientWorkloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state clientWorkloadResourceModel
+	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -224,7 +225,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan clientWorkloadResourceModel
+	var plan models.ClientWorkloadResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -258,7 +259,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state clientWorkloadResourceModel
+	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -294,7 +295,7 @@ func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.I
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadResourceModel, externalID *string) aembit.ClientWorkloadExternalDTO {
+func convertClientWorkloadModelToDTO(ctx context.Context, model models.ClientWorkloadResourceModel, externalID *string) aembit.ClientWorkloadExternalDTO {
 	var workload aembit.ClientWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -302,7 +303,7 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadRe
 		IsActive:    model.IsActive.ValueBool(),
 	}
 
-	var identities []identitiesModel
+	var identities []models.IdentitiesModel
 	if len(model.Identities.Elements()) > 0 {
 		_ = model.Identities.ElementsAs(ctx, &identities, false)
 
@@ -334,8 +335,8 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model clientWorkloadRe
 	return workload
 }
 
-func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) clientWorkloadResourceModel {
-	var model clientWorkloadResourceModel
+func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) models.ClientWorkloadResourceModel {
+	var model models.ClientWorkloadResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
@@ -347,15 +348,15 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 }
 
 func newClientWorkloadIdentityModel(ctx context.Context, clientWorkloadIdentities []aembit.ClientWorkloadIdentityDTO) types.Set {
-	identities := make([]identitiesModel, len(clientWorkloadIdentities))
+	identities := make([]models.IdentitiesModel, len(clientWorkloadIdentities))
 
 	for i, identity := range clientWorkloadIdentities {
-		identities[i] = identitiesModel{
+		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
 		}
 	}
 
-	s, _ := types.SetValueFrom(ctx, TfIdentityObjectType, identities)
+	s, _ := types.SetValueFrom(ctx, models.TfIdentityObjectType, identities)
 	return s
 }

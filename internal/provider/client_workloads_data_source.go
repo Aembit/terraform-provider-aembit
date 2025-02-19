@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -92,7 +93,7 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 
 // Read refreshes the Terraform state with the latest data.
 func (d *clientWorkloadsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state clientWorkloadsDataSourceModel
+	var state models.ClientWorkloadsDataSourceModel
 
 	clientWorkloads, err := d.client.GetClientWorkloads(nil)
 	if err != nil {

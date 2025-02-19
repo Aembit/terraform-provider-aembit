@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -212,7 +213,7 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 // Create creates the resource and sets the initial Terraform state.
 func (r *serverWorkloadResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan serverWorkloadResourceModel
+	var plan models.ServerWorkloadResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -246,7 +247,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 // Read refreshes the Terraform state with the latest data.
 func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state serverWorkloadResourceModel
+	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -282,7 +283,7 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverWorkloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state serverWorkloadResourceModel
+	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -293,7 +294,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	var externalID string = state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan serverWorkloadResourceModel
+	var plan models.ServerWorkloadResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -327,7 +328,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state serverWorkloadResourceModel
+	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -363,7 +364,7 @@ func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.I
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
+func convertServerWorkloadModelToDTO(ctx context.Context, model models.ServerWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -421,15 +422,15 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model serverWorkloadRe
 	return workload
 }
 
-func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) serverWorkloadResourceModel {
-	var model serverWorkloadResourceModel
+func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) models.ServerWorkloadResourceModel {
+	var model models.ServerWorkloadResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
-	model.ServiceEndpoint = &serviceEndpointModel{
+	model.ServiceEndpoint = &models.ServiceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),
 		Host:              types.StringValue(dto.ServiceEndpoint.Host),
 		Port:              types.Int64Value(int64(dto.ServiceEndpoint.Port)),
@@ -443,7 +444,7 @@ func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkl
 	model.ServiceEndpoint.HTTPHeaders = newHTTPHeadersModel(ctx, dto.ServiceEndpoint.HTTPHeaders)
 
 	if dto.ServiceEndpoint.WorkloadServiceAuthentication != nil {
-		model.ServiceEndpoint.WorkloadServiceAuthentication = &workloadServiceAuthenticationModel{
+		model.ServiceEndpoint.WorkloadServiceAuthentication = &models.WorkloadServiceAuthenticationModel{
 			Scheme: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Scheme),
 			Method: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Method),
 			Config: types.StringValue(dto.ServiceEndpoint.WorkloadServiceAuthentication.Config),

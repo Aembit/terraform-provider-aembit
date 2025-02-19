@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -135,7 +136,7 @@ func definePermissionReadOnlyAttribute(name string, computed bool) schema.Single
 // Create creates the resource and sets the initial Terraform state.
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan roleResourceModel
+	var plan models.RoleResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -169,7 +170,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 // Read refreshes the Terraform state with the latest data.
 func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state roleResourceModel
+	var state models.RoleResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -204,7 +205,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state roleResourceModel
+	var state models.RoleResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -215,7 +216,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan roleResourceModel
+	var plan models.RoleResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -249,7 +250,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state roleResourceModel
+	var state models.RoleResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -286,7 +287,7 @@ func (r *roleResource) ImportState(ctx context.Context, req resource.ImportState
 }
 
 // Model to DTO conversion methods.
-func convertRoleModelToDTO(ctx context.Context, model roleResourceModel, externalID *string) aembit.RoleDTO {
+func convertRoleModelToDTO(ctx context.Context, model models.RoleResourceModel, externalID *string) aembit.RoleDTO {
 	var dto aembit.RoleDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -335,7 +336,7 @@ func convertRoleModelToDTO(ctx context.Context, model roleResourceModel, externa
 	return dto
 }
 
-func appendPermissionToDTO(list []aembit.RolePermissionDTO, name string, permission *rolePermission) []aembit.RolePermissionDTO {
+func appendPermissionToDTO(list []aembit.RolePermissionDTO, name string, permission *models.RolePermission) []aembit.RolePermissionDTO {
 	if permission == nil {
 		return list
 	}
@@ -346,7 +347,7 @@ func appendPermissionToDTO(list []aembit.RolePermissionDTO, name string, permiss
 	})
 }
 
-func appendReadOnlyPermissionToDTO(list []aembit.RolePermissionDTO, name string, permission *roleReadOnlyPermission) []aembit.RolePermissionDTO {
+func appendReadOnlyPermissionToDTO(list []aembit.RolePermissionDTO, name string, permission *models.RoleReadOnlyPermission) []aembit.RolePermissionDTO {
 	if permission == nil {
 		return list
 	}
@@ -357,8 +358,8 @@ func appendReadOnlyPermissionToDTO(list []aembit.RolePermissionDTO, name string,
 }
 
 // DTO to Model conversion methods.
-func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) roleResourceModel {
-	var model roleResourceModel
+func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleResourceModel {
+	var model models.RoleResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
@@ -409,15 +410,15 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) roleResource
 	return model
 }
 
-func convertPermissionDTOToPermission(permission aembit.RolePermissionDTO) *rolePermission {
-	return &rolePermission{
+func convertPermissionDTOToPermission(permission aembit.RolePermissionDTO) *models.RolePermission {
+	return &models.RolePermission{
 		Read:  types.BoolValue(permission.Read),
 		Write: types.BoolValue(permission.Write),
 	}
 }
 
-func convertPermissionDTOToReadOnlyPermission(permission aembit.RolePermissionDTO) *roleReadOnlyPermission {
-	return &roleReadOnlyPermission{
+func convertPermissionDTOToReadOnlyPermission(permission aembit.RolePermissionDTO) *models.RoleReadOnlyPermission {
+	return &models.RoleReadOnlyPermission{
 		Read: types.BoolValue(permission.Read),
 	}
 }

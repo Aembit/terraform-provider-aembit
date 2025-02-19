@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -775,7 +776,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 // Create creates the resource and sets the initial Terraform state.
 func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan trustProviderResourceModel
+	var plan models.TrustProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -809,7 +810,7 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 // Read refreshes the Terraform state with the latest data.
 func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state trustProviderResourceModel
+	var state models.TrustProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -844,7 +845,7 @@ func (r *trustProviderResource) Read(ctx context.Context, req resource.ReadReque
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state trustProviderResourceModel
+	var state models.TrustProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -855,7 +856,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan trustProviderResourceModel
+	var plan models.TrustProviderResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -889,7 +890,7 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *trustProviderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state trustProviderResourceModel
+	var state models.TrustProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -926,7 +927,7 @@ func (r *trustProviderResource) ImportState(ctx context.Context, req resource.Im
 }
 
 // Model to DTO conversion methods.
-func convertTrustProviderModelToDTO(ctx context.Context, model trustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
+func convertTrustProviderModelToDTO(ctx context.Context, model models.TrustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -998,7 +999,7 @@ func appendMatchRulesIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, val
 	return matchRules
 }
 
-func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAzureMetadataModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AzureMetadataService"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -1010,7 +1011,7 @@ func convertAzureMetadataModelToDTO(model trustProviderResourceModel, dto *aembi
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AzureMetadata.SubscriptionIDs, "AzureSubscriptionId")
 }
 
-func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAwsRoleModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AWSRole"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -1024,7 +1025,7 @@ func convertAwsRoleModelToDTO(model trustProviderResourceModel, dto *aembit.Trus
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.Usernames, "AwsUsername")
 }
 
-func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertAwsMetadataModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "AWSMetadataService"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.AwsMetadata.Certificate.ValueString()))
 	dto.PemType = "Certificate"
@@ -1051,7 +1052,7 @@ func convertAwsMetadataModelToDTO(model trustProviderResourceModel, dto *aembit.
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Version, "AwsVersion")
 }
 
-func convertGcpIdentityModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertGcpIdentityModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "GcpIdentityToken"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -1059,7 +1060,7 @@ func convertGcpIdentityModelToDTO(model trustProviderResourceModel, dto *aembit.
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GcpIdentity.EMails, "Email")
 }
 
-func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertGitHubActionModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "GitHubIdentityToken"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -1071,7 +1072,7 @@ func convertGitHubActionModelToDTO(model trustProviderResourceModel, dto *aembit
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitHubAction.Workflows, "GithubWorkflow")
 }
 
-func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertGitLabJobModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "GitLabIdentityToken"
 
 	dto.OidcUrl = model.GitLabJob.OIDCEndpoint.ValueString()
@@ -1086,7 +1087,7 @@ func convertGitLabJobModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GitLabJob.RefPaths, "GitLabRefPath")
 }
 
-func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertKerberosModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "Kerberos"
 	dto.AgentControllerIDs = make([]string, len(model.Kerberos.AgentControllerIDs))
 	for i, controllerID := range model.Kerberos.AgentControllerIDs {
@@ -1102,7 +1103,7 @@ func convertKerberosModelToDTO(model trustProviderResourceModel, dto *aembit.Tru
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.SourceIPs, "SourceIp")
 }
 
-func convertKubernetesModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "KubernetesServiceAccount"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.KubernetesService.PublicKey.ValueString()))
 	if len(dto.Certificate) > 0 {
@@ -1123,7 +1124,7 @@ func convertKubernetesModelToDTO(model trustProviderResourceModel, dto *aembit.T
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Subjects, "KubernetesSub")
 }
 
-func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertTerraformModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
 	dto.Provider = "TerraformIdentityToken"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
@@ -1136,8 +1137,8 @@ func convertTerraformModelToDTO(model trustProviderResourceModel, dto *aembit.Tr
 }
 
 // DTO to Model conversion methods.
-func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, tenant, stackDomain string) trustProviderResourceModel {
-	var model trustProviderResourceModel
+func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, tenant, stackDomain string) models.TrustProviderResourceModel {
+	var model models.TrustProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
@@ -1168,8 +1169,8 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 	return model
 }
 
-func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAzureMetadataModel {
-	model := &trustProviderAzureMetadataModel{
+func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderAzureMetadataModel {
+	model := &models.TrustProviderAzureMetadataModel{
 		Sku:            types.StringNull(),
 		VMID:           types.StringNull(),
 		SubscriptionID: types.StringNull(),
@@ -1187,8 +1188,8 @@ func convertAzureMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderA
 	return model
 }
 
-func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsRoleModel {
-	model := &trustProviderAwsRoleModel{
+func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderAwsRoleModel {
+	model := &models.TrustProviderAwsRoleModel{
 		AccountID:   types.StringNull(),
 		AssumedRole: types.StringNull(),
 		RoleARN:     types.StringNull(),
@@ -1210,10 +1211,10 @@ func convertAwsRoleDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsRole
 	return model
 }
 
-func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAwsMetadataModel {
+func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderAwsMetadataModel {
 	decodedCert, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
-	model := &trustProviderAwsMetadataModel{
+	model := &models.TrustProviderAwsMetadataModel{
 		Certificate:             types.StringValue(string(decodedCert)),
 		AccountID:               types.StringNull(),
 		Architecture:            types.StringNull(),
@@ -1276,8 +1277,8 @@ func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *trustProviderAws
 	return model
 }
 
-func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerberosModel {
-	model := &trustProviderKerberosModel{
+func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderKerberosModel {
+	model := &models.TrustProviderKerberosModel{
 		Principal: types.StringNull(),
 		Realm:     types.StringNull(),
 		SourceIP:  types.StringNull(),
@@ -1299,10 +1300,10 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKerber
 	return model
 }
 
-func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKubernetesModel {
+func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderKubernetesModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
-	model := &trustProviderKubernetesModel{
+	model := &models.TrustProviderKubernetesModel{
 		Issuer:             types.StringNull(),
 		Namespace:          types.StringNull(),
 		PodName:            types.StringNull(),
@@ -1335,8 +1336,8 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *trustProviderKube
 	return model
 }
 
-func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGcpIdentityModel {
-	model := &trustProviderGcpIdentityModel{
+func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderGcpIdentityModel {
+	model := &models.TrustProviderGcpIdentityModel{
 		EMail: types.StringNull(),
 	}
 
@@ -1346,8 +1347,8 @@ func convertGcpIdentityDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGcp
 	return model
 }
 
-func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGitHubActionModel {
-	model := &trustProviderGitHubActionModel{
+func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderGitHubActionModel {
+	model := &models.TrustProviderGitHubActionModel{
 		Actor:      types.StringNull(),
 		Repository: types.StringNull(),
 		Workflow:   types.StringNull(),
@@ -1365,10 +1366,10 @@ func convertGitHubActionDTOToModel(dto aembit.TrustProviderDTO) *trustProviderGi
 	return model
 }
 
-func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain string) *trustProviderGitLabJobModel {
+func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain string) *models.TrustProviderGitLabJobModel {
 	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
 	stack := strings.Split(stackDomain, ".")[0]
-	model := &trustProviderGitLabJobModel{
+	model := &models.TrustProviderGitLabJobModel{
 		OIDCEndpoint:  types.StringValue(dto.OidcUrl),
 		Subject:       types.StringNull(),
 		ProjectPath:   types.StringNull(),
@@ -1393,8 +1394,8 @@ func convertGitLabJobDTOToModel(dto aembit.TrustProviderDTO, tenant, stackDomain
 	return model
 }
 
-func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *trustProviderTerraformModel {
-	model := &trustProviderTerraformModel{
+func convertTerraformDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderTerraformModel {
+	model := &models.TrustProviderTerraformModel{
 		OrganizationID: types.StringNull(),
 		ProjectID:      types.StringNull(),
 		WorkspaceID:    types.StringNull(),

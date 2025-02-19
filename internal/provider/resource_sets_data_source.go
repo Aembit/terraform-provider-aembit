@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -71,7 +72,7 @@ func (d *resourceSetsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 
 // Read checks for the datasource ID and retrieves the associated ResourceSet.
 func (d *resourceSetsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state resourceSetsDataModel
+	var state models.ResourceSetsDataModel
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -99,12 +100,12 @@ func (d *resourceSetsDataSource) Read(ctx context.Context, req datasource.ReadRe
 }
 
 // DTO to Model conversion methods.
-func convertResourceSetsDTOToModel(_ context.Context, dto []aembit.ResourceSetDTO) resourceSetsDataModel {
-	var model resourceSetsDataModel = resourceSetsDataModel{
-		ResourceSets: make([]resourceSetResourceModel, len(dto)),
+func convertResourceSetsDTOToModel(_ context.Context, dto []aembit.ResourceSetDTO) models.ResourceSetsDataModel {
+	var model models.ResourceSetsDataModel = models.ResourceSetsDataModel{
+		ResourceSets: make([]models.ResourceSetResourceModel, len(dto)),
 	}
 	for index, resourceSet := range dto {
-		model.ResourceSets[index] = resourceSetResourceModel{
+		model.ResourceSets[index] = models.ResourceSetResourceModel{
 			ID:          types.StringValue(resourceSet.EntityDTO.ExternalID),
 			Name:        types.StringValue(resourceSet.EntityDTO.Name),
 			Description: types.StringValue(resourceSet.EntityDTO.Description),

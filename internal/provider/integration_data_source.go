@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -106,7 +107,7 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 
 // Read refreshes the Terraform state with the latest data.
 func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state integrationsDataSourceModel
+	var state models.IntegrationsDataSourceModel
 
 	integrations, err := d.client.GetIntegrations(nil)
 	if err != nil {
@@ -119,7 +120,7 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	// Map response body to model
 	for _, integration := range integrations {
-		integrationState := convertIntegrationDTOToModel(ctx, integration, integrationResourceModel{})
+		integrationState := convertIntegrationDTOToModel(ctx, integration, models.IntegrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
 	}
 

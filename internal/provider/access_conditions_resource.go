@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -128,7 +129,7 @@ func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource
 // Create creates the resource and sets the initial Terraform state.
 func (r *accessConditionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan accessConditionResourceModel
+	var plan models.AccessConditionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -162,7 +163,7 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 // Read refreshes the Terraform state with the latest data.
 func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state accessConditionResourceModel
+	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -197,7 +198,7 @@ func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadReq
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *accessConditionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state accessConditionResourceModel
+	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -208,7 +209,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan accessConditionResourceModel
+	var plan models.AccessConditionResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -242,7 +243,7 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *accessConditionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state accessConditionResourceModel
+	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -278,7 +279,7 @@ func (r *accessConditionResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model accessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -316,8 +317,8 @@ func convertAccessConditionModelToDTO(ctx context.Context, model accessCondition
 	return accessCondition
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ accessConditionResourceModel) accessConditionResourceModel {
-	var model accessConditionResourceModel
+func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ models.AccessConditionResourceModel) models.AccessConditionResourceModel {
+	var model models.AccessConditionResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
@@ -331,12 +332,12 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 	}
 	switch dto.Integration.Type {
 	case "WizIntegrationApi":
-		model.Wiz = &accessConditionWizModel{
+		model.Wiz = &models.AccessConditionWizModel{
 			MaxLastSeen:               types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
 			ContainerClusterConnected: types.BoolValue(dto.Conditions.ContainerClusterConnected),
 		}
 	case "CrowdStrike":
-		model.CrowdStrike = &accessConditionCrowdstrikeModel{
+		model.CrowdStrike = &models.AccessConditionCrowdstrikeModel{
 			MaxLastSeen:                        types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
 			MatchHostname:                      types.BoolValue(dto.Conditions.MatchHostname),
 			MatchSerialNumber:                  types.BoolValue(dto.Conditions.MatchSerialNumber),
