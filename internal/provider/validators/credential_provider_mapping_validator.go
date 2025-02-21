@@ -12,7 +12,7 @@ import (
 type CredentialProviderMappingValidator struct{}
 
 func (v CredentialProviderMappingValidator) Description(ctx context.Context) string {
-	return "Ensures there is no duplicate in mapping values"
+	return "Ensure there are no duplicate mapping values"
 }
 
 func (v CredentialProviderMappingValidator) MarkdownDescription(ctx context.Context) string {
@@ -39,7 +39,7 @@ func (v CredentialProviderMappingValidator) ValidateSet(ctx context.Context, req
 
 		if found {
 			resp.Diagnostics.AddError(
-				"Error validating access policy",
+				"Error validating access policy credential provider mapping",
 				fmt.Errorf("duplicate credential provider mapping already exists").Error(),
 			)
 			return
