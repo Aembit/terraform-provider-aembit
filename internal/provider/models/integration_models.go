@@ -1,11 +1,11 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// integrationResourceModel maps the resource schema.
-type integrationResourceModel struct {
+// models.IntegrationResourceModel maps the resource schema.
+type IntegrationResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                     types.String                            `tfsdk:"id"`
 	Name                   types.String                            `tfsdk:"name"`
@@ -15,10 +15,10 @@ type integrationResourceModel struct {
 	Type                   types.String                            `tfsdk:"type"`
 	SyncFrequency          types.Int64                             `tfsdk:"sync_frequency"`
 	Endpoint               types.String                            `tfsdk:"endpoint"`
-	OAuthClientCredentials *integrationOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
+	OAuthClientCredentials *IntegrationOAuthClientCredentialsModel `tfsdk:"oauth_client_credentials"`
 }
 
-type integrationOAuthClientCredentialsModel struct {
+type IntegrationOAuthClientCredentialsModel struct {
 	TokenURL     types.String `tfsdk:"token_url"`
 	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`
@@ -26,6 +26,6 @@ type integrationOAuthClientCredentialsModel struct {
 }
 
 // integrationDataSourceModel maps the datasource schema.
-type integrationsDataSourceModel struct {
-	Integrations []integrationResourceModel `tfsdk:"integrations"`
+type IntegrationsDataSourceModel struct {
+	Integrations []IntegrationResourceModel `tfsdk:"integrations"`
 }

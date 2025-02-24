@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -118,7 +119,7 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 // Create creates the resource and sets the initial Terraform state.
 func (r *integrationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan integrationResourceModel
+	var plan models.IntegrationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -152,7 +153,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 // Read refreshes the Terraform state with the latest data.
 func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state integrationResourceModel
+	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -187,7 +188,7 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *integrationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state integrationResourceModel
+	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -198,7 +199,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan integrationResourceModel
+	var plan models.IntegrationResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -232,7 +233,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state integrationResourceModel
+	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -268,7 +269,7 @@ func (r *integrationResource) ImportState(ctx context.Context, req resource.Impo
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIntegrationModelToDTO(ctx context.Context, model integrationResourceModel, externalID *string) aembit.IntegrationDTO {
+func convertIntegrationModelToDTO(ctx context.Context, model models.IntegrationResourceModel, externalID *string) aembit.IntegrationDTO {
 	var integration aembit.IntegrationDTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -304,8 +305,8 @@ func convertIntegrationModelToDTO(ctx context.Context, model integrationResource
 	return integration
 }
 
-func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state integrationResourceModel) integrationResourceModel {
-	var model integrationResourceModel
+func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state models.IntegrationResourceModel) models.IntegrationResourceModel {
+	var model models.IntegrationResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
@@ -315,7 +316,7 @@ func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)
 	model.SyncFrequency = types.Int64Value(dto.SyncFrequencySeconds)
-	model.OAuthClientCredentials = &integrationOAuthClientCredentialsModel{
+	model.OAuthClientCredentials = &models.IntegrationOAuthClientCredentialsModel{
 		TokenURL:     types.StringValue(dto.IntegrationJSON.TokenURL),
 		ClientID:     types.StringValue(dto.IntegrationJSON.ClientID),
 		ClientSecret: types.StringValue(dto.IntegrationJSON.ClientSecret),

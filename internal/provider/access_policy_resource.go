@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -148,6 +152,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 						},
 					},
 				},
+				Validators: []validator.Set{
+					validators.NewCredentialProviderMappingValidator(),
+				},
 			},
 			"server_workload": schema.StringAttribute{
 				Description: "Server workload ID configured in the Access Policy.",
@@ -163,7 +170,7 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 // Create creates the resource and sets the initial Terraform state.
 func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan accessPolicyResourceModel
+	var plan models.AccessPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 
 	resp.Diagnostics.Append(diags...)
@@ -204,7 +211,7 @@ func (r *accessPolicyResource) Create(ctx context.Context, req resource.CreateRe
 // Read refreshes the Terraform state with the latest data.
 func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state accessPolicyResourceModel
+	var state models.AccessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -249,6 +256,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -258,7 +266,7 @@ func (r *accessPolicyResource) Read(ctx context.Context, req resource.ReadReques
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state accessPolicyResourceModel
+	var state models.AccessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -269,7 +277,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan accessPolicyResourceModel
+	var plan models.AccessPolicyResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -302,6 +310,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -311,7 +320,7 @@ func (r *accessPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *accessPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state accessPolicyResourceModel
+	var state models.AccessPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -347,7 +356,7 @@ func (r *accessPolicyResource) ImportState(ctx context.Context, req resource.Imp
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, externalID *string) aembit.CreatePolicyDTO {
+func convertAccessPolicyModelToPolicyDTO(model models.AccessPolicyResourceModel, externalID *string) aembit.CreatePolicyDTO {
 	var policy aembit.CreatePolicyDTO
 	policy.EntityDTO = aembit.EntityDTO{
 		Name:     model.Name.ValueString(),
@@ -406,8 +415,8 @@ func convertAccessPolicyModelToPolicyDTO(model accessPolicyResourceModel, extern
 	return policy
 }
 
-func convertAccessPolicyDTOToModel(plan accessPolicyResourceModel, dto aembit.CreatePolicyDTO) accessPolicyResourceModel {
-	var model accessPolicyResourceModel
+func convertAccessPolicyDTOToModel(plan models.AccessPolicyResourceModel, dto aembit.CreatePolicyDTO) models.AccessPolicyResourceModel {
+	var model models.AccessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
@@ -419,10 +428,10 @@ func convertAccessPolicyDTOToModel(plan accessPolicyResourceModel, dto aembit.Cr
 
 		// discard credentialProvider mappings if there is a single credential provider
 		if len(dto.CredentialProviders) > 1 && dto.CredentialProviders[0].MappingType != "None" {
-			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+			model.CredentialProviders = make([]*models.PolicyCredentialMappingModel, len(dto.CredentialProviders))
 
 			for i, credentialProvider := range dto.CredentialProviders {
-				model.CredentialProviders[i] = &policyCredentialMappingModel{
+				model.CredentialProviders[i] = &models.PolicyCredentialMappingModel{
 					CredentialProviderId: types.StringValue(credentialProvider.CredentialProviderId),
 					MappingType:          types.StringValue(credentialProvider.MappingType),
 					AccountName:          types.StringValue(""),
@@ -432,21 +441,11 @@ func convertAccessPolicyDTOToModel(plan accessPolicyResourceModel, dto aembit.Cr
 					HttpbodyFieldValue:   types.StringValue(""),
 				}
 
-				if len(credentialProvider.AccountName) > 0 {
-					model.CredentialProviders[i].AccountName = types.StringValue(credentialProvider.AccountName)
-				}
-				if len(credentialProvider.HeaderName) > 0 {
-					model.CredentialProviders[i].HeaderName = types.StringValue(credentialProvider.HeaderName)
-				}
-				if len(credentialProvider.HeaderValue) > 0 {
-					model.CredentialProviders[i].HeaderValue = types.StringValue(credentialProvider.HeaderValue)
-				}
-				if len(credentialProvider.HttpbodyFieldPath) > 0 {
-					model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(credentialProvider.HttpbodyFieldPath)
-				}
-				if len(credentialProvider.HttpbodyFieldValue) > 0 {
-					model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(credentialProvider.HttpbodyFieldValue)
-				}
+				model.CredentialProviders[i].AccountName = types.StringValue(credentialProvider.AccountName)
+				model.CredentialProviders[i].HeaderName = types.StringValue(credentialProvider.HeaderName)
+				model.CredentialProviders[i].HeaderValue = types.StringValue(credentialProvider.HeaderValue)
+				model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(credentialProvider.HttpbodyFieldPath)
+				model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(credentialProvider.HttpbodyFieldValue)
 			}
 		}
 	}
@@ -475,8 +474,8 @@ func convertAccessPolicyDTOToModel(plan accessPolicyResourceModel, dto aembit.Cr
 	return model
 }
 
-func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMappings []aembit.PolicyCredentialMappingDTO) accessPolicyResourceModel {
-	var model accessPolicyResourceModel
+func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMappings []aembit.PolicyCredentialMappingDTO) models.AccessPolicyResourceModel {
+	var model models.AccessPolicyResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
@@ -488,7 +487,7 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 
 		// discard credentialProvider mappings if there is a single credential provider
 		if len(credentialMappings) > 1 && credentialMappings[0].MappingType != "None" {
-			model.CredentialProviders = make([]*policyCredentialMappingModel, len(dto.CredentialProviders))
+			model.CredentialProviders = make([]*models.PolicyCredentialMappingModel, len(dto.CredentialProviders))
 
 			for i, credentialProvider := range dto.CredentialProviders {
 				// find related mapping
@@ -501,7 +500,7 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 					}
 				}
 
-				model.CredentialProviders[i] = &policyCredentialMappingModel{
+				model.CredentialProviders[i] = &models.PolicyCredentialMappingModel{
 					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
 					MappingType:          types.StringValue(relatedMapping.MappingType),
 					AccountName:          types.StringValue(relatedMapping.AccountName),
@@ -530,8 +529,8 @@ func convertAccessPolicyExternalDTOToModel(dto aembit.GetPolicyDTO, credentialMa
 	return model
 }
 
-func sortCredentialProviders(credentialProviders []*policyCredentialMappingModel, initialOrderOfCredentialProviders []string) []*policyCredentialMappingModel {
-	finalOrderOfCredentialProviders := make([]*policyCredentialMappingModel, len(credentialProviders))
+func sortCredentialProviders(credentialProviders []*models.PolicyCredentialMappingModel, initialOrderOfCredentialProviders []string) []*models.PolicyCredentialMappingModel {
+	finalOrderOfCredentialProviders := make([]*models.PolicyCredentialMappingModel, len(credentialProviders))
 
 	// make sure the order is correct if there are more than 1 credential providers
 	if len(credentialProviders) == len(initialOrderOfCredentialProviders) && len(finalOrderOfCredentialProviders) > 1 {

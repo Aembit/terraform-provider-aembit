@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -76,7 +77,7 @@ func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest
 // Create creates the resource and sets the initial Terraform state.
 func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan resourceSetResourceModel
+	var plan models.ResourceSetResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -110,7 +111,7 @@ func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateReq
 // Read refreshes the Terraform state with the latest data.
 func (r *resourceSetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state resourceSetResourceModel
+	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -145,7 +146,7 @@ func (r *resourceSetResource) Read(ctx context.Context, req resource.ReadRequest
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state resourceSetResourceModel
+	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -156,7 +157,7 @@ func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateReq
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan resourceSetResourceModel
+	var plan models.ResourceSetResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -190,7 +191,7 @@ func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateReq
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *resourceSetResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state resourceSetResourceModel
+	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -215,7 +216,7 @@ func (r *resourceSetResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 // Model to DTO conversion methods.
-func convertResourceSetModelToDTO(_ context.Context, model resourceSetResourceModel, externalID *string) aembit.ResourceSetDTO {
+func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetResourceModel, externalID *string) aembit.ResourceSetDTO {
 	var dto aembit.ResourceSetDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -237,8 +238,8 @@ func convertResourceSetModelToDTO(_ context.Context, model resourceSetResourceMo
 }
 
 // DTO to Model conversion methods.
-func convertResourceSetDTOToModel(_ context.Context, dto aembit.ResourceSetDTO) resourceSetResourceModel {
-	var model resourceSetResourceModel
+func convertResourceSetDTOToModel(_ context.Context, dto aembit.ResourceSetDTO) models.ResourceSetResourceModel {
+	var model models.ResourceSetResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)

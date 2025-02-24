@@ -1,12 +1,12 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// clientWorkloadResourceModel maps the resource schema.
-type clientWorkloadResourceModel struct {
+// models.ClientWorkloadResourceModel maps the resource schema.
+type ClientWorkloadResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
@@ -17,12 +17,12 @@ type clientWorkloadResourceModel struct {
 }
 
 // clientWorkloadDataSourceModel maps the datasource schema.
-type clientWorkloadsDataSourceModel struct {
-	ClientWorkloads []clientWorkloadResourceModel `tfsdk:"client_workloads"`
+type ClientWorkloadsDataSourceModel struct {
+	ClientWorkloads []ClientWorkloadResourceModel `tfsdk:"client_workloads"`
 }
 
-// identitiesModel maps client workload identity data.
-type identitiesModel struct {
+// models.IdentitiesModel maps client workload identity data.
+type IdentitiesModel struct {
 	Type  types.String `tfsdk:"type"`
 	Value types.String `tfsdk:"value"`
 }

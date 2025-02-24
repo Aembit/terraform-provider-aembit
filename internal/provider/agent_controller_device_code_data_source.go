@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -69,8 +70,8 @@ func (d *agentControllerDeviceCodeDataSource) Schema(_ context.Context, _ dataso
 
 // Read refreshes the Terraform state with the latest data.
 func (d *agentControllerDeviceCodeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var deviceCodeRequest agentControllerDeviceCodeDataSourceModel
-	var state agentControllerDeviceCodeDataSourceModel
+	var deviceCodeRequest models.AgentControllerDeviceCodeDataSourceModel
+	var state models.AgentControllerDeviceCodeDataSourceModel
 
 	// Retrieve Agent Controller ID from plan
 	resp.Diagnostics.Append(req.Config.Get(ctx, &deviceCodeRequest)...)

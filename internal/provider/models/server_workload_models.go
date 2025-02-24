@@ -1,25 +1,25 @@
-package provider
+package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// serverWorkloadResourceModel maps the resource schema.
-type serverWorkloadResourceModel struct {
+// ServerWorkloadResourceModel maps the resource schema.
+type ServerWorkloadResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID              types.String          `tfsdk:"id"`
 	Name            types.String          `tfsdk:"name"`
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
 	Tags            types.Map             `tfsdk:"tags"`
-	ServiceEndpoint *serviceEndpointModel `tfsdk:"service_endpoint"`
+	ServiceEndpoint *ServiceEndpointModel `tfsdk:"service_endpoint"`
 }
 
 // serverWorkloadDataSourceModel maps the datasource schema.
-type serverWorkloadsDataSourceModel struct {
-	ServerWorkloads []serverWorkloadResourceModel `tfsdk:"server_workloads"`
+type ServerWorkloadsDataSourceModel struct {
+	ServerWorkloads []ServerWorkloadResourceModel `tfsdk:"server_workloads"`
 }
 
-// serviceEndpointModel maps service endpoint data.
-type serviceEndpointModel struct {
+// ServiceEndpointModel maps service endpoint data.
+type ServiceEndpointModel struct {
 	ExternalID        types.String `tfsdk:"external_id"`
 	ID                types.Int64  `tfsdk:"id"`
 	Host              types.String `tfsdk:"host"`
@@ -30,13 +30,13 @@ type serviceEndpointModel struct {
 	Port              types.Int64  `tfsdk:"port"`
 	TLS               types.Bool   `tfsdk:"tls"`
 
-	WorkloadServiceAuthentication *workloadServiceAuthenticationModel `tfsdk:"authentication_config"`
+	WorkloadServiceAuthentication *WorkloadServiceAuthenticationModel `tfsdk:"authentication_config"`
 	TLSVerification               types.String                        `tfsdk:"tls_verification"`
 	HTTPHeaders                   types.Map                           `tfsdk:"http_headers"`
 }
 
-// workloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
-type workloadServiceAuthenticationModel struct {
+// WorkloadServiceAuthenticationModel maps the WorkloadServiceAuthenticationDTO struct.
+type WorkloadServiceAuthenticationModel struct {
 	Method types.String `tfsdk:"method"`
 	Scheme types.String `tfsdk:"scheme"`
 	Config types.String `tfsdk:"config"`

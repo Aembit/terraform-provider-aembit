@@ -2,6 +2,7 @@ package provider
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -135,6 +136,21 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyDuplicateMappings.tf")
+	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "clientworkloadNamespace")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      createFileConfig,
+				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
+			},
 		},
 	})
 }

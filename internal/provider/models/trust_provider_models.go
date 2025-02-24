@@ -1,34 +1,34 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// trustProviderResourceModel maps the resource schema.
-type trustProviderResourceModel struct {
+// TrustProviderResourceModel maps the resource schema.
+type TrustProviderResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                 types.String                     `tfsdk:"id"`
 	Name               types.String                     `tfsdk:"name"`
 	Description        types.String                     `tfsdk:"description"`
 	IsActive           types.Bool                       `tfsdk:"is_active"`
 	Tags               types.Map                        `tfsdk:"tags"`
-	AzureMetadata      *trustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
-	AwsRole            *trustProviderAwsRoleModel       `tfsdk:"aws_role"`
-	AwsMetadata        *trustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
-	GcpIdentity        *trustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
-	GitHubAction       *trustProviderGitHubActionModel  `tfsdk:"github_action"`
-	GitLabJob          *trustProviderGitLabJobModel     `tfsdk:"gitlab_job"`
-	Kerberos           *trustProviderKerberosModel      `tfsdk:"kerberos"`
-	KubernetesService  *trustProviderKubernetesModel    `tfsdk:"kubernetes_service_account"`
-	TerraformWorkspace *trustProviderTerraformModel     `tfsdk:"terraform_workspace"`
+	AzureMetadata      *TrustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
+	AwsRole            *TrustProviderAwsRoleModel       `tfsdk:"aws_role"`
+	AwsMetadata        *TrustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
+	GcpIdentity        *TrustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
+	GitHubAction       *TrustProviderGitHubActionModel  `tfsdk:"github_action"`
+	GitLabJob          *TrustProviderGitLabJobModel     `tfsdk:"gitlab_job"`
+	Kerberos           *TrustProviderKerberosModel      `tfsdk:"kerberos"`
+	KubernetesService  *TrustProviderKubernetesModel    `tfsdk:"kubernetes_service_account"`
+	TerraformWorkspace *TrustProviderTerraformModel     `tfsdk:"terraform_workspace"`
 }
 
 // trustProviderDataSourceModel maps the datasource schema.
-type trustProvidersDataSourceModel struct {
-	TrustProviders []trustProviderResourceModel `tfsdk:"trust_providers"`
+type TrustProvidersDataSourceModel struct {
+	TrustProviders []TrustProviderResourceModel `tfsdk:"trust_providers"`
 }
 
-type trustProviderAzureMetadataModel struct {
+type TrustProviderAzureMetadataModel struct {
 	Sku             types.String   `tfsdk:"sku"`
 	Skus            []types.String `tfsdk:"skus"`
 	VMID            types.String   `tfsdk:"vm_id"`
@@ -37,7 +37,7 @@ type trustProviderAzureMetadataModel struct {
 	SubscriptionIDs []types.String `tfsdk:"subscription_ids"`
 }
 
-type trustProviderAwsRoleModel struct {
+type TrustProviderAwsRoleModel struct {
 	AccountID    types.String   `tfsdk:"account_id"`
 	AccountIDs   []types.String `tfsdk:"account_ids"`
 	AssumedRole  types.String   `tfsdk:"assumed_role"`
@@ -48,7 +48,7 @@ type trustProviderAwsRoleModel struct {
 	Usernames    []types.String `tfsdk:"usernames"`
 }
 
-type trustProviderAwsMetadataModel struct {
+type TrustProviderAwsMetadataModel struct {
 	Certificate             types.String   `tfsdk:"certificate"`
 	AccountID               types.String   `tfsdk:"account_id"`
 	AccountIDs              []types.String `tfsdk:"account_ids"`
@@ -71,7 +71,7 @@ type trustProviderAwsMetadataModel struct {
 	Version                 types.String   `tfsdk:"version"`
 }
 
-type trustProviderKerberosModel struct {
+type TrustProviderKerberosModel struct {
 	AgentControllerIDs []types.String `tfsdk:"agent_controller_ids"`
 	Principal          types.String   `tfsdk:"principal"`
 	Principals         []types.String `tfsdk:"principals"`
@@ -81,7 +81,7 @@ type trustProviderKerberosModel struct {
 	SourceIPs          []types.String `tfsdk:"source_ips"`
 }
 
-type trustProviderKubernetesModel struct {
+type TrustProviderKubernetesModel struct {
 	Issuer              types.String   `tfsdk:"issuer"`
 	Issuers             []types.String `tfsdk:"issuers"`
 	Namespace           types.String   `tfsdk:"namespace"`
@@ -96,12 +96,12 @@ type trustProviderKubernetesModel struct {
 	PublicKey           types.String   `tfsdk:"public_key"`
 }
 
-type trustProviderGcpIdentityModel struct {
+type TrustProviderGcpIdentityModel struct {
 	EMail  types.String   `tfsdk:"email"`
 	EMails []types.String `tfsdk:"emails"`
 }
 
-type trustProviderGitHubActionModel struct {
+type TrustProviderGitHubActionModel struct {
 	Actor        types.String   `tfsdk:"actor"`
 	Actors       []types.String `tfsdk:"actors"`
 	Repository   types.String   `tfsdk:"repository"`
@@ -110,7 +110,7 @@ type trustProviderGitHubActionModel struct {
 	Workflows    []types.String `tfsdk:"workflows"`
 }
 
-type trustProviderGitLabJobModel struct {
+type TrustProviderGitLabJobModel struct {
 	OIDCEndpoint   types.String   `tfsdk:"oidc_endpoint"`
 	OIDCClientID   types.String   `tfsdk:"oidc_client_id"`
 	OIDCAudience   types.String   `tfsdk:"oidc_audience"`
@@ -124,7 +124,7 @@ type trustProviderGitLabJobModel struct {
 	Subjects       []types.String `tfsdk:"subjects"`
 }
 
-type trustProviderTerraformModel struct {
+type TrustProviderTerraformModel struct {
 	OrganizationID  types.String   `tfsdk:"organization_id"`
 	OrganizationIDs []types.String `tfsdk:"organization_ids"`
 	ProjectID       types.String   `tfsdk:"project_id"`
