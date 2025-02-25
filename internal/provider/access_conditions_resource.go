@@ -2,10 +2,10 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 	"fmt"
 	"slices"
 	"strings"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -453,7 +453,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 	return accessCondition, nil
 }
 
-func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*geoIpSubdivisionModel, countryFound *countryResourceModel) error {
+func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*models.GeoIpSubdivisionModel, countryFound *countryResourceModel) error {
 	for _, subDivision := range subDivisions {
 		subDivisionInput := subDivision.SubdivisionCode.ValueString()
 
@@ -504,16 +504,16 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 			PreventRestrictedFunctionalityMode: types.BoolValue(dto.Conditions.PreventRestrictedFunctionalityMode),
 		}
 	case "AembitGeoIPCondition":
-		geoIpModel := accessConditionGeoIpModel{}
+		geoIpModel := models.AccessConditionGeoIpModel{}
 
 		for _, location := range dto.Conditions.Locations {
-			loc := geoIpLocationModel{
+			loc := models.GeoIpLocationModel{
 				Alpha2Code:   types.StringValue(location.Alpha2Code),
-				Subdivisions: []*geoIpSubdivisionModel{},
+				Subdivisions: []*models.GeoIpSubdivisionModel{},
 			}
 
 			for _, subDivision := range location.Subdivisions {
-				loc.Subdivisions = append(loc.Subdivisions, &geoIpSubdivisionModel{
+				loc.Subdivisions = append(loc.Subdivisions, &models.GeoIpSubdivisionModel{
 					SubdivisionCode: types.StringValue(subDivision.SubdivisionCode),
 				})
 			}
@@ -523,10 +523,10 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 
 		model.GeoIp = &geoIpModel
 	case "AembitTimeCondition":
-		acTimeZone := accessConditionTimeZoneModel{}
+		acTimeZone := models.AccessConditionTimeZoneModel{}
 
 		for _, schedule := range dto.Conditions.Schedule {
-			acTimeZone.Schedule = append(acTimeZone.Schedule, &scheduleModel{
+			acTimeZone.Schedule = append(acTimeZone.Schedule, &models.ScheduleModel{
 				StartTime: types.StringValue(schedule.StartTime),
 				EndTime:   types.StringValue(schedule.EndTime),
 				Day:       types.StringValue(schedule.WeekDay.Name),

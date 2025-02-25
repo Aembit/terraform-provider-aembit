@@ -15,8 +15,8 @@ type AccessConditionResourceModel struct {
 	IntegrationID types.String                     `tfsdk:"integration_id"`
 	Wiz           *AccessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *AccessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
-	GeoIp         *accessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
-	Timezone      *accessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
+	GeoIp         *AccessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
+	Timezone      *AccessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
 }
 
 type AccessConditionWizModel struct {
@@ -31,25 +31,25 @@ type AccessConditionCrowdstrikeModel struct {
 	PreventRestrictedFunctionalityMode types.Bool  `tfsdk:"prevent_rfm"`
 }
 
-type accessConditionGeoIpModel struct {
-	Locations []*geoIpLocationModel `tfsdk:"locations"`
+type AccessConditionGeoIpModel struct {
+	Locations []*GeoIpLocationModel `tfsdk:"locations"`
 }
 
-type geoIpSubdivisionModel struct {
+type GeoIpSubdivisionModel struct {
 	SubdivisionCode types.String `tfsdk:"subdivision_code"`
 }
 
-type geoIpLocationModel struct {
+type GeoIpLocationModel struct {
 	Alpha2Code   types.String             `tfsdk:"alpha2_code"`
-	Subdivisions []*geoIpSubdivisionModel `tfsdk:"subdivisions"`
+	Subdivisions []*GeoIpSubdivisionModel `tfsdk:"subdivisions"`
 }
 
-type accessConditionTimeZoneModel struct {
-	Schedule []*scheduleModel `tfsdk:"schedule"`
+type AccessConditionTimeZoneModel struct {
+	Schedule []*ScheduleModel `tfsdk:"schedule"`
 	Timezone types.String     `tfsdk:"timezone"`
 }
 
-type scheduleModel struct {
+type ScheduleModel struct {
 	EndTime   types.String `tfsdk:"end_time"`
 	StartTime types.String `tfsdk:"start_time"`
 	Day       types.String `tfsdk:"day"`
