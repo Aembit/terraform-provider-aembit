@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -412,7 +413,7 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 
 // Read refreshes the Terraform state with the latest data.
 func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state trustProvidersDataSourceModel
+	var state models.TrustProvidersDataSourceModel
 
 	trustProviders, err := d.client.GetTrustProviders(nil)
 	if err != nil {

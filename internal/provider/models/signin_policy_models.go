@@ -1,8 +1,8 @@
-package provider
+package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// SignInPolicyResourceModel maps the resource schema.
+// models.SignInPolicyResourceModel maps the resource schema.
 type SignInPolicyResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID          types.String `tfsdk:"id"`

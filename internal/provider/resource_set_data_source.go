@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -66,7 +67,7 @@ func (d *resourceSetDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 
 // Read checks for the datasource ID and retrieves the associated ResourceSet.
 func (d *resourceSetDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state resourceSetResourceModel
+	var state models.ResourceSetResourceModel
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

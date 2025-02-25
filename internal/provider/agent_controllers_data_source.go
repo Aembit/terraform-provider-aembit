@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -80,7 +81,7 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 
 // Read refreshes the Terraform state with the latest data.
 func (d *agentControllersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state agentControllersDataSourceModel
+	var state models.AgentControllersDataSourceModel
 
 	agentControllers, err := d.client.GetAgentControllers(nil)
 	if err != nil {

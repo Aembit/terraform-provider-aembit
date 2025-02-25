@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -81,7 +82,7 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 // Create creates the resource and sets the initial Terraform state.
 func (r *agentControllerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan agentControllerResourceModel
+	var plan models.AgentControllerResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -115,7 +116,7 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 // Read refreshes the Terraform state with the latest data.
 func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state agentControllerResourceModel
+	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -150,7 +151,7 @@ func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadReq
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *agentControllerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state agentControllerResourceModel
+	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -161,7 +162,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan agentControllerResourceModel
+	var plan models.AgentControllerResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -195,7 +196,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *agentControllerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state agentControllerResourceModel
+	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -231,7 +232,7 @@ func (r *agentControllerResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAgentControllerModelToDTO(ctx context.Context, model agentControllerResourceModel, externalID *string) aembit.AgentControllerDTO {
+func convertAgentControllerModelToDTO(ctx context.Context, model models.AgentControllerResourceModel, externalID *string) aembit.AgentControllerDTO {
 	var controller aembit.AgentControllerDTO
 	controller.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -257,8 +258,8 @@ func convertAgentControllerModelToDTO(ctx context.Context, model agentController
 	return controller
 }
 
-func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) agentControllerResourceModel {
-	var model agentControllerResourceModel
+func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) models.AgentControllerResourceModel {
+	var model models.AgentControllerResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)

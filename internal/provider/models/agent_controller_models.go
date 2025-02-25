@@ -1,11 +1,11 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// agentControllerResourceModel maps the resource schema.
-type agentControllerResourceModel struct {
+// models.AgentControllerResourceModel maps the resource schema.
+type AgentControllerResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID              types.String `tfsdk:"id"`
 	Name            types.String `tfsdk:"name"`
@@ -16,6 +16,6 @@ type agentControllerResourceModel struct {
 }
 
 // agentControllerDataSourceModel maps the datasource schema.
-type agentControllersDataSourceModel struct {
-	AgentControllers []agentControllerResourceModel `tfsdk:"agent_controllers"`
+type AgentControllersDataSourceModel struct {
+	AgentControllers []AgentControllerResourceModel `tfsdk:"agent_controllers"`
 }

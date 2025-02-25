@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -154,7 +155,7 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 
 // Read refreshes the Terraform state with the latest data.
 func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state accessConditionsDataSourceModel
+	var state models.AccessConditionsDataSourceModel
 
 	accessConditions, err := d.client.GetAccessConditions(nil)
 	if err != nil {
@@ -167,7 +168,7 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, accessConditionResourceModel{})
+		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, models.AccessConditionResourceModel{})
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

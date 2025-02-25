@@ -1,11 +1,11 @@
-package provider
+package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// resourcesetResourceModel maps the resource schema.
-type resourceSetResourceModel struct {
+// models.ResourceSetResourceModel maps the resource schema.
+type ResourceSetResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID          types.String   `tfsdk:"id"`
 	Name        types.String   `tfsdk:"name"`
@@ -13,7 +13,7 @@ type resourceSetResourceModel struct {
 	Roles       []types.String `tfsdk:"roles"`
 }
 
-// resourceSetsDataModel maps the list of all resource sets.
-type resourceSetsDataModel struct {
-	ResourceSets []resourceSetResourceModel `tfsdk:"resource_sets"`
+// models.ResourceSetsDataModel maps the list of all resource sets.
+type ResourceSetsDataModel struct {
+	ResourceSets []ResourceSetResourceModel `tfsdk:"resource_sets"`
 }
