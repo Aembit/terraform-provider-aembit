@@ -46,7 +46,7 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"country_code": schema.StringAttribute{
-							Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.",
+							Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1).",
 							Computed:    true,
 						},
 						"short_name": schema.StringAttribute{
@@ -54,7 +54,7 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:    true,
 						},
 						"subdivisions": schema.ListNestedAttribute{
-							Description: "A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.",
+							Description: "A list of subdivision identifiers (as defined by ISO 3166).",
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
@@ -63,7 +63,7 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 										Computed:    true,
 									},
 									"name": schema.StringAttribute{
-										Description: "Name of the country",
+										Description: "Name of the subdivision",
 										Computed:    true,
 									},
 									"subdivision_code": schema.StringAttribute{

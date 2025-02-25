@@ -24,9 +24,9 @@ List of countries and their administrative subdivisions.
 
 Read-Only:
 
-- `country_code` (String) A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.
+- `country_code` (String) A list of two-letter country code identifiers (as defined by ISO 3166-1).
 - `short_name` (String) The official short name of the country as defined by ISO 3166-1 (e.g., 'United States').
-- `subdivisions` (Attributes List) A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition. (see [below for nested schema](#nestedatt--countries--subdivisions))
+- `subdivisions` (Attributes List) A list of subdivision identifiers (as defined by ISO 3166). (see [below for nested schema](#nestedatt--countries--subdivisions))
 
 <a id="nestedatt--countries--subdivisions"></a>
 ### Nested Schema for `countries.subdivisions`
@@ -34,5 +34,5 @@ Read-Only:
 Read-Only:
 
 - `country_code` (String) Country code of the parent country.
-- `name` (String) Name of the country
+- `name` (String) Name of the subdivision
 - `subdivision_code` (String) The subdivision identifier as defined by ISO 3166.
