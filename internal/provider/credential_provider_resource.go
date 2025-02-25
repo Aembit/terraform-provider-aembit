@@ -3,9 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 	"time"
 
 	"aembit.io/aembit"
@@ -31,8 +31,6 @@ var (
 	_ resource.ResourceWithImportState = &credentialProviderResource{}
 )
 
-const uuidRegexString string = `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
-const uuidRegexError string = "must be a valid uuid"
 const oidcIssuerTemplate string = "https://%s.id.%s"
 
 // NewCredentialProviderResource is a helper function to simplify the provider implementation.
@@ -65,15 +63,14 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$`),
-						uuidRegexError),
+					validators.UUIDRegexValidation(),
 				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -106,6 +103,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime of the Credential Provider.",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(900, 43200),
+						},
 					},
 				},
 			},
@@ -141,6 +141,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3600),
+						Validators: []validator.Int64{
+							int64validator.Between(900, 43200),
+						},
 					},
 				},
 			},
@@ -159,12 +162,18 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"service_account": schema.StringAttribute{
 						Description: "Service Account email of the GCP Session credentials requested by the Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.EmailValidation(),
+						},
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (seconds) of the GCP Session credentials requested by the Credential Provider.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3600),
+						Validators: []validator.Int64{
+							int64validator.Between(1, 43200),
+						},
 					},
 				},
 			},
@@ -192,16 +201,14 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Description: "Azure Tenant ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
-								uuidRegexError),
+							validators.UUIDRegexValidation(),
 						},
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Azure Client ID for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.RegexMatches(regexp.MustCompile(uuidRegexString),
-								uuidRegexError),
+							validators.UUIDRegexValidation(),
 						},
 					},
 				},
@@ -213,10 +220,17 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"account_id": schema.StringAttribute{
 						Description: "Snowflake Account ID of the Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthBetween(1, 24),
+							validators.SnowflakeAccountValidation(),
+						},
 					},
 					"username": schema.StringAttribute{
 						Description: "Snowflake Username of the Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.SnowflakeUserNameValidation(),
+						},
 					},
 					"alter_user_command": schema.StringAttribute{
 						Description: "Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.",
@@ -231,6 +245,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"token_url": schema.StringAttribute{
 						Description: "Token URL for the OAuth Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.UrlSchemeValidation(),
+						},
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the OAuth Credential Provider.",
@@ -291,6 +308,9 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"oauth_discovery_url": schema.StringAttribute{
 						Description: "OAuth URL for the OAuth Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
 					},
 					"oauth_authorization_url": schema.StringAttribute{
 						Description: "Authorization URL for the OAuth Credential Provider.",
@@ -443,14 +463,23 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 60),
+						},
 					},
 					"vault_host": schema.StringAttribute{
 						Description: "Hostname of the Vault Cluster to be used for executing the login API.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.HostValidation(),
+						},
 					},
 					"vault_port": schema.Int64Attribute{
 						Description: "Port of the Vault Cluster to be used for executing the login API.",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
+						},
 					},
 					"vault_tls": schema.BoolAttribute{
 						Description: "Configuration to utilize TLS for connectivity to the Vault Cluster.",
