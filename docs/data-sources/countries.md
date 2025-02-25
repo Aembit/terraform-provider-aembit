@@ -3,12 +3,12 @@
 page_title: "aembit_countries Data Source - terraform-provider-aembit"
 subcategory: ""
 description: |-
-  Available countries
+  Provides a list of countries and their administrative subdivisions.
 ---
 
 # aembit_countries (Data Source)
 
-Available countries
+Provides a list of countries and their administrative subdivisions.
 
 
 
@@ -17,22 +17,22 @@ Available countries
 
 ### Read-Only
 
-- `countries` (Attributes List) List of countries. (see [below for nested schema](#nestedatt--countries))
+- `countries` (Attributes List) A list of countries, each containing its code, short name, and subdivisions. (see [below for nested schema](#nestedatt--countries))
 
 <a id="nestedatt--countries"></a>
 ### Nested Schema for `countries`
 
 Read-Only:
 
-- `alpha2_code` (String) Country alpha2Code
-- `short_name` (String) Country shortName
-- `subdivisions` (Attributes List) Country sub-divisions (see [below for nested schema](#nestedatt--countries--subdivisions))
+- `country_code` (String) A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.
+- `short_name` (String) The official short name of the country as defined by ISO 3166-1 (e.g., 'United States').
+- `subdivisions` (Attributes List) A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition. (see [below for nested schema](#nestedatt--countries--subdivisions))
 
 <a id="nestedatt--countries--subdivisions"></a>
 ### Nested Schema for `countries.subdivisions`
 
 Read-Only:
 
-- `alpha2_code` (String) alpha2Code of the parent Country
-- `name` (String) name
-- `subdivision_code` (String) subdivisionCode
+- `country_code` (String) Country code of the parent country.
+- `name` (String) Name of the country
+- `subdivision_code` (String) The subdivision identifier as defined by ISO 3166.

@@ -79,7 +79,7 @@ resource "aembit_access_condition" "wiz" {
 - `geoip_conditions` (Attributes) (see [below for nested schema](#nestedatt--geoip_conditions))
 - `is_active` (Boolean) Active status of the Access Condition.
 - `tags` (Map of String) Tags are key-value pairs.
-- `timezone_conditions` (Attributes) (see [below for nested schema](#nestedatt--timezone_conditions))
+- `time_conditions` (Attributes) Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition. (see [below for nested schema](#nestedatt--time_conditions))
 - `wiz_conditions` (Attributes) Wiz Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--wiz_conditions))
 
 ### Read-Only
@@ -109,7 +109,7 @@ Required:
 
 Required:
 
-- `alpha2_code` (String)
+- `country_code` (String) A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.
 
 Optional:
 
@@ -120,27 +120,27 @@ Optional:
 
 Required:
 
-- `subdivision_code` (String)
+- `subdivision_code` (String) A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.
 
 
 
 
-<a id="nestedatt--timezone_conditions"></a>
-### Nested Schema for `timezone_conditions`
-
-Required:
-
-- `schedule` (Attributes List) (see [below for nested schema](#nestedatt--timezone_conditions--schedule))
-- `timezone` (String)
-
-<a id="nestedatt--timezone_conditions--schedule"></a>
-### Nested Schema for `timezone_conditions.schedule`
+<a id="nestedatt--time_conditions"></a>
+### Nested Schema for `time_conditions`
 
 Required:
 
-- `day` (String)
-- `end_time` (String)
-- `start_time` (String)
+- `schedule` (Attributes List) (see [below for nested schema](#nestedatt--time_conditions--schedule))
+- `timezone` (String) Timezone value such as America/Chicago, Europe/Istanbul
+
+<a id="nestedatt--time_conditions--schedule"></a>
+### Nested Schema for `time_conditions.schedule`
+
+Required:
+
+- `day` (String) Day of Week, for example: Tuesday
+- `end_time` (String) The end time of the schedule in 24-hour format (HH:mm), e.g., '18:00' for 6:00 PM.
+- `start_time` (String) The start time of the schedule in 24-hour format (HH:mm), e.g., '07:00' for 7:00 AM.
 
 
 

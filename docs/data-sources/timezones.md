@@ -3,12 +3,12 @@
 page_title: "aembit_timezones Data Source - terraform-provider-aembit"
 subcategory: ""
 description: |-
-  Available timeZones
+  Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.
 ---
 
 # aembit_timezones (Data Source)
 
-Available timeZones
+Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.
 
 
 
@@ -17,13 +17,13 @@ Available timeZones
 
 ### Read-Only
 
-- `timezones` (Attributes List) List of timeZones. (see [below for nested schema](#nestedatt--timezones))
+- `timezones` (Attributes List) A list of timezones, each containing its IANA identifier, UTC offset group, and a display label. (see [below for nested schema](#nestedatt--timezones))
 
 <a id="nestedatt--timezones"></a>
 ### Nested Schema for `timezones`
 
 Read-Only:
 
-- `group` (String) Group
-- `label` (String) Label
-- `timezone` (String) Timezone value such as America/Chicago, Europe/Istanbul
+- `group` (String) The UTC offset group representing the timezone's standard offset from UTC (e.g., 'UTC-05:00').
+- `label` (String) A user-friendly display label that includes the UTC offset and a common location (e.g., '(UTC-05:00) Eastern Time (New York)').
+- `timezone` (String) The IANA timezone identifier (e.g., 'America/New_York', 'Europe/London').
