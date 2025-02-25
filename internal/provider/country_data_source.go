@@ -38,7 +38,7 @@ func (d *countriesDataSource) Metadata(_ context.Context, req datasource.Metadat
 // Schema defines the schema for the resource.
 func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Provides a list of countries and their administrative subdivisions.",
+		Description: "List of countries and their administrative subdivisions.",
 		Attributes: map[string]schema.Attribute{
 			"countries": schema.ListNestedAttribute{
 				Description: "A list of countries, each containing its code, short name, and subdivisions.",

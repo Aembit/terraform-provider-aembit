@@ -3,12 +3,12 @@
 page_title: "aembit_countries Data Source - terraform-provider-aembit"
 subcategory: ""
 description: |-
-  Provides a list of countries and their administrative subdivisions.
+  List of countries and their administrative subdivisions.
 ---
 
 # aembit_countries (Data Source)
 
-Provides a list of countries and their administrative subdivisions.
+List of countries and their administrative subdivisions.
 
 
 

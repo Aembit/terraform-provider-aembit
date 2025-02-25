@@ -3,12 +3,12 @@
 page_title: "aembit_timezones Data Source - terraform-provider-aembit"
 subcategory: ""
 description: |-
-  Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.
+  List of available timezones, including their UTC offset, region grouping, and a user-friendly label.
 ---
 
 # aembit_timezones (Data Source)
 
-Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.
+List of available timezones, including their UTC offset, region grouping, and a user-friendly label.
 
 
 

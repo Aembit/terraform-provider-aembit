@@ -38,7 +38,7 @@ func (d *timezonesDataSource) Metadata(_ context.Context, req datasource.Metadat
 // Schema defines the schema for the resource.
 func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.",
+		Description: "List of available timezones, including their UTC offset, region grouping, and a user-friendly label.",
 		Attributes: map[string]schema.Attribute{
 			"timezones": schema.ListNestedAttribute{
 				Description: "A list of timezones, each containing its IANA identifier, UTC offset group, and a display label.",
