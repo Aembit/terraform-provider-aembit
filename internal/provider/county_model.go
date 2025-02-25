@@ -5,13 +5,13 @@ import (
 )
 
 type countrySubdivisionResourceModel struct {
-	Alpha2Code      types.String `tfsdk:"alpha2_code"`
+	CountryCode     types.String `tfsdk:"country_code"`
 	Name            types.String `tfsdk:"name"`
 	SubdivisionCode types.String `tfsdk:"subdivision_code"`
 }
 
 type countryResourceModel struct {
-	Alpha2Code   types.String                       `tfsdk:"alpha2_code"`
+	CountryCode  types.String                       `tfsdk:"country_code"`
 	ShortName    types.String                       `tfsdk:"short_name"`
 	Subdivisions []*countrySubdivisionResourceModel `tfsdk:"subdivisions"`
 }

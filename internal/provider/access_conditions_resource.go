@@ -122,15 +122,17 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 						Required: true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"alpha2_code": schema.StringAttribute{
-									Required: true,
+								"country_code": schema.StringAttribute{
+									Required:    true,
+									Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.",
 								},
 								"subdivisions": schema.ListNestedAttribute{
 									Optional: true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"subdivision_code": schema.StringAttribute{
-												Required: true,
+												Required:    true,
+												Description: "A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.",
 											},
 										},
 									},
@@ -140,27 +142,32 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 					},
 				},
 			},
-			"timezone_conditions": schema.SingleNestedAttribute{
-				Optional: true,
+			"time_conditions": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition.",
 				Attributes: map[string]schema.Attribute{
 					"schedule": schema.ListNestedAttribute{
 						Required: true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"start_time": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "The start time of the schedule in 24-hour format (HH:mm), e.g., '07:00' for 7:00 AM.",
 								},
 								"end_time": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "The end time of the schedule in 24-hour format (HH:mm), e.g., '18:00' for 6:00 PM.",
 								},
 								"day": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "Day of Week, for example: Tuesday",
 								},
 							},
 						},
 					},
 					"timezone": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "Timezone value such as America/Chicago, Europe/Istanbul",
 					},
 				},
 			},
@@ -175,7 +182,7 @@ func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource
 			path.MatchRoot("wiz_conditions"),
 			path.MatchRoot("crowdstrike_conditions"),
 			path.MatchRoot("geoip_conditions"),
-			path.MatchRoot("timezone_conditions"),
+			path.MatchRoot("time_conditions"),
 		),
 	}
 }
@@ -386,20 +393,20 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 		countriesResource := GetCountries(client)
 
 		for _, location := range model.GeoIp.Locations {
-			alpha2CodeInput := location.Alpha2Code.ValueString()
+			countryCodeInput := location.CountryCode.ValueString()
 
 			countryIndex := slices.IndexFunc(countriesResource.Countries, func(c *countryResourceModel) bool {
-				return c.Alpha2Code.ValueString() == alpha2CodeInput
+				return c.CountryCode.ValueString() == countryCodeInput
 			})
 
 			if countryIndex == -1 {
-				return accessCondition, fmt.Errorf("%v is not a valid Alpha2Code", alpha2CodeInput)
+				return accessCondition, fmt.Errorf("%v is not a valid CountryCode", countryCodeInput)
 			}
 
 			countryFound := countriesResource.Countries[countryIndex]
 
 			loc := aembit.CountryDTO{
-				Alpha2Code: countryFound.Alpha2Code.ValueString(),
+				Alpha2Code: countryFound.CountryCode.ValueString(),
 				ShortName:  countryFound.ShortName.ValueString(),
 			}
 
@@ -410,11 +417,11 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
 		}
 	}
-	if model.Timezone != nil {
+	if model.Time != nil {
 		// retrieve timezones datasource for validation
 		timezoneResource := GetTimezones(client)
 
-		timezoneInput := model.Timezone.Timezone.ValueString()
+		timezoneInput := model.Time.Timezone.ValueString()
 
 		tsIndex := slices.IndexFunc(timezoneResource.Timezones, func(ts *timezoneResourceModel) bool {
 			return ts.Timezone.ValueString() == timezoneInput
@@ -432,7 +439,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 			Label:    timeZoneFound.Label.ValueString(),
 		}
 
-		for _, schedule := range model.Timezone.Schedule {
+		for _, schedule := range model.Time.Schedule {
 			ordinal, err := findOrdinal(schedule.Day.ValueString())
 
 			if err != nil {
@@ -469,7 +476,7 @@ func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*models.GeoIpSubdiv
 
 		loc.Subdivisions = append(loc.Subdivisions, aembit.SubdivisionDTO{
 			SubdivisionCode: subdivisionFound.SubdivisionCode.ValueString(),
-			Alpha2Code:      subdivisionFound.Alpha2Code.ValueString(),
+			Alpha2Code:      subdivisionFound.CountryCode.ValueString(),
 			Name:            subdivisionFound.Name.ValueString(),
 		})
 	}
@@ -508,7 +515,7 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 
 		for _, location := range dto.Conditions.Locations {
 			loc := models.GeoIpLocationModel{
-				Alpha2Code:   types.StringValue(location.Alpha2Code),
+				CountryCode:  types.StringValue(location.Alpha2Code),
 				Subdivisions: []*models.GeoIpSubdivisionModel{},
 			}
 
@@ -535,7 +542,7 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 
 		acTimeZone.Timezone = types.StringValue(dto.Conditions.Timezone.Timezone)
 
-		model.Timezone = &acTimeZone
+		model.Time = &acTimeZone
 	}
 
 	return model

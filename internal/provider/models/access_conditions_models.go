@@ -16,7 +16,7 @@ type AccessConditionResourceModel struct {
 	Wiz           *AccessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *AccessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
 	GeoIp         *AccessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
-	Timezone      *AccessConditionTimeZoneModel    `tfsdk:"timezone_conditions"`
+	Time          *AccessConditionTimeZoneModel    `tfsdk:"time_conditions"`
 }
 
 type AccessConditionWizModel struct {
@@ -40,7 +40,7 @@ type GeoIpSubdivisionModel struct {
 }
 
 type GeoIpLocationModel struct {
-	Alpha2Code   types.String             `tfsdk:"alpha2_code"`
+	CountryCode  types.String             `tfsdk:"country_code"`
 	Subdivisions []*GeoIpSubdivisionModel `tfsdk:"subdivisions"`
 }
 

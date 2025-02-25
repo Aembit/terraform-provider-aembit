@@ -9,7 +9,7 @@ resource "aembit_access_condition" "timezone" {
 	name = "TF Acceptance Timezone"
 	is_active = true
 	integration_id = data.aembit_integrations.filtered.integrations[0].id
-	timezone_conditions = {
+	time_conditions = {
 		schedule = [
 			{
                 end_time: "17:00",

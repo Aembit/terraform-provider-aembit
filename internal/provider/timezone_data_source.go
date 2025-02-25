@@ -15,8 +15,8 @@ var (
 	_ datasource.DataSourceWithConfigure = &timezonesDataSource{}
 )
 
-// NewtimezonesDataSource is a helper function to simplify the provider implementation.
-func NewtimezonesDataSource() datasource.DataSource {
+// NewTimeZonesDataSource is a helper function to simplify the provider implementation.
+func NewTimeZonesDataSource() datasource.DataSource {
 	return &timezonesDataSource{}
 }
 
@@ -38,23 +38,23 @@ func (d *timezonesDataSource) Metadata(_ context.Context, req datasource.Metadat
 // Schema defines the schema for the resource.
 func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Available timeZones",
+		Description: "Provides a list of available timezones, including their UTC offset, region grouping, and a user-friendly label.",
 		Attributes: map[string]schema.Attribute{
 			"timezones": schema.ListNestedAttribute{
-				Description: "List of timeZones.",
+				Description: "A list of timezones, each containing its IANA identifier, UTC offset group, and a display label.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"timezone": schema.StringAttribute{
-							Description: "Timezone value such as America/Chicago, Europe/Istanbul",
+							Description: "The IANA timezone identifier (e.g., 'America/New_York', 'Europe/London').",
 							Computed:    true,
 						},
 						"group": schema.StringAttribute{
-							Description: "Group",
+							Description: "The UTC offset group representing the timezone's standard offset from UTC (e.g., 'UTC-05:00').",
 							Computed:    true,
 						},
 						"label": schema.StringAttribute{
-							Description: "Label",
+							Description: "A user-friendly display label that includes the UTC offset and a common location (e.g., '(UTC-05:00) Eastern Time (New York)').",
 							Computed:    true,
 						},
 					},

@@ -38,36 +38,36 @@ func (d *countriesDataSource) Metadata(_ context.Context, req datasource.Metadat
 // Schema defines the schema for the resource.
 func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Available countries",
+		Description: "Provides a list of countries and their administrative subdivisions.",
 		Attributes: map[string]schema.Attribute{
 			"countries": schema.ListNestedAttribute{
-				Description: "List of countries.",
+				Description: "A list of countries, each containing its code, short name, and subdivisions.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"alpha2_code": schema.StringAttribute{
-							Description: "Country alpha2Code",
+						"country_code": schema.StringAttribute{
+							Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.",
 							Computed:    true,
 						},
 						"short_name": schema.StringAttribute{
-							Description: "Country shortName",
+							Description: "The official short name of the country as defined by ISO 3166-1 (e.g., 'United States').",
 							Computed:    true,
 						},
 						"subdivisions": schema.ListNestedAttribute{
-							Description: "Country sub-divisions",
+							Description: "A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.",
 							Computed:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
-									"alpha2_code": schema.StringAttribute{
-										Description: "alpha2Code of the parent Country",
+									"country_code": schema.StringAttribute{
+										Description: "Country code of the parent country.",
 										Computed:    true,
 									},
 									"name": schema.StringAttribute{
-										Description: "name",
+										Description: "Name of the country",
 										Computed:    true,
 									},
 									"subdivision_code": schema.StringAttribute{
-										Description: "subdivisionCode",
+										Description: "The subdivision identifier as defined by ISO 3166.",
 										Computed:    true,
 									},
 								},
@@ -100,13 +100,13 @@ func GetCountries(client *aembit.CloudClient) countriesDataSourceModel {
 	// Map response body to model
 	for _, country := range countries {
 		model := countryResourceModel{}
-		model.Alpha2Code = types.StringValue(country.Alpha2Code)
+		model.CountryCode = types.StringValue(country.Alpha2Code)
 		model.ShortName = types.StringValue(country.ShortName)
 
 		for _, sd := range country.Subdivisions {
 			model.Subdivisions = append(model.Subdivisions, &countrySubdivisionResourceModel{
 				Name:            types.StringValue(sd.Name),
-				Alpha2Code:      types.StringValue(sd.Alpha2Code),
+				CountryCode:     types.StringValue(sd.Alpha2Code),
 				SubdivisionCode: types.StringValue(sd.SubdivisionCode),
 			})
 		}
