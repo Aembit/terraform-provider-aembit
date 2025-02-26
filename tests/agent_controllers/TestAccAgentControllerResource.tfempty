@@ -5,5 +5,4 @@ resource "aembit_agent_controller" "device_code" {
 	name = ""
     description = "device code agent controller"
 	is_active = true
-    
 }

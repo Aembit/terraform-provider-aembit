@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -48,12 +49,15 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Client Workload.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Client Workload.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
