@@ -90,6 +90,65 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 								"prevent_rfm":         schema.BoolAttribute{Required: true},
 							},
 						},
+						"geoip_conditions": schema.SingleNestedAttribute{
+							Computed:    true,
+							Description: "Defines geographical conditions for filtering based on country and administrative subdivisions.",
+							Attributes: map[string]schema.Attribute{
+								"locations": schema.ListNestedAttribute{
+									Required:    true,
+									Description: "A list of geographical locations, each containing a country code and optional subdivisions.",
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"country_code": schema.StringAttribute{
+												Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.",
+												Required:    true,
+											},
+											"subdivisions": schema.ListNestedAttribute{
+												Description: "A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.",
+												Optional:    true,
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"subdivision_code": schema.StringAttribute{
+															Description: "The subdivision identifier as defined by ISO 3166.",
+															Required:    true,
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"time_conditions": schema.SingleNestedAttribute{
+							Computed:    true,
+							Description: "Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition.",
+							Attributes: map[string]schema.Attribute{
+								"schedule": schema.ListNestedAttribute{
+									Required: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"start_time": schema.StringAttribute{
+												Required:    true,
+												Description: "The start time of the schedule in 24-hour format (HH:mm), e.g., '07:00' for 7:00 AM.",
+											},
+											"end_time": schema.StringAttribute{
+												Required:    true,
+												Description: "The end time of the schedule in 24-hour format (HH:mm), e.g., '18:00' for 6:00 PM.",
+											},
+											"day": schema.StringAttribute{
+												Required:    true,
+												Description: "Day of Week, for example: Tuesday",
+											},
+										},
+									},
+								},
+								"timezone": schema.StringAttribute{
+									Description: "Timezone value such as America/Chicago, Europe/Istanbul",
+									Required:    true,
+								},
+							},
+						},
 					},
 				},
 			},

@@ -76,8 +76,10 @@ resource "aembit_access_condition" "wiz" {
 
 - `crowdstrike_conditions` (Attributes) CrowdStrike Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--crowdstrike_conditions))
 - `description` (String) Description for the Access Condition.
+- `geoip_conditions` (Attributes) (see [below for nested schema](#nestedatt--geoip_conditions))
 - `is_active` (Boolean) Active status of the Access Condition.
 - `tags` (Map of String) Tags are key-value pairs.
+- `time_conditions` (Attributes) Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition. (see [below for nested schema](#nestedatt--time_conditions))
 - `wiz_conditions` (Attributes) Wiz Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--wiz_conditions))
 
 ### Read-Only
@@ -93,6 +95,53 @@ Required:
 - `match_serial_number` (Boolean) The condition requires that managed hosts have a system serial number which matches the CrowdStrike identified serial number.
 - `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.
 - `prevent_rfm` (Boolean) The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.
+
+
+<a id="nestedatt--geoip_conditions"></a>
+### Nested Schema for `geoip_conditions`
+
+Required:
+
+- `locations` (Attributes List) (see [below for nested schema](#nestedatt--geoip_conditions--locations))
+
+<a id="nestedatt--geoip_conditions--locations"></a>
+### Nested Schema for `geoip_conditions.locations`
+
+Required:
+
+- `country_code` (String) A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.
+
+Optional:
+
+- `subdivisions` (Attributes List) (see [below for nested schema](#nestedatt--geoip_conditions--locations--subdivisions))
+
+<a id="nestedatt--geoip_conditions--locations--subdivisions"></a>
+### Nested Schema for `geoip_conditions.locations.subdivisions`
+
+Required:
+
+- `subdivision_code` (String) A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.
+
+
+
+
+<a id="nestedatt--time_conditions"></a>
+### Nested Schema for `time_conditions`
+
+Required:
+
+- `schedule` (Attributes List) (see [below for nested schema](#nestedatt--time_conditions--schedule))
+- `timezone` (String) Timezone value such as America/Chicago, Europe/Istanbul
+
+<a id="nestedatt--time_conditions--schedule"></a>
+### Nested Schema for `time_conditions.schedule`
+
+Required:
+
+- `day` (String) Day of Week, for example: Tuesday
+- `end_time` (String) The end time of the schedule in 24-hour format (HH:mm), e.g., '18:00' for 6:00 PM.
+- `start_time` (String) The start time of the schedule in 24-hour format (HH:mm), e.g., '07:00' for 7:00 AM.
+
 
 
 <a id="nestedatt--wiz_conditions"></a>

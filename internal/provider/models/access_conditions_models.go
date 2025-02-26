@@ -15,6 +15,8 @@ type AccessConditionResourceModel struct {
 	IntegrationID types.String                     `tfsdk:"integration_id"`
 	Wiz           *AccessConditionWizModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *AccessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
+	GeoIp         *AccessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
+	Time          *AccessConditionTimeZoneModel    `tfsdk:"time_conditions"`
 }
 
 type AccessConditionWizModel struct {
@@ -27,6 +29,30 @@ type AccessConditionCrowdstrikeModel struct {
 	MatchHostname                      types.Bool  `tfsdk:"match_hostname"`
 	MatchSerialNumber                  types.Bool  `tfsdk:"match_serial_number"`
 	PreventRestrictedFunctionalityMode types.Bool  `tfsdk:"prevent_rfm"`
+}
+
+type AccessConditionGeoIpModel struct {
+	Locations []*GeoIpLocationModel `tfsdk:"locations"`
+}
+
+type GeoIpSubdivisionModel struct {
+	SubdivisionCode types.String `tfsdk:"subdivision_code"`
+}
+
+type GeoIpLocationModel struct {
+	CountryCode  types.String             `tfsdk:"country_code"`
+	Subdivisions []*GeoIpSubdivisionModel `tfsdk:"subdivisions"`
+}
+
+type AccessConditionTimeZoneModel struct {
+	Schedule []*ScheduleModel `tfsdk:"schedule"`
+	Timezone types.String     `tfsdk:"timezone"`
+}
+
+type ScheduleModel struct {
+	EndTime   types.String `tfsdk:"end_time"`
+	StartTime types.String `tfsdk:"start_time"`
+	Day       types.String `tfsdk:"day"`
 }
 
 // accessConditionDataSourceModel maps the datasource schema.

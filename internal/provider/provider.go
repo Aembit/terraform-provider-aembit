@@ -308,6 +308,8 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewRolesDataSource,
 		NewResourceSetDataSource,
 		NewResourceSetsDataSource,
+		NewCountriesDataSource,
+		NewTimeZonesDataSource,
 	}
 }
 
