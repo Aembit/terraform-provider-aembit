@@ -7,6 +7,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -55,6 +56,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Access Policy.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Policy.",
@@ -73,13 +77,19 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"trust_providers": schema.SetAttribute{
 				Description: "Set of Trust Providers to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+				},
+				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -89,7 +99,10 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
-				Default:     setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+				},
+				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplace(),
 				},
@@ -100,6 +113,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
 				},
 			},
 			"credential_providers": schema.SetNestedAttribute{
@@ -120,6 +136,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 						"credential_provider_id": schema.StringAttribute{
 							Description: "ID of associated Credential Provider.",
 							Required:    true,
+							Validators: []validator.String{
+								validators.UUIDRegexValidation(),
+							},
 						},
 						"mapping_type": schema.StringAttribute{
 							Description: "Mapping type for the credential provider.",
@@ -161,6 +180,9 @@ func (r *accessPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
 				},
 			},
 		},

@@ -53,7 +53,7 @@ resource "aembit_credential_provider" "snowflake1" {
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
 	snowflake_jwt = {
-		account_id = "account_id"
+		account_id = "account-id"
 		username = "username"
 	}
 }

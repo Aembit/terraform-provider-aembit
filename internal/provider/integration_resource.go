@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -48,12 +49,15 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Integration.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Integration.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -88,6 +92,9 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"endpoint": schema.StringAttribute{
 				Description: "Endpoint to be used for performing the Integration.",
 				Required:    true,
+				Validators: []validator.String{
+					validators.UrlSchemeValidation(),
+				},
 			},
 			"oauth_client_credentials": schema.SingleNestedAttribute{
 				Description: "OAuth Client Credentials authentication information for the Integration.",
@@ -96,6 +103,9 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 					"token_url": schema.StringAttribute{
 						Description: "Token URL for the OAuth Endpoint of the Integration.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.UrlSchemeValidation(),
+						},
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the OAuth Endpoint of the Integration.",
