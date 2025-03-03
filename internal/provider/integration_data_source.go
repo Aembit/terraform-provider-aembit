@@ -43,6 +43,13 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		Description: "Manages an integration.",
 		Attributes: map[string]schema.Attribute{
+			"type": schema.StringAttribute{
+				Optional:    true,
+				Description: "Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)",
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"AembitTimeCondition", "AembitGeoIPCondition"}...),
+				},
+			},
 			"integrations": schema.ListNestedAttribute{
 				Description: "List of integrations.",
 				Computed:    true,
@@ -109,7 +116,10 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state models.IntegrationsDataSourceModel
 
+	req.Config.Get(ctx, &state)
+
 	integrations, err := d.client.GetIntegrations(nil)
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",
@@ -120,6 +130,13 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	// Map response body to model
 	for _, integration := range integrations {
+		// check if we have a filter on type
+		if !state.Type.IsNull() && !state.Type.IsUnknown() {
+			if integration.Type != state.Type.ValueString() {
+				continue
+			}
+		}
+
 		integrationState := convertIntegrationDTOToModel(ctx, integration, models.IntegrationResourceModel{})
 		state.Integrations = append(state.Integrations, integrationState)
 	}

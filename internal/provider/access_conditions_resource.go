@@ -2,11 +2,14 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"slices"
+	"strings"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -49,12 +52,15 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Access Condition.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Condition.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -112,6 +118,62 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 					},
 				},
 			},
+			"geoip_conditions": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"locations": schema.ListNestedAttribute{
+						Required: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"country_code": schema.StringAttribute{
+									Required:    true,
+									Description: "A list of two-letter country code identifiers (as defined by ISO 3166-1) to allow as part of the validation for this access condition.",
+								},
+								"subdivisions": schema.ListNestedAttribute{
+									Optional: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"subdivision_code": schema.StringAttribute{
+												Required:    true,
+												Description: "A list of subdivision identifiers (as defined by ISO 3166) to allow as part of the validation for this access condition.",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"time_conditions": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition.",
+				Attributes: map[string]schema.Attribute{
+					"schedule": schema.ListNestedAttribute{
+						Required: true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"start_time": schema.StringAttribute{
+									Required:    true,
+									Description: "The start time of the schedule in 24-hour format (HH:mm), e.g., '07:00' for 7:00 AM.",
+								},
+								"end_time": schema.StringAttribute{
+									Required:    true,
+									Description: "The end time of the schedule in 24-hour format (HH:mm), e.g., '18:00' for 6:00 PM.",
+								},
+								"day": schema.StringAttribute{
+									Required:    true,
+									Description: "Day of Week, for example: Tuesday",
+								},
+							},
+						},
+					},
+					"timezone": schema.StringAttribute{
+						Required:    true,
+						Description: "Timezone value such as America/Chicago, Europe/Istanbul",
+					},
+				},
+			},
 		},
 	}
 }
@@ -122,6 +184,8 @@ func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("wiz_conditions"),
 			path.MatchRoot("crowdstrike_conditions"),
+			path.MatchRoot("geoip_conditions"),
+			path.MatchRoot("time_conditions"),
 		),
 	}
 }
@@ -137,7 +201,14 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, nil)
+	dto, err := convertAccessConditionModelToDTO(ctx, plan, nil, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating Access Condition",
+			err.Error(),
+		)
+		return
+	}
 
 	// Create new AccessCondition
 	accessCondition, err := r.client.CreateAccessCondition(dto, nil)
@@ -217,7 +288,14 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var dto aembit.AccessConditionDTO = convertAccessConditionModelToDTO(ctx, plan, &externalID)
+	dto, err := convertAccessConditionModelToDTO(ctx, plan, &externalID, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating Access Condition",
+			err.Error(),
+		)
+		return
+	}
 
 	// Update AccessCondition
 	accessCondition, err := r.client.UpdateAccessCondition(dto, nil)
@@ -279,7 +357,7 @@ func (r *accessConditionResource) ImportState(ctx context.Context, req resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessConditionResourceModel, externalID *string) aembit.AccessConditionDTO {
+func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessConditionResourceModel, externalID *string, client *aembit.CloudClient) (aembit.AccessConditionDTO, error) {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -313,8 +391,100 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 		accessCondition.Conditions.MatchSerialNumber = model.CrowdStrike.MatchSerialNumber.ValueBool()
 		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
 	}
+	if model.GeoIp != nil {
+		// retrieve countries datasource for validation
+		countriesResource := GetCountries(client)
 
-	return accessCondition
+		for _, location := range model.GeoIp.Locations {
+			countryCodeInput := location.CountryCode.ValueString()
+
+			countryIndex := slices.IndexFunc(countriesResource.Countries, func(c *countryResourceModel) bool {
+				return c.CountryCode.ValueString() == countryCodeInput
+			})
+
+			if countryIndex == -1 {
+				return accessCondition, fmt.Errorf("%v is not a valid CountryCode", countryCodeInput)
+			}
+
+			countryFound := countriesResource.Countries[countryIndex]
+
+			loc := aembit.CountryDTO{
+				Alpha2Code: countryFound.CountryCode.ValueString(),
+				ShortName:  countryFound.ShortName.ValueString(),
+			}
+
+			err := FillSubdivisions(&loc, location.Subdivisions, countryFound)
+			if err != nil {
+				return accessCondition, err
+			}
+			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
+		}
+	}
+	if model.Time != nil {
+		// retrieve timezones datasource for validation
+		timezoneResource := GetTimezones(client)
+
+		timezoneInput := model.Time.Timezone.ValueString()
+
+		tsIndex := slices.IndexFunc(timezoneResource.Timezones, func(ts *timezoneResourceModel) bool {
+			return ts.Timezone.ValueString() == timezoneInput
+		})
+
+		if tsIndex == -1 {
+			return accessCondition, fmt.Errorf("%v is not a valid timezone", timezoneInput)
+		}
+
+		timeZoneFound := timezoneResource.Timezones[tsIndex]
+
+		accessCondition.Conditions.Timezone = &aembit.TimezoneDTO{
+			Timezone: timeZoneFound.Timezone.ValueString(),
+			Group:    timeZoneFound.Group.ValueString(),
+			Label:    timeZoneFound.Label.ValueString(),
+		}
+
+		for _, schedule := range model.Time.Schedule {
+			ordinal, err := findOrdinal(schedule.Day.ValueString())
+
+			if err != nil {
+				return accessCondition, err
+			}
+
+			accessCondition.Conditions.Schedule = append(accessCondition.Conditions.Schedule, aembit.ScheduleDTO{
+				StartTime: schedule.StartTime.ValueString(),
+				EndTime:   schedule.EndTime.ValueString(),
+				WeekDay: &aembit.WeekDayDTO{
+					Name:    schedule.Day.ValueString(),
+					Ordinal: ordinal,
+				},
+			})
+		}
+	}
+
+	return accessCondition, nil
+}
+
+func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*models.GeoIpSubdivisionModel, countryFound *countryResourceModel) error {
+	for _, subDivision := range subDivisions {
+		subDivisionInput := subDivision.SubdivisionCode.ValueString()
+
+		subDivisionIndex := slices.IndexFunc(countryFound.Subdivisions, func(s *countrySubdivisionResourceModel) bool {
+			return s.SubdivisionCode.ValueString() == subDivisionInput
+		})
+
+		if subDivisionIndex == -1 {
+			return fmt.Errorf("%v is not a valid SubdivisionCode", subDivisionInput)
+		}
+
+		subdivisionFound := countryFound.Subdivisions[subDivisionIndex]
+
+		loc.Subdivisions = append(loc.Subdivisions, aembit.SubdivisionDTO{
+			SubdivisionCode: subdivisionFound.SubdivisionCode.ValueString(),
+			Alpha2Code:      subdivisionFound.CountryCode.ValueString(),
+			Name:            subdivisionFound.Name.ValueString(),
+		})
+	}
+
+	return nil
 }
 
 func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ models.AccessConditionResourceModel) models.AccessConditionResourceModel {
@@ -343,7 +513,58 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 			MatchSerialNumber:                  types.BoolValue(dto.Conditions.MatchSerialNumber),
 			PreventRestrictedFunctionalityMode: types.BoolValue(dto.Conditions.PreventRestrictedFunctionalityMode),
 		}
+	case "AembitGeoIPCondition":
+		geoIpModel := models.AccessConditionGeoIpModel{}
+
+		for _, location := range dto.Conditions.Locations {
+			loc := models.GeoIpLocationModel{
+				CountryCode:  types.StringValue(location.Alpha2Code),
+				Subdivisions: []*models.GeoIpSubdivisionModel{},
+			}
+
+			for _, subDivision := range location.Subdivisions {
+				loc.Subdivisions = append(loc.Subdivisions, &models.GeoIpSubdivisionModel{
+					SubdivisionCode: types.StringValue(subDivision.SubdivisionCode),
+				})
+			}
+
+			geoIpModel.Locations = append(geoIpModel.Locations, &loc)
+		}
+
+		model.GeoIp = &geoIpModel
+	case "AembitTimeCondition":
+		acTimeZone := models.AccessConditionTimeZoneModel{}
+
+		for _, schedule := range dto.Conditions.Schedule {
+			acTimeZone.Schedule = append(acTimeZone.Schedule, &models.ScheduleModel{
+				StartTime: types.StringValue(schedule.StartTime),
+				EndTime:   types.StringValue(schedule.EndTime),
+				Day:       types.StringValue(schedule.WeekDay.Name),
+			})
+		}
+
+		acTimeZone.Timezone = types.StringValue(dto.Conditions.Timezone.Timezone)
+
+		model.Time = &acTimeZone
 	}
 
 	return model
+}
+
+func findOrdinal(weekDay string) (int, error) {
+	weekdays := map[string]int{
+		"sunday":    0,
+		"monday":    1,
+		"tuesday":   2,
+		"wednesday": 3,
+		"thursday":  4,
+		"friday":    5,
+		"saturday":  6,
+	}
+
+	if val, ok := weekdays[strings.ToLower(weekDay)]; ok {
+		return val, nil
+	}
+
+	return -1, fmt.Errorf("%v is not a valid weekday name", weekDay)
 }

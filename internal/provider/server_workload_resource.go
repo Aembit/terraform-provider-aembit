@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -48,12 +50,15 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Server Workload.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Server Workload.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -86,10 +91,16 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 					"host": schema.StringAttribute{
 						Description: "Hostname of the Server Workload service endpoint.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.HostValidation(),
+						},
 					},
 					"port": schema.Int64Attribute{
 						Description: "Port of the Server Workload service endpoint.",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
+						},
 					},
 					"app_protocol": schema.StringAttribute{
 						Description: "Application Protocol of the Server Workload service endpoint. Possible values are: \n" +
@@ -114,6 +125,9 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 					"requested_port": schema.Int64Attribute{
 						Description: "Requested port of the Server Workload service endpoint.",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
+						},
 					},
 					"tls_verification": schema.StringAttribute{
 						Description: "TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.",

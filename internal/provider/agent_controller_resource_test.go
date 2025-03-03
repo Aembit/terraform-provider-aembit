@@ -87,7 +87,7 @@ func TestAccAgentControllerResource_Validation(t *testing.T) {
 			// Create and Read testing
 			{
 				Config:      string(emptyNameFile),
-				ExpectError: regexp.MustCompile(`Attribute name string length must be at least 1`), // <-- should match any error at all
+				ExpectError: regexp.MustCompile(`Attribute name string length must be between 1 and 128`),
 			},
 		},
 	})

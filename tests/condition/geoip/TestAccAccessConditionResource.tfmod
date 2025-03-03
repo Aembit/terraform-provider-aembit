@@ -1,0 +1,26 @@
+provider "aembit" {
+}
+
+data "aembit_integrations" "filtered" {
+	type = "AembitGeoIPCondition"
+}
+
+resource "aembit_access_condition" "geoip" {
+	name = "TF Acceptance GeoIp - Modified"
+	is_active = true
+	integration_id = data.aembit_integrations.filtered.integrations[0].id
+	geoip_conditions = {
+		locations = [
+			{
+				country_code = "TR",
+				subdivisions = [{
+					subdivision_code = "TR-03"
+				}]
+			}
+		]
+	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
+}
