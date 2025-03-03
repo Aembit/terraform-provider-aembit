@@ -3,10 +3,10 @@ package provider
 import (
 	"context"
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -49,12 +49,15 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the standalone certificate authority.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "User-provided name for the standalone certificate authority.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{

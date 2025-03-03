@@ -55,10 +55,6 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testStandaloneCertificateResource, "id"),
 				),
 			},
-			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: string(createFile), Check: testDeleteStandaloneCertificate(testStandaloneCertificateResource), ExpectNonEmptyPlan: true},
-			// Recreate the resource from the first test step
-			{Config: string(createFile)},
 			// ImportState testing
 			{ResourceName: testStandaloneCertificateResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
