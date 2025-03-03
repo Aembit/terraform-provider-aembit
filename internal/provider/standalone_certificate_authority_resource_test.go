@@ -1,31 +1,13 @@
 package provider
 
 import (
-	"context"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testStandaloneCertificateResource string = "aembit_standalone_certificate_authority.test"
-
-func testDeleteStandaloneCertificate(resourceName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		var rs *terraform.ResourceState
-		var ok bool
-		var err error
-		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
-			return fmt.Errorf("Not found: %s", resourceName)
-		}
-		if ok, err = testClient.DeleteStandaloneCertificate(context.Background(), rs.Primary.ID, nil); !ok {
-			return err
-		}
-		return nil
-	}
-}
 
 func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/standalone_certificate_authority/TestAccStandaloneCertificateAuthorityResource.tf")

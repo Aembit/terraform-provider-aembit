@@ -17,19 +17,19 @@ description: |-
 
 ### Required
 
+- `leaf_lifetime` (Number) Leaf certificate lifetime of the standalone certificate authority.
 - `name` (String) User-provided name for the standalone certificate authority.
 
 ### Optional
 
-- `client_workload_count` (Number) Client workloads associated with the standalone certificate authority.
 - `description` (String) User-provided description for the standalone certificate authority.
 - `is_active` (Boolean) Active/Inactive status of the standalone certificate authority.
-- `resource_set_count` (Number) Resource sets associated with the standalone certificate authority.
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
+- `client_workload_count` (Number) Client workloads associated with the standalone certificate authority.
 - `id` (String) Unique identifier of the standalone certificate authority.
-- `leaf_lifetime` (Number) Leaf certificate lifetime of the standalone certificate authority.
 - `not_after` (String) Not after date string of the standalone certificate authority.
 - `not_before` (String) Not before date string of the standalone certificate authority.
+- `resource_set_count` (Number) Resource sets associated with the standalone certificate authority.

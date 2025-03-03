@@ -33,6 +33,7 @@ description: |-
 - `routing` (Attributes) Permissions for Routing Configuration resources. (see [below for nested schema](#nestedatt--routing))
 - `server_workloads` (Attributes) Permissions for Server Workload resources. (see [below for nested schema](#nestedatt--server_workloads))
 - `signon_policy` (Attributes) Permissions for SignOn Policy resources. (see [below for nested schema](#nestedatt--signon_policy))
+- `standalone_certificate_authorities` (Attributes) Permissions for Standalone Certificate Authority resources. (see [below for nested schema](#nestedatt--standalone_certificate_authorities))
 - `trust_providers` (Attributes) Permissions for Trust Provider resources. (see [below for nested schema](#nestedatt--trust_providers))
 - `users` (Attributes) Permissions for User resources. (see [below for nested schema](#nestedatt--users))
 - `workload_events` (Attributes) Permissions for Workload Event resources. (see [below for nested schema](#nestedatt--workload_events))
@@ -178,6 +179,15 @@ Required:
 
 - `read` (Boolean) Trust if this Role should be able to query and view SignOn Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update SignOn Policy resources.
+
+
+<a id="nestedatt--standalone_certificate_authorities"></a>
+### Nested Schema for `standalone_certificate_authorities`
+
+Required:
+
+- `read` (Boolean) Trust if this Role should be able to query and view Standalone Certificate Authority resources.
+- `write` (Boolean) True if this Role should be able to create and update Standalone Certificate Authority resources.
 
 
 <a id="nestedatt--trust_providers"></a>

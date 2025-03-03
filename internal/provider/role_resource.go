@@ -22,9 +22,10 @@ var (
 )
 
 const (
-	SignOnPolicyPermissionName = "SignOn Policy"
-	RoutingPermissiongName     = "Routing Configuration"
-	ResourceSetsPermissionName = "Resource Sets"
+	SignOnPolicyPermissionName                     = "SignOn Policy"
+	RoutingPermissiongName                         = "Routing Configuration"
+	ResourceSetsPermissionName                     = "Resource Sets"
+	StandaloneCertificateAuthoritiesPermissionName = "Standalone Certificate Authorities"
 )
 
 // NewRoleResource is a helper function to simplify the provider implementation.
@@ -81,24 +82,25 @@ func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"access_policies":             definePermissionAttribute("Access Policy", false),
-			"client_workloads":            definePermissionAttribute("Client Workload", false),
-			"trust_providers":             definePermissionAttribute("Trust Provider", false),
-			"access_conditions":           definePermissionAttribute("Access Condition", false),
-			"integrations":                definePermissionAttribute("Integration", false),
-			"credential_providers":        definePermissionAttribute("Credential Provider", false),
-			"server_workloads":            definePermissionAttribute("Server Workload", false),
-			"agent_controllers":           definePermissionAttribute("Agent Controller", false),
-			"access_authorization_events": definePermissionReadOnlyAttribute("Access Authorization Event", false),
-			"audit_logs":                  definePermissionReadOnlyAttribute("Audit Log", false),
-			"workload_events":             definePermissionReadOnlyAttribute("Workload Event", false),
-			"users":                       definePermissionAttribute("User", false),
-			"roles":                       definePermissionAttribute("Role", false),
-			"log_streams":                 definePermissionAttribute("Log Stream", false),
-			"identity_providers":          definePermissionAttribute("Identity Provider", false),
-			"signon_policy":               definePermissionAttribute(SignOnPolicyPermissionName, false),
-			"resource_sets":               definePermissionAttribute("Resource Set", false),
-			"routing":                     definePermissionAttribute(RoutingPermissiongName, false),
+			"access_policies":                    definePermissionAttribute("Access Policy", false),
+			"client_workloads":                   definePermissionAttribute("Client Workload", false),
+			"trust_providers":                    definePermissionAttribute("Trust Provider", false),
+			"access_conditions":                  definePermissionAttribute("Access Condition", false),
+			"integrations":                       definePermissionAttribute("Integration", false),
+			"credential_providers":               definePermissionAttribute("Credential Provider", false),
+			"server_workloads":                   definePermissionAttribute("Server Workload", false),
+			"agent_controllers":                  definePermissionAttribute("Agent Controller", false),
+			"standalone_certificate_authorities": definePermissionAttribute("Standalone Certificate Authority", false),
+			"access_authorization_events":        definePermissionReadOnlyAttribute("Access Authorization Event", false),
+			"audit_logs":                         definePermissionReadOnlyAttribute("Audit Log", false),
+			"workload_events":                    definePermissionReadOnlyAttribute("Workload Event", false),
+			"users":                              definePermissionAttribute("User", false),
+			"roles":                              definePermissionAttribute("Role", false),
+			"log_streams":                        definePermissionAttribute("Log Stream", false),
+			"identity_providers":                 definePermissionAttribute("Identity Provider", false),
+			"signon_policy":                      definePermissionAttribute(SignOnPolicyPermissionName, false),
+			"resource_sets":                      definePermissionAttribute("Resource Set", false),
+			"routing":                            definePermissionAttribute(RoutingPermissiongName, false),
 		},
 	}
 }
@@ -324,6 +326,7 @@ func convertRoleModelToDTO(ctx context.Context, model models.RoleResourceModel, 
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Server Workloads", model.ServerWorkloads)
 
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Agent Controllers", model.AgentControllers)
+	dto.Permissions = appendPermissionToDTO(dto.Permissions, StandaloneCertificateAuthoritiesPermissionName, model.StandaloneCertificateAuthorities)
 
 	dto.Permissions = appendReadOnlyPermissionToDTO(dto.Permissions, "Access Authorization Events", model.AccessAuthorizationEvents)
 	dto.Permissions = appendReadOnlyPermissionToDTO(dto.Permissions, "Audit Logs", model.AuditLogs)
@@ -387,6 +390,8 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 			model.ServerWorkloads = convertPermissionDTOToPermission(permission)
 		case "Agent Controllers":
 			model.AgentControllers = convertPermissionDTOToPermission(permission)
+		case StandaloneCertificateAuthoritiesPermissionName:
+			model.StandaloneCertificateAuthorities = convertPermissionDTOToPermission(permission)
 		case "Access Authorization Events":
 			model.AccessAuthorizationEvents = convertPermissionDTOToReadOnlyPermission(permission)
 		case "Audit Logs":
