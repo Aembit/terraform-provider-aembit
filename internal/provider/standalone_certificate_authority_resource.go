@@ -5,6 +5,7 @@ import (
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -73,7 +74,10 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 			},
 			"leaf_lifetime": schema.Int32Attribute{
 				Description: "Leaf certificate lifetime of the standalone certificate authority.",
-				Computed:    true,
+				Required:    true,
+				Validators: []validator.Int32{
+					int32validator.OneOf(60, 1440, 10080),
+				},
 			},
 			"not_before": schema.StringAttribute{
 				Description: "Not before date string of the standalone certificate authority.",
@@ -85,12 +89,10 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 			},
 			"client_workload_count": schema.Int32Attribute{
 				Description: "Client workloads associated with the standalone certificate authority.",
-				Optional:    true,
 				Computed:    true,
 			},
 			"resource_set_count": schema.Int32Attribute{
 				Description: "Resource sets associated with the standalone certificate authority.",
-				Optional:    true,
 				Computed:    true,
 			},
 		},
