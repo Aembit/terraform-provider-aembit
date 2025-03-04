@@ -2,7 +2,7 @@ provider "aembit" {
 }
 
 resource "aembit_standalone_certificate_authority" "test" {
-	name = "Unit Test 1"
+	name = "unittestname"
     description = "Description"
     is_active = true
 	leaf_lifetime = 1440

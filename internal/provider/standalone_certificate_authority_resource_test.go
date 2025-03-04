@@ -12,16 +12,17 @@ const testStandaloneCertificateResource string = "aembit_standalone_certificate_
 func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/standalone_certificate_authority/TestAccStandaloneCertificateAuthorityResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/standalone_certificate_authority/TestAccStandaloneCertificateAuthorityResource.tfmod")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "unittestname")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name
-					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", "Unit Test 1"),
+					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", newName),
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "is_active", "true"),
 					// Verify Tags
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsCount, "2"),
@@ -41,10 +42,10 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 			{ResourceName: testStandaloneCertificateResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
-				Config: string(modifyFile),
+				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", "Unit Test 1 - Modified"),
+					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", newName+" - Modified"),
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsCount, "2"),
