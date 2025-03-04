@@ -24,3 +24,4 @@ Use this data source to get information about an Aembit ResourceSet.
 - `description` (String) User-provided description of the ResourceSet.
 - `name` (String) User-provided name of the ResourceSet.
 - `roles` (Set of String) IDs of the Roles associated with this ResourceSet.
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this ResourceSet.
