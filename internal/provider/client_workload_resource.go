@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -140,6 +142,16 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Tags are key-value pairs.",
 				ElementType: types.StringType,
 				Optional:    true,
+			},
+			"standalone_certificate_authority": schema.StringAttribute{
+				Description: "Standalone Certificate Authority ID configured for this Client Workload.",
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 		},
 	}
@@ -336,6 +348,8 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model models.ClientWor
 		workload.EntityDTO.ExternalID = *externalID
 	}
 
+	workload.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
+
 	return workload
 }
 
@@ -347,6 +361,7 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 
 	return model
 }

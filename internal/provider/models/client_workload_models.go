@@ -8,12 +8,13 @@ import (
 // models.ClientWorkloadResourceModel maps the resource schema.
 type ClientWorkloadResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	IsActive    types.Bool   `tfsdk:"is_active"`
-	Identities  types.Set    `tfsdk:"identities"`
-	Tags        types.Map    `tfsdk:"tags"`
+	ID                             types.String `tfsdk:"id"`
+	Name                           types.String `tfsdk:"name"`
+	Description                    types.String `tfsdk:"description"`
+	IsActive                       types.Bool   `tfsdk:"is_active"`
+	Identities                     types.Set    `tfsdk:"identities"`
+	Tags                           types.Map    `tfsdk:"tags"`
+	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`
 }
 
 // clientWorkloadDataSourceModel maps the datasource schema.

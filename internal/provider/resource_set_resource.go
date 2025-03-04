@@ -77,6 +77,14 @@ func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest
 				},
 				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 			},
+			"standalone_certificate_authority": schema.StringAttribute{
+				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+			},
 		},
 	}
 }
@@ -241,6 +249,8 @@ func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetRes
 		}
 	}
 
+	dto.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
+
 	return dto
 }
 
@@ -250,6 +260,7 @@ func convertResourceSetDTOToModel(_ context.Context, dto aembit.ResourceSetDTO) 
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 
 	model.Roles = make([]types.String, len(dto.Roles))
 	if len(dto.Roles) > 0 {
