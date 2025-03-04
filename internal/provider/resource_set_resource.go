@@ -249,7 +249,11 @@ func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetRes
 		}
 	}
 
-	dto.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
+	if dto.StandaloneCertificateAuthority == "" {
+		model.StandaloneCertificateAuthority = types.StringNull()
+	} else {
+		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+	}
 
 	return dto
 }

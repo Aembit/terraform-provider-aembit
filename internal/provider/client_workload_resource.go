@@ -361,7 +361,11 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
-	model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+	if dto.StandaloneCertificateAuthority == "" {
+		model.StandaloneCertificateAuthority = types.StringNull()
+	} else {
+		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+	}
 
 	return model
 }

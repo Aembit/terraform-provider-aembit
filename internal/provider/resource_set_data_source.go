@@ -64,6 +64,7 @@ func (d *resourceSetDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"standalone_certificate_authority": schema.StringAttribute{
 				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
 				Computed:    true,
+				Optional:    true,
 			},
 		},
 	}
