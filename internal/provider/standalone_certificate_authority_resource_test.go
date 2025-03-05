@@ -23,7 +23,6 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", newName),
-					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "is_active", "true"),
 					// Verify Tags
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsColor, "blue"),
@@ -46,7 +45,6 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "name", newName+" - Modified"),
-					resource.TestCheckResourceAttr(testStandaloneCertificateResource, "is_active", "true"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testStandaloneCertificateResource, tagsColor, "orange"),

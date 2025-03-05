@@ -4,7 +4,6 @@ provider "aembit" {
 resource "aembit_standalone_certificate_authority" "test" {
 	name = "unittestname"
     description = "Description"
-    is_active = true
 	leaf_lifetime = 1440
     tags = {
         color = "blue"

@@ -3,7 +3,6 @@ provider "aembit" {
 
 resource "aembit_standalone_certificate_authority" "first_ca" {
     name = "unittestname"
-    is_active = true
     leaf_lifetime = 60
 }
 

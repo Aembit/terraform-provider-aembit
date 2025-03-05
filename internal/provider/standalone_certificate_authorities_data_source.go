@@ -59,25 +59,21 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(_ context.Context, _
 							Description: "User-provided description of the standalone certificate authority.",
 							Computed:    true,
 						},
-						"is_active": schema.BoolAttribute{
-							Description: "Active/Inactive status of the standalone certificate authority.",
-							Computed:    true,
-						},
 						"tags": schema.MapAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
 							Computed:    true,
 						},
 						"leaf_lifetime": schema.Int32Attribute{
-							Description: "Leaf certificate lifetime of the standalone certificate authority.",
+							Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority.",
 							Computed:    true,
 						},
 						"not_before": schema.StringAttribute{
-							Description: "Not before date string of the standalone certificate authority.",
+							Description: "ISO 8601 formatted not before date of the standalone certificate authority.",
 							Computed:    true,
 						},
 						"not_after": schema.StringAttribute{
-							Description: "Not after date string of the standalone certificate authority.",
+							Description: "ISO 8601 formatted not after date of the standalone certificate authority.",
 							Computed:    true,
 						},
 						"client_workload_count": schema.Int32Attribute{

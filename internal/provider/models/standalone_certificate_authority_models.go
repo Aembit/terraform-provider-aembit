@@ -8,7 +8,6 @@ type StandaloneCertificateAuthorityResourceModel struct {
 	ID                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
-	IsActive            types.Bool   `tfsdk:"is_active"`
 	Tags                types.Map    `tfsdk:"tags"`
 	LeafLifetime        types.Int32  `tfsdk:"leaf_lifetime"`
 	NotBefore           types.String `tfsdk:"not_before"`

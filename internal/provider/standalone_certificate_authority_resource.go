@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -65,29 +66,24 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 				Optional:    true,
 				Computed:    true,
 			},
-			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the standalone certificate authority.",
-				Optional:    true,
-				Computed:    true,
-			},
 			"tags": schema.MapAttribute{
 				Description: "Tags are key-value pairs.",
 				ElementType: types.StringType,
 				Optional:    true,
 			},
 			"leaf_lifetime": schema.Int32Attribute{
-				Description: "Leaf certificate lifetime of the standalone certificate authority.",
+				Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority.",
 				Required:    true,
 				Validators: []validator.Int32{
 					int32validator.OneOf(60, 1440, 10080),
 				},
 			},
 			"not_before": schema.StringAttribute{
-				Description: "Not before date string of the standalone certificate authority.",
+				Description: "ISO 8601 formatted not before date of the standalone certificate authority.",
 				Computed:    true,
 			},
 			"not_after": schema.StringAttribute{
-				Description: "Not after date string of the standalone certificate authority.",
+				Description: "ISO 8601 formatted not after date of the standalone certificate authority.",
 				Computed:    true,
 			},
 			"client_workload_count": schema.Int32Attribute{
@@ -151,7 +147,7 @@ func (r *standaloneCertificateAuthorityResource) Read(ctx context.Context, req r
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Standalone Certificate Authority",
-			"Could not read External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
+			fmt.Sprintf("An error occurred while attempting to fetch the Standalone Certificate Authority with External ID '%s' from Terraform state: %v", state.ID.ValueString(), err.Error()),
 		)
 
 		// If the resource is not found on Aembit Cloud, delete it locally
@@ -227,24 +223,6 @@ func (r *standaloneCertificateAuthorityResource) Delete(ctx context.Context, req
 		return
 	}
 
-	// Check if Standalone Certificate Authority has any Client Workloads associated with it
-	if state.ClientWorkloadCount.ValueInt32() > 0 {
-		resp.Diagnostics.AddError(
-			"Error deleting Standalone Certificate Authority",
-			"Could not delete Standalone Certificate Authority, there are Client Workloads associated with it",
-		)
-		return
-	}
-
-	// Check if Standalone Certificate Authority has any Resource Sets associated with it
-	if state.ResourceSetCount.ValueInt32() > 0 {
-		resp.Diagnostics.AddError(
-			"Error deleting Standalone Certificate Authority",
-			"Could not delete Standalone Certificate Authority, there are Resource Sets associated with it",
-		)
-		return
-	}
-
 	// Delete existing Standalone Certificate Authority
 	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil)
 	if err != nil {
@@ -267,7 +245,6 @@ func convertStandaloneCertificateModelToDTO(ctx context.Context, model models.St
 	standaloneCertificate.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
-		IsActive:    model.IsActive.ValueBool(),
 	}
 	if len(model.Tags.Elements()) > 0 {
 		tagsMap := make(map[string]string)
@@ -296,7 +273,6 @@ func convertStandaloneCertificateDTOToModel(ctx context.Context, dto aembit.Stan
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 	model.LeafLifetime = types.Int32Value(dto.LeafLifetime)
 	model.NotBefore = types.StringValue(dto.NotBefore)

@@ -24,16 +24,15 @@ Manages a standalone certificate authority.
 
 Optional:
 
-- `client_workload_count` (Number) Client workload(s) associated with the standalone certificate authority.
-- `resource_set_count` (Number) Resource set(s) associated with the standalone certificate authority.
+- `client_workload_count` (Number) Client workloads associated with the standalone certificate authority.
+- `resource_set_count` (Number) Resource sets associated with the standalone certificate authority.
 - `tags` (Map of String)
 
 Read-Only:
 
 - `description` (String) User-provided description of the standalone certificate authority.
 - `id` (String) Unique identifier of the standalone certificate authority.
-- `is_active` (Boolean) Active/Inactive status of the standalone certificate authority.
-- `leaf_lifetime` (Number) Leaf certificate lifetime of the standalone certificate authority.
+- `leaf_lifetime` (Number) Leaf certificate lifetime(in minutes) of the standalone certificate authority.
 - `name` (String) User-provided name of the standalone certificate authority.
-- `not_after` (String) Not after date string of the standalone certificate authority.
-- `not_before` (String) Not before date string of the standalone certificate authority.
+- `not_after` (String) ISO 8601 formatted not after date of the standalone certificate authority.
+- `not_before` (String) ISO 8601 formatted not before date of the standalone certificate authority.
