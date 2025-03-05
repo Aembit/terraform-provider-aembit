@@ -2,13 +2,13 @@ provider "aembit" {
 }
 
 resource "aembit_standalone_certificate_authority" "first_ca" {
-    name = "first terraform standalone certificate authority"
+    name = "unittestname"
     is_active = true
     leaf_lifetime = 60
 }
 
 resource "aembit_client_workload" "test" {
-    name = "TF Acceptance Standalone CA"
+    name = "unittestname"
     description = "TF Acceptance CW with Standalone CA"
     is_active = false
     identities = [

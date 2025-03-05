@@ -279,7 +279,7 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 
 func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/client/standalone-certificate-authority/TestAccClientWorkloadStandaloneCertificateAuthority.tf")
-	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "sample_ca")
+	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "unittestname")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -289,7 +289,7 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr(testCWResource, "name", "TF Acceptance Standalone CA"),
+					resource.TestCheckResourceAttr(testCWResource, "name", newName),
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
