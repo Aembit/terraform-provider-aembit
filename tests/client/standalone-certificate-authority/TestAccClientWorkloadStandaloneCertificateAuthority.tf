@@ -14,7 +14,7 @@ resource "aembit_client_workload" "test" {
     identities = [
         {
             type = "k8sPodName"
-            value = "sample_ca"
+            value = "unittestname"
         },
     ]
     tags = {
