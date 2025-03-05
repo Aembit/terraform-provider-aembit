@@ -24,7 +24,7 @@ Manages a standalone certificate authority.
 
 Optional:
 
-- `client_workload_count` (Number) Client workloads associated with the standalone certificate authority.
+- `client_workload_count` (Number) Client workload(s) associated with the standalone certificate authority.
 - `resource_set_count` (Number) Resource sets associated with the standalone certificate authority.
 - `tags` (Map of String)
 
