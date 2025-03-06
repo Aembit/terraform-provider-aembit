@@ -53,7 +53,7 @@ description: |-
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Authorization Event data.
+- `read` (Boolean) True if this Role should be able to query and view Access Authorization Event data.
 
 
 <a id="nestedatt--access_conditions"></a>
@@ -61,7 +61,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Condition resources.
+- `read` (Boolean) True if this Role should be able to query and view Access Condition resources.
 - `write` (Boolean) True if this Role should be able to create and update Access Condition resources.
 
 
@@ -70,7 +70,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Policy resources.
+- `read` (Boolean) True if this Role should be able to query and view Access Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update Access Policy resources.
 
 
@@ -79,7 +79,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Agent Controller resources.
+- `read` (Boolean) True if this Role should be able to query and view Agent Controller resources.
 - `write` (Boolean) True if this Role should be able to create and update Agent Controller resources.
 
 
@@ -88,7 +88,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Audit Log data.
+- `read` (Boolean) True if this Role should be able to query and view Audit Log data.
 
 
 <a id="nestedatt--client_workloads"></a>
@@ -96,7 +96,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Client Workload resources.
+- `read` (Boolean) True if this Role should be able to query and view Client Workload resources.
 - `write` (Boolean) True if this Role should be able to create and update Client Workload resources.
 
 
@@ -105,7 +105,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Credential Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Credential Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Credential Provider resources.
 
 
@@ -114,7 +114,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Identity Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Identity Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Identity Provider resources.
 
 
@@ -123,7 +123,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Integration resources.
+- `read` (Boolean) True if this Role should be able to query and view Integration resources.
 - `write` (Boolean) True if this Role should be able to create and update Integration resources.
 
 
@@ -132,7 +132,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Log Stream resources.
+- `read` (Boolean) True if this Role should be able to query and view Log Stream resources.
 - `write` (Boolean) True if this Role should be able to create and update Log Stream resources.
 
 
@@ -141,7 +141,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Resource Set resources.
+- `read` (Boolean) True if this Role should be able to query and view Resource Set resources.
 - `write` (Boolean) True if this Role should be able to create and update Resource Set resources.
 
 
@@ -150,7 +150,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Role resources.
+- `read` (Boolean) True if this Role should be able to query and view Role resources.
 - `write` (Boolean) True if this Role should be able to create and update Role resources.
 
 
@@ -159,7 +159,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Routing Configuration resources.
+- `read` (Boolean) True if this Role should be able to query and view Routing Configuration resources.
 - `write` (Boolean) True if this Role should be able to create and update Routing Configuration resources.
 
 
@@ -168,7 +168,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Server Workload resources.
+- `read` (Boolean) True if this Role should be able to query and view Server Workload resources.
 - `write` (Boolean) True if this Role should be able to create and update Server Workload resources.
 
 
@@ -177,7 +177,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view SignOn Policy resources.
+- `read` (Boolean) True if this Role should be able to query and view SignOn Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update SignOn Policy resources.
 
 
@@ -186,7 +186,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Standalone Certificate Authority resources.
+- `read` (Boolean) True if this Role should be able to query and view Standalone Certificate Authority resources.
 - `write` (Boolean) True if this Role should be able to create and update Standalone Certificate Authority resources.
 
 
@@ -195,7 +195,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Trust Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Trust Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Trust Provider resources.
 
 
@@ -204,7 +204,7 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view User resources.
+- `read` (Boolean) True if this Role should be able to query and view User resources.
 - `write` (Boolean) True if this Role should be able to create and update User resources.
 
 
@@ -213,4 +213,4 @@ Required:
 
 Required:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Workload Event data.
+- `read` (Boolean) True if this Role should be able to query and view Workload Event data.

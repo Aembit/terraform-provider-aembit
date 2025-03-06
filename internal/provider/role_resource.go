@@ -111,7 +111,7 @@ func definePermissionAttribute(name string, computed bool) schema.SingleNestedAt
 		Required:    true,
 		Attributes: map[string]schema.Attribute{
 			"read": schema.BoolAttribute{
-				Description: fmt.Sprintf("Trust if this Role should be able to query and view %s resources.", name),
+				Description: fmt.Sprintf("True if this Role should be able to query and view %s resources.", name),
 				Required:    !computed,
 				Computed:    computed,
 			},
@@ -130,7 +130,7 @@ func definePermissionReadOnlyAttribute(name string, computed bool) schema.Single
 		Required:    true,
 		Attributes: map[string]schema.Attribute{
 			"read": schema.BoolAttribute{
-				Description: fmt.Sprintf("Trust if this Role should be able to query and view %s data.", name),
+				Description: fmt.Sprintf("True if this Role should be able to query and view %s data.", name),
 				Required:    !computed,
 				Computed:    computed,
 			},

@@ -39,7 +39,7 @@ func TestAccStandaloneCertificatesDataSource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Server Workloads returned
+					// Verify non-zero number of Standalone Certificate Authorities returned
 					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.#"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.0.id"),
