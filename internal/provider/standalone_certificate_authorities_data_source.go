@@ -65,7 +65,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(_ context.Context, _
 							Computed:    true,
 						},
 						"leaf_lifetime": schema.Int32Attribute{
-							Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority.",
+							Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.",
 							Computed:    true,
 						},
 						"not_before": schema.StringAttribute{

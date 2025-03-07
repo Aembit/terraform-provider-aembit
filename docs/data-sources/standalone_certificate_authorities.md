@@ -32,7 +32,7 @@ Read-Only:
 
 - `description` (String) User-provided description of the standalone certificate authority.
 - `id` (String) Unique identifier of the standalone certificate authority.
-- `leaf_lifetime` (Number) Leaf certificate lifetime(in minutes) of the standalone certificate authority.
+- `leaf_lifetime` (Number) Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.
 - `name` (String) User-provided name of the standalone certificate authority.
 - `not_after` (String) ISO 8601 formatted not after date of the standalone certificate authority.
 - `not_before` (String) ISO 8601 formatted not before date of the standalone certificate authority.

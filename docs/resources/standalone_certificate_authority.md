@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `leaf_lifetime` (Number) Leaf certificate lifetime(in minutes) of the standalone certificate authority.
+- `leaf_lifetime` (Number) Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.
 - `name` (String) User-provided name for the standalone certificate authority.
 
 ### Optional

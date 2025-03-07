@@ -72,7 +72,7 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 				Optional:    true,
 			},
 			"leaf_lifetime": schema.Int32Attribute{
-				Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority.",
+				Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.",
 				Required:    true,
 				Validators: []validator.Int32{
 					int32validator.OneOf(60, 1440, 10080),
