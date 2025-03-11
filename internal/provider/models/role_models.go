@@ -22,7 +22,8 @@ type RoleResourceModel struct {
 	CredentialProviders *RolePermission `tfsdk:"credential_providers"`
 	ServerWorkloads     *RolePermission `tfsdk:"server_workloads"`
 
-	AgentControllers *RolePermission `tfsdk:"agent_controllers"`
+	AgentControllers                 *RolePermission `tfsdk:"agent_controllers"`
+	StandaloneCertificateAuthorities *RolePermission `tfsdk:"standalone_certificate_authorities"`
 
 	AccessAuthorizationEvents *RoleReadOnlyPermission `tfsdk:"access_authorization_events"`
 	AuditLogs                 *RoleReadOnlyPermission `tfsdk:"audit_logs"`

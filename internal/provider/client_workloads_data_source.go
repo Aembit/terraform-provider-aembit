@@ -84,6 +84,11 @@ func (r *clientWorkloadsDataSource) Schema(_ context.Context, _ datasource.Schem
 							Optional:    true,
 							Computed:    true,
 						},
+						"standalone_certificate_authority": schema.StringAttribute{
+							Description: "Standalone Certificate Authority ID configured for this client workload.",
+							Optional:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},

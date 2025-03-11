@@ -39,6 +39,7 @@ Required:
 - `routing` (Attributes) Permissions for Routing Configuration resources. (see [below for nested schema](#nestedatt--roles--routing))
 - `server_workloads` (Attributes) Permissions for Server Workload resources. (see [below for nested schema](#nestedatt--roles--server_workloads))
 - `signon_policy` (Attributes) Permissions for SignOn Policy resources. (see [below for nested schema](#nestedatt--roles--signon_policy))
+- `standalone_certificate_authorities` (Attributes) Permissions for Standalone Certificate Authorities resources. (see [below for nested schema](#nestedatt--roles--standalone_certificate_authorities))
 - `trust_providers` (Attributes) Permissions for Trust Provider resources. (see [below for nested schema](#nestedatt--roles--trust_providers))
 - `users` (Attributes) Permissions for User resources. (see [below for nested schema](#nestedatt--roles--users))
 - `workload_events` (Attributes) Permissions for Workload Event resources. (see [below for nested schema](#nestedatt--roles--workload_events))
@@ -56,7 +57,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Authorization Event data.
+- `read` (Boolean) True if this Role should be able to query and view Access Authorization Event data.
 
 
 <a id="nestedatt--roles--access_conditions"></a>
@@ -64,7 +65,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Condition resources.
+- `read` (Boolean) True if this Role should be able to query and view Access Condition resources.
 - `write` (Boolean) True if this Role should be able to create and update Access Condition resources.
 
 
@@ -73,7 +74,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Access Policy resources.
+- `read` (Boolean) True if this Role should be able to query and view Access Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update Access Policy resources.
 
 
@@ -82,7 +83,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Agent Controller resources.
+- `read` (Boolean) True if this Role should be able to query and view Agent Controller resources.
 - `write` (Boolean) True if this Role should be able to create and update Agent Controller resources.
 
 
@@ -91,7 +92,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Audit Log data.
+- `read` (Boolean) True if this Role should be able to query and view Audit Log data.
 
 
 <a id="nestedatt--roles--client_workloads"></a>
@@ -99,7 +100,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Client Workload resources.
+- `read` (Boolean) True if this Role should be able to query and view Client Workload resources.
 - `write` (Boolean) True if this Role should be able to create and update Client Workload resources.
 
 
@@ -108,7 +109,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Credential Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Credential Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Credential Provider resources.
 
 
@@ -117,7 +118,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Identity Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Identity Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Identity Provider resources.
 
 
@@ -126,7 +127,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Integration resources.
+- `read` (Boolean) True if this Role should be able to query and view Integration resources.
 - `write` (Boolean) True if this Role should be able to create and update Integration resources.
 
 
@@ -135,7 +136,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Log Stream resources.
+- `read` (Boolean) True if this Role should be able to query and view Log Stream resources.
 - `write` (Boolean) True if this Role should be able to create and update Log Stream resources.
 
 
@@ -144,7 +145,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Resource Sets resources.
+- `read` (Boolean) True if this Role should be able to query and view Resource Sets resources.
 - `write` (Boolean) True if this Role should be able to create and update Resource Sets resources.
 
 
@@ -153,7 +154,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Role resources.
+- `read` (Boolean) True if this Role should be able to query and view Role resources.
 - `write` (Boolean) True if this Role should be able to create and update Role resources.
 
 
@@ -162,7 +163,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Routing Configuration resources.
+- `read` (Boolean) True if this Role should be able to query and view Routing Configuration resources.
 - `write` (Boolean) True if this Role should be able to create and update Routing Configuration resources.
 
 
@@ -171,7 +172,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Server Workload resources.
+- `read` (Boolean) True if this Role should be able to query and view Server Workload resources.
 - `write` (Boolean) True if this Role should be able to create and update Server Workload resources.
 
 
@@ -180,8 +181,17 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view SignOn Policy resources.
+- `read` (Boolean) True if this Role should be able to query and view SignOn Policy resources.
 - `write` (Boolean) True if this Role should be able to create and update SignOn Policy resources.
+
+
+<a id="nestedatt--roles--standalone_certificate_authorities"></a>
+### Nested Schema for `roles.standalone_certificate_authorities`
+
+Read-Only:
+
+- `read` (Boolean) True if this Role should be able to query and view Standalone Certificate Authorities resources.
+- `write` (Boolean) True if this Role should be able to create and update Standalone Certificate Authorities resources.
 
 
 <a id="nestedatt--roles--trust_providers"></a>
@@ -189,7 +199,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Trust Provider resources.
+- `read` (Boolean) True if this Role should be able to query and view Trust Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Trust Provider resources.
 
 
@@ -198,7 +208,7 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view User resources.
+- `read` (Boolean) True if this Role should be able to query and view User resources.
 - `write` (Boolean) True if this Role should be able to create and update User resources.
 
 
@@ -207,4 +217,4 @@ Read-Only:
 
 Read-Only:
 
-- `read` (Boolean) Trust if this Role should be able to query and view Workload Event data.
+- `read` (Boolean) True if this Role should be able to query and view Workload Event data.

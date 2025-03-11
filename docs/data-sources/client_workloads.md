@@ -24,6 +24,7 @@ Manages client workloads.
 
 Optional:
 
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this client workload.
 - `tags` (Map of String)
 
 Read-Only:

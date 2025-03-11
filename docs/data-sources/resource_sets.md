@@ -22,6 +22,10 @@ Use this data source to get information about all Aembit ResourceSets.
 <a id="nestedatt--resource_sets"></a>
 ### Nested Schema for `resource_sets`
 
+Optional:
+
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this ResourceSet.
+
 Read-Only:
 
 - `description` (String) User-provided description of the ResourceSet.

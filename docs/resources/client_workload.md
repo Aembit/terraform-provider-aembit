@@ -37,6 +37,7 @@ resource "aembit_client_workload" "test" {
 
 - `description` (String) Description for the Client Workload.
 - `is_active` (Boolean) Active status of the Client Workload.
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Client Workload.
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
