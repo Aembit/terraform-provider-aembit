@@ -1,0 +1,11 @@
+provider "aembit" {
+}
+
+resource "aembit_credential_provider_integration" "gitlab" {
+	name = "TF Acceptance GitLab Credential Integration"
+	description = "TF Acceptance GitLab Credential Integration"
+	gitlab = {
+		url = "https://url.com"
+		personal_access_token = "test"
+	}
+}
