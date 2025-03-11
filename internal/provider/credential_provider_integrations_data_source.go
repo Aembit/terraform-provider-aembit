@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-// Ensure the implementation satisfies the expected interfaces. CredentialProviderIntegrations
+// Ensure the implementation satisfies the expected interfaces.
 var (
 	_ datasource.DataSource              = &credentialProviderIntegrationsDataSource{}
 	_ datasource.DataSourceWithConfigure = &credentialProviderIntegrationsDataSource{}

@@ -20,7 +20,7 @@ var (
 	_ resource.ResourceWithImportState = &credentialProviderIntegrationResource{}
 )
 
-// NewIntegrationResource is a helper function to simplify the provider implementation. CredentialProviderIntegration
+// NewIntegrationResource is a helper function to simplify the provider implementation.
 func NewCredentialProviderIntegrationResource() resource.Resource {
 	return &credentialProviderIntegrationResource{}
 }
