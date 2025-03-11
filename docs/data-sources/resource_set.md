@@ -19,6 +19,10 @@ Use this data source to get information about an Aembit ResourceSet.
 
 - `id` (String) Unique identifier of the ResourceSet.
 
+### Optional
+
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this ResourceSet.
+
 ### Read-Only
 
 - `description` (String) User-provided description of the ResourceSet.

@@ -15,6 +15,7 @@ resource "aembit_role" "role" {
 	server_workloads = { read = true, write = true }
 
 	agent_controllers = { read = true, write = true }
+	standalone_certificate_authorities = { read = true, write = true }
 
 	access_authorization_events = { read = true }
 	audit_logs = { read = true }

@@ -2,18 +2,18 @@ provider "aembit" {
 }
 
 resource "aembit_standalone_certificate_authority" "first_ca" {
-    name = "first terraform standalone certificate authority"
+    name = "unittestname"
     leaf_lifetime = 60
 }
 
 resource "aembit_client_workload" "test" {
-    name = "Unit Test 1"
-    description = "Acceptance Test client workload"
+    name = "unittestname"
+    description = "TF Acceptance CW with Standalone CA"
     is_active = false
     identities = [
         {
-            type = "k8sNamespace"
-            value = "unittest1namespace"
+            type = "k8sPodName"
+            value = "unittestname"
         },
     ]
     tags = {
@@ -22,8 +22,3 @@ resource "aembit_client_workload" "test" {
     }
     standalone_certificate_authority = aembit_standalone_certificate_authority.first_ca.id
 }
-
-data "aembit_client_workloads" "test" {
-    depends_on = [ aembit_client_workload.test ]
-}
-

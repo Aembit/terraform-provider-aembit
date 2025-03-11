@@ -276,3 +276,37 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 		},
 	})
 }
+
+func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/client/standalone-certificate-authority/TestAccClientWorkloadStandaloneCertificateAuthority.tf")
+	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "unittestname")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(testCWResource, "name", newName),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], "k8sPodName"),
+					resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], newName),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+					resource.TestCheckResourceAttrSet(testCWResource, "standalone_certificate_authority"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

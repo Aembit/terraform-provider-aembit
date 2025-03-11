@@ -290,6 +290,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewAgentControllerResource,
 		NewRoleResource,
 		NewSignInPolicyResource,
+		NewStandaloneCertificateAuthorityResource,
 		NewCredentialProviderIntegrationResource,
 		//NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 	}
@@ -309,6 +310,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewRolesDataSource,
 		NewResourceSetDataSource,
 		NewResourceSetsDataSource,
+		NewStandaloneCertificateAuthoritiesDataSource,
 		NewCountriesDataSource,
 		NewTimeZonesDataSource,
 		NewCredentialProviderIntegrationsDataSource,
