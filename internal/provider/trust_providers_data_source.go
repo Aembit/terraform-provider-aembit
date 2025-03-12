@@ -298,11 +298,27 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									ElementType: types.StringType,
 									Computed:    true,
 								},
-								"realm": schema.StringAttribute{Computed: true},
+								"realm": schema.StringAttribute{
+									Description:        "The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.",
+									Computed:           true,
+									DeprecationMessage: "**Deprecated**: Use `realm_domain` instead.",
+								},
 								"realms": schema.SetAttribute{
-									Description: "The set of accepted Kerberos Realms of the authenticated Agent Proxy.",
-									ElementType: types.StringType,
-									Computed:    true,
+									Description:        "The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.",
+									DeprecationMessage: "**Deprecated**: Use `realm_domain` instead.",
+									ElementType:        types.StringType,
+									Computed:           true,
+								},
+								"realm_domain": schema.StringAttribute{
+									Description:        "The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.",
+									Computed:           true,
+									DeprecationMessage: "**Deprecated**: Use `realm_domain` instead.",
+								},
+								"realms_domains": schema.SetAttribute{
+									Description:        "The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.",
+									DeprecationMessage: "**Deprecated**: Use `realm_domain` instead.",
+									ElementType:        types.StringType,
+									Computed:           true,
 								},
 								"source_ip": schema.StringAttribute{Computed: true},
 								"source_ips": schema.SetAttribute{
