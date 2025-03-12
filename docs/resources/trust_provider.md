@@ -212,8 +212,10 @@ Optional:
 
 - `principal` (String) The Kerberos Principal of the authenticated Agent Proxy.
 - `principals` (Set of String) The set of accepted Kerberos Principals which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Principals can be matched.
-- `realm` (String) The Kerberos Realm of the authenticated Agent Proxy.
-- `realms` (Set of String) The set of accepted Kerberos Realms which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Realms can be matched.
+- `realm` (String, Deprecated) The Kerberos Realm of the authenticated Agent Proxy.
+- `realm_domain` (String) The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.
+- `realms` (Set of String, Deprecated) The set of accepted Kerberos Realms which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Realms can be matched.
+- `realms_domains` (Set of String) The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy. Used for cases where multiple Kerberos Realms or ActiveDirectory Domains can be matched.
 - `source_ip` (String) The Source IP Address of the authenticated Agent Proxy.
 - `source_ips` (Set of String) The set of accepted Source IPs which initiated the authenticated Agent Proxy. Used only for cases where multiple Source IPs can be matched.
 
