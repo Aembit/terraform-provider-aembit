@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -518,6 +519,51 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 				},
 			},
+			"managed_gitlab_account": schema.SingleNestedAttribute{
+				Description: "Vault Client Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"group_ids": schema.StringAttribute{
+						Description: "A comma-separated list of GitLab group IDss",
+						Required:    true,
+					},
+					"project_ids": schema.StringAttribute{
+						Description: " comma-separated list of GitLab project IDs.",
+						Required:    true,
+					},
+					"access_level": schema.Int32Attribute{
+						Description: "The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.OneOf([]int32{
+								0,
+								5,
+								10,
+								15,
+								20,
+								30,
+								40,
+								50,
+							}...),
+						},
+					},
+					"lifetime_in_days": schema.Int32Attribute{
+						Description: "Lifetime of the Credential Provider.",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(1, 365),
+						},
+					},
+					"scope": schema.StringAttribute{
+						Description: "Scope for Managed Gitlab Account configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"credential_provider_integration_id": schema.StringAttribute{
+						Description: "The unique identifier of the credential provider integration.",
+						Required:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -536,6 +582,7 @@ func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resou
 			path.MatchRoot("oauth_authorization_code"),
 			path.MatchRoot("username_password"),
 			path.MatchRoot("vault_client_token"),
+			path.MatchRoot("managed_gitlab_account"),
 		),
 	}
 }
@@ -718,10 +765,10 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 	// Handle the Aembit Token use case
 	if model.AembitToken != nil {
 		credential.Type = "aembit-access-token"
+		credential.LifetimeInSeconds = model.AembitToken.Lifetime
 		credential.Audience = fmt.Sprintf("%s.api.%s", tenantID, stackDomain)
 		credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
-			RoleID:            model.AembitToken.Role.ValueString(),
-			LifetimeInSeconds: model.AembitToken.Lifetime,
+			RoleID: model.AembitToken.Role.ValueString(),
 		}
 	}
 
@@ -846,6 +893,18 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		}
 	}
 
+	// Handle the Managed Gitlab Account use case
+	if model.ManagedGitlabAccount != nil {
+		credential.Type = "gitlab-managed-account"
+		credential.GroupIds = model.ManagedGitlabAccount.GroupIds
+		credential.ProjectIds = model.ManagedGitlabAccount.ProjectIds
+		credential.LifetimeInSeconds = model.ManagedGitlabAccount.LifetimeInDays * 86400
+		credential.AccessLevel = model.ManagedGitlabAccount.AccessLevel
+		credential.Scope = model.ManagedGitlabAccount.Scope
+		credential.CredentialProviderIntegrationExternalId = model.ManagedGitlabAccount.CredentialProviderIntegrationExternalId
+
+	}
+
 	return credential
 }
 
@@ -866,6 +925,7 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	model.OAuthClientCredentials = nil
 	model.UsernamePassword = nil
 	model.VaultClientToken = nil
+	model.ManagedGitlabAccount = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -889,6 +949,8 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 		model.UsernamePassword = convertUserPassV2DTOToModel(dto, state)
 	case "vaultClientToken":
 		model.VaultClientToken = convertVaultClientTokenV2DTOToModel(dto, state)
+	case "gitlab-managed-account":
+		model.ManagedGitlabAccount = convertManagedGitlabAccountV2DTOToModel(dto, state)
 	}
 	return model
 }
@@ -1073,6 +1135,20 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 		}
 	}
 	value.CustomClaims = claims
+	return &value
+}
+
+// convertManagedGitlabAccountV2DTOToModel converts the GitlabManagedAccount state object into a model ready for terraform processing.
+func convertManagedGitlabAccountV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedGitlabAccountModel {
+	value := models.CredentialProviderManagedGitlabAccountModel{
+		GroupIds:                                dto.GroupIds,
+		ProjectIds:                              dto.ProjectIds,
+		LifetimeInDays:                          dto.LifetimeInSeconds / 86400,
+		Scope:                                   dto.Scope,
+		AccessLevel:                             dto.AccessLevel,
+		CredentialProviderIntegrationExternalId: dto.CredentialProviderIntegrationExternalId,
+	}
+
 	return &value
 }
 

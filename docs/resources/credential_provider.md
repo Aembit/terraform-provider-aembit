@@ -100,6 +100,7 @@ resource "aembit_credential_provider" "vault" {
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
 - `is_active` (Boolean) Active status of the Credential Provider.
+- `managed_gitlab_account` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--managed_gitlab_account))
 - `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
@@ -176,6 +177,19 @@ Optional:
 Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.
+
+
+<a id="nestedatt--managed_gitlab_account"></a>
+### Nested Schema for `managed_gitlab_account`
+
+Required:
+
+- `access_level` (Number) The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).
+- `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
+- `group_ids` (String) A comma-separated list of GitLab group IDss
+- `lifetime_in_days` (Number) Lifetime of the Credential Provider.
+- `project_ids` (String) comma-separated list of GitLab project IDs.
+- `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 
 
 <a id="nestedatt--oauth_authorization_code"></a>

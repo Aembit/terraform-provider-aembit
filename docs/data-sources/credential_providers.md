@@ -37,6 +37,7 @@ Read-Only:
 - `description` (String) User-provided description of the credential provider.
 - `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
+- `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
@@ -119,6 +120,19 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String, Sensitive)
+
+
+<a id="nestedatt--credential_providers--managed_gitlab_account"></a>
+### Nested Schema for `credential_providers.managed_gitlab_account`
+
+Read-Only:
+
+- `access_level` (Number)
+- `credential_provider_integration_id` (String)
+- `group_ids` (String)
+- `lifetime_in_days` (Number)
+- `project_ids` (String)
+- `scope` (String)
 
 
 <a id="nestedatt--credential_providers--oauth_authorization_code"></a>
