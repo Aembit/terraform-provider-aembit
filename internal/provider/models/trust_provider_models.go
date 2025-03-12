@@ -75,8 +75,6 @@ type TrustProviderKerberosModel struct {
 	AgentControllerIDs []types.String `tfsdk:"agent_controller_ids"`
 	Principal          types.String   `tfsdk:"principal"`
 	Principals         []types.String `tfsdk:"principals"`
-	Realm              types.String   `tfsdk:"realm"`
-	Realms             []types.String `tfsdk:"realms"`
 	RealmOrDomain      types.String   `tfsdk:"realm_domain"`
 	RealmsOrDomains    []types.String `tfsdk:"realms_domains"`
 	SourceIP           types.String   `tfsdk:"source_ip"`
