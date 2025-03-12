@@ -142,10 +142,8 @@ Read-Only:
 - `agent_controller_ids` (Set of String)
 - `principal` (String)
 - `principals` (Set of String) The set of accepted Kerberos Principals of the authenticated Agent Proxy.
-- `realm` (String, Deprecated) The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.
-- `realm_domain` (String, Deprecated) The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.
-- `realms` (Set of String, Deprecated) The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.
-- `realms_domains` (Set of String, Deprecated) The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.
+- `realm_domain` (String) The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.
+- `realms_domains` (Set of String) The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.
 - `source_ip` (String)
 - `source_ips` (Set of String) The set of accepted Source IPs of the authenticated Agent Proxy.
 
