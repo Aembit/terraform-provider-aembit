@@ -298,9 +298,12 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									ElementType: types.StringType,
 									Computed:    true,
 								},
-								"realm": schema.StringAttribute{Computed: true},
-								"realms": schema.SetAttribute{
-									Description: "The set of accepted Kerberos Realms of the authenticated Agent Proxy.",
+								"realm_domain": schema.StringAttribute{
+									Description: "The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.",
+									Computed:    true,
+								},
+								"realms_domains": schema.SetAttribute{
+									Description: "The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy.",
 									ElementType: types.StringType,
 									Computed:    true,
 								},

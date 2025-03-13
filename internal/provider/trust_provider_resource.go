@@ -471,12 +471,12 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
-					"realm": schema.StringAttribute{
-						Description: "The Kerberos Realm of the authenticated Agent Proxy.",
+					"realm_domain": schema.StringAttribute{
+						Description: "The Kerberos Realm or ActiveDirectory Domain of the authenticated Agent Proxy.",
 						Optional:    true,
 					},
-					"realms": schema.SetAttribute{
-						Description: "The set of accepted Kerberos Realms which initiated the authenticated Agent Proxy. Used only for cases where multiple Kerberos Realms can be matched.",
+					"realms_domains": schema.SetAttribute{
+						Description: "The set of accepted Kerberos Realms or ActiveDirectory Domains which initiated the authenticated Agent Proxy. Used for cases where multiple Kerberos Realms or ActiveDirectory Domains can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
 						Validators: []validator.Set{
@@ -698,8 +698,8 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kerberos").AtName("principals"),
 		),
 		resourcevalidator.Conflicting(
-			path.MatchRoot("kerberos").AtName("realm"),
-			path.MatchRoot("kerberos").AtName("realms"),
+			path.MatchRoot("kerberos").AtName("realm_domain"),
+			path.MatchRoot("kerberos").AtName("realms_domains"),
 		),
 		resourcevalidator.Conflicting(
 			path.MatchRoot("kerberos").AtName("source_ip"),
@@ -1101,8 +1101,8 @@ func convertKerberosModelToDTO(model models.TrustProviderResourceModel, dto *aem
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Principal, "Principal")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.Principals, "Principal")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Realm, "Realm")
-	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.Realms, "Realm")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.RealmOrDomain, "RealmOrDomain")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.RealmsOrDomains, "RealmOrDomain")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.SourceIP, "SourceIp")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.SourceIPs, "SourceIp")
 }
@@ -1283,9 +1283,9 @@ func convertAwsMetadataDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProv
 
 func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderKerberosModel {
 	model := &models.TrustProviderKerberosModel{
-		Principal: types.StringNull(),
-		Realm:     types.StringNull(),
-		SourceIP:  types.StringNull(),
+		Principal:     types.StringNull(),
+		RealmOrDomain: types.StringNull(),
+		SourceIP:      types.StringNull(),
 	}
 	model.AgentControllerIDs = make([]types.String, len(dto.AgentControllerIDs))
 	for i, controllerID := range dto.AgentControllerIDs {
@@ -1296,7 +1296,7 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvide
 		model.Principal, model.Principals = extractMatchRules(dto.MatchRules, "Principal")
 	}
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Realm")) {
-		model.Realm, model.Realms = extractMatchRules(dto.MatchRules, "Realm")
+		model.RealmOrDomain, model.RealmsOrDomains = extractMatchRules(dto.MatchRules, "Realm")
 	}
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("SourceIp")) {
 		model.SourceIP, model.SourceIPs = extractMatchRules(dto.MatchRules, "SourceIp")
