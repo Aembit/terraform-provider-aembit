@@ -476,6 +476,8 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 	})
 }
 
+var gitlabManagedAccountResource = "aembit_credential_provider.gitlab_managed_account"
+
 func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tfmod")
@@ -488,21 +490,21 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr("aembit_credential_provider.gitlab_managed_account", "name", "TF Acceptance Managed Gitlab Account"),
+					resource.TestCheckResourceAttr(gitlabManagedAccountResource, "name", "TF Acceptance Managed Gitlab Account"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.gitlab_managed_account", "id"),
+					resource.TestCheckResourceAttrSet(gitlabManagedAccountResource, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.gitlab_managed_account", "id"),
+					resource.TestCheckResourceAttrSet(gitlabManagedAccountResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_credential_provider.gitlab_managed_account", ImportState: true, ImportStateVerify: false},
+			{ResourceName: gitlabManagedAccountResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_credential_provider.gitlab_managed_account", "name", "TF Acceptance Managed Gitlab Account - Updated"),
+					resource.TestCheckResourceAttr(gitlabManagedAccountResource, "name", "TF Acceptance Managed Gitlab Account - Updated"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

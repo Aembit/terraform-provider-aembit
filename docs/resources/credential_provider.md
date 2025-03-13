@@ -186,9 +186,9 @@ Required:
 
 - `access_level` (Number) The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).
 - `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
-- `group_ids` (String) A comma-separated list of GitLab group IDss
+- `group_ids` (Set of String) The set of GitLab group IDs.
 - `lifetime_in_days` (Number) Lifetime of the Credential Provider.
-- `project_ids` (String) comma-separated list of GitLab project IDs.
+- `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 
 

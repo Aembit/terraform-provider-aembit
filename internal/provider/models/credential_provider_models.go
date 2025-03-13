@@ -125,12 +125,12 @@ type CredentialProviderVaultClientTokenModel struct {
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.
 type CredentialProviderManagedGitlabAccountModel struct {
-	GroupIds                                string `tfsdk:"group_ids"`
-	ProjectIds                              string `tfsdk:"project_ids"`
-	AccessLevel                             int32  `tfsdk:"access_level"`
-	LifetimeInDays                          int32  `tfsdk:"lifetime_in_days"`
-	Scope                                   string `tfsdk:"scope"`
-	CredentialProviderIntegrationExternalId string `tfsdk:"credential_provider_integration_id"`
+	GroupIds                                []types.String `tfsdk:"group_ids"`
+	ProjectIds                              []types.String `tfsdk:"project_ids"`
+	AccessLevel                             int32          `tfsdk:"access_level"`
+	LifetimeInDays                          int32          `tfsdk:"lifetime_in_days"`
+	Scope                                   string         `tfsdk:"scope"`
+	CredentialProviderIntegrationExternalId string         `tfsdk:"credential_provider_integration_id"`
 }
 
 type CredentialProviderVaultClientTokenCustomClaimsModel struct {

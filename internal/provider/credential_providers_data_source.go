@@ -358,11 +358,13 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 						"managed_gitlab_account": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
-								"group_ids": schema.StringAttribute{
-									Computed: true,
+								"group_ids": schema.SetAttribute{
+									ElementType: types.StringType,
+									Computed:    true,
 								},
-								"project_ids": schema.StringAttribute{
-									Computed: true,
+								"project_ids": schema.SetAttribute{
+									ElementType: types.StringType,
+									Computed:    true,
 								},
 								"access_level": schema.Int32Attribute{
 									Computed: true,

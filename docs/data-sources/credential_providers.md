@@ -129,9 +129,9 @@ Read-Only:
 
 - `access_level` (Number)
 - `credential_provider_integration_id` (String)
-- `group_ids` (String)
+- `group_ids` (Set of String)
 - `lifetime_in_days` (Number)
-- `project_ids` (String)
+- `project_ids` (Set of String)
 - `scope` (String)
 
 

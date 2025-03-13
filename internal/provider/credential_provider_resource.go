@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -523,13 +524,23 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 				Description: "Vault Client Token type Credential Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"group_ids": schema.StringAttribute{
-						Description: "A comma-separated list of GitLab group IDss",
+					"group_ids": schema.SetAttribute{
+						Description: "The set of GitLab group IDs.",
+						ElementType: types.StringType,
 						Required:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
-					"project_ids": schema.StringAttribute{
-						Description: " comma-separated list of GitLab project IDs.",
+					"project_ids": schema.SetAttribute{
+						Description: "The set of GitLab project IDs.",
+						ElementType: types.StringType,
 						Required:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
 					},
 					"access_level": schema.Int32Attribute{
 						Description: "The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).",
@@ -896,8 +907,8 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 	// Handle the Managed Gitlab Account use case
 	if model.ManagedGitlabAccount != nil {
 		credential.Type = "gitlab-managed-account"
-		credential.GroupIds = model.ManagedGitlabAccount.GroupIds
-		credential.ProjectIds = model.ManagedGitlabAccount.ProjectIds
+		credential.GroupIds = strings.Join(convertSetToSlice(model.ManagedGitlabAccount.GroupIds), ",")
+		credential.ProjectIds = strings.Join(convertSetToSlice(model.ManagedGitlabAccount.ProjectIds), ",")
 		credential.LifetimeInSeconds = model.ManagedGitlabAccount.LifetimeInDays * 86400
 		credential.AccessLevel = model.ManagedGitlabAccount.AccessLevel
 		credential.Scope = model.ManagedGitlabAccount.Scope
@@ -1141,8 +1152,8 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 // convertManagedGitlabAccountV2DTOToModel converts the GitlabManagedAccount state object into a model ready for terraform processing.
 func convertManagedGitlabAccountV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedGitlabAccountModel {
 	value := models.CredentialProviderManagedGitlabAccountModel{
-		GroupIds:                                dto.GroupIds,
-		ProjectIds:                              dto.ProjectIds,
+		GroupIds:                                convertSliceToSet(strings.Split(dto.GroupIds, ",")),
+		ProjectIds:                              convertSliceToSet(strings.Split(dto.ProjectIds, ",")),
 		LifetimeInDays:                          dto.LifetimeInSeconds / 86400,
 		Scope:                                   dto.Scope,
 		AccessLevel:                             dto.AccessLevel,
@@ -1176,4 +1187,24 @@ func convertCredentialOAuthAuthorizationCodeCustomParameters(model models.Creden
 		}
 	}
 	return parameters
+}
+
+func convertSetToSlice(set []types.String) []string {
+	var result = []string{}
+
+	for _, val := range set {
+		result = append(result, val.ValueString())
+	}
+
+	return result
+}
+
+func convertSliceToSet(slice []string) []types.String {
+	var result = []types.String{}
+
+	for _, val := range slice {
+		result = append(result, types.StringValue(val))
+	}
+
+	return result
 }
