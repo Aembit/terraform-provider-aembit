@@ -355,6 +355,37 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								},
 							},
 						},
+						"managed_gitlab_account": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"group_ids": schema.SetAttribute{
+									Description: "The set of GitLab group IDs.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"project_ids": schema.SetAttribute{
+									Description: "The set of GitLab project IDs.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"access_level": schema.Int32Attribute{
+									Description: "The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).",
+									Computed:    true,
+								},
+								"lifetime_in_days": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider.",
+									Computed:    true,
+								},
+								"scope": schema.StringAttribute{
+									Description: "Scope for Managed Gitlab Account configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"credential_provider_integration_id": schema.StringAttribute{
+									Description: "The unique identifier of the credential provider integration.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},
