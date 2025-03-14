@@ -2,7 +2,7 @@ provider "aembit" {
 }
 
 resource "aembit_standalone_certificate_authority" "first_ca" {
-    name = "first terraform standalone certificate authority"
+    name = "unittestname"
     leaf_lifetime = 60
 }
 

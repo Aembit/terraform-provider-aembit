@@ -37,6 +37,7 @@ func TestAccClientWorkloadsDataSource(t *testing.T) {
 	randID := rand.Intn(10000000)
 	createFileConfig := strings.ReplaceAll(string(createFile), "unittest1namespace", fmt.Sprintf("unittest1namespace%d", randID))
 	createFileConfig, _, _ = randomizeFileConfigs(createFileConfig, "", "Acceptance Test client workload")
+	createFileConfig, _, _ = randomizeFileConfigs(createFileConfig, "", "unittestname")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
