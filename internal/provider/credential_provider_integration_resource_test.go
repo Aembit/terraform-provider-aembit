@@ -28,6 +28,8 @@ func testDeleteCredentialProviderIntegration(resourceName string) resource.TestC
 }
 
 func TestAccCredentialProviderIntegrationResource_GitLab(t *testing.T) {
+	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
+
 	createFile, _ := os.ReadFile("../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tfmod")
 
