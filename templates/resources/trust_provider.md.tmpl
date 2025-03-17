@@ -76,5 +76,13 @@ resource "aembit_trust_provider" "kerberos" {
 }
 ```
 
+## Changes for v1.21
+
+### Kerberos Trust Provider
+As of v1.21, the Kerberos Trust Provider has been updated to replace the `realm` field with `realm_domain` and `realms` with `realms_domains`, respectively.
+Please make sure to update your configuration accordingly.
+
+<hr>
+
 {{ .Description }}
 {{ .SchemaMarkdown }}

@@ -29,6 +29,8 @@ func testFindCredentialProviderIntegration(resourceName string) resource.TestChe
 }
 
 func TestAccCredentialProviderIntegrationsDataSource(t *testing.T) {
+	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
+
 	createFile, _ := os.ReadFile("../../tests/credential_provider_integration/data/TestAccCredentialProviderIntegrationsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance GitLab Credential Integration")
 
