@@ -305,6 +305,9 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					"email": schema.StringAttribute{
 						Description: "The GCP Service Account email address associated with the resource.",
 						Optional:    true,
+						Validators: []validator.String{
+							validators.EmailValidation(),
+						},
 					},
 					"emails": schema.SetAttribute{
 						Description: "A set of GCP Service Account email addresses that are associated with the resource(s).",
@@ -313,6 +316,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
 							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+							setvalidator.ValueStringsAre(validators.EmailValidation()),
 						},
 					},
 				},
