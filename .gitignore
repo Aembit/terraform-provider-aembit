@@ -39,3 +39,6 @@ terraform-provider-aembit
 
 # Exclude code coverage
 coverage.*
+
+# Exclude test results
+results.json
