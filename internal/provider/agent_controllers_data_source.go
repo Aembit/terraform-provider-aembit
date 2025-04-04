@@ -72,6 +72,10 @@ func (d *agentControllersDataSource) Schema(_ context.Context, _ datasource.Sche
 							Description: "Trust Provider to use for authentication of the agent controller.",
 							Computed:    true,
 						},
+						"allowed_tls_hostname": schema.StringAttribute{
+							Description: "Allowed TLS Hostname for Aembit Managed TLS.",
+							Computed:    true,
+						},
 					},
 				},
 			},

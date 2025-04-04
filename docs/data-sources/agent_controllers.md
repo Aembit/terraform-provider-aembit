@@ -24,6 +24,7 @@ Manages an agent controller.
 
 Read-Only:
 
+- `allowed_tls_hostname` (String) Allowed TLS Hostname for Aembit Managed TLS.
 - `description` (String) User-provided description of the agent controller.
 - `id` (String) Unique identifier of the agent controller.
 - `is_active` (Boolean) Active/Inactive status of the agent controller.

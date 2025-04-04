@@ -81,6 +81,11 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 					validators.UUIDRegexValidation(),
 				},
 			},
+			"allowed_tls_hostname": schema.StringAttribute{
+				Description: "Allowed TLS Hostname for Aembit Managed TLS.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -260,6 +265,7 @@ func convertAgentControllerModelToDTO(ctx context.Context, model models.AgentCon
 		controller.EntityDTO.ExternalID = *externalID
 	}
 	controller.TrustProviderID = model.TrustProviderID.ValueString()
+	controller.AllowedTLSHostname = model.AllowedTLSHostname.ValueString()
 
 	return controller
 }
@@ -275,6 +281,7 @@ func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentContr
 	} else {
 		model.TrustProviderID = types.StringNull()
 	}
+	model.AllowedTLSHostname = types.StringValue(dto.AllowedTLSHostname)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
 	return model

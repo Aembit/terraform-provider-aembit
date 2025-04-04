@@ -17,6 +17,7 @@ resource "aembit_agent_controller" "azure_tp" {
     }
 
 	trust_provider_id = aembit_trust_provider.azure.id
+	allowed_tls_hostname = "test.example.com"
 }
 
 resource "aembit_trust_provider" "azure" {

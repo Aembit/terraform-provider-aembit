@@ -37,6 +37,7 @@ resource "aembit_trust_provider" "azure" {
 
 ### Optional
 
+- `allowed_tls_hostname` (String) Allowed TLS Hostname for Aembit Managed TLS.
 - `description` (String) Description for the Agent Controller.
 - `is_active` (Boolean) Active status of the Agent Controller.
 - `tags` (Map of String) Tags are key-value pairs.
