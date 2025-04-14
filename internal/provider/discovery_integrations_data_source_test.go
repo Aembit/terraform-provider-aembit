@@ -39,7 +39,7 @@ func TestAccDiscoveryIntegrationsDataSource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Access Conditions returned
+					// Verify non-zero number of Discovery Integrations returned
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationssDataSource, "discovery_integrations.#"),
 					// Find newly created entry
 					testFindDiscoveryIntegration(testDiscoveryIntegrationResource),
