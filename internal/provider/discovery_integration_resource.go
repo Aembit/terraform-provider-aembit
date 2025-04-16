@@ -57,14 +57,14 @@ func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.Sche
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "User-provided name for the discovery integration.",
+				Description: "User-defined name of the discovery integration.",
 				Required:    true,
 				Validators: []validator.String{
 					validators.NameLengthValidation(),
 				},
 			},
 			"description": schema.StringAttribute{
-				Description: "User-provided description for the discovery integration.",
+				Description: "User-defined description of the discovery integration.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -88,7 +88,7 @@ func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.Sche
 				},
 			},
 			"sync_frequency_seconds": schema.Int64Attribute{
-				Description: "Frequency(in seconds) to be used for synchronizing the discovery integration. Possible values; 300 to 3600",
+				Description: "Frequency (in seconds) for synchronizing the discovery integration. Accepted range: 300-3600 seconds",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(3600),
@@ -97,19 +97,19 @@ func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.Sche
 				},
 			},
 			"last_sync": schema.StringAttribute{
-				Description: "ISO 8601 formatted last sync date of the discovery integration.",
+				Description: "ISO 8601-formatted last sync date of the discovery integration.",
 				Computed:    true,
 			},
 			"last_sync_status": schema.StringAttribute{
-				Description: "Status for the last sync of the discovery integration.",
+				Description: "Status of the last sync of the discovery integration.",
 				Computed:    true,
 			},
 			"endpoint": schema.StringAttribute{
-				Description: "Endpoint to be used for performing the discovery integration.",
+				Description: "Endpoint that performs the discovery integration.",
 				Required:    true,
 			},
 			"wiz_integration": schema.SingleNestedAttribute{
-				Description: "Wiz Specific properties for the discovery integration.",
+				Description: "Wiz-specific properties for the discovery integration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"token_url": schema.StringAttribute{

@@ -24,23 +24,23 @@ Manages a discovery integration.
 
 Required:
 
-- `endpoint` (String) Endpoint to be used for performing the discovery integration.
+- `endpoint` (String) Endpoint that performs the discovery integration.
 - `type` (String) Type of discovery integration. Possible value is: `WizIntegrationApi`.
 
 Optional:
 
 - `is_active` (Boolean) Active status of the discovery integration.
 - `tags` (Map of String) Tags are key-value pairs.
-- `wiz_integration` (Attributes) Wiz Specific properties for the discovery integration. (see [below for nested schema](#nestedatt--discovery_integrations--wiz_integration))
+- `wiz_integration` (Attributes) Wiz-specific properties for the discovery integration. (see [below for nested schema](#nestedatt--discovery_integrations--wiz_integration))
 
 Read-Only:
 
-- `description` (String) User-provided description for the discovery integration.
+- `description` (String) User-defined description of the discovery integration.
 - `id` (String) Unique identifier of the discovery integration.
-- `last_sync` (String) ISO 8601 formatted last sync date of the discovery integration.
-- `last_sync_status` (String) Status for the last sync of the discovery integration.
-- `name` (String) User-provided name for the discovery integration.
-- `sync_frequency_seconds` (Number) Frequency(in seconds) to be used for synchronizing the discovery integration. Possible values; 300 to 3600
+- `last_sync` (String) ISO 8601-formatted last sync date of the discovery integration.
+- `last_sync_status` (String) Status of the last sync of the discovery integration.
+- `name` (String) User-defined name of the discovery integration.
+- `sync_frequency_seconds` (Number) Frequency (in seconds) for synchronizing the discovery integration. Accepted range: 300-3600 seconds
 
 <a id="nestedatt--discovery_integrations--wiz_integration"></a>
 ### Nested Schema for `discovery_integrations.wiz_integration`
