@@ -74,12 +74,12 @@ func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.Sche
 				Computed:    true,
 			},
 			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
+				Description: "Key-value pairs for tagging the discovery integration. (e.g., \"environment\" = \"production\").",
 				ElementType: types.StringType,
 				Optional:    true,
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of discovery integration. Possible value is: `WizIntegrationApi`.",
+				Description: "Type of discovery integration. The only accepted value is `WizIntegrationApi`.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{
@@ -184,7 +184,7 @@ func (r *discoveryIntegrationResource) Read(ctx context.Context, req resource.Re
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Discovery Integration",
-			fmt.Sprintf("An error occurred while attempting to fetch the Discovery Integration with External ID '%s' from Terraform state: %v", state.ID.ValueString(), err.Error()),
+			fmt.Sprintf("An error occurred while attempting to fetch the Discovery Integration with ID '%s' from Terraform state: %v", state.ID.ValueString(), err.Error()),
 		)
 
 		// If the resource is not found on Aembit Cloud, delete it locally

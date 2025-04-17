@@ -65,13 +65,13 @@ func (d *discoveryIntegrationsDataSource) Schema(_ context.Context, _ datasource
 							Computed:    true,
 						},
 						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
+							Description: "Key-value pairs for tagging the discovery integration. (e.g., \"environment\" = \"production\").",
 							ElementType: types.StringType,
 							Optional:    true,
 							Computed:    true,
 						},
 						"type": schema.StringAttribute{
-							Description: "Type of discovery integration. Possible value is: `WizIntegrationApi`.",
+							Description: "Type of discovery integration. The only accepted value is `WizIntegrationApi`.",
 							Required:    true,
 						},
 						"sync_frequency_seconds": schema.Int64Attribute{

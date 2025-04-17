@@ -25,12 +25,12 @@ Manages a discovery integration.
 Required:
 
 - `endpoint` (String) Endpoint that performs the discovery integration.
-- `type` (String) Type of discovery integration. Possible value is: `WizIntegrationApi`.
+- `type` (String) Type of discovery integration. The only accepted value is `WizIntegrationApi`.
 
 Optional:
 
 - `is_active` (Boolean) Active status of the discovery integration.
-- `tags` (Map of String) Tags are key-value pairs.
+- `tags` (Map of String) Key-value pairs for tagging the discovery integration. (e.g., "environment" = "production").
 - `wiz_integration` (Attributes) Wiz-specific properties for the discovery integration. (see [below for nested schema](#nestedatt--discovery_integrations--wiz_integration))
 
 Read-Only:
