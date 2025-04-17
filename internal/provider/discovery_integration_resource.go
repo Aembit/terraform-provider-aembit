@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -317,10 +318,15 @@ func convertDiscoveryIntegrationModelToDTO(ctx context.Context, model models.Dis
 	}
 
 	if model.Wiz != nil {
-		discoveryIntegration.DiscoveryIntegrationJSON.TokenUrl = model.Wiz.TokenUrl.ValueString()
-		discoveryIntegration.DiscoveryIntegrationJSON.ClientId = model.Wiz.ClientId.ValueString()
-		discoveryIntegration.DiscoveryIntegrationJSON.ClientSecret = model.Wiz.ClientSecret.ValueString()
-		discoveryIntegration.DiscoveryIntegrationJSON.Audience = model.Wiz.Audience.ValueString()
+		jsonDto := aembit.DiscoveryIntegrationJSONDTO{
+			TokenUrl:     model.Wiz.TokenUrl.ValueString(),
+			ClientId:     model.Wiz.ClientId.ValueString(),
+			ClientSecret: model.Wiz.ClientSecret.ValueString(),
+			Audience:     model.Wiz.Audience.ValueString(),
+		}
+
+		jsonBytes, _ := json.Marshal(jsonDto)
+		discoveryIntegration.DiscoveryIntegrationJSON = string(jsonBytes)
 	}
 
 	return discoveryIntegration
@@ -341,11 +347,13 @@ func convertDiscoveryIntegrationDTOToModel(ctx context.Context, dto aembit.Disco
 
 	switch dto.Type {
 	case "WizIntegrationApi":
+		var wizDto aembit.DiscoveryIntegrationJSONDTO
+		json.Unmarshal([]byte(dto.DiscoveryIntegrationJSON), &wizDto)
 		model.Wiz = &models.DiscoveryIntegrationWizModel{
-			TokenUrl:     types.StringValue(dto.DiscoveryIntegrationJSON.TokenUrl),
-			ClientId:     types.StringValue(dto.DiscoveryIntegrationJSON.ClientId),
+			TokenUrl:     types.StringValue(wizDto.TokenUrl),
+			ClientId:     types.StringValue(wizDto.ClientId),
 			ClientSecret: types.StringNull(),
-			Audience:     types.StringValue(dto.DiscoveryIntegrationJSON.Audience),
+			Audience:     types.StringValue(wizDto.Audience),
 		}
 
 		if state.Wiz != nil {
