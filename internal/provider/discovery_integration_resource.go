@@ -348,7 +348,11 @@ func convertDiscoveryIntegrationDTOToModel(ctx context.Context, dto aembit.Disco
 	switch dto.Type {
 	case "WizIntegrationApi":
 		var wizDto aembit.DiscoveryIntegrationJSONDTO
-		json.Unmarshal([]byte(dto.DiscoveryIntegrationJSON), &wizDto)
+		err := json.Unmarshal([]byte(dto.DiscoveryIntegrationJSON), &wizDto)
+		if err != nil {
+			fmt.Println("Failed to parse DiscoveryIntegrationJSON: ", err)
+			return model
+		}
 		model.Wiz = &models.DiscoveryIntegrationWizModel{
 			TokenUrl:     types.StringValue(wizDto.TokenUrl),
 			ClientId:     types.StringValue(wizDto.ClientId),
