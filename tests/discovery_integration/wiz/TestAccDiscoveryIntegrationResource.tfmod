@@ -1,0 +1,15 @@
+provider "aembit" {
+}
+
+resource "aembit_discovery_integration" "wiz" {
+	name = "TF Acceptance Wiz - Modified"
+	is_active = true
+	type = "WizIntegrationApi"
+	endpoint = "https://endpoint.url"
+	wiz_integration = {
+		token_url = "https://token.url/token"
+		client_id = "client_id"
+		client_secret = "client_secret"
+		audience = "audience"
+	}
+}
