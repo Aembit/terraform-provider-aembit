@@ -98,10 +98,11 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-          # TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
-          TF_LOG: "DEBUG"
+          TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: go test -json -v -coverprofile coverage.out ./internal/provider/ > results.json
         timeout-minutes: 10        
+      - name: Print test results
+        run: cat results.json
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
         with:
