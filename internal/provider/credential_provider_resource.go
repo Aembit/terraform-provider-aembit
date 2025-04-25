@@ -954,7 +954,6 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		credential.Subject = model.VaultClientToken.Subject
 		credential.Lifetime = model.VaultClientToken.Lifetime
 		credential.SubjectType = model.VaultClientToken.SubjectType
-		credential.CustomClaims = make([]aembit.CustomClaimsDTO, len(model.VaultClientToken.CustomClaims))
 		credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
 			VaultHost:            model.VaultClientToken.VaultHost,
 			Port:                 model.VaultClientToken.VaultPort,
@@ -965,6 +964,7 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 			ForwardingConfig:     model.VaultClientToken.VaultForwarding,
 			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess,
 		}
+		credential.CustomClaims = make([]aembit.CustomClaimsDTO, len(model.VaultClientToken.CustomClaims))
 		for i, claim := range model.VaultClientToken.CustomClaims {
 			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
 				Key:       claim.Key,

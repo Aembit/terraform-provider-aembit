@@ -100,8 +100,7 @@ jobs:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-         set -o pipefail
-         go test -json -v -coverprofile coverage.out ./internal/provider/ > results.json || true
+         go test -json -v -coverprofile coverage.out ./internal/provider/ > results.json
          cat results.json
         timeout-minutes: 10        
       # Upload coverage output as artifact
