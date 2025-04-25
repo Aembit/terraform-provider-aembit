@@ -41,6 +41,7 @@ Read-Only:
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
+- `oidc_id_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token))
 - `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
 
@@ -182,6 +183,30 @@ Read-Only:
 
 <a id="nestedatt--credential_providers--oauth_client_credentials--custom_parameters"></a>
 ### Nested Schema for `credential_providers.oauth_client_credentials.custom_parameters`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
+
+
+<a id="nestedatt--credential_providers--oidc_id_token"></a>
+### Nested Schema for `credential_providers.oidc_id_token`
+
+Read-Only:
+
+- `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
+- `audience` (String) Audience for OIDC ID Token configuration of the Credential Provider.
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token--custom_claims))
+- `issuer` (String) OIDC Issuer for OIDC ID Token configuration of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider.
+- `subject` (String) Subject for JWT Token for OIDC ID Token configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+
+<a id="nestedatt--credential_providers--oidc_id_token--custom_claims"></a>
+### Nested Schema for `credential_providers.oidc_id_token.custom_claims`
 
 Read-Only:
 

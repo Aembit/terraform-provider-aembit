@@ -5,8 +5,10 @@ import (
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -383,6 +385,61 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"credential_provider_integration_id": schema.StringAttribute{
 									Description: "The unique identifier of the credential provider integration.",
 									Computed:    true,
+								},
+							},
+						},
+						"oidc_id_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"subject": schema.StringAttribute{
+									Description: "Subject for JWT Token for OIDC ID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+								"issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for OIDC ID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime_in_minutes": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider.",
+									Computed:    true,
+								},
+								"algorithm_type": schema.StringAttribute{
+									Description: "JWT Signing algorithm type (RS256 or ES256)",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+									},
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for OIDC ID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"custom_claims": schema.SetNestedAttribute{
+									Description: "Set of Custom Claims for the JWT Token",
+									Computed:    true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
 								},
 							},
 						},

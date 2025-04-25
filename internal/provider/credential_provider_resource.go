@@ -575,6 +575,74 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 					},
 				},
 			},
+			"oidc_id_token": schema.SingleNestedAttribute{
+				Description: "OIDC ID Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"subject": schema.StringAttribute{
+						Description: "Subject for JWT Token for OIDC ID Token configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"subject_type": schema.StringAttribute{
+						Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"literal",
+								"dynamic",
+							}...),
+						},
+					},
+					"issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for OIDC ID Token configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"lifetime_in_minutes": schema.Int32Attribute{
+						Description: "Lifetime of the Credential Provider.",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(1, 5256000), // max ten years
+						},
+					},
+					"algorithm_type": schema.StringAttribute{
+						Description: "JWT Signing algorithm type (RS256 or ES256)",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for OIDC ID Token configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"custom_claims": schema.SetNestedAttribute{
+						Description: "Set of Custom Claims for the JWT Token.",
+						Optional:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"key": schema.StringAttribute{
+									Description: "Key for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "Value for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.",
+									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -594,6 +662,7 @@ func (r *credentialProviderResource) ConfigValidators(_ context.Context) []resou
 			path.MatchRoot("username_password"),
 			path.MatchRoot("vault_client_token"),
 			path.MatchRoot("managed_gitlab_account"),
+			path.MatchRoot("oidc_id_token"),
 		),
 	}
 }
@@ -794,7 +863,8 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		credential.Type = "aws-sts-oidc"
 		credential.Lifetime = model.AwsSTS.Lifetime
 		credential.CredentialAwsSTSV2DTO = aembit.CredentialAwsSTSV2DTO{
-			RoleArn: model.AwsSTS.RoleARN.ValueString(),
+			RoleArn:  model.AwsSTS.RoleARN.ValueString(),
+			Lifetime: model.AwsSTS.Lifetime,
 		}
 	}
 
@@ -826,9 +896,9 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		credential.Issuer = fmt.Sprintf("%s.%s.SHA256:{sha256(publicKey)}", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString())
 		credential.Subject = fmt.Sprintf("%s.%s", model.SnowflakeToken.AccountID.ValueString(), model.SnowflakeToken.Username.ValueString())
 		credential.Lifetime = 1
+		credential.AlgorithmType = "RS256"
 		credential.CredentialSnowflakeTokenV2DTO = aembit.CredentialSnowflakeTokenV2DTO{
 			TokenConfiguration: "snowflake",
-			AlgorithmType:      "RS256",
 		}
 	}
 
@@ -883,9 +953,9 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
 		credential.Subject = model.VaultClientToken.Subject
 		credential.Lifetime = model.VaultClientToken.Lifetime
+		credential.SubjectType = model.VaultClientToken.SubjectType
+		credential.CustomClaims = make([]aembit.CustomClaimsDTO, len(model.VaultClientToken.CustomClaims))
 		credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
-			SubjectType:          model.VaultClientToken.SubjectType,
-			CustomClaims:         make([]aembit.CredentialVaultClientTokenClaimsDTO, len(model.VaultClientToken.CustomClaims)),
 			VaultHost:            model.VaultClientToken.VaultHost,
 			Port:                 model.VaultClientToken.VaultPort,
 			TLS:                  model.VaultClientToken.VaultTLS,
@@ -896,7 +966,7 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess,
 		}
 		for i, claim := range model.VaultClientToken.CustomClaims {
-			credential.CredentialVaultClientTokenV2DTO.CustomClaims[i] = aembit.CredentialVaultClientTokenClaimsDTO{
+			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
 				Key:       claim.Key,
 				Value:     claim.Value,
 				ValueType: claim.ValueType,
@@ -913,7 +983,26 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 		credential.AccessLevel = model.ManagedGitlabAccount.AccessLevel
 		credential.Scope = model.ManagedGitlabAccount.Scope
 		credential.CredentialProviderIntegrationExternalId = model.ManagedGitlabAccount.CredentialProviderIntegrationExternalId
+	}
 
+	// Handle the OidcIdToken use case
+	if model.OidcIdToken != nil {
+		credential.Type = "oidc-id-token"
+		credential.LifetimeTimeSpanSeconds = model.OidcIdToken.LifetimeInMinutes * 60
+		credential.Subject = model.OidcIdToken.Subject
+		credential.SubjectType = model.OidcIdToken.SubjectType
+		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
+		credential.Audience = model.OidcIdToken.Audience
+		credential.AlgorithmType = model.OidcIdToken.AlgorithmType
+
+		credential.CustomClaims = make([]aembit.CustomClaimsDTO, len(model.OidcIdToken.CustomClaims))
+		for i, claim := range model.OidcIdToken.CustomClaims {
+			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
+				Key:       claim.Key,
+				Value:     claim.Value,
+				ValueType: claim.ValueType,
+			}
+		}
 	}
 
 	return credential
@@ -937,6 +1026,7 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	model.UsernamePassword = nil
 	model.VaultClientToken = nil
 	model.ManagedGitlabAccount = nil
+	model.OidcIdToken = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -961,7 +1051,9 @@ func convertCredentialProviderV2DTOToModel(ctx context.Context, dto aembit.Crede
 	case "vaultClientToken":
 		model.VaultClientToken = convertVaultClientTokenV2DTOToModel(dto, state)
 	case "gitlab-managed-account":
-		model.ManagedGitlabAccount = convertManagedGitlabAccountV2DTOToModel(dto, state)
+		model.ManagedGitlabAccount = convertManagedGitlabAccountDTOToModel(dto, state)
+	case "oidc-id-token":
+		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, state)
 	}
 	return model
 }
@@ -1135,11 +1227,11 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 	}
 
 	// Get the custom claims to be injected into the model
-	claims := make([]*models.CredentialProviderVaultClientTokenCustomClaimsModel, len(dto.CustomClaims))
-	//types.ObjectValue(models.CredentialProviderVaultClientTokenCustomClaimsModel.AttrTypes),
+	claims := make([]*models.CredentialProviderCustomClaimsModel, len(dto.CustomClaims))
+	//types.ObjectValue(models.CredentialProviderCustomClaimsModel.AttrTypes),
 	//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
 	for i, claim := range dto.CustomClaims {
-		claims[i] = &models.CredentialProviderVaultClientTokenCustomClaimsModel{
+		claims[i] = &models.CredentialProviderCustomClaimsModel{
 			Key:       claim.Key,
 			Value:     claim.Value,
 			ValueType: claim.ValueType,
@@ -1149,8 +1241,8 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 	return &value
 }
 
-// convertManagedGitlabAccountV2DTOToModel converts the GitlabManagedAccount state object into a model ready for terraform processing.
-func convertManagedGitlabAccountV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedGitlabAccountModel {
+// convertManagedGitlabAccountDTOToModel converts the GitlabManagedAccount state object into a model ready for terraform processing.
+func convertManagedGitlabAccountDTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedGitlabAccountModel {
 	value := models.CredentialProviderManagedGitlabAccountModel{
 		GroupIds:                                convertSliceToSet(strings.Split(dto.GroupIds, ",")),
 		ProjectIds:                              convertSliceToSet(strings.Split(dto.ProjectIds, ",")),
@@ -1163,11 +1255,37 @@ func convertManagedGitlabAccountV2DTOToModel(dto aembit.CredentialProviderV2DTO,
 	return &value
 }
 
+// convertOidcIdTokenDTOToModel converts the OidcIdToken state object into a model ready for terraform processing.
+func convertOidcIdTokenDTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedOidcIdToken {
+	value := models.CredentialProviderManagedOidcIdToken{
+		Subject:           dto.Subject,
+		SubjectType:       dto.SubjectType,
+		LifetimeInMinutes: dto.LifetimeTimeSpanSeconds / 60,
+		Audience:          dto.Audience,
+		AlgorithmType:     dto.AlgorithmType,
+		Issuer:            types.StringValue(dto.Issuer),
+	}
+
+	// Get the custom claims to be injected into the model
+	claims := make([]*models.CredentialProviderCustomClaimsModel, len(dto.CustomClaims))
+	//types.ObjectValue(models.CredentialProviderCustomClaimsModel.AttrTypes),
+	//claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
+	for i, claim := range dto.CustomClaims {
+		claims[i] = &models.CredentialProviderCustomClaimsModel{
+			Key:       claim.Key,
+			Value:     claim.Value,
+			ValueType: claim.ValueType,
+		}
+	}
+	value.CustomClaims = claims
+	return &value
+}
+
 // Get the custom parameters to be injected into the model.
-func convertCredentialOAuthClientCredentialsCustomParameters(model models.CredentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
-	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthClientCredentials.CustomParameters))
+func convertCredentialOAuthClientCredentialsCustomParameters(model models.CredentialProviderResourceModel) []aembit.CustomClaimsDTO {
+	parameters := make([]aembit.CustomClaimsDTO, len(model.OAuthClientCredentials.CustomParameters))
 	for i, param := range model.OAuthClientCredentials.CustomParameters {
-		parameters[i] = aembit.CredentialOAuthParametersDTO{
+		parameters[i] = aembit.CustomClaimsDTO{
 			Key:       param.Key,
 			Value:     param.Value,
 			ValueType: param.ValueType,
@@ -1177,10 +1295,10 @@ func convertCredentialOAuthClientCredentialsCustomParameters(model models.Creden
 }
 
 // Get the custom parameters to be injected into the model.
-func convertCredentialOAuthAuthorizationCodeCustomParameters(model models.CredentialProviderResourceModel) []aembit.CredentialOAuthParametersDTO {
-	parameters := make([]aembit.CredentialOAuthParametersDTO, len(model.OAuthAuthorizationCode.CustomParameters))
+func convertCredentialOAuthAuthorizationCodeCustomParameters(model models.CredentialProviderResourceModel) []aembit.CustomClaimsDTO {
+	parameters := make([]aembit.CustomClaimsDTO, len(model.OAuthAuthorizationCode.CustomParameters))
 	for i, param := range model.OAuthAuthorizationCode.CustomParameters {
-		parameters[i] = aembit.CredentialOAuthParametersDTO{
+		parameters[i] = aembit.CustomClaimsDTO{
 			Key:       param.Key,
 			Value:     param.Value,
 			ValueType: param.ValueType,
