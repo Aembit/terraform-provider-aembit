@@ -373,7 +373,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 	model.DataType = types.StringValue(dto.DataType)
 	model.Type = types.StringValue(dto.Type)
 
-	if dto.Type == "AwsS3Bucket" {
+	if dto.Type == "AwsS3Bucket" && state.AWSS3Bucket != nil {
 		model.AWSS3Bucket = &models.AWSS3BucketModel{
 			S3BucketRegion: types.StringValue(dto.S3BucketRegion),
 			S3BucketName:   types.StringValue(dto.S3BucketName),
@@ -381,7 +381,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 	}
 
-	if dto.Type == "GcsBucket" {
+	if dto.Type == "GcsBucket" && state.GCSBucket != nil{
 		model.GCSBucket = &models.GCSBucketModel{
 			GCSBucketName:       types.StringValue(dto.GCSBucketName),
 			GCSPathPrefix:       types.StringValue(dto.GCSPathPrefix),
@@ -391,7 +391,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 	}
 
-	if dto.Type == "SplunkHttpEventCollector" {
+	if dto.Type == "SplunkHttpEventCollector" && state.SplunkHttpEventCollector != nil {
 		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
 			SplunkHostPort:      types.StringValue(dto.SplunkHostPort),
 			AuthenticationToken: types.StringValue(dto.AuthenticationToken),
