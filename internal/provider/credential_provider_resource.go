@@ -559,7 +559,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						},
 					},
 					"lifetime_in_days": schema.Int32Attribute{
-						Description: "Lifetime of the Credential Provider.",
+						Description: "Lifetime of the Credential Provider in days.",
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 365),
@@ -598,7 +598,7 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						Computed:    true,
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
-						Description: "Lifetime of the Credential Provider.",
+						Description: "Lifetime of the Credential Provider in minutes.",
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 5256000), // max ten years
