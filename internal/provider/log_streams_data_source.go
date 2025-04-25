@@ -73,7 +73,7 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 						"aws_s3_bucket": schema.SingleNestedAttribute{
 							Description: "AWSS3Bucket destination type Log Stream configuration.",
 							Optional:    true,
-							Attributes:  map[string]schema.Attribute{
+							Attributes: map[string]schema.Attribute{
 								"s3_bucket_region": schema.StringAttribute{
 									Description: "S3 Bucket Region.",
 									Required:    true,
@@ -158,7 +158,7 @@ func (d *logStreamsDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	// Map response body to model
 	for _, logStream := range logStreams {
-		logStreamState := convertLogStreamDTOToModel(ctx, logStream, models.LogStreamResourceModel{})
+		logStreamState := convertLogStreamDTOToModel(logStream, models.LogStreamResourceModel{})
 		state.LogStreams = append(state.LogStreams, logStreamState)
 	}
 

@@ -6,11 +6,11 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -175,7 +175,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					"tls": schema.BoolAttribute{
 						Description: "Tls.",
 						Optional:    true,
-						Computed:	 true,
+						Computed:    true,
 					},
 				},
 			},
@@ -207,7 +207,7 @@ func (r *logStreamResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertLogStreamDTOToModel(ctx, *logStream, plan)
+	plan = convertLogStreamDTOToModel(*logStream, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -242,7 +242,7 @@ func (r *logStreamResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	state = convertLogStreamDTOToModel(ctx, logStream, state)
+	state = convertLogStreamDTOToModel(logStream, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -287,7 +287,7 @@ func (r *logStreamResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertLogStreamDTOToModel(ctx, *logStream, plan)
+	state = convertLogStreamDTOToModel(*logStream, plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -329,7 +329,7 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 	logStream.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
-		IsActive:	 model.IsActive.ValueBool(),
+		IsActive:    model.IsActive.ValueBool(),
 	}
 
 	if externalID != nil {
@@ -355,16 +355,15 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 
 	if model.SplunkHttpEventCollector != nil {
 		logStream.SplunkHostPort = model.SplunkHttpEventCollector.SplunkHostPort.ValueString()
-	 	logStream.AuthenticationToken = model.SplunkHttpEventCollector.AuthenticationToken.ValueString()
-	 	logStream.SourceName = model.SplunkHttpEventCollector.SourceName.ValueString()
-	 	logStream.Tls = model.SplunkHttpEventCollector.Tls.ValueBool()
+		logStream.AuthenticationToken = model.SplunkHttpEventCollector.AuthenticationToken.ValueString()
+		logStream.SourceName = model.SplunkHttpEventCollector.SourceName.ValueString()
+		logStream.Tls = model.SplunkHttpEventCollector.Tls.ValueBool()
 	}
- 
+
 	return logStream
 }
 
-
-func convertLogStreamDTOToModel(ctx context.Context, dto aembit.LogStreamDTO, state models.LogStreamResourceModel) models.LogStreamResourceModel {
+func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamResourceModel) models.LogStreamResourceModel {
 	var model models.LogStreamResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
@@ -384,20 +383,20 @@ func convertLogStreamDTOToModel(ctx context.Context, dto aembit.LogStreamDTO, st
 
 	if dto.Type == "GcsBucket" {
 		model.GCSBucket = &models.GCSBucketModel{
-			GCSBucketName:        types.StringValue(dto.GCSBucketName),
-			GCSPathPrefix:        types.StringValue(dto.GCSPathPrefix),
-			Audience:             types.StringValue(dto.Audience),
-			ServiceAccountEmail:  types.StringValue(dto.ServiceAccountEmail),
-			TokenLifetime:        types.Int64Value(dto.TokenLifetime),
+			GCSBucketName:       types.StringValue(dto.GCSBucketName),
+			GCSPathPrefix:       types.StringValue(dto.GCSPathPrefix),
+			Audience:            types.StringValue(dto.Audience),
+			ServiceAccountEmail: types.StringValue(dto.ServiceAccountEmail),
+			TokenLifetime:       types.Int64Value(dto.TokenLifetime),
 		}
 	}
 
 	if dto.Type == "SplunkHttpEventCollector" {
 		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
-			SplunkHostPort:    types.StringValue(dto.SplunkHostPort),
+			SplunkHostPort:      types.StringValue(dto.SplunkHostPort),
 			AuthenticationToken: types.StringValue(dto.AuthenticationToken),
-			SourceName:         types.StringValue(dto.SourceName),
-			Tls:                types.BoolValue(dto.Tls),
+			SourceName:          types.StringValue(dto.SourceName),
+			Tls:                 types.BoolValue(dto.Tls),
 		}
 	}
 
