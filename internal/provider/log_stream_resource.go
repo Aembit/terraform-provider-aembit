@@ -381,7 +381,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 	}
 
-	if dto.Type == "GcsBucket" && state.GCSBucket != nil{
+	if dto.Type == "GcsBucket" && state.GCSBucket != nil {
 		model.GCSBucket = &models.GCSBucketModel{
 			GCSBucketName:       types.StringValue(dto.GCSBucketName),
 			GCSPathPrefix:       types.StringValue(dto.GCSPathPrefix),
