@@ -513,3 +513,39 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 		},
 	})
 }
+
+var oidcIdTokenResourcePath = "aembit_credential_provider.oidc_id_token"
+
+func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/credential/oidc-id-token/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/credential/oidc-id-token/TestAccCredentialProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(oidcIdTokenResourcePath, "name", "TF Acceptance OIDC ID Token"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: oidcIdTokenResourcePath, ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(oidcIdTokenResourcePath, "name", "TF Acceptance OIDC ID Token - Modified"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
