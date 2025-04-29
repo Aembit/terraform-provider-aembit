@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -177,8 +177,8 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					"tls": schema.BoolAttribute{
 						Description: "Splunk HTTP Event Collector TLS configuration.",
 						Optional:    true,
-						Default:	 booldefault.StaticBool(true),
-						Computed:	 true,
+						Default:     booldefault.StaticBool(true),
+						Computed:    true,
 					},
 				},
 			},
