@@ -27,7 +27,7 @@ description: |-
 - `description` (String) Description for the Log Stream.
 - `gcs_bucket` (Attributes) GCSBucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--gcs_bucket))
 - `is_active` (Boolean) Active/Inactive status of the Log Stream.
-- `splunk_http_event_collector` (Attributes) SplunkHttpEventCollector destination type Log Stream configuration. (see [below for nested schema](#nestedatt--splunk_http_event_collector))
+- `splunk_http_event_collector` (Attributes) Splunk HTTP EventCollector destination type Log Stream configuration. (see [below for nested schema](#nestedatt--splunk_http_event_collector))
 
 ### Read-Only
 
@@ -58,9 +58,12 @@ Optional:
 <a id="nestedatt--splunk_http_event_collector"></a>
 ### Nested Schema for `splunk_http_event_collector`
 
+Required:
+
+- `authentication_token` (String, Sensitive) Authentication Token.
+- `source_name` (String) Splunk Data Input Source Name.
+- `splunk_host_port` (String) Splunk HTTP Event Collector host:port value.
+
 Optional:
 
-- `authentication_token` (String) Authentication Token.
-- `source_name` (String) Source Name.
-- `splunk_host_port` (String) Splunk Host Port.
-- `tls` (Boolean) Tls.
+- `tls` (Boolean) Splunk HTTP Event Collector TLS configuration.

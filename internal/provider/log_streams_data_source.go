@@ -38,10 +38,10 @@ func (d *logStreamsDataSource) Metadata(_ context.Context, req datasource.Metada
 // Schema defines the schema for the resource.
 func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a log stream.",
+		Description: "Use this data source to get information about all Aembit Log Streams",
 		Attributes: map[string]schema.Attribute{
 			"log_streams": schema.ListNestedAttribute{
-				Description: "List of log streams.",
+				Description: "List of Log Streams.",
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -76,15 +76,15 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"s3_bucket_region": schema.StringAttribute{
 									Description: "S3 Bucket Region.",
-									Required:    true,
+									Computed:    true,
 								},
 								"s3_bucket_name": schema.StringAttribute{
 									Description: "S3 Bucket Name.",
-									Required:    true,
+									Computed:    true,
 								},
 								"s3_path_prefix": schema.StringAttribute{
 									Description: "S3 Path Prefix.",
-									Required:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -94,45 +94,41 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"gcs_bucket_name": schema.StringAttribute{
 									Description: "GCS Bucket Name.",
-									Required:    true,
+									Computed:    true,
 								},
 								"gcs_path_prefix": schema.StringAttribute{
 									Description: "GCS Path Prefix.",
-									Required:    true,
+									Computed:    true,
 								},
 								"audience": schema.StringAttribute{
 									Description: "Audience.",
-									Required:    true,
+									Computed:    true,
 								},
 								"service_account_email": schema.StringAttribute{
 									Description: "Service Account Email.",
-									Required:    true,
+									Computed:    true,
 								},
 								"token_lifetime": schema.Int64Attribute{
 									Description: "Token Lifetime.",
-									Required:    true,
+									Computed:    true,
 								},
 							},
 						},
 						"splunk_http_event_collector": schema.SingleNestedAttribute{
-							Description: "SplunkHttpEventCollector destination type Log Stream configuration.",
+							Description: "Splunk HTTP EventCollector destination type Log Stream configuration.",
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"splunk_host_port": schema.StringAttribute{
-									Description: "Splunk Host Port.",
-									Required:    true,
-								},
-								"authentication_token": schema.StringAttribute{
-									Description: "Authentication Token.",
-									Required:    true,
+									Description: "Splunk HTTP Event Collector host:port value.",
+									Computed:    true,
 								},
 								"source_name": schema.StringAttribute{
-									Description: "Source Name.",
-									Required:    true,
+									Description: "Splunk Data Input Source Name.",
+									Computed:    true,
 								},
 								"tls": schema.BoolAttribute{
-									Description: "Tls.",
-									Required:    true,
+									Description: "Splunk HTTP Event Collector TLS configuration.",
+									Computed:    true,
 								},
 							},
 						},

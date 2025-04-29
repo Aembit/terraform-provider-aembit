@@ -3,12 +3,12 @@
 page_title: "aembit_log_streams Data Source - terraform-provider-aembit"
 subcategory: ""
 description: |-
-  Manages a log stream.
+  Use this data source to get information about all Aembit Log Streams
 ---
 
 # aembit_log_streams (Data Source)
 
-Manages a log stream.
+Use this data source to get information about all Aembit Log Streams
 
 
 
@@ -17,7 +17,7 @@ Manages a log stream.
 
 ### Read-Only
 
-- `log_streams` (Attributes List) List of log streams. (see [below for nested schema](#nestedatt--log_streams))
+- `log_streams` (Attributes List) List of Log Streams. (see [below for nested schema](#nestedatt--log_streams))
 
 <a id="nestedatt--log_streams"></a>
 ### Nested Schema for `log_streams`
@@ -31,7 +31,7 @@ Optional:
 
 - `aws_s3_bucket` (Attributes) AWSS3Bucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--log_streams--aws_s3_bucket))
 - `gcs_bucket` (Attributes) GCSBucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--log_streams--gcs_bucket))
-- `splunk_http_event_collector` (Attributes) SplunkHttpEventCollector destination type Log Stream configuration. (see [below for nested schema](#nestedatt--log_streams--splunk_http_event_collector))
+- `splunk_http_event_collector` (Attributes) Splunk HTTP EventCollector destination type Log Stream configuration. (see [below for nested schema](#nestedatt--log_streams--splunk_http_event_collector))
 
 Read-Only:
 
@@ -43,7 +43,7 @@ Read-Only:
 <a id="nestedatt--log_streams--aws_s3_bucket"></a>
 ### Nested Schema for `log_streams.aws_s3_bucket`
 
-Required:
+Read-Only:
 
 - `s3_bucket_name` (String) S3 Bucket Name.
 - `s3_bucket_region` (String) S3 Bucket Region.
@@ -53,7 +53,7 @@ Required:
 <a id="nestedatt--log_streams--gcs_bucket"></a>
 ### Nested Schema for `log_streams.gcs_bucket`
 
-Required:
+Read-Only:
 
 - `audience` (String) Audience.
 - `gcs_bucket_name` (String) GCS Bucket Name.
@@ -65,9 +65,8 @@ Required:
 <a id="nestedatt--log_streams--splunk_http_event_collector"></a>
 ### Nested Schema for `log_streams.splunk_http_event_collector`
 
-Required:
+Read-Only:
 
-- `authentication_token` (String) Authentication Token.
-- `source_name` (String) Source Name.
-- `splunk_host_port` (String) Splunk Host Port.
-- `tls` (Boolean) Tls.
+- `source_name` (String) Splunk Data Input Source Name.
+- `splunk_host_port` (String) Splunk HTTP Event Collector host:port value.
+- `tls` (Boolean) Splunk HTTP Event Collector TLS configuration.

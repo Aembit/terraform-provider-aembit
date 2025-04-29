@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -151,31 +152,33 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"splunk_http_event_collector": schema.SingleNestedAttribute{
-				Description: "SplunkHttpEventCollector destination type Log Stream configuration.",
+				Description: "Splunk HTTP EventCollector destination type Log Stream configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"splunk_host_port": schema.StringAttribute{
-						Description: "Splunk Host Port.",
-						Optional:    true,
+						Description: "Splunk HTTP Event Collector host:port value.",
+						Required:    true,
 						Validators: []validator.String{
 							validators.SplunkHostPortValidation(),
 						},
 					},
 					"authentication_token": schema.StringAttribute{
 						Description: "Authentication Token.",
-						Optional:    true,
+						Required:    true,
+						Sensitive:   true,
 						Validators: []validator.String{
 							validators.AuthenticationTokenValidation(),
 						},
 					},
 					"source_name": schema.StringAttribute{
-						Description: "Source Name.",
-						Optional:    true,
+						Description: "Splunk Data Input Source Name.",
+						Required:    true,
 					},
 					"tls": schema.BoolAttribute{
-						Description: "Tls.",
+						Description: "Splunk HTTP Event Collector TLS configuration.",
 						Optional:    true,
-						Computed:    true,
+						Default:	 booldefault.StaticBool(true),
+						Computed:	 true,
 					},
 				},
 			},
