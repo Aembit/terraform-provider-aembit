@@ -131,7 +131,7 @@ Read-Only:
 - `access_level` (Number) The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).
 - `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
 - `group_ids` (Set of String) The set of GitLab group IDs.
-- `lifetime_in_days` (Number) Lifetime of the Credential Provider.
+- `lifetime_in_days` (Number) Lifetime of the Credential Provider in days.
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 
@@ -201,7 +201,7 @@ Read-Only:
 - `audience` (String) Audience for OIDC ID Token configuration of the Credential Provider.
 - `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token--custom_claims))
 - `issuer` (String) OIDC Issuer for OIDC ID Token configuration of the Credential Provider.
-- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
 - `subject` (String) Subject for JWT Token for OIDC ID Token configuration of the Credential Provider.
 - `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
 

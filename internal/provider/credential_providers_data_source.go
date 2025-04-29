@@ -375,7 +375,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Computed:    true,
 								},
 								"lifetime_in_days": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider.",
+									Description: "Lifetime of the Credential Provider in days.",
 									Computed:    true,
 								},
 								"scope": schema.StringAttribute{
@@ -410,7 +410,7 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider.",
+									Description: "Lifetime of the Credential Provider in minutes.",
 									Computed:    true,
 								},
 								"algorithm_type": schema.StringAttribute{
