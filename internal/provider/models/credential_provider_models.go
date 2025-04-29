@@ -23,6 +23,7 @@ type CredentialProviderResourceModel struct {
 	UsernamePassword       *CredentialProviderUserPassModel               `tfsdk:"username_password"`
 	VaultClientToken       *CredentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`
 	ManagedGitlabAccount   *CredentialProviderManagedGitlabAccountModel   `tfsdk:"managed_gitlab_account"`
+	OidcIdToken            *CredentialProviderManagedOidcIdToken          `tfsdk:"oidc_id_token"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -109,18 +110,18 @@ type CredentialProviderUserPassModel struct {
 
 // CredentialProviderVaultClientTokenModel maps Vault Client configuration.
 type CredentialProviderVaultClientTokenModel struct {
-	Subject                   string                                                 `tfsdk:"subject"`
-	SubjectType               string                                                 `tfsdk:"subject_type"`
-	CustomClaims              []*CredentialProviderVaultClientTokenCustomClaimsModel `tfsdk:"custom_claims"`
-	Lifetime                  int32                                                  `tfsdk:"lifetime"`
-	VaultHost                 string                                                 `tfsdk:"vault_host"`
-	VaultTLS                  bool                                                   `tfsdk:"vault_tls"`
-	VaultPort                 int32                                                  `tfsdk:"vault_port"`
-	VaultNamespace            string                                                 `tfsdk:"vault_namespace"`
-	VaultRole                 string                                                 `tfsdk:"vault_role"`
-	VaultPath                 string                                                 `tfsdk:"vault_path"`
-	VaultForwarding           string                                                 `tfsdk:"vault_forwarding"`
-	VaultPrivateNetworkAccess bool                                                   `tfsdk:"vault_private_network_access"`
+	Subject                   string                                 `tfsdk:"subject"`
+	SubjectType               string                                 `tfsdk:"subject_type"`
+	CustomClaims              []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+	Lifetime                  int32                                  `tfsdk:"lifetime"`
+	VaultHost                 string                                 `tfsdk:"vault_host"`
+	VaultTLS                  bool                                   `tfsdk:"vault_tls"`
+	VaultPort                 int32                                  `tfsdk:"vault_port"`
+	VaultNamespace            string                                 `tfsdk:"vault_namespace"`
+	VaultRole                 string                                 `tfsdk:"vault_role"`
+	VaultPath                 string                                 `tfsdk:"vault_path"`
+	VaultForwarding           string                                 `tfsdk:"vault_forwarding"`
+	VaultPrivateNetworkAccess bool                                   `tfsdk:"vault_private_network_access"`
 }
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.
@@ -133,7 +134,18 @@ type CredentialProviderManagedGitlabAccountModel struct {
 	CredentialProviderIntegrationExternalId string         `tfsdk:"credential_provider_integration_id"`
 }
 
-type CredentialProviderVaultClientTokenCustomClaimsModel struct {
+// CredentialProviderManagedOidcIdToken maps OIDC ID Token configuration.
+type CredentialProviderManagedOidcIdToken struct {
+	Subject           string                                 `tfsdk:"subject"`
+	SubjectType       string                                 `tfsdk:"subject_type"`
+	LifetimeInMinutes int64                                  `tfsdk:"lifetime_in_minutes"`
+	Audience          string                                 `tfsdk:"audience"`
+	AlgorithmType     string                                 `tfsdk:"algorithm_type"`
+	Issuer            types.String                           `tfsdk:"issuer"`
+	CustomClaims      []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+}
+
+type CredentialProviderCustomClaimsModel struct {
 	Key       string `tfsdk:"key"`
 	Value     string `tfsdk:"value"`
 	ValueType string `tfsdk:"value_type"`
