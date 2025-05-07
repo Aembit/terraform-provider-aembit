@@ -320,7 +320,7 @@ Required:
 
 Required:
 
-- `lifetime` (Number) Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
+- `lifetime` (Number) Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
 - `subject` (String) Subject of the JWT Token used to authenticate to the Vault Cluster.
 - `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
 - `vault_host` (String) Hostname of the Vault Cluster to be used for executing the login API.
