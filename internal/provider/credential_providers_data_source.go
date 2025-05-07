@@ -329,7 +329,8 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									},
 								},
 								"lifetime": schema.Int64Attribute{
-									Computed: true,
+									Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
+									Computed:    true,
 								},
 								"vault_host": schema.StringAttribute{
 									Computed: true,

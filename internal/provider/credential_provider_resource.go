@@ -463,10 +463,10 @@ func (r *credentialProviderResource) Schema(_ context.Context, _ resource.Schema
 						},
 					},
 					"lifetime": schema.Int64Attribute{
-						Description: "Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
+						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
 						Required:    true,
 						Validators: []validator.Int64{
-							int64validator.Between(1, 60),
+							int64validator.Between(1, 3600),
 						},
 					},
 					"vault_host": schema.StringAttribute{
