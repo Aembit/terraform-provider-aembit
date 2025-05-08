@@ -222,7 +222,7 @@ Read-Only:
 Read-Only:
 
 - `custom_claims` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token--custom_claims))
-- `lifetime` (Number)
+- `lifetime` (Number) Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
 - `subject` (String)
 - `subject_type` (String)
 - `vault_forwarding` (String)
