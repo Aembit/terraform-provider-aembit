@@ -1,0 +1,18 @@
+provider "aembit" {
+}
+
+resource "aembit_log_stream" "aws_s3_bucket" {
+	name = "TF Acceptance AWSS3Bucket LogStream"
+	description = "TF Acceptance AWSS3Bucket LogStream"
+	data_type = "AuditLogs"
+	type = "AwsS3Bucket"
+	aws_s3_bucket = {
+		s3_bucket_region = "us-east-1"
+		s3_bucket_name = "test-bucket-name"
+		s3_path_prefix = "test/test"
+	}
+}
+
+data "aembit_log_streams" "test" {
+    depends_on = [ aembit_log_stream.aws_s3_bucket ]
+}
