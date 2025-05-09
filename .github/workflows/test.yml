@@ -87,11 +87,11 @@ jobs:
         # Generally test with the 3 most recent Terraform versions
         # Limit to only the latest for regression tests
         # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
-        terraform: ['1.9', '1.10', '1.11']
+        terraform: ['latest', '1.10', '1.9']
         regresion:
           - ${{ inputs.single_terraform }}
         exclude:
-          - terraform: ['1.9', '1.10']
+          - terraform: ['1.10','1.9']
             regresion: true
     steps:
       - uses: actions/checkout@v4
