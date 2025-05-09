@@ -103,6 +103,7 @@ resource "aembit_credential_provider" "vault" {
 - `managed_gitlab_account` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--managed_gitlab_account))
 - `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
+- `oidc_id_token` (Attributes) OIDC ID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--oidc_id_token))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
 - `tags` (Map of String) Tags are key-value pairs.
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--username_password))
@@ -187,7 +188,7 @@ Required:
 - `access_level` (Number) The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).
 - `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
 - `group_ids` (Set of String) The set of GitLab group IDs.
-- `lifetime_in_days` (Number) Lifetime of the Credential Provider.
+- `lifetime_in_days` (Number) Lifetime of the Credential Provider in days.
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 
@@ -262,6 +263,36 @@ Optional:
 
 
 
+<a id="nestedatt--oidc_id_token"></a>
+### Nested Schema for `oidc_id_token`
+
+Required:
+
+- `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
+- `audience` (String) Audience for OIDC ID Token configuration of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `subject` (String) Subject for JWT Token for OIDC ID Token configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+
+Optional:
+
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token. (see [below for nested schema](#nestedatt--oidc_id_token--custom_claims))
+
+Read-Only:
+
+- `issuer` (String) OIDC Issuer for OIDC ID Token configuration of the Credential Provider.
+
+<a id="nestedatt--oidc_id_token--custom_claims"></a>
+### Nested Schema for `oidc_id_token.custom_claims`
+
+Required:
+
+- `key` (String) Key for the JWT Token Custom Claim.
+- `value` (String) Value for the JWT Token Custom Claim.
+- `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.
+
+
+
 <a id="nestedatt--snowflake_jwt"></a>
 ### Nested Schema for `snowflake_jwt`
 
@@ -289,7 +320,7 @@ Required:
 
 Required:
 
-- `lifetime` (Number) Lifetime of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
+- `lifetime` (Number) Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.
 - `subject` (String) Subject of the JWT Token used to authenticate to the Vault Cluster.
 - `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
 - `vault_host` (String) Hostname of the Vault Cluster to be used for executing the login API.
