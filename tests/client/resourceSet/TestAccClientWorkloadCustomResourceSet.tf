@@ -8,7 +8,7 @@ resource "aembit_client_workload" "test" {
     identities = [
         {
             type = "k8sPodName"
-            value = "custom_resource_set"
+            value = "custom-resource-set"
         },
     ]
     tags = {

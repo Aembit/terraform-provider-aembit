@@ -111,7 +111,8 @@ jobs:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-         go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json
+          go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          exit ${PIPESTATUS[0]}
         timeout-minutes: 10        
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
