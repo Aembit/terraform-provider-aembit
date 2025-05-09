@@ -16,6 +16,13 @@ on:
   push:
     branches:
       - 'main'
+  # Include workflow_call to enable execution from aembit_smoke_test/regression.yml
+  workflow_call:
+    inputs:
+      single_terraform:
+        required: false
+        type: boolean
+        default: false
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -77,11 +84,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # list whatever Terraform versions here you would like to support
-        terraform:
-          - '1.6'
-          - '1.8'
-          - '1.9'
+        # Generally test with the 3 most recent Terraform versions
+        # Limit to only the latest for regression tests
+        # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
+        terraform: ['latest', '1.10', '1.9']
+        regresion:
+          - ${{ inputs.single_terraform }}
+        exclude:
+          - terraform: ['1.10','1.9']
+            regresion: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,15 +104,15 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3 # v3.x
         with:
-          terraform_version: ${{ matrix.terraform }}.*
+          terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
       - env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-         go test -json -v -coverprofile coverage.out ./internal/provider/ > results.json
-         cat results.json
+          go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          exit ${PIPESTATUS[0]}
         timeout-minutes: 10        
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
@@ -114,6 +125,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     needs: test
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
