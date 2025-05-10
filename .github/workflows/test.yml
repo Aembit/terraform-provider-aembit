@@ -60,6 +60,7 @@ jobs:
   generate:
     name: Generate Docs
     runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.single_terraform }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -128,7 +129,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     needs: test
-    if: always()
+    if: always() && !github.event.inputs.single_terraform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
