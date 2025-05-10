@@ -46,9 +46,10 @@ jobs:
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - run: go mod download
       - run: go build -v .
       - name: Run linters
@@ -68,9 +69,10 @@ jobs:
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - run: go generate ./...
       - name: git diff
         run: |
@@ -104,7 +106,6 @@ jobs:
           TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - uses: hashicorp/setup-terraform@v3 # v3.x
         with:
           terraform_version: ${{ matrix.terraform }}
