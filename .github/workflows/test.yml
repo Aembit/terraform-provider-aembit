@@ -43,6 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
@@ -62,6 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
@@ -96,6 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
@@ -130,6 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
           fetch-depth: 0
