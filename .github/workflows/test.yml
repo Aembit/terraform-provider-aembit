@@ -59,7 +59,7 @@ jobs:
   generate:
     name: Generate Docs
     runs-on: ubuntu-latest
-    if: always() && !github.event.inputs.single_terraform
+    if: always() && !inputs.single_terraform
     steps:
       - uses: actions/checkout@v4
         with:
@@ -90,11 +90,11 @@ jobs:
         # Limit to only the latest for regression tests
         # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
         terraform: ['latest', '1.10', '1.9']
-        regresion:
+        regression:
           - ${{ inputs.single_terraform }}
         exclude:
           - terraform: ['1.10','1.9']
-            regresion: true
+            regression: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -128,7 +128,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     needs: test
-    if: always() && !github.event.inputs.single_terraform
+    if: always() && !inputs.single_terraform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
