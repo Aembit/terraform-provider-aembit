@@ -18,7 +18,7 @@ on:
   # Include workflow_call to enable execution from aembit_smoke_test/regression.yml
   workflow_call:
     inputs:
-      single_terraform:
+      regression:
         required: false
         type: boolean
         default: false
@@ -26,7 +26,7 @@ on:
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
-  id-token: write # To get the GitHub Action ID JWT Token
+  id-token: write       # To get the GitHub Action ID JWT Token
 
 # Ensure only one workflow run at a time
 concurrency:
@@ -59,7 +59,7 @@ jobs:
   generate:
     name: Generate Docs
     runs-on: ubuntu-latest
-    if: always() && !inputs.single_terraform
+    if: always() && !inputs.regression
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,8 +91,8 @@ jobs:
         # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
         terraform: ['latest']
         include:
-          - terraform: ${{ !inputs.single_terraform && '1.10' }}
-          - terraform: ${{ !inputs.single_terraform && '1.9' }}
+          - terraform: ${{ !inputs.regression && '1.10' }}
+          - terraform: ${{ !inputs.regression && '1.9' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -126,7 +126,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     needs: test
-    if: always() && !inputs.single_terraform
+    if: always() && !inputs.regression
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
