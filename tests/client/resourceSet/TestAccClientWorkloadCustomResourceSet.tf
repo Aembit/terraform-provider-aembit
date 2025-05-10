@@ -1,5 +1,5 @@
 provider "aembit" {
-    resource_set_id = "7a14a7f5-ca61-4ef8-9337-2fb70299fe81"
+    resource_set_id = "4d51992e-744a-4171-a2a2-492af4ace7e6"
 }
 resource "aembit_client_workload" "test" {
     name = "TF Acceptance RS"
