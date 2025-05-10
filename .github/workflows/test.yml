@@ -100,6 +100,8 @@ jobs:
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          AR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
           cache: true
