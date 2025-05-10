@@ -91,8 +91,8 @@ jobs:
         # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
         terraform: ['latest']
         include:
-          - terraform: ${{ !inputs.regression && '1.10' }}
-          - terraform: ${{ !inputs.regression && '1.9' }}
+          - terraform: ${{ inputs.regression && '' || '1.10' }}
+          - terraform: ${{ inputs.regression && '' || '1.9' }}
     steps:
       - uses: actions/checkout@v4
         with:
