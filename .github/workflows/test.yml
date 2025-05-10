@@ -101,7 +101,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
         env:
-          AR_OPTIONS: "--skip-old-files"
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
           cache: true
