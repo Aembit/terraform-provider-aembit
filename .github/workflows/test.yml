@@ -2,7 +2,7 @@
 name: Tests
 env:
   AEMBIT_STACK_DOMAIN: devbroadangle.aembit-eng.com
-  AEMBIT_CLIENT_ID: aembit:devbroadangle:3a3b5d:identity:github_idtoken:57db3267-f627-45ea-b6d1-bb3d420c0fc2
+  AEMBIT_CLIENT_ID: aembit:devbroadangle:ad6127:identity:github_idtoken:8b4602f6-c65d-4785-8656-c1c2b390272d
 
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
