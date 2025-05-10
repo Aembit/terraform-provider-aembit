@@ -59,7 +59,7 @@ jobs:
   generate:
     name: Generate Docs
     runs-on: ubuntu-latest
-    if: ${{ !github.event.inputs.single_terraform }}
+    if: always() && !github.event.inputs.single_terraform
     steps:
       - uses: actions/checkout@v4
         with:
