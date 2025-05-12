@@ -1,9 +1,8 @@
 # Terraform Provider testing workflow.
 name: Tests
 env:
-  AEMBIT_STACK_DOMAIN: ${{ vars.AEMBIT_STACK_DOMAIN }}
-  AEMBIT_TENANT_ID: ${{ vars.AEMBIT_TENANT_ID }}
-  AEMBIT_CLIENT_ID: ${{ vars.AEMBIT_CLIENT_ID }}
+  AEMBIT_STACK_DOMAIN: devbroadangle.aembit-eng.com
+  AEMBIT_CLIENT_ID: aembit:devbroadangle:ad6127:identity:github_idtoken:8b4602f6-c65d-4785-8656-c1c2b390272d
 
 # This GitHub action runs your tests for each pull request and push.
 # Optionally, you can turn it on using a schedule for regular testing.
@@ -16,11 +15,18 @@ on:
   push:
     branches:
       - 'main'
+  # Include workflow_call to enable execution from aembit_smoke_test/regression.yml
+  workflow_call:
+    inputs:
+      regression:
+        required: false
+        type: boolean
+        default: false
 
 # Testing only needs permissions to read the repository contents.
 permissions:
   contents: read
-  id-token: write # To get the GitHub Action ID JWT Token
+  id-token: write       # To get the GitHub Action ID JWT Token
 
 # Ensure only one workflow run at a time
 concurrency:
@@ -36,12 +42,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - run: go mod download
       - run: go build -v .
       - name: Run linters
@@ -52,16 +60,19 @@ jobs:
   generate:
     name: Generate Docs
     runs-on: ubuntu-latest
+    if: always() && !inputs.regression
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - run: go generate ./...
       - name: git diff
         run: |
@@ -77,31 +88,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # list whatever Terraform versions here you would like to support
-        terraform:
-          - '1.6'
-          - '1.8'
-          - '1.9'
+        # Generally test with the 3 most recent Terraform versions
+        # Limit to only the latest for regression tests
+        # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
+        terraform: ['latest']
+        include:
+          - terraform: ${{ inputs.regression && '' || '1.10' }}
+          - terraform: ${{ inputs.regression && '' || '1.9' }}
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
+        env:
+          TAR_OPTIONS: "--skip-old-files"
         with:
           go-version-file: 'go.mod'
-          cache: true
       - uses: hashicorp/setup-terraform@v3 # v3.x
         with:
-          terraform_version: ${{ matrix.terraform }}.*
+          terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
       - env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-         go test -json -v -coverprofile coverage.out ./internal/provider/ > results.json
-         cat results.json
+          go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          exit ${PIPESTATUS[0]}
         timeout-minutes: 10        
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
@@ -114,10 +129,12 @@ jobs:
   sonarcloud:
     name: SonarCloud Scan
     needs: test
+    if: always() && !inputs.regression
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
           submodules: recursive
           fetch-depth: 0

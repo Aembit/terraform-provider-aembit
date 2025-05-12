@@ -142,7 +142,7 @@ func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T
 	skipNotCI(t)
 
 	createFile, _ := os.ReadFile("../../tests/client/resourceSet/TestAccClientWorkloadCustomResourceSet.tf")
-	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "custom_resource_set")
+	createFileConfig, _, newName := randomizeFileConfigs(string(createFile), "", "custom-resource-set")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
