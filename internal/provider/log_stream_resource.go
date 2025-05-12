@@ -164,8 +164,9 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					},
 					"authentication_token": schema.StringAttribute{
 						Description: "Authentication Token.",
-						Required:    true,
 						Sensitive:   true,
+						Optional:    true,
+						Computed:    true,
 						Validators: []validator.String{
 							validators.AuthenticationTokenValidation(),
 						},
@@ -376,7 +377,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 	model.DataType = types.StringValue(dto.DataType)
 	model.Type = types.StringValue(dto.Type)
 
-	if dto.Type == "AwsS3Bucket" && state.AWSS3Bucket != nil {
+	if dto.Type == "AwsS3Bucket" {
 		model.AWSS3Bucket = &models.AWSS3BucketModel{
 			S3BucketRegion: types.StringValue(dto.S3BucketRegion),
 			S3BucketName:   types.StringValue(dto.S3BucketName),
@@ -384,7 +385,7 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 	}
 
-	if dto.Type == "GcsBucket" && state.GCSBucket != nil {
+	if dto.Type == "GcsBucket" {
 		model.GCSBucket = &models.GCSBucketModel{
 			GCSBucketName:       types.StringValue(dto.GCSBucketName),
 			GCSPathPrefix:       types.StringValue(dto.GCSPathPrefix),
@@ -394,12 +395,19 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 	}
 
-	if dto.Type == "SplunkHttpEventCollector" && state.SplunkHttpEventCollector != nil {
+	if dto.Type == "SplunkHttpEventCollector" {
 		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
-			SplunkHostPort:      types.StringValue(dto.SplunkHostPort),
-			AuthenticationToken: types.StringValue(dto.AuthenticationToken),
-			SourceName:          types.StringValue(dto.SourceName),
-			Tls:                 types.BoolValue(dto.Tls),
+			SplunkHostPort: types.StringValue(dto.SplunkHostPort),
+			SourceName:     types.StringValue(dto.SourceName),
+			Tls:            types.BoolValue(dto.Tls),
+		}
+
+		if dto.AuthenticationToken != "" {
+			model.SplunkHttpEventCollector.AuthenticationToken = types.StringValue(dto.AuthenticationToken)
+		} else if state.SplunkHttpEventCollector != nil {
+			model.SplunkHttpEventCollector.AuthenticationToken = state.SplunkHttpEventCollector.AuthenticationToken
+		} else {
+			model.SplunkHttpEventCollector.AuthenticationToken = types.StringNull()
 		}
 	}
 

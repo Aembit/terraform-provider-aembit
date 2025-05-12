@@ -6,6 +6,7 @@ resource "aembit_log_stream" "aws_s3_bucket" {
 	description = "TF Acceptance AWSS3Bucket LogStream"
 	data_type = "AuditLogs"
 	type = "AwsS3Bucket"
+	is_active = false
 	aws_s3_bucket = {
 		s3_bucket_region = "us-east-1"
 		s3_bucket_name = "test-bucket-name"

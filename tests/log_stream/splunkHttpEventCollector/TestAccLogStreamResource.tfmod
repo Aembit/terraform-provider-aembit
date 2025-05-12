@@ -6,6 +6,7 @@ resource "aembit_log_stream" "splunk_http_event_collector" {
 	description = "TF Acceptance SplunkHttpEventCollector LogStream"
 	data_type = "AuditLogs"
 	type = "SplunkHttpEventCollector"
+	is_active = false
 	splunk_http_event_collector = {
 		splunk_host_port = "splunk.example.com:8088"
 		authentication_token = "6f88117b-c549-4c3a-867c-55159ae27033"
