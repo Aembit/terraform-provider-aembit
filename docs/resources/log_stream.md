@@ -60,10 +60,10 @@ Optional:
 
 Required:
 
-- `authentication_token` (String, Sensitive) Authentication Token.
 - `source_name` (String) Splunk Data Input Source Name.
 - `splunk_host_port` (String) Splunk HTTP Event Collector host:port value.
 
 Optional:
 
+- `authentication_token` (String, Sensitive) Authentication Token.
 - `tls` (Boolean) Splunk HTTP Event Collector TLS configuration.
