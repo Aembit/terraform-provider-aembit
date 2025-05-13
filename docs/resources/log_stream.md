@@ -23,11 +23,11 @@ description: |-
 
 ### Optional
 
-- `aws_s3_bucket` (Attributes) AWSS3Bucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--aws_s3_bucket))
+- `aws_s3_bucket` (Attributes) Log Stream configuration for the AWS S3 Bucket destination type. (see [below for nested schema](#nestedatt--aws_s3_bucket))
 - `description` (String) Description for the Log Stream.
 - `gcs_bucket` (Attributes) GCSBucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--gcs_bucket))
 - `is_active` (Boolean) Active/Inactive status of the Log Stream.
-- `splunk_http_event_collector` (Attributes) Splunk HTTP EventCollector destination type Log Stream configuration. (see [below for nested schema](#nestedatt--splunk_http_event_collector))
+- `splunk_http_event_collector` (Attributes) Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type. (see [below for nested schema](#nestedatt--splunk_http_event_collector))
 
 ### Read-Only
 
@@ -61,9 +61,9 @@ Optional:
 Required:
 
 - `source_name` (String) Splunk Data Input Source Name.
-- `splunk_host_port` (String) Splunk HTTP Event Collector host:port value.
+- `splunk_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
 
 Optional:
 
-- `authentication_token` (String, Sensitive) Authentication Token.
-- `tls` (Boolean) Splunk HTTP Event Collector TLS configuration.
+- `authentication_token` (String, Sensitive) Authentication token.
+- `tls` (Boolean) Splunk HTTP Event Collector (HEC) TLS configuration.

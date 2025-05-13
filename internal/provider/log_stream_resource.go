@@ -80,7 +80,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Required:    true,
 			},
 			"aws_s3_bucket": schema.SingleNestedAttribute{
-				Description: "AWSS3Bucket destination type Log Stream configuration.",
+				Description: "Log Stream configuration for the AWS S3 Bucket destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"s3_bucket_region": schema.StringAttribute{
@@ -152,18 +152,18 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"splunk_http_event_collector": schema.SingleNestedAttribute{
-				Description: "Splunk HTTP EventCollector destination type Log Stream configuration.",
+				Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"splunk_host_port": schema.StringAttribute{
-						Description: "Splunk HTTP Event Collector host:port value.",
+						Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 						Required:    true,
 						Validators: []validator.String{
 							validators.SplunkHostPortValidation(),
 						},
 					},
 					"authentication_token": schema.StringAttribute{
-						Description: "Authentication Token.",
+						Description: "Authentication token.",
 						Sensitive:   true,
 						Optional:    true,
 						Computed:    true,
@@ -176,7 +176,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Required:    true,
 					},
 					"tls": schema.BoolAttribute{
-						Description: "Splunk HTTP Event Collector TLS configuration.",
+						Description: "Splunk HTTP Event Collector (HEC) TLS configuration.",
 						Optional:    true,
 						Default:     booldefault.StaticBool(true),
 						Computed:    true,

@@ -60,7 +60,7 @@ func S3BucketRegionLengthValidation() validator.String {
 }
 
 func S3BucketRegionValidation() validator.String {
-	return stringvalidator.RegexMatches(S3BucketRegionRegex, "must be a valid aws s3 bucket region")
+	return stringvalidator.RegexMatches(S3BucketRegionRegex, "must be a valid AWS S3 Bucket region")
 }
 
 func S3BucketNameLengthValidation() validator.String {
@@ -68,7 +68,7 @@ func S3BucketNameLengthValidation() validator.String {
 }
 
 func S3BucketNameValidation() validator.String {
-	return stringvalidator.RegexMatches(S3BucketNameRegex, "must be a valid aws s3 bucket name")
+	return stringvalidator.RegexMatches(S3BucketNameRegex, "must be a valid AWS S3 Bucket name")
 }
 
 func S3PathPrefixLengthValidation() validator.String {
@@ -76,19 +76,19 @@ func S3PathPrefixLengthValidation() validator.String {
 }
 
 func S3PathPrefixValidation() validator.String {
-	return stringvalidator.RegexMatches(S3PathPrefixRegex, "must be a valid aws s3 path prefix")
+	return stringvalidator.RegexMatches(S3PathPrefixRegex, "must be a valid AWS S3 path prefix")
 }
 
 func GCSBucketNameSimpleValidation() validator.String {
-	return stringvalidator.RegexMatches(GCSBucketNameSimpleRegex, "must be a valid gcs bucket name")
+	return stringvalidator.RegexMatches(GCSBucketNameSimpleRegex, "must be a valid GCS Bucket name")
 }
 
 func GCSBucketNameWithPeriodValidation() validator.String {
-	return stringvalidator.RegexMatches(GCSBucketNameWithPeriodRegex, "must be a valid gcs bucket name")
+	return stringvalidator.RegexMatches(GCSBucketNameWithPeriodRegex, "must be a valid GCS Bucket name")
 }
 
 func GCSPathPrefixValidation() validator.String {
-	return stringvalidator.RegexMatches(GCSPathPrefixRegex, "must be a valid gcs path prefix")
+	return stringvalidator.RegexMatches(GCSPathPrefixRegex, "must be a valid GCS path prefix")
 }
 
 func AudienceValidation() validator.String {
@@ -96,7 +96,7 @@ func AudienceValidation() validator.String {
 }
 
 func SplunkHostPortValidation() validator.String {
-	return stringvalidator.RegexMatches(SplunkHostPortRegex, "must be a valid splunk host port")
+	return stringvalidator.RegexMatches(SplunkHostPortRegex, "must be a valid Splunk host port")
 }
 
 func AuthenticationTokenValidation() validator.String {

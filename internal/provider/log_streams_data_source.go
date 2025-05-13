@@ -59,7 +59,7 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Computed:    true,
 						},
 						"is_active": schema.BoolAttribute{
-							Description: "Active/Inactive status of the Log Stream.",
+							Description: "Status of the Log Stream (`active` or `inactive`)",
 							Computed:    true,
 						},
 						"data_type": schema.StringAttribute{
@@ -71,7 +71,7 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Required:    true,
 						},
 						"aws_s3_bucket": schema.SingleNestedAttribute{
-							Description: "AWSS3Bucket destination type Log Stream configuration.",
+							Description: "Log Stream configuration for the AWS S3 Bucket destination type.",
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"s3_bucket_region": schema.StringAttribute{
@@ -115,11 +115,11 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							},
 						},
 						"splunk_http_event_collector": schema.SingleNestedAttribute{
-							Description: "Splunk HTTP EventCollector destination type Log Stream configuration.",
+							Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
 								"splunk_host_port": schema.StringAttribute{
-									Description: "Splunk HTTP Event Collector host:port value.",
+									Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 									Computed:    true,
 								},
 								"source_name": schema.StringAttribute{
@@ -127,7 +127,7 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 									Computed:    true,
 								},
 								"tls": schema.BoolAttribute{
-									Description: "Splunk HTTP Event Collector TLS configuration.",
+									Description: "Splunk HTTP Event Collector (HEC) TLS configuration.",
 									Computed:    true,
 								},
 							},
