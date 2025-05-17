@@ -63,7 +63,7 @@ func (g *GlobalPolicyComplianceResource) Create(ctx context.Context, req resourc
 	err := updateComplianceSettings(g.client, &gpcModel, nil)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings during resource creation", "Error: "+err.Error())
+		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings during resource creation", err.Error())
 		return
 	}
 	gpcModel.Id = types.StringValue(g.client.Tenant + "-gpc")
@@ -95,7 +95,7 @@ func (g *GlobalPolicyComplianceResource) Delete(ctx context.Context, req resourc
 	}
 	err := updateComplianceSettings(g.client, &defaultModel, nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings to their default values", "Error: "+err.Error())
+		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings to their default values", err.Error())
 		return
 	}
 }
@@ -189,7 +189,7 @@ func (g *GlobalPolicyComplianceResource) Update(ctx context.Context, req resourc
 	err := updateComplianceSettings(g.client, &updatedModel, &currentModel)
 
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating Global Policy Compliance setting", "Error: "+err.Error())
+		resp.Diagnostics.AddError("Error updating Global Policy Compliance setting", err.Error())
 		return
 	}
 	updatedModel.Id = types.StringValue(g.client.Tenant + "-gpc")
@@ -245,30 +245,38 @@ func updateComplianceSettings(client *aembit.CloudClient, currentModel *models.G
 			}
 		}
 	} else {
-		//update only what has changed
-		if !currentModel.APTrustProviderCompliance.Equal(previousModel.APTrustProviderCompliance) {
-			_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyTrustProviderComplianceSettingName, Value: currentModel.APTrustProviderCompliance.ValueString()}, nil)
-			if err != nil {
-				return err
-			}
+		err := compareAndUpdate(client, currentModel, previousModel)
+		if err != nil {
+			return err
 		}
-		if !currentModel.APAccessConditionCompliance.Equal(previousModel.APAccessConditionCompliance) {
-			_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyAccessConditionComplianceSettingName, Value: currentModel.APAccessConditionCompliance.ValueString()}, nil)
-			if err != nil {
-				return err
-			}
+	}
+	return nil
+}
+
+func compareAndUpdate(client *aembit.CloudClient, currentModel *models.GlobalPolicyComplianceModel, previousModel *models.GlobalPolicyComplianceModel) error {
+	//update only what has changed
+	if !currentModel.APTrustProviderCompliance.Equal(previousModel.APTrustProviderCompliance) {
+		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyTrustProviderComplianceSettingName, Value: currentModel.APTrustProviderCompliance.ValueString()}, nil)
+		if err != nil {
+			return err
 		}
-		if !currentModel.ACTrustProviderCompliance.Equal(previousModel.ACTrustProviderCompliance) {
-			_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTrustProviderComplianceSettingName, Value: currentModel.ACTrustProviderCompliance.ValueString()}, nil)
-			if err != nil {
-				return err
-			}
+	}
+	if !currentModel.APAccessConditionCompliance.Equal(previousModel.APAccessConditionCompliance) {
+		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyAccessConditionComplianceSettingName, Value: currentModel.APAccessConditionCompliance.ValueString()}, nil)
+		if err != nil {
+			return err
 		}
-		if !currentModel.ACAllowedTLSHostanmeCompliance.Equal(previousModel.ACAllowedTLSHostanmeCompliance) {
-			_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTlsHostNameComplianceSettingName, Value: currentModel.ACAllowedTLSHostanmeCompliance.ValueString()}, nil)
-			if err != nil {
-				return err
-			}
+	}
+	if !currentModel.ACTrustProviderCompliance.Equal(previousModel.ACTrustProviderCompliance) {
+		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTrustProviderComplianceSettingName, Value: currentModel.ACTrustProviderCompliance.ValueString()}, nil)
+		if err != nil {
+			return err
+		}
+	}
+	if !currentModel.ACAllowedTLSHostanmeCompliance.Equal(previousModel.ACAllowedTLSHostanmeCompliance) {
+		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTlsHostNameComplianceSettingName, Value: currentModel.ACAllowedTLSHostanmeCompliance.ValueString()}, nil)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

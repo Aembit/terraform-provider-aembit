@@ -13,8 +13,8 @@ import (
 )
 
 func TestAcc_GPC_CreateImportUpdate(t *testing.T) {
-	const gpc_resource_name string = "aembit_global_policy_compliance.test"
-	const gpc_resource_def string = `provider "aembit" {}
+	const gpcResourceName string = "aembit_global_policy_compliance.test"
+	const gpcResourceDef string = `provider "aembit" {}
 
 		resource "aembit_global_policy_compliance" "test" {
 			access_policy_trust_provider_compliance = "Recommended"
@@ -22,7 +22,7 @@ func TestAcc_GPC_CreateImportUpdate(t *testing.T) {
 			agent_controller_trust_provider_compliance = "Recommended"
 			agent_controller_allowed_tls_hostname_compliance = "Recommended"
 		}`
-	const gpc_resource_update string = `provider "aembit" {}
+	const gpcResourceUpdate string = `provider "aembit" {}
 
 		resource "aembit_global_policy_compliance" "test" {
 			access_policy_trust_provider_compliance = "Optional"
@@ -36,26 +36,26 @@ func TestAcc_GPC_CreateImportUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				ResourceName: gpc_resource_name,
-				Config:       gpc_resource_def,
+				ResourceName: gpcResourceName,
+				Config:       gpcResourceDef,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(gpc_resource_name, "access_policy_trust_provider_compliance", "Recommended"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "access_policy_access_condition_compliance", "Recommended"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "agent_controller_trust_provider_compliance", "Recommended"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "agent_controller_allowed_tls_hostname_compliance", "Recommended"),
+					resource.TestCheckResourceAttr(gpcResourceName, "access_policy_trust_provider_compliance", "Recommended"),
+					resource.TestCheckResourceAttr(gpcResourceName, "access_policy_access_condition_compliance", "Recommended"),
+					resource.TestCheckResourceAttr(gpcResourceName, "agent_controller_trust_provider_compliance", "Recommended"),
+					resource.TestCheckResourceAttr(gpcResourceName, "agent_controller_allowed_tls_hostname_compliance", "Recommended"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: gpc_resource_name, ImportState: true, ImportStateVerify: true},
+			{ResourceName: gpcResourceName, ImportState: true, ImportStateVerify: true},
 			// Update
 			{
-				ResourceName: gpc_resource_name,
-				Config:       gpc_resource_update,
+				ResourceName: gpcResourceName,
+				Config:       gpcResourceUpdate,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(gpc_resource_name, "access_policy_trust_provider_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "access_policy_access_condition_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "agent_controller_trust_provider_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpc_resource_name, "agent_controller_allowed_tls_hostname_compliance", "Optional"),
+					resource.TestCheckResourceAttr(gpcResourceName, "access_policy_trust_provider_compliance", "Optional"),
+					resource.TestCheckResourceAttr(gpcResourceName, "access_policy_access_condition_compliance", "Optional"),
+					resource.TestCheckResourceAttr(gpcResourceName, "agent_controller_trust_provider_compliance", "Optional"),
+					resource.TestCheckResourceAttr(gpcResourceName, "agent_controller_allowed_tls_hostname_compliance", "Optional"),
 				),
 			},
 		},
