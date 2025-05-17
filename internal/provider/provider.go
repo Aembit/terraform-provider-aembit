@@ -294,6 +294,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewCredentialProviderIntegrationResource,
 		NewDiscoveryIntegrationResource,
 		//NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
+		NewGlobalPolicyComplianceResource,
 	}
 }
 
@@ -316,6 +317,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewTimeZonesDataSource,
 		NewCredentialProviderIntegrationsDataSource,
 		NewDiscoveryIntegrationsDataSource,
+		NewGlobalPolicyComplianceDataSource,
 	}
 }
 
