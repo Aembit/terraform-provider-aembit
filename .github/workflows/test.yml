@@ -31,7 +31,7 @@ permissions:
 # Ensure only one workflow run at a time
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # Ensure project builds before running testing matrix
