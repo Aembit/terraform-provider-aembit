@@ -455,10 +455,16 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
 				),
 			},
-			// ImportState testing
+			// Pre-ImportState preparation
 			{
-				ResourceName: "aembit_credential_provider.vault", ImportState: true, ImportStateVerify: true,
+				ResourceName: "aembit_credential_provider.vault",
+				Check: func(s *terraform.State) error {
+					s.RootModule().Resources["aembit_credential_provider.vault"].Primary.Attributes["vault_client_token.vault_private_network_access"] = ""
+					return nil
+				},
 			},
+			// ImportState testing
+			{ResourceName: "aembit_credential_provider.vault", ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
