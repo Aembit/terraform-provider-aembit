@@ -121,7 +121,7 @@ type CredentialProviderVaultClientTokenModel struct {
 	VaultRole                 string                                 `tfsdk:"vault_role"`
 	VaultPath                 string                                 `tfsdk:"vault_path"`
 	VaultForwarding           string                                 `tfsdk:"vault_forwarding"`
-	VaultPrivateNetworkAccess bool                                   `tfsdk:"vault_private_network_access"`
+	VaultPrivateNetworkAccess types.Bool                             `tfsdk:"vault_private_network_access"`
 }
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.

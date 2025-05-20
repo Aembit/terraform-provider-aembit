@@ -456,7 +456,9 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_credential_provider.vault", ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName: "aembit_credential_provider.vault", ImportState: true, ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
