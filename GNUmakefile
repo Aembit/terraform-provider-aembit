@@ -1,4 +1,4 @@
-default: testacc
+default: test_coverage
 .check-env-vars:
 	@ if [ -z $$AEMBIT_TENANT_ID ]; then \
         echo "Environment variable AEMBIT_TENANT_ID not set"; \
@@ -23,16 +23,25 @@ install:
 	go install -a -ldflags "-X main.version=1.0.0" .
 
 # Run acceptance tests
-.PHONY: testacc
+.PHONY: testacc unittest test_coverage
 testacc: .check-env-vars install
 	cd internal/provider
-	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage.out
-	go tool cover -html coverage.out -o coverage.html
+	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage_at.out
 	printf 'REMINDER: To run specific tests, use \e[36mTESTARGS="-run REGEX"\e[0m\n'
+
+unittest: .check-env-vars install
+	cd internal/provider
+	go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage_ut.out
+	printf 'REMINDER: To run specific tests, use \e[36mTESTARGS="-run REGEX"\e[0m\n'
+
+test_coverage: testacc unittest
+	echo 'mode: set' > coverage.out
+	tail -q -n +2 coverage_at.out coverage_ut.out >> coverage.out
+	go tool cover -html coverage.out -o coverage.html
 
 # Locally create a build for local/qa testing using GoReleaser
 #	Reference: https://developer.hashicorp.com/terraform/registry/providers/publishing#using-goreleaser-locally
-build: testacc
+build: test_coverage
 	go install github.com/goreleaser/goreleaser@latest
 	goreleaser build --snapshot --clean
 
