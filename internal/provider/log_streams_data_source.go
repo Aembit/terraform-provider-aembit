@@ -118,11 +118,11 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 							Optional:    true,
 							Attributes: map[string]schema.Attribute{
-								"splunk_host_port": schema.StringAttribute{
+								"hec_host_port": schema.StringAttribute{
 									Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 									Computed:    true,
 								},
-								"source_name": schema.StringAttribute{
+								"hec_source_name": schema.StringAttribute{
 									Description: "Splunk Data Input Source Name.",
 									Computed:    true,
 								},

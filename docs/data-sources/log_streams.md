@@ -67,6 +67,6 @@ Read-Only:
 
 Read-Only:
 
-- `source_name` (String) Splunk Data Input Source Name.
-- `splunk_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `hec_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `hec_source_name` (String) Splunk Data Input Source Name.
 - `tls` (Boolean) Splunk HTTP Event Collector (HEC) TLS configuration.

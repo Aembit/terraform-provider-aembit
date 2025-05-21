@@ -38,8 +38,8 @@ type GCSBucketModel struct {
 }
 
 type SplunkHttpEventCollectorModel struct {
-	SplunkHostPort      types.String `tfsdk:"splunk_host_port"`
+	HecHostPort         types.String `tfsdk:"hec_host_port"`
 	AuthenticationToken types.String `tfsdk:"authentication_token"`
-	SourceName          types.String `tfsdk:"source_name"`
+	HecSourceName       types.String `tfsdk:"hec_source_name"`
 	Tls                 types.Bool   `tfsdk:"tls"`
 }

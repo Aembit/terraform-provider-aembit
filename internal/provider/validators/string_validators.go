@@ -20,7 +20,7 @@ var S3PathPrefixRegex = regexp.MustCompile(`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\
 var GCSBucketNameSimpleRegex = regexp.MustCompile(`^[a-z0-9-_]{3,63}$`)
 var GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
 var GCSPathPrefixRegex = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
-var SplunkHostPortRegex = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
+var HecHostPortRegex = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
 var AuthenticationTokenRegex = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
 
 func NameLengthValidation() validator.String {
@@ -95,8 +95,8 @@ func AudienceValidation() validator.String {
 	return stringvalidator.LengthBetween(0, 256)
 }
 
-func SplunkHostPortValidation() validator.String {
-	return stringvalidator.RegexMatches(SplunkHostPortRegex, "must be a valid Splunk host port")
+func HecHostPortValidation() validator.String {
+	return stringvalidator.RegexMatches(HecHostPortRegex, "must be a valid HEC host port")
 }
 
 func AuthenticationTokenValidation() validator.String {

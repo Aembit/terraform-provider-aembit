@@ -60,8 +60,8 @@ Optional:
 
 Required:
 
-- `source_name` (String) Splunk Data Input Source Name.
-- `splunk_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `hec_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `hec_source_name` (String) Splunk Data Input Source Name.
 
 Optional:
 

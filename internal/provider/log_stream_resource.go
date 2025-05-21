@@ -155,11 +155,11 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"splunk_host_port": schema.StringAttribute{
+					"hec_host_port": schema.StringAttribute{
 						Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 						Required:    true,
 						Validators: []validator.String{
-							validators.SplunkHostPortValidation(),
+							validators.HecHostPortValidation(),
 						},
 					},
 					"authentication_token": schema.StringAttribute{
@@ -171,7 +171,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 							validators.AuthenticationTokenValidation(),
 						},
 					},
-					"source_name": schema.StringAttribute{
+					"hec_source_name": schema.StringAttribute{
 						Description: "Splunk Data Input Source Name.",
 						Required:    true,
 					},
@@ -358,9 +358,9 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 	}
 
 	if model.SplunkHttpEventCollector != nil {
-		logStream.SplunkHostPort = model.SplunkHttpEventCollector.SplunkHostPort.ValueString()
+		logStream.HecHostPort = model.SplunkHttpEventCollector.HecHostPort.ValueString()
 		logStream.AuthenticationToken = model.SplunkHttpEventCollector.AuthenticationToken.ValueString()
-		logStream.SourceName = model.SplunkHttpEventCollector.SourceName.ValueString()
+		logStream.HecSourceName = model.SplunkHttpEventCollector.HecSourceName.ValueString()
 		logStream.Tls = model.SplunkHttpEventCollector.Tls.ValueBool()
 	}
 
@@ -397,9 +397,9 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 
 	if dto.Type == "SplunkHttpEventCollector" {
 		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
-			SplunkHostPort: types.StringValue(dto.SplunkHostPort),
-			SourceName:     types.StringValue(dto.SourceName),
-			Tls:            types.BoolValue(dto.Tls),
+			HecHostPort:   types.StringValue(dto.HecHostPort),
+			HecSourceName: types.StringValue(dto.HecSourceName),
+			Tls:           types.BoolValue(dto.Tls),
 		}
 
 		if dto.AuthenticationToken != "" {
