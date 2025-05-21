@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -65,11 +66,11 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Description for the Log Stream.",
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("No description provided"),
 			},
 			"is_active": schema.BoolAttribute{
-				Description: "Active/Inactive status of the Log Stream.",
-				Optional:    true,
-				Computed:    true,
+				Description: "Status of the Log Stream (`active` or `inactive`).",
+				Required:    true,
 			},
 			"data_type": schema.StringAttribute{
 				Description: "Data type of Log Stream.",
@@ -165,8 +166,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					"authentication_token": schema.StringAttribute{
 						Description: "Authentication token.",
 						Sensitive:   true,
-						Optional:    true,
-						Computed:    true,
+						Required:    true,
 						Validators: []validator.String{
 							validators.AuthenticationTokenValidation(),
 						},
@@ -178,8 +178,8 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					"tls": schema.BoolAttribute{
 						Description: "Splunk HTTP Event Collector (HEC) TLS configuration.",
 						Optional:    true,
-						Default:     booldefault.StaticBool(true),
 						Computed:    true,
+						Default:     booldefault.StaticBool(true),
 					},
 				},
 			},

@@ -22,11 +22,6 @@ Use this data source to get information about all Aembit Log Streams
 <a id="nestedatt--log_streams"></a>
 ### Nested Schema for `log_streams`
 
-Required:
-
-- `data_type` (String) Data type of Log Stream.
-- `type` (String) Destination type of Log Stream.
-
 Optional:
 
 - `aws_s3_bucket` (Attributes) Log Stream configuration for the AWS S3 Bucket destination type. (see [below for nested schema](#nestedatt--log_streams--aws_s3_bucket))
@@ -35,10 +30,12 @@ Optional:
 
 Read-Only:
 
+- `data_type` (String) Data type of Log Stream.
 - `description` (String) User-provided description of the Log Stream.
 - `id` (String) Unique identifier of the Log Stream.
 - `is_active` (Boolean) Status of the Log Stream (`active` or `inactive`)
 - `name` (String) User-provided name of the Log Stream.
+- `type` (String) Destination type of Log Stream.
 
 <a id="nestedatt--log_streams--aws_s3_bucket"></a>
 ### Nested Schema for `log_streams.aws_s3_bucket`

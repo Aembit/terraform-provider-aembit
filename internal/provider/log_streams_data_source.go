@@ -64,11 +64,11 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 						},
 						"data_type": schema.StringAttribute{
 							Description: "Data type of Log Stream.",
-							Required:    true,
+							Computed:    true,
 						},
 						"type": schema.StringAttribute{
 							Description: "Destination type of Log Stream.",
-							Required:    true,
+							Computed:    true,
 						},
 						"aws_s3_bucket": schema.SingleNestedAttribute{
 							Description: "Log Stream configuration for the AWS S3 Bucket destination type.",

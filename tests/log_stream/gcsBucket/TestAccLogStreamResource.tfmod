@@ -6,6 +6,7 @@ resource "aembit_log_stream" "gcs_bucket" {
 	description = "TF Acceptance GCSBucket LogStream"
 	data_type = "AuditLogs"
 	type = "GcsBucket"
+	is_active = false
 	gcs_bucket = {
 		gcs_bucket_name = "test-bucket-name"
 		gcs_path_prefix = "test/test"
