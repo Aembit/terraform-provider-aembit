@@ -962,7 +962,7 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 			Role:                 model.VaultClientToken.VaultRole,
 			AuthenticationPath:   model.VaultClientToken.VaultPath,
 			ForwardingConfig:     model.VaultClientToken.VaultForwarding,
-			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess,
+			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess.ValueBool(),
 		}
 		credential.CustomClaims = make([]aembit.CustomClaimsDTO, len(model.VaultClientToken.CustomClaims))
 		for i, claim := range model.VaultClientToken.CustomClaims {
@@ -1223,7 +1223,7 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 		VaultRole:                 dto.Role,
 		VaultPath:                 dto.AuthenticationPath,
 		VaultForwarding:           dto.ForwardingConfig,
-		VaultPrivateNetworkAccess: dto.PrivateNetworkAccess,
+		VaultPrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
 	}
 
 	// Get the custom claims to be injected into the model

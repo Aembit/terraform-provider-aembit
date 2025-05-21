@@ -28,9 +28,9 @@ permissions:
   contents: read
   id-token: write       # To get the GitHub Action ID JWT Token
 
-# Ensure only one workflow run at a time
+# Ensure only one workflow run at a time - make sure this is unique to this workflow
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: tf-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
