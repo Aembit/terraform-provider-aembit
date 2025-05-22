@@ -312,20 +312,20 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 	})
 }
 
+var clientWorkloadIdentifierTests = []struct {
+	identityType  string
+	identityValue string
+}{
+	{"awsAccountId", "123456789012"},
+	{"awsRegion", "us-east-1"},
+	{"awsEc2InstanceId", "i-0b22a22eec53b9321"},
+}
+
 func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 	createFileConfigWithPlaceholders, _ := os.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tf")
 	modifyFileConfigWithPlaceholders, _ := os.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tfmod")
 
-	tests := []struct {
-		identityType  string
-		identityValue string
-	}{
-		{"awsAccountId", "123456789012"},
-		{"awsRegion", "us-east-1"},
-		{"awsEc2InstanceId", "i-0b22a22eec53b9321"},
-	}
-
-	for _, test := range tests {
+	for _, test := range clientWorkloadIdentifierTests {
 
 		createFileConfig := strings.ReplaceAll(string(createFileConfigWithPlaceholders), "IDENTITY_TYPE_PLACEHOLDER", test.identityType)
 		createFileConfig = strings.ReplaceAll(createFileConfig, "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
