@@ -80,9 +80,12 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						"type": schema.StringAttribute{
 							Description: "Client identity type. Possible values are: \n" +
 								"\t* `aembitClientId`\n" +
+								"\t* `awsAccountId`\n" +
+								"\t* `awsEc2InstanceId`\n" +
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
 								"\t* `awsEcsTaskFamily`\n" +
 								"\t* `awsLambdaArn`\n" +
+								"\t* `awsRegion`\n" +
 								"\t* `gcpIdentityToken`\n" +
 								"\t* `githubIdTokenRepository`\n" +
 								"\t* `githubIdTokenSubject`\n" +
@@ -106,9 +109,12 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 							Validators: []validator.String{
 								stringvalidator.OneOf([]string{
 									"aembitClientId",
+									"awsAccountId",
+									"awsEc2InstanceId",
 									//"awsEcsServiceName",	// Hiding for now
 									"awsEcsTaskFamily",
 									"awsLambdaArn",
+									"awsRegion",
 									"gcpIdentityToken",
 									"githubIdTokenRepository",
 									"githubIdTokenSubject",

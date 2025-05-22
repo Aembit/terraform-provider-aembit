@@ -3,7 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -309,4 +311,70 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func TestAccClientWorkloadResource_Miscellanious(t *testing.T) {
+	createFileConfigWithPlaceholders, _ := ioutil.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tf")
+	modifyFileConfigWithPlaceholders, _ := ioutil.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tfmod")
+
+	tests := []struct {
+		identityType  string
+		identityValue string
+	}{
+		{"awsAccountId", "123456789012"},
+		{"awsRegion", "us-east-1"},
+		{"awsEc2InstanceId", "i-0b22a22eec53b9321"},
+	}
+
+	for _, test := range tests {
+
+		createFileConfig := strings.ReplaceAll(string(createFileConfigWithPlaceholders), "IDENTITY_TYPE_PLACEHOLDER", test.identityType)
+		createFileConfig = strings.ReplaceAll(string(createFileConfig), "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
+
+		modifyFileConfig := strings.ReplaceAll(string(modifyFileConfigWithPlaceholders), "IDENTITY_TYPE_PLACEHOLDER", test.identityType)
+		modifyFileConfig = strings.ReplaceAll(string(modifyFileConfig), "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Create and Read testing
+				{
+					Config: string(createFileConfig),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify Client Workload Name, Description, Active status
+						resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - miscellaneous"),
+						resource.TestCheckResourceAttr(testCWResource, "description", testCWResourceDescription),
+						resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+						// Verify Workload Identity.
+						resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesCount, "1"),
+						resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesType[0], test.identityType),
+						resource.TestCheckResourceAttr(testCWResource, testCWResourceIdentitiesValue[0], test.identityValue),
+						// Verify Tags.
+						resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+						resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
+						resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(testCWResource, "id"),
+					),
+				},
+				// ImportState testing
+				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+				// Update and Read testing
+				{
+					Config: string(modifyFileConfig),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify Name updated
+						resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - miscellaneous - modified"),
+						// Verify active state updated.
+						resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+						// Verify Tags.
+						resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+						resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
+						resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
+					),
+				},
+				// Delete testing automatically occurs in TestCase
+			},
+		})
+	}
 }
