@@ -86,6 +86,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
+      # TF Provider works with entities which have a single copy per tenant (ex: global policy compliance, sign-in policy)
+      # It forces us to run the tests in sequence
+      max-parallel: 1
       fail-fast: false
       matrix:
         # Generally test with the 3 most recent Terraform versions
