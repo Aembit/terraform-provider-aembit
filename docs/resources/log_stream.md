@@ -25,6 +25,7 @@ description: |-
 ### Optional
 
 - `aws_s3_bucket` (Attributes) Log Stream configuration for the AWS S3 Bucket destination type. (see [below for nested schema](#nestedatt--aws_s3_bucket))
+- `crowdstrike_http_event_collector` (Attributes) Log Stream configuration for the Crowdstrike HTTP Event Collector (HEC) destination type. (see [below for nested schema](#nestedatt--crowdstrike_http_event_collector))
 - `description` (String) Description for the Log Stream.
 - `gcs_bucket` (Attributes) GCSBucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--gcs_bucket))
 - `splunk_http_event_collector` (Attributes) Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type. (see [below for nested schema](#nestedatt--splunk_http_event_collector))
@@ -41,6 +42,20 @@ Optional:
 - `s3_bucket_name` (String) S3 Bucket Name.
 - `s3_bucket_region` (String) S3 Bucket Region.
 - `s3_path_prefix` (String) S3 Path Prefix.
+
+
+<a id="nestedatt--crowdstrike_http_event_collector"></a>
+### Nested Schema for `crowdstrike_http_event_collector`
+
+Required:
+
+- `api_key` (String, Sensitive) API Key.
+- `hec_host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
+- `hec_source_name` (String) Crowdstrike Data Input Source Name.
+
+Optional:
+
+- `tls` (Boolean) Crowdstrike HTTP Event Collector (HEC) TLS configuration.
 
 
 <a id="nestedatt--gcs_bucket"></a>

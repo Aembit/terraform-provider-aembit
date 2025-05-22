@@ -132,6 +132,24 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 								},
 							},
 						},
+						"crowdstrike_http_event_collector": schema.SingleNestedAttribute{
+							Description: "Log Stream configuration for the Crowdstrike HTTP Event Collector (HEC) destination type.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"hec_host_port": schema.StringAttribute{
+									Description: "Crowdstrike HTTP Event Collector (HEC) host:port value.",
+									Computed:    true,
+								},
+								"hec_source_name": schema.StringAttribute{
+									Description: "Crowdstrike Data Input Source Name.",
+									Computed:    true,
+								},
+								"tls": schema.BoolAttribute{
+									Description: "Crowdstrike HTTP Event Collector (HEC) TLS configuration.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},
