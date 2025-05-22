@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -313,9 +312,9 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 	})
 }
 
-func TestAccClientWorkloadResource_Miscellanious(t *testing.T) {
-	createFileConfigWithPlaceholders, _ := ioutil.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tf")
-	modifyFileConfigWithPlaceholders, _ := ioutil.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tfmod")
+func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
+	createFileConfigWithPlaceholders, _ := os.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tf")
+	modifyFileConfigWithPlaceholders, _ := os.ReadFile("../../tests/client/miscellaneous/TestAccClientWorkloadResource.tfmod")
 
 	tests := []struct {
 		identityType  string
@@ -329,17 +328,17 @@ func TestAccClientWorkloadResource_Miscellanious(t *testing.T) {
 	for _, test := range tests {
 
 		createFileConfig := strings.ReplaceAll(string(createFileConfigWithPlaceholders), "IDENTITY_TYPE_PLACEHOLDER", test.identityType)
-		createFileConfig = strings.ReplaceAll(string(createFileConfig), "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
+		createFileConfig = strings.ReplaceAll(createFileConfig, "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
 
 		modifyFileConfig := strings.ReplaceAll(string(modifyFileConfigWithPlaceholders), "IDENTITY_TYPE_PLACEHOLDER", test.identityType)
-		modifyFileConfig = strings.ReplaceAll(string(modifyFileConfig), "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
+		modifyFileConfig = strings.ReplaceAll(modifyFileConfig, "IDENTITY_VALUE_PLACEHOLDER", test.identityValue)
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				// Create and Read testing
 				{
-					Config: string(createFileConfig),
+					Config: createFileConfig,
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify Client Workload Name, Description, Active status
 						resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - miscellaneous"),
@@ -361,7 +360,7 @@ func TestAccClientWorkloadResource_Miscellanious(t *testing.T) {
 				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 				// Update and Read testing
 				{
-					Config: string(modifyFileConfig),
+					Config: modifyFileConfig,
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify Name updated
 						resource.TestCheckResourceAttr(testCWResource, "name", "Unit Test 1 - miscellaneous - modified"),
