@@ -56,6 +56,8 @@ Required:
 	* `awsEcsTaskFamily`
 	* `awsLambdaArn`
 	* `awsRegion`
+	* `azureSubscriptionId`
+	* `azureVmId`
 	* `gcpIdentityToken`
 	* `githubIdTokenRepository`
 	* `githubIdTokenSubject`
