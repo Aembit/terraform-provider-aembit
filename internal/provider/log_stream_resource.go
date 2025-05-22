@@ -65,6 +65,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"description": schema.StringAttribute{
 				Description: "Description for the Log Stream.",
 				Optional:    true,
+				Computed:    true,
 				Default:     stringdefault.StaticString(""),
 			},
 			"is_active": schema.BoolAttribute{
