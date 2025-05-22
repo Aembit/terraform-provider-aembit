@@ -22,6 +22,7 @@ var GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
 var GCSPathPrefixRegex = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
 var HecHostPortRegex = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
 var AuthenticationTokenRegex = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
+var ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
 
 func NameLengthValidation() validator.String {
 	return stringvalidator.LengthBetween(1, 128)
@@ -101,4 +102,8 @@ func HecHostPortValidation() validator.String {
 
 func AuthenticationTokenValidation() validator.String {
 	return stringvalidator.RegexMatches(AuthenticationTokenRegex, "must be a valid authentication token")
+}
+
+func ApiKeyValidation() validator.String {
+	return stringvalidator.RegexMatches(ApiKeyRegex, "must be a valid API Key")
 }

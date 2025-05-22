@@ -25,6 +25,7 @@ Use this data source to get information about all Aembit Log Streams
 Optional:
 
 - `aws_s3_bucket` (Attributes) Log Stream configuration for the AWS S3 Bucket destination type. (see [below for nested schema](#nestedatt--log_streams--aws_s3_bucket))
+- `crowdstrike_http_event_collector` (Attributes) Log Stream configuration for the Crowdstrike HTTP Event Collector (HEC) destination type. (see [below for nested schema](#nestedatt--log_streams--crowdstrike_http_event_collector))
 - `gcs_bucket` (Attributes) GCSBucket destination type Log Stream configuration. (see [below for nested schema](#nestedatt--log_streams--gcs_bucket))
 - `splunk_http_event_collector` (Attributes) Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type. (see [below for nested schema](#nestedatt--log_streams--splunk_http_event_collector))
 
@@ -45,6 +46,16 @@ Read-Only:
 - `s3_bucket_name` (String) S3 Bucket Name.
 - `s3_bucket_region` (String) S3 Bucket Region.
 - `s3_path_prefix` (String) S3 Path Prefix.
+
+
+<a id="nestedatt--log_streams--crowdstrike_http_event_collector"></a>
+### Nested Schema for `log_streams.crowdstrike_http_event_collector`
+
+Read-Only:
+
+- `hec_host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
+- `hec_source_name` (String) Crowdstrike Data Input Source Name.
+- `tls` (Boolean) Crowdstrike HTTP Event Collector (HEC) TLS configuration.
 
 
 <a id="nestedatt--log_streams--gcs_bucket"></a>
