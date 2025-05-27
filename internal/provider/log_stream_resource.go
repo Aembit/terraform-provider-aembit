@@ -156,7 +156,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"hec_host_port": schema.StringAttribute{
+					"host_port": schema.StringAttribute{
 						Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 						Required:    true,
 						Validators: []validator.String{
@@ -171,7 +171,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 							validators.AuthenticationTokenValidation(),
 						},
 					},
-					"hec_source_name": schema.StringAttribute{
+					"source_name": schema.StringAttribute{
 						Description: "Splunk Data Input Source Name.",
 						Required:    true,
 					},
@@ -180,6 +180,37 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(true),
+					},
+				},
+			},
+			"crowdstrike_http_event_collector": schema.SingleNestedAttribute{
+				Description: "Log Stream configuration for the Crowdstrike HTTP Event Collector (HEC) destination type.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"host_port": schema.StringAttribute{
+						Description: "Crowdstrike HTTP Event Collector (HEC) host:port value.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.HecHostPortValidation(),
+						},
+					},
+					"api_key": schema.StringAttribute{
+						Description: "API Key.",
+						Sensitive:   true,
+						Required:    true,
+						Validators: []validator.String{
+							validators.CrowdstrikeApiKeyValidation(),
+						},
+					},
+					"source_name": schema.StringAttribute{
+						Description: "Crowdstrike Data Input Source Name.",
+						Required:    true,
+					},
+					"tls": schema.BoolAttribute{
+						Description: "Crowdstrike HTTP Event Collector (HEC) TLS configuration.",
+						Optional:    true,
+						Default:     booldefault.StaticBool(true),
+						Computed:    true,
 					},
 				},
 			},
@@ -364,6 +395,13 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 		logStream.Tls = model.SplunkHttpEventCollector.Tls.ValueBool()
 	}
 
+	if model.CrowdstrikeHttpEventCollector != nil {
+		logStream.HecHostPort = model.CrowdstrikeHttpEventCollector.HecHostPort.ValueString()
+		logStream.ApiKey = model.CrowdstrikeHttpEventCollector.APIKey.ValueString()
+		logStream.HecSourceName = model.CrowdstrikeHttpEventCollector.HecSourceName.ValueString()
+		logStream.Tls = model.CrowdstrikeHttpEventCollector.Tls.ValueBool()
+	}
+
 	return logStream
 }
 
@@ -408,6 +446,22 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 			model.SplunkHttpEventCollector.AuthenticationToken = state.SplunkHttpEventCollector.AuthenticationToken
 		} else {
 			model.SplunkHttpEventCollector.AuthenticationToken = types.StringNull()
+		}
+	}
+
+	if dto.Type == "CrowdstrikeHttpEventCollector" {
+		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorModel{
+			HecHostPort:   types.StringValue(dto.HecHostPort),
+			HecSourceName: types.StringValue(dto.HecSourceName),
+			Tls:           types.BoolValue(dto.Tls),
+		}
+
+		if dto.ApiKey != "" {
+			model.CrowdstrikeHttpEventCollector.APIKey = types.StringValue(dto.ApiKey)
+		} else if state.CrowdstrikeHttpEventCollector != nil {
+			model.CrowdstrikeHttpEventCollector.APIKey = state.CrowdstrikeHttpEventCollector.APIKey
+		} else {
+			model.CrowdstrikeHttpEventCollector.APIKey = types.StringNull()
 		}
 	}
 
