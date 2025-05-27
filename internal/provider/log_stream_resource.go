@@ -156,7 +156,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Log Stream configuration for the Splunk HTTP Event Collector (HEC) destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"hec_host_port": schema.StringAttribute{
+					"host_port": schema.StringAttribute{
 						Description: "Splunk HTTP Event Collector (HEC) host:port value.",
 						Required:    true,
 						Validators: []validator.String{
@@ -171,7 +171,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 							validators.AuthenticationTokenValidation(),
 						},
 					},
-					"hec_source_name": schema.StringAttribute{
+					"source_name": schema.StringAttribute{
 						Description: "Splunk Data Input Source Name.",
 						Required:    true,
 					},
@@ -187,7 +187,7 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				Description: "Log Stream configuration for the Crowdstrike HTTP Event Collector (HEC) destination type.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"hec_host_port": schema.StringAttribute{
+					"host_port": schema.StringAttribute{
 						Description: "Crowdstrike HTTP Event Collector (HEC) host:port value.",
 						Required:    true,
 						Validators: []validator.String{
@@ -199,10 +199,10 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Sensitive:   true,
 						Required:    true,
 						Validators: []validator.String{
-							validators.ApiKeyValidation(),
+							validators.CrowdstrikeApiKeyValidation(),
 						},
 					},
-					"hec_source_name": schema.StringAttribute{
+					"source_name": schema.StringAttribute{
 						Description: "Crowdstrike Data Input Source Name.",
 						Required:    true,
 					},

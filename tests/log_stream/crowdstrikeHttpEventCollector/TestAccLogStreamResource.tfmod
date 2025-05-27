@@ -8,9 +8,9 @@ resource "aembit_log_stream" "crowdstrike_http_event_collector" {
 	type = "CrowdstrikeHttpEventCollector"
 	is_active = false
 	crowdstrike_http_event_collector = {
-		hec_host_port = "crowdstrike.example.com:8088"
+		host_port = "crowdstrike.example.com:8088"
 		api_key = "c7bbe054cbdf49c3b892de72867fed82"
-		hec_source_name = "crowdstrike-test-source"
+		source_name = "crowdstrike-test-source"
 		tls = false
 	}
 }

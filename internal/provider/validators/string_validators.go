@@ -104,6 +104,6 @@ func AuthenticationTokenValidation() validator.String {
 	return stringvalidator.RegexMatches(AuthenticationTokenRegex, "must be a valid authentication token")
 }
 
-func ApiKeyValidation() validator.String {
+func CrowdstrikeApiKeyValidation() validator.String {
 	return stringvalidator.RegexMatches(ApiKeyRegex, "must be a valid API Key")
 }

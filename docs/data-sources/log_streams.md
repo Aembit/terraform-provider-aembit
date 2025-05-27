@@ -53,8 +53,8 @@ Read-Only:
 
 Read-Only:
 
-- `hec_host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
-- `hec_source_name` (String) Crowdstrike Data Input Source Name.
+- `host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
+- `source_name` (String) Crowdstrike Data Input Source Name.
 - `tls` (Boolean) Crowdstrike HTTP Event Collector (HEC) TLS configuration.
 
 
@@ -75,6 +75,6 @@ Read-Only:
 
 Read-Only:
 
-- `hec_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
-- `hec_source_name` (String) Splunk Data Input Source Name.
+- `host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `source_name` (String) Splunk Data Input Source Name.
 - `tls` (Boolean) Splunk HTTP Event Collector (HEC) TLS configuration.

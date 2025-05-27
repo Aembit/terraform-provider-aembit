@@ -39,15 +39,15 @@ type GCSBucketModel struct {
 }
 
 type SplunkHttpEventCollectorModel struct {
-	HecHostPort         types.String `tfsdk:"hec_host_port"`
+	HecHostPort         types.String `tfsdk:"host_port"`
 	AuthenticationToken types.String `tfsdk:"authentication_token"`
-	HecSourceName       types.String `tfsdk:"hec_source_name"`
+	HecSourceName       types.String `tfsdk:"source_name"`
 	Tls                 types.Bool   `tfsdk:"tls"`
 }
 
 type CrowdstrikeHttpEventCollectorModel struct {
-	HecHostPort   types.String `tfsdk:"hec_host_port"`
+	HecHostPort   types.String `tfsdk:"host_port"`
 	APIKey        types.String `tfsdk:"api_key"`
-	HecSourceName types.String `tfsdk:"hec_source_name"`
+	HecSourceName types.String `tfsdk:"source_name"`
 	Tls           types.Bool   `tfsdk:"tls"`
 }

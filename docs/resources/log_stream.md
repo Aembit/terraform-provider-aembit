@@ -50,8 +50,8 @@ Optional:
 Required:
 
 - `api_key` (String, Sensitive) API Key.
-- `hec_host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
-- `hec_source_name` (String) Crowdstrike Data Input Source Name.
+- `host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
+- `source_name` (String) Crowdstrike Data Input Source Name.
 
 Optional:
 
@@ -76,8 +76,8 @@ Optional:
 Required:
 
 - `authentication_token` (String, Sensitive) Authentication token.
-- `hec_host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
-- `hec_source_name` (String) Splunk Data Input Source Name.
+- `host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
+- `source_name` (String) Splunk Data Input Source Name.
 
 Optional:
 
