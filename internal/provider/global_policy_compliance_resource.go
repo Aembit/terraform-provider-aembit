@@ -59,6 +59,11 @@ func (g *GlobalPolicyComplianceResource) Create(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resp.Diagnostics.AddWarning("A note about Global Policy Compliance settings",
+		`The 'aembit_global_policy_compliance' resource type represents a system-wide collection of settings which already exist
+in Aembit Cloud. This configuration will now manage the existing instance.
+
+Please ensure only one 'resource "aembit_global_policy_compliance" "<name>" {}' block is defined across your entire Terraform configuration.`)
 
 	err := updateComplianceSettings(g.client, &gpcModel, nil)
 
@@ -76,8 +81,8 @@ func (g *GlobalPolicyComplianceResource) Create(ctx context.Context, req resourc
 
 // Delete implements resource.Resource.
 func (g *GlobalPolicyComplianceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.Diagnostics.AddWarning("Resetting Global Policy Compliance settings default values",
-		"Deleting Global Policy Compliance settings will result in resetting their values to the default 'Recommended' value.")
+	resp.Diagnostics.AddWarning("About deleting Global Policy Compliance resource",
+		"Deleting the Global Policy Compliance resource  will result in resetting all settings to their default value ('Recommended')")
 
 	var state models.GlobalPolicyComplianceModel
 	diags := req.State.Get(ctx, &state)
@@ -131,7 +136,7 @@ func (g *GlobalPolicyComplianceResource) Read(ctx context.Context, req resource.
 // Schema implements resource.Resource.
 func (g *GlobalPolicyComplianceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Allows configuration of the Global Policy Compliance settings",
+		Description: "A resource to manage the Global Policy Compliance settings",
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
