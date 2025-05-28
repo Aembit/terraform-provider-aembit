@@ -86,6 +86,8 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								"\t* `awsEcsTaskFamily`\n" +
 								"\t* `awsLambdaArn`\n" +
 								"\t* `awsRegion`\n" +
+								"\t* `azureSubscriptionId`\n" +
+								"\t* `azureVmId`\n" +
 								"\t* `gcpIdentityToken`\n" +
 								"\t* `githubIdTokenRepository`\n" +
 								"\t* `githubIdTokenSubject`\n" +
@@ -115,6 +117,8 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									"awsEcsTaskFamily",
 									"awsLambdaArn",
 									"awsRegion",
+									"azureSubscriptionId",
+									"azureVmId",
 									"gcpIdentityToken",
 									"githubIdTokenRepository",
 									"githubIdTokenSubject",

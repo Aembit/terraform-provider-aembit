@@ -319,6 +319,8 @@ var clientWorkloadIdentifierTests = []struct {
 	{"awsAccountId", "123456789012"},
 	{"awsRegion", "us-east-1"},
 	{"awsEc2InstanceId", "i-0b22a22eec53b9321"},
+	{"azureSubscriptionId", "e58ac327-32b9-414f-a3f5-50850d4dc343"},
+	{"azureVmId", "4ce4ead0-0561-4d8c-8313-16ebeb11c1b2"},
 }
 
 func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
