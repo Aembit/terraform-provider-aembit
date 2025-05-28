@@ -1,0 +1,24 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile (printf "examples/global_policy_compliance/resource.tf" )}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+1. Define an `import` block to import existing Global Policy Compliance settings.
+
+{{ tffile (printf "examples/global_policy_compliance/import.tf" )}}
+
+2. Use Terraform's [`-generate-config-out`](https://developer.hashicorp.com/terraform/language/import/generating-configuration) flag to generate a file with a Global Policy Compliance resource configuration.

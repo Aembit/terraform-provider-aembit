@@ -13,6 +13,7 @@ import (
 const testLogStreamAWSS3Bucket string = "aembit_log_stream.aws_s3_bucket"
 const testLogStreamGCSBucket string = "aembit_log_stream.gcs_bucket"
 const testLogStreamSplunkHttpEventCollector string = "aembit_log_stream.splunk_http_event_collector"
+const testLogStreamCrowdstrikeHttpEventCollector string = "aembit_log_stream.crowdstrike_http_event_collector"
 
 func testDeleteLogStream(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -136,6 +137,44 @@ func TestAccLogStreamResource_Splunk(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(testLogStreamSplunkHttpEventCollector, "name", "TF Acceptance SplunkHttpEventCollector LogStream - Modified"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccLogStreamResource_Crowdstrike(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/log_stream/crowdstrikeHttpEventCollector/TestAccLogStreamResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/log_stream/crowdstrikeHttpEventCollector/TestAccLogStreamResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify LogStream Name
+					resource.TestCheckResourceAttr(testLogStreamCrowdstrikeHttpEventCollector, "name", "TF Acceptance CrowdstrikeHttpEventCollector LogStream"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testLogStreamCrowdstrikeHttpEventCollector, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(testLogStreamCrowdstrikeHttpEventCollector, "id"),
+				),
+			},
+			// Test Aembit API Removal causes re-create with non-empty plan
+			{Config: string(createFile), Check: testDeleteLogStream(testLogStreamCrowdstrikeHttpEventCollector), ExpectNonEmptyPlan: true},
+			// Recreate the resource from the first test step
+			{Config: string(createFile)},
+			// ImportState testing
+			{ResourceName: testLogStreamCrowdstrikeHttpEventCollector, ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(testLogStreamCrowdstrikeHttpEventCollector, "name", "TF Acceptance CrowdstrikeHttpEventCollector LogStream - Modified"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
