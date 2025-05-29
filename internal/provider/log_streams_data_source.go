@@ -130,6 +130,10 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 									Description: "Splunk HTTP Event Collector (HEC) TLS configuration.",
 									Computed:    true,
 								},
+								"tls_verification": schema.StringAttribute{
+									Description: "Splunk HTTP Event Collector (HEC) TLS verification.",
+									Computed:    true,
+								},
 							},
 						},
 						"crowdstrike_http_event_collector": schema.SingleNestedAttribute{
@@ -146,6 +150,10 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 								},
 								"tls": schema.BoolAttribute{
 									Description: "Crowdstrike HTTP Event Collector (HEC) TLS configuration.",
+									Computed:    true,
+								},
+								"tls_verification": schema.StringAttribute{
+									Description: "Crowdstrike HTTP Event Collector (HEC) TLS verification.",
 									Computed:    true,
 								},
 							},

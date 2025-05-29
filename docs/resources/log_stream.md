@@ -56,6 +56,7 @@ Required:
 Optional:
 
 - `tls` (Boolean) Crowdstrike HTTP Event Collector (HEC) TLS configuration.
+- `tls_verification` (String) Crowdstrike HTTP Event Collector (HEC) TLS verification.
 
 
 <a id="nestedatt--gcs_bucket"></a>
@@ -82,3 +83,4 @@ Required:
 Optional:
 
 - `tls` (Boolean) Splunk HTTP Event Collector (HEC) TLS configuration.
+- `tls_verification` (String) Splunk HTTP Event Collector (HEC) TLS verification.

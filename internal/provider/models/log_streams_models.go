@@ -43,11 +43,13 @@ type SplunkHttpEventCollectorModel struct {
 	AuthenticationToken types.String `tfsdk:"authentication_token"`
 	HecSourceName       types.String `tfsdk:"source_name"`
 	Tls                 types.Bool   `tfsdk:"tls"`
+	TlsVerification     types.String `tfsdk:"tls_verification"`
 }
 
 type CrowdstrikeHttpEventCollectorModel struct {
-	HecHostPort   types.String `tfsdk:"host_port"`
-	APIKey        types.String `tfsdk:"api_key"`
-	HecSourceName types.String `tfsdk:"source_name"`
-	Tls           types.Bool   `tfsdk:"tls"`
+	HecHostPort     types.String `tfsdk:"host_port"`
+	APIKey          types.String `tfsdk:"api_key"`
+	HecSourceName   types.String `tfsdk:"source_name"`
+	Tls             types.Bool   `tfsdk:"tls"`
+	TlsVerification types.String `tfsdk:"tls_verification"`
 }

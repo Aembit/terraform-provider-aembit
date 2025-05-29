@@ -181,6 +181,12 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Computed:    true,
 						Default:     booldefault.StaticBool(true),
 					},
+					"tls_verification": schema.StringAttribute{
+						Description: "Splunk HTTP Event Collector (HEC) TLS verification.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("full"),
+					},
 				},
 			},
 			"crowdstrike_http_event_collector": schema.SingleNestedAttribute{
@@ -211,6 +217,12 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 						Optional:    true,
 						Default:     booldefault.StaticBool(true),
 						Computed:    true,
+					},
+					"tls_verification": schema.StringAttribute{
+						Description: "Crowdstrike HTTP Event Collector (HEC) TLS verification.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("full"),
 					},
 				},
 			},
@@ -393,6 +405,7 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 		logStream.AuthenticationToken = model.SplunkHttpEventCollector.AuthenticationToken.ValueString()
 		logStream.HecSourceName = model.SplunkHttpEventCollector.HecSourceName.ValueString()
 		logStream.Tls = model.SplunkHttpEventCollector.Tls.ValueBool()
+		logStream.TlsVerification = model.SplunkHttpEventCollector.TlsVerification.ValueString()
 	}
 
 	if model.CrowdstrikeHttpEventCollector != nil {
@@ -400,6 +413,7 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 		logStream.ApiKey = model.CrowdstrikeHttpEventCollector.APIKey.ValueString()
 		logStream.HecSourceName = model.CrowdstrikeHttpEventCollector.HecSourceName.ValueString()
 		logStream.Tls = model.CrowdstrikeHttpEventCollector.Tls.ValueBool()
+		logStream.TlsVerification = model.CrowdstrikeHttpEventCollector.TlsVerification.ValueString()
 	}
 
 	return logStream
@@ -435,9 +449,10 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 
 	if dto.Type == "SplunkHttpEventCollector" {
 		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
-			HecHostPort:   types.StringValue(dto.HecHostPort),
-			HecSourceName: types.StringValue(dto.HecSourceName),
-			Tls:           types.BoolValue(dto.Tls),
+			HecHostPort:     types.StringValue(dto.HecHostPort),
+			HecSourceName:   types.StringValue(dto.HecSourceName),
+			Tls:             types.BoolValue(dto.Tls),
+			TlsVerification: types.StringValue(dto.TlsVerification),
 		}
 
 		if dto.AuthenticationToken != "" {
@@ -451,9 +466,10 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 
 	if dto.Type == "CrowdstrikeHttpEventCollector" {
 		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorModel{
-			HecHostPort:   types.StringValue(dto.HecHostPort),
-			HecSourceName: types.StringValue(dto.HecSourceName),
-			Tls:           types.BoolValue(dto.Tls),
+			HecHostPort:     types.StringValue(dto.HecHostPort),
+			HecSourceName:   types.StringValue(dto.HecSourceName),
+			Tls:             types.BoolValue(dto.Tls),
+			TlsVerification: types.StringValue(dto.TlsVerification),
 		}
 
 		if dto.ApiKey != "" {

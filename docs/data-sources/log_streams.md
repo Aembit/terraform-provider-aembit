@@ -56,6 +56,7 @@ Read-Only:
 - `host_port` (String) Crowdstrike HTTP Event Collector (HEC) host:port value.
 - `source_name` (String) Crowdstrike Data Input Source Name.
 - `tls` (Boolean) Crowdstrike HTTP Event Collector (HEC) TLS configuration.
+- `tls_verification` (String) Crowdstrike HTTP Event Collector (HEC) TLS verification.
 
 
 <a id="nestedatt--log_streams--gcs_bucket"></a>
@@ -78,3 +79,4 @@ Read-Only:
 - `host_port` (String) Splunk HTTP Event Collector (HEC) host:port value.
 - `source_name` (String) Splunk Data Input Source Name.
 - `tls` (Boolean) Splunk HTTP Event Collector (HEC) TLS configuration.
+- `tls_verification` (String) Splunk HTTP Event Collector (HEC) TLS verification.
