@@ -12,5 +12,6 @@ resource "aembit_log_stream" "splunk_http_event_collector" {
 		authentication_token = "6f88117b-c549-4c3a-867c-55159ae27033"
 		source_name = "test-source"
 		tls = true
+		tls_verification = "full"
 	}
 }

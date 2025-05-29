@@ -12,5 +12,6 @@ resource "aembit_log_stream" "crowdstrike_http_event_collector" {
 		api_key = "c7bbe054cbdf49c3b892de72867fed82"
 		source_name = "crowdstrike-test-source"
 		tls = false
+		tls_verification = "full"
 	}
 }
