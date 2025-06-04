@@ -16,14 +16,19 @@ resource "aembit_credential_provider" "oidc_id_token" {
 		algorithm_type = "ES256"
 		custom_claims = [
 			{
-				key = "key"
-				value = "value"
+				key = "aud"
+				value = "audience"
 				value_type = "literal"
 			},
 			{
-				key = "key2"
-				value = "value2"
+				key = "sub"
+				value = "subject"
 				value_type = "dynamic"
+			},
+			{
+				key = "other"
+				value = "test"
+				value_type = "literal"
 			}
 		]
 	}
