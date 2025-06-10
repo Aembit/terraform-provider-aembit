@@ -1,0 +1,27 @@
+package provider
+
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type identityProviderResourceModel struct {
+	ID                        types.String                `tfsdk:"id"`
+	Name                      types.String                `tfsdk:"name"`
+	Description               types.String                `tfsdk:"description"`
+	IsActive                  types.Bool                  `tfsdk:"is_active"`
+	Tags                      types.Map                   `tfsdk:"tags"`
+	EntityId                  types.String                `tfsdk:"entity_id"`
+	MetadataUrl               types.String                `tfsdk:"metadata_url"`
+	MetadataXml               types.String                `tfsdk:"metadata_xml"`
+	SamlStatementRoleMappings []samlStatementRoleMappings `tfsdk:"saml_statement_role_mappings"`
+}
+
+type samlStatementRoleMappings struct {
+	AttributeName  types.String   `tfsdk:"attribute_name"`
+	AttributeValue types.String   `tfsdk:"attribute_value"`
+	Roles          []types.String `tfsdk:"roles"`
+}
+
+type identityProviderDataSourceModel struct {
+	IdentityProviders []identityProviderResourceModel `tfskd:"identity_providers"`
+}
