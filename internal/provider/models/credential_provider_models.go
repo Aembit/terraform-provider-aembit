@@ -126,6 +126,7 @@ type CredentialProviderVaultClientTokenModel struct {
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.
 type CredentialProviderManagedGitlabAccountModel struct {
+	ServiceAccountUsername                  types.String   `tfsdk:"service_account_username"`
 	GroupIds                                []types.String `tfsdk:"group_ids"`
 	ProjectIds                              []types.String `tfsdk:"project_ids"`
 	AccessLevel                             int32          `tfsdk:"access_level"`

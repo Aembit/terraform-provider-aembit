@@ -493,6 +493,7 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(gitlabManagedAccountResourcePath, "name", "TF Acceptance Managed Gitlab Account"),
+					resource.TestCheckResourceAttr(gitlabManagedAccountResourcePath, "service_account_username", "test_service_account"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(gitlabManagedAccountResourcePath, "id"),
 					// Verify placeholder ID is set

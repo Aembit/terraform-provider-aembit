@@ -134,6 +134,7 @@ Read-Only:
 - `lifetime_in_days` (Number) Lifetime of the Credential Provider in days.
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
+- `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.
 
 
 <a id="nestedatt--credential_providers--oauth_authorization_code"></a>

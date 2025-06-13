@@ -361,6 +361,10 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 						"managed_gitlab_account": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
+								"service_account_username": schema.StringAttribute{
+									Description: "The name of the GitLab service account used by the Credential Provider.",
+									Computed:    true,
+								},
 								"group_ids": schema.SetAttribute{
 									Description: "The set of GitLab group IDs.",
 									ElementType: types.StringType,

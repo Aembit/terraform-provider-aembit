@@ -14,6 +14,7 @@ resource "aembit_credential_provider" "gitlab_managed_account" {
 	name = "TF Acceptance Managed Gitlab Account"
 	is_active = true
 	managed_gitlab_account = {
+		service_account_username = "test_service_account"
 		group_ids = ["678","test_group_id"]
 		project_ids = ["123","456"]
 		access_level = 30
