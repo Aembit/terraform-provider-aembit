@@ -987,7 +987,7 @@ func convertCredentialProviderModelToV2DTO(ctx context.Context, model models.Cre
 	// Handle the Managed Gitlab Account use case
 	if model.ManagedGitlabAccount != nil {
 		credential.Type = "gitlab-managed-account"
-		credential.ServiceAccountUsername = model.ManagedGitlabAccount.ServiceAccountUsername.ValueString()
+		credential.Username = model.ManagedGitlabAccount.ServiceAccountUsername.ValueString()
 		credential.GroupIds = strings.Join(convertSetToSlice(model.ManagedGitlabAccount.GroupIds), ",")
 		credential.ProjectIds = strings.Join(convertSetToSlice(model.ManagedGitlabAccount.ProjectIds), ",")
 		credential.LifetimeInSeconds = model.ManagedGitlabAccount.LifetimeInDays * 86400
@@ -1255,7 +1255,7 @@ func convertVaultClientTokenV2DTOToModel(dto aembit.CredentialProviderV2DTO, _ m
 // convertManagedGitlabAccountDTOToModel converts the GitlabManagedAccount state object into a model ready for terraform processing.
 func convertManagedGitlabAccountDTOToModel(dto aembit.CredentialProviderV2DTO, _ models.CredentialProviderResourceModel) *models.CredentialProviderManagedGitlabAccountModel {
 	value := models.CredentialProviderManagedGitlabAccountModel{
-		ServiceAccountUsername:                  types.StringValue(dto.ServiceAccountUsername),
+		ServiceAccountUsername:                  types.StringValue(dto.Username),
 		GroupIds:                                convertSliceToSet(strings.Split(dto.GroupIds, ",")),
 		ProjectIds:                              convertSliceToSet(strings.Split(dto.ProjectIds, ",")),
 		LifetimeInDays:                          dto.LifetimeInSeconds / 86400,
