@@ -3,7 +3,7 @@ provider "aembit" {
 
 resource "aembit_discovery_integration" "wiz" {
 	name = "TF Acceptance Wiz - Modified"
-	is_active = true
+	is_active = false
 	type = "WizIntegrationApi"
 	endpoint = "https://endpoint.url"
 	wiz_integration = {
