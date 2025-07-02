@@ -479,7 +479,7 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 var gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
 
 func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
-	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
+	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 
 	createFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tfmod")
@@ -493,7 +493,7 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(gitlabManagedAccountResourcePath, "name", "TF Acceptance Managed Gitlab Account"),
-					resource.TestCheckResourceAttr(gitlabManagedAccountResourcePath, "service_account_username", "test_service_account"),
+					resource.TestCheckResourceAttr(gitlabManagedAccountResourcePath, "managed_gitlab_account.service_account_username", "test_service_account"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(gitlabManagedAccountResourcePath, "id"),
 					// Verify placeholder ID is set

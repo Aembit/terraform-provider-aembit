@@ -132,6 +132,7 @@ Read-Only:
 - `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
 - `group_ids` (Set of String) The set of GitLab group IDs.
 - `lifetime_in_days` (Number) Lifetime of the Credential Provider in days.
+- `lifetime_in_hours` (Number) Lifetime of the Credential Provider in hours.
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 - `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.

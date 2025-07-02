@@ -383,6 +383,10 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Description: "Lifetime of the Credential Provider in days.",
 									Computed:    true,
 								},
+								"lifetime_in_hours": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider in hours.",
+									Computed:    true,
+								},
 								"scope": schema.StringAttribute{
 									Description: "Scope for Managed Gitlab Account configuration of the Credential Provider.",
 									Computed:    true,
