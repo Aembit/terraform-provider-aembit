@@ -479,7 +479,7 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 var gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
 
 func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
-	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
+	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 
 	createFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/credential/gitlab-managed-account/TestAccCredentialProviderResource.tfmod")
