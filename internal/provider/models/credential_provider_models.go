@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // CredentialProviderResourceModel maps the resource schema.
@@ -126,13 +127,14 @@ type CredentialProviderVaultClientTokenModel struct {
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.
 type CredentialProviderManagedGitlabAccountModel struct {
-	ServiceAccountUsername                  types.String   `tfsdk:"service_account_username"`
-	GroupIds                                []types.String `tfsdk:"group_ids"`
-	ProjectIds                              []types.String `tfsdk:"project_ids"`
-	AccessLevel                             int32          `tfsdk:"access_level"`
-	LifetimeInDays                          int32          `tfsdk:"lifetime_in_days"`
-	Scope                                   string         `tfsdk:"scope"`
-	CredentialProviderIntegrationExternalId string         `tfsdk:"credential_provider_integration_id"`
+	ServiceAccountUsername                  types.String           `tfsdk:"service_account_username"`
+	GroupIds                                []types.String         `tfsdk:"group_ids"`
+	ProjectIds                              []types.String         `tfsdk:"project_ids"`
+	AccessLevel                             int32                  `tfsdk:"access_level"`
+	LifetimeInDays                          basetypes.Float32Value `tfsdk:"lifetime_in_days"`
+	LifetimeInHours                         basetypes.Int32Value   `tfsdk:"lifetime_in_hours"`
+	Scope                                   string                 `tfsdk:"scope"`
+	CredentialProviderIntegrationExternalId string                 `tfsdk:"credential_provider_integration_id"`
 }
 
 // CredentialProviderManagedOidcIdToken maps OIDC ID Token configuration.

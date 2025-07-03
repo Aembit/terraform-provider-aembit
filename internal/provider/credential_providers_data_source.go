@@ -380,7 +380,12 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Computed:    true,
 								},
 								"lifetime_in_days": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in days.",
+									Description:        "Lifetime of the Credential Provider in days.",
+									Computed:           true,
+									DeprecationMessage: "Use `lifetime_in_hours` instead. This field will be removed in a future version.",
+								},
+								"lifetime_in_hours": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider in hours.",
 									Computed:    true,
 								},
 								"scope": schema.StringAttribute{
