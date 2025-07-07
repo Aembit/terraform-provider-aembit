@@ -580,6 +580,76 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
 						Optional:    true,
 					},
+					"jwks": schema.SingleNestedAttribute{
+						Computed:    true,
+						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+						Attributes: map[string]schema.Attribute{
+							"keys": schema.ListNestedAttribute{
+								Required:    true,
+								Description: "A list of JSON Web Keys used to validate signed tokens.",
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"kid": schema.StringAttribute{
+											Required:    true,
+											Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
+										},
+										"kty": schema.StringAttribute{
+											Required:    true,
+											Description: "Key type (kty). Possible values: RSA, EC.",
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"RSA",
+													"EC",
+												}...),
+											},
+										},
+										"use": schema.StringAttribute{
+											Required:    true,
+											Description: "Public key use — typically 'sig' for signature.",
+										},
+										"alg": schema.StringAttribute{
+											Required:    true,
+											Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"RS256",
+													"ES256",
+												}...),
+											},
+										},
+										// RSA fields
+										"e": schema.StringAttribute{
+											Optional:    true,
+											Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
+										},
+										"n": schema.StringAttribute{
+											Optional:    true,
+											Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
+										},
+										// EC fields
+										"x": schema.StringAttribute{
+											Optional:    true,
+											Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
+										},
+										"y": schema.StringAttribute{
+											Optional:    true,
+											Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
+										},
+										"crv": schema.StringAttribute{
+											Optional:    true,
+											Description: "Elliptic curve used with the key. Only Possible value: P-256",
+											Default:     stringdefault.StaticString("P-256"),
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"P-256",
+												}...),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 			"terraform_workspace": schema.SingleNestedAttribute{
@@ -627,6 +697,129 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 				},
 			},
+			"oidc_id_token": schema.SingleNestedAttribute{
+				Description: "Oidc Id Token type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"issuer": schema.StringAttribute{
+						Description: "The Issuer (`iss` claim) of the Oidc Id Token.",
+						Optional:    true,
+					},
+					"issuers": schema.SetAttribute{
+						Description: "The set of accepted Issuer values of the associated Oidc Id Token. Used only for cases where multiple Issuers can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"subject": schema.StringAttribute{
+						Description: "The Subject (`sub` claim) of the Oidc Id Token.",
+						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted Subject values of the associated Oidc Id Token. Used only for cases where multiple Subjects can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "The Audience (`aud` claim) of the Oidc Id Token.",
+						Optional:    true,
+					},
+					"audiences": schema.SetAttribute{
+						Description: "The set of accepted Audience values of the associated Oidc Id Token. Used only for cases where multiple Audiences can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"oidc_endpoint": schema.StringAttribute{
+						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Oidc Id Token.",
+						Optional:    true,
+					},
+					"public_key": schema.StringAttribute{
+						Description: "The Public Key that can be used to verify the signature of the Oidc Id Token.",
+						Optional:    true,
+					},
+					"jwks": schema.SingleNestedAttribute{
+						Computed:    true,
+						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+						Attributes: map[string]schema.Attribute{
+							"keys": schema.ListNestedAttribute{
+								Required:    true,
+								Description: "A list of JSON Web Keys used to validate signed tokens.",
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"kid": schema.StringAttribute{
+											Required:    true,
+											Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
+										},
+										"kty": schema.StringAttribute{
+											Required:    true,
+											Description: "Key type (kty). Possible values: RSA, EC.",
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"RSA",
+													"EC",
+												}...),
+											},
+										},
+										"use": schema.StringAttribute{
+											Required:    true,
+											Description: "Public key use — typically 'sig' for signature.",
+										},
+										"alg": schema.StringAttribute{
+											Required:    true,
+											Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"RS256",
+													"ES256",
+												}...),
+											},
+										},
+										// RSA fields
+										"e": schema.StringAttribute{
+											Optional:    true,
+											Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
+										},
+										"n": schema.StringAttribute{
+											Optional:    true,
+											Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
+										},
+										// EC fields
+										"x": schema.StringAttribute{
+											Optional:    true,
+											Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
+										},
+										"y": schema.StringAttribute{
+											Optional:    true,
+											Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
+										},
+										"crv": schema.StringAttribute{
+											Optional:    true,
+											Description: "Elliptic curve used with the key. Only Possible value: P-256",
+											Default:     stringdefault.StaticString("P-256"),
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{
+													"P-256",
+												}...),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -644,6 +837,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kerberos"),
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
+			path.MatchRoot("oidc_id_token"),
 		),
 		// Ensure we don't have conflicting single and multiple match rule configurations (Azure Metadata)
 		resourcevalidator.Conflicting(
@@ -778,6 +972,19 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("terraform_workspace").AtName("workspace_id"),
 			path.MatchRoot("terraform_workspace").AtName("workspace_ids"),
 		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (Oidc Id Token)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("oidc_id_token").AtName("issuer"),
+			path.MatchRoot("oidc_id_token").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("oidc_id_token").AtName("subject"),
+			path.MatchRoot("oidc_id_token").AtName("subjects"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("oidc_id_token").AtName("audience"),
+			path.MatchRoot("oidc_id_token").AtName("audiences"),
+		),
 	}
 }
 
@@ -792,7 +999,14 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, nil)
+	var trust, err = convertTrustProviderModelToDTO(ctx, plan, nil)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error creating Trust Provider",
+			err.Error(),
+		)
+		return
+	}
 
 	// Create new Trust Provider
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
@@ -872,7 +1086,14 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Generate API request body from plan
-	var trust aembit.TrustProviderDTO = convertTrustProviderModelToDTO(ctx, plan, &externalID)
+	var trust, err = convertTrustProviderModelToDTO(ctx, plan, &externalID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error updating Trust Provider",
+			err.Error(),
+		)
+		return
+	}
 
 	// Update Trust Provider
 	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
@@ -935,7 +1156,7 @@ func (r *trustProviderResource) ImportState(ctx context.Context, req resource.Im
 }
 
 // Model to DTO conversion methods.
-func convertTrustProviderModelToDTO(ctx context.Context, model models.TrustProviderResourceModel, externalID *string) aembit.TrustProviderDTO {
+func convertTrustProviderModelToDTO(ctx context.Context, model models.TrustProviderResourceModel, externalID *string) (aembit.TrustProviderDTO, error) {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -957,6 +1178,7 @@ func convertTrustProviderModelToDTO(ctx context.Context, model models.TrustProvi
 		trust.EntityDTO.ExternalID = *externalID
 	}
 
+	var err error = nil
 	// Transform the various Trust Provider types
 	if model.AwsMetadata != nil {
 		convertAwsMetadataModelToDTO(model, &trust)
@@ -980,13 +1202,16 @@ func convertTrustProviderModelToDTO(ctx context.Context, model models.TrustProvi
 		convertKerberosModelToDTO(model, &trust)
 	}
 	if model.KubernetesService != nil {
-		convertKubernetesModelToDTO(model, &trust)
+		err = convertKubernetesModelToDTO(model, &trust)
 	}
 	if model.TerraformWorkspace != nil {
 		convertTerraformModelToDTO(model, &trust)
 	}
+	if model.OidcIdToken != nil {
+		err = convertOidcIdTokenTpModelToDTO(model, &trust)
+	}
 
-	return trust
+	return trust, err
 }
 
 func appendMatchRuleIfExists(matchRules []aembit.TrustProviderMatchRuleDTO, value basetypes.StringValue, attrName string) []aembit.TrustProviderMatchRuleDTO {
@@ -1111,7 +1336,7 @@ func convertKerberosModelToDTO(model models.TrustProviderResourceModel, dto *aem
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.SourceIPs, "SourceIp")
 }
 
-func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
+func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) error {
 	dto.Provider = "KubernetesServiceAccount"
 	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.KubernetesService.PublicKey.ValueString()))
 	if len(dto.Certificate) > 0 {
@@ -1119,6 +1344,12 @@ func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *a
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
 
+	jwks, err := convertJWKSModelToDto(model.OidcIdToken.Jwks)
+	if err != nil {
+		return err
+	}
+
+	dto.Jwks = *jwks
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Issuer, "KubernetesIss")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Issuers, "KubernetesIss")
@@ -1130,6 +1361,80 @@ func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *a
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.ServiceAccountNames, "KubernetesIoServiceAccountName")
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Subject, "KubernetesSub")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Subjects, "KubernetesSub")
+
+	return nil
+}
+
+func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) error {
+	dto.Provider = "OidcIdToken"
+	dto.Certificate = base64.StdEncoding.EncodeToString([]byte(model.OidcIdToken.PublicKey.ValueString()))
+	if len(dto.Certificate) > 0 {
+		dto.PemType = "PublicKey"
+	}
+	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
+	jwks, err := convertJWKSModelToDto(model.OidcIdToken.Jwks)
+	if err != nil {
+		return err
+	}
+
+	dto.Jwks = *jwks
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.OidcIdToken.Issuer, "OidcIssuer")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.OidcIdToken.Issuers, "OidcIssuer")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.OidcIdToken.Subject, "OidcSubject")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.OidcIdToken.Subjects, "OidcSubject")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.OidcIdToken.Audience, "OidcAudience")
+	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.OidcIdToken.Audiences, "OidcAudience")
+
+	return nil
+}
+
+func convertJWKSModelToDto(model models.JsonWebKeysModel) (*aembit.JsonWebKeysDTO, error) {
+	var jwks aembit.JsonWebKeysDTO = aembit.JsonWebKeysDTO{
+		Keys: []aembit.JsonWebKeyDTO{},
+	}
+
+	for i, key := range model.Keys {
+		// Required basic fields
+		if key.Alg.IsUnknown() || key.Alg.IsNull() ||
+			key.Use.IsUnknown() || key.Use.IsNull() ||
+			key.Kid.IsUnknown() || key.Kid.IsNull() ||
+			key.Kty.IsUnknown() || key.Kty.IsNull() {
+
+			return nil, fmt.Errorf("JWKS key at %v does not have required fields: alg, use, kit, kty", i)
+		}
+
+		alg := key.Alg.ValueString()
+
+		if alg == "RS256" {
+			if key.E.IsUnknown() || key.E.IsNull() || key.N.IsUnknown() || key.N.IsNull() {
+				return nil, fmt.Errorf("JWKS key at %v does not have RSA required fields: e, n", i)
+			}
+		}
+
+		if alg == "ES256" {
+			if key.Crv.IsUnknown() || key.Crv.IsNull() ||
+				key.X.IsUnknown() || key.X.IsNull() ||
+				key.Y.IsUnknown() || key.Y.IsNull() {
+
+				return nil, fmt.Errorf("JWKS key at %v does not have ECDSA required fields: e, n", i)
+			}
+		}
+
+		jwks.Keys = append(jwks.Keys, aembit.JsonWebKeyDTO{
+			Kid: key.Kid.String(),
+			Kty: key.Kty.String(),
+			Alg: key.Alg.String(),
+			Use: key.Use.String(),
+			E:   key.E.String(),
+			N:   key.N.String(),
+			X:   key.X.String(),
+			Y:   key.Y.String(),
+			Crv: key.Crv.String(),
+		})
+	}
+
+	return &jwks, nil
 }
 
 func convertTerraformModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
@@ -1170,6 +1475,8 @@ func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProvide
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
 		model.KubernetesService = convertKubernetesDTOToModel(dto)
+	case "OidcIdToken":
+		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	}
@@ -1340,6 +1647,34 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 	}
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesSub")) {
 		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "KubernetesSub")
+	}
+	return model
+}
+
+func convertOidcIdTokenTpDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderOidcIdTokenModel {
+	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
+
+	model := &models.TrustProviderOidcIdTokenModel{
+		Issuer:       types.StringNull(),
+		Subject:      types.StringNull(),
+		Audience:     types.StringNull(),
+		PublicKey:    types.StringNull(),
+		OIDCEndpoint: types.StringNull(),
+	}
+	if len(dto.Certificate) > 0 {
+		model.PublicKey = types.StringValue(string(decodedKey))
+	} else {
+		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
+	}
+
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {
+		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "OidcIssuer")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "OidcSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcAudience")) {
+		model.Audience, model.Audiences = extractMatchRules(dto.MatchRules, "OidcAudience")
 	}
 	return model
 }

@@ -101,6 +101,9 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 								"\t* `k8sPodNamePrefix`\n" +
 								"\t* `k8sServiceAccountName`\n" +
 								"\t* `k8sServiceAccountUID`\n" +
+								"\t* `oidcIdTokenAudience`\n" +
+								"\t* `oidcIdTokenIssuer`\n" +
+								"\t* `oidcIdTokenSubject`\n" +
 								"\t* `processName`\n" +
 								"\t* `processUserName`\n" +
 								"\t* `sourceIPAddress`\n" +
@@ -132,6 +135,9 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 									"k8sPodNamePrefix",
 									"k8sServiceAccountName",
 									"k8sServiceAccountUID",
+									"oidcIdTokenAudience",
+									"oidcIdTokenIssuer",
+									"oidcIdTokenSubject",
 									"processName",
 									"processUserName",
 									"sourceIPAddress",
