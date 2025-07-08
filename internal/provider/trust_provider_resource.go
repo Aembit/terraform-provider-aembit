@@ -1344,12 +1344,11 @@ func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *a
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
 
-	jwks, err := convertJWKSModelToDto(model.OidcIdToken.Jwks)
+	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.Keys, dto)
 	if err != nil {
 		return err
 	}
 
-	dto.Jwks = *jwks
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.KubernetesService.Issuer, "KubernetesIss")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.KubernetesService.Issuers, "KubernetesIss")
@@ -1372,12 +1371,11 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
-	jwks, err := convertJWKSModelToDto(model.OidcIdToken.Jwks)
+	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.Keys, dto)
 	if err != nil {
 		return err
 	}
 
-	dto.Jwks = *jwks
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.OidcIdToken.Issuer, "OidcIssuer")
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.OidcIdToken.Issuers, "OidcIssuer")
@@ -1389,26 +1387,26 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 	return nil
 }
 
-func convertJWKSModelToDto(model models.JsonWebKeysModel) (*aembit.JsonWebKeysDTO, error) {
+func convertJWKSModelToDto(keys []models.JsonWebKeyModel, dto *aembit.TrustProviderDTO) error {
 	var jwks aembit.JsonWebKeysDTO = aembit.JsonWebKeysDTO{
 		Keys: []aembit.JsonWebKeyDTO{},
 	}
 
-	for i, key := range model.Keys {
+	for i, key := range keys {
 		// Required basic fields
 		if key.Alg.IsUnknown() || key.Alg.IsNull() ||
 			key.Use.IsUnknown() || key.Use.IsNull() ||
 			key.Kid.IsUnknown() || key.Kid.IsNull() ||
 			key.Kty.IsUnknown() || key.Kty.IsNull() {
 
-			return nil, fmt.Errorf("JWKS key at %v does not have required fields: alg, use, kit, kty", i)
+			return fmt.Errorf("JWKS key at %v does not have required fields: alg, use, kit, kty", i)
 		}
 
 		alg := key.Alg.ValueString()
 
 		if alg == "RS256" {
 			if key.E.IsUnknown() || key.E.IsNull() || key.N.IsUnknown() || key.N.IsNull() {
-				return nil, fmt.Errorf("JWKS key at %v does not have RSA required fields: e, n", i)
+				return fmt.Errorf("JWKS key at %v does not have RSA required fields: e, n", i)
 			}
 		}
 
@@ -1417,7 +1415,7 @@ func convertJWKSModelToDto(model models.JsonWebKeysModel) (*aembit.JsonWebKeysDT
 				key.X.IsUnknown() || key.X.IsNull() ||
 				key.Y.IsUnknown() || key.Y.IsNull() {
 
-				return nil, fmt.Errorf("JWKS key at %v does not have ECDSA required fields: e, n", i)
+				return fmt.Errorf("JWKS key at %v does not have ECDSA required fields: e, n", i)
 			}
 		}
 
@@ -1434,7 +1432,8 @@ func convertJWKSModelToDto(model models.JsonWebKeysModel) (*aembit.JsonWebKeysDT
 		})
 	}
 
-	return &jwks, nil
+	dto.Jwks = jwks
+	return nil
 }
 
 func convertTerraformModelToDTO(model models.TrustProviderResourceModel, dto *aembit.TrustProviderDTO) {
