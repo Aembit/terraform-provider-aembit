@@ -364,6 +364,12 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_jwks", "name", "TF Acceptance Kubernetes JWKS"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_jwks", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_jwks", "id"),
 				),
 			},
 			// ImportState testing
@@ -384,6 +390,12 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_jwks", "name", "TF Acceptance Kubernetes JWKS - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_jwks", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_jwks", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -423,6 +435,100 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tfmod")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", "name", "TF Acceptance OIDC ID Token"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken", "id"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsColor, "blue"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsDay, "Sunday"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken_key", "name", "TF Acceptance OIDC ID Token Key"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_key", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_key", "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken_jwks", "name", "TF Acceptance OIDC ID Token JWKS"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_jwks", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_jwks", "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: "aembit_trust_provider.oidcidtoken", ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", "name", "TF Acceptance OIDC ID Token - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsCount, "2"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsColor, "blue"),
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken", tagsDay, "Sunday"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken_key", "name", "TF Acceptance OIDC ID Token Key - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_key", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_key", "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr("aembit_trust_provider.oidcidtoken_jwks", "name", "TF Acceptance OIDC ID Token JWKS - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_jwks", "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet("aembit_trust_provider.oidcidtoken_jwks", "id"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken_MissingRequiredRSAField(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredRSAField.tf")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`does not have RSA required fields: e, n`),
+			},
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredEDSAField.tf")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`does not have ECDSA required fields: x, y, crv`),
+			},
 		},
 	})
 }

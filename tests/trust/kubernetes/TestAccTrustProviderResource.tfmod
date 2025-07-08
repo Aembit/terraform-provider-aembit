@@ -39,3 +39,32 @@ EOT
         day   = "Sunday"
     }
 }
+
+resource "aembit_trust_provider" "kubernetes_jwks" {
+	name = "TF Acceptance Kubernetes JWKS - Modified"
+	is_active = true
+	kubernetes_service_account = {
+		issuers = ["issuer","issuer2"]
+		namespaces = ["namespace","namespace2"]
+		pod_names = ["pod_name","pod_name2"]
+		service_account_names = ["service_account_name","service_account_name2"]
+		subjects = ["subject","subject2"]
+		jwks = {
+			keys = [
+				{
+					kid = "mxAhc1VybhA8LT2jHRQFEzcWSoLbFmnDWGYoViS/aKw="
+					kty = "EC"
+					use = "sig"
+					alg = "ES256"
+					x: "x-pRNOyN2BwmgvPuLTOEJMLB1vcc4vljjU41W0jz5Sw",
+					y: "7beLCvWqWomVizZAhrxR2vsttzD3owKnE__ZADccuyk",
+					crv: "P-256"				
+				}
+			]			
+		}
+	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
+}

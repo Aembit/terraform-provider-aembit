@@ -581,7 +581,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 					},
 					"jwks": schema.SingleNestedAttribute{
-						Computed:    true,
+						Optional:    true,
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 						Attributes: map[string]schema.Attribute{
 							"keys": schema.ListNestedAttribute{
@@ -605,7 +605,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 										},
 										"use": schema.StringAttribute{
 											Required:    true,
-											Description: "Public key use — typically 'sig' for signature.",
+											Description: "Public key use typically 'sig' for signature.",
 										},
 										"alg": schema.StringAttribute{
 											Required:    true,
@@ -638,12 +638,6 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 										"crv": schema.StringAttribute{
 											Optional:    true,
 											Description: "Elliptic curve used with the key. Only Possible value: P-256",
-											Default:     stringdefault.StaticString("P-256"),
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"P-256",
-												}...),
-											},
 										},
 									},
 								},
@@ -749,7 +743,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 					},
 					"jwks": schema.SingleNestedAttribute{
-						Computed:    true,
+						Optional:    true,
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 						Attributes: map[string]schema.Attribute{
 							"keys": schema.ListNestedAttribute{
@@ -773,7 +767,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 										},
 										"use": schema.StringAttribute{
 											Required:    true,
-											Description: "Public key use — typically 'sig' for signature.",
+											Description: "Public key use typically 'sig' for signature.",
 										},
 										"alg": schema.StringAttribute{
 											Required:    true,
@@ -805,13 +799,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 										},
 										"crv": schema.StringAttribute{
 											Optional:    true,
-											Description: "Elliptic curve used with the key. Only Possible value: P-256",
-											Default:     stringdefault.StaticString("P-256"),
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"P-256",
-												}...),
-											},
+											Description: "Elliptic curve used with the key. Required if kty is EC. Only Possible value: P-256",
 										},
 									},
 								},
@@ -1344,7 +1332,7 @@ func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *a
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
 
-	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.Keys, dto)
+	err := convertJWKSModelToDto(model.KubernetesService.Jwks, dto)
 	if err != nil {
 		return err
 	}
@@ -1371,7 +1359,7 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
-	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.Keys, dto)
+	err := convertJWKSModelToDto(model.OidcIdToken.Jwks, dto)
 	if err != nil {
 		return err
 	}
@@ -1387,21 +1375,16 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 	return nil
 }
 
-func convertJWKSModelToDto(keys []models.JsonWebKeyModel, dto *aembit.TrustProviderDTO) error {
+func convertJWKSModelToDto(jwksModel *models.JsonWebKeysModel, dto *aembit.TrustProviderDTO) error {
+	if jwksModel == nil {
+		return nil
+	}
+
 	var jwks aembit.JsonWebKeysDTO = aembit.JsonWebKeysDTO{
 		Keys: []aembit.JsonWebKeyDTO{},
 	}
 
-	for i, key := range keys {
-		// Required basic fields
-		if key.Alg.IsUnknown() || key.Alg.IsNull() ||
-			key.Use.IsUnknown() || key.Use.IsNull() ||
-			key.Kid.IsUnknown() || key.Kid.IsNull() ||
-			key.Kty.IsUnknown() || key.Kty.IsNull() {
-
-			return fmt.Errorf("JWKS key at %v does not have required fields: alg, use, kit, kty", i)
-		}
-
+	for i, key := range jwksModel.Keys {
 		alg := key.Alg.ValueString()
 
 		if alg == "RS256" {
@@ -1415,24 +1398,32 @@ func convertJWKSModelToDto(keys []models.JsonWebKeyModel, dto *aembit.TrustProvi
 				key.X.IsUnknown() || key.X.IsNull() ||
 				key.Y.IsUnknown() || key.Y.IsNull() {
 
-				return fmt.Errorf("JWKS key at %v does not have ECDSA required fields: e, n", i)
+				return fmt.Errorf("JWKS key at %v does not have ECDSA required fields: x, y, crv", i)
 			}
 		}
 
-		jwks.Keys = append(jwks.Keys, aembit.JsonWebKeyDTO{
-			Kid: key.Kid.String(),
-			Kty: key.Kty.String(),
-			Alg: key.Alg.String(),
-			Use: key.Use.String(),
-			E:   key.E.String(),
-			N:   key.N.String(),
-			X:   key.X.String(),
-			Y:   key.Y.String(),
-			Crv: key.Crv.String(),
-		})
+		jsonWebKeyDTO := aembit.JsonWebKeyDTO{
+			Kid: key.Kid.ValueString(),
+			Kty: key.Kty.ValueString(),
+			Alg: key.Alg.ValueString(),
+			Use: key.Use.ValueString(),
+		}
+
+		if alg == "RS256" {
+			jsonWebKeyDTO.N = key.N.ValueString()
+			jsonWebKeyDTO.E = key.E.ValueString()
+		}
+
+		if alg == "ES256" {
+			jsonWebKeyDTO.X = key.X.ValueString()
+			jsonWebKeyDTO.Y = key.Y.ValueString()
+			jsonWebKeyDTO.Crv = key.Crv.ValueString()
+		}
+
+		jwks.Keys = append(jwks.Keys, jsonWebKeyDTO)
 	}
 
-	dto.Jwks = jwks
+	dto.Jwks = &jwks
 	return nil
 }
 
@@ -1628,8 +1619,36 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
-	} else {
+	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
+	}
+
+	if dto.Jwks != nil {
+		model.Jwks = &models.JsonWebKeysModel{
+			Keys: []models.JsonWebKeyModel{},
+		}
+
+		for _, key := range dto.Jwks.Keys {
+			jsonWebKeyModel := models.JsonWebKeyModel{
+				Kid: types.StringValue(key.Kid),
+				Use: types.StringValue(key.Use),
+				Kty: types.StringValue(key.Kty),
+				Alg: types.StringValue(key.Alg),
+			}
+
+			if key.Alg == "RS256" {
+				jsonWebKeyModel.N = types.StringValue(key.N)
+				jsonWebKeyModel.E = types.StringValue(key.E)
+			}
+
+			if key.Alg == "ES256" {
+				jsonWebKeyModel.X = types.StringValue(key.X)
+				jsonWebKeyModel.Y = types.StringValue(key.Y)
+				jsonWebKeyModel.Crv = types.StringValue(key.Crv)
+			}
+
+			model.Jwks.Keys = append(model.Jwks.Keys, jsonWebKeyModel)
+		}
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
@@ -1662,8 +1681,36 @@ func convertOidcIdTokenTpDTOToModel(dto aembit.TrustProviderDTO) *models.TrustPr
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
-	} else {
+	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
+	}
+
+	if dto.Jwks != nil {
+		model.Jwks = &models.JsonWebKeysModel{
+			Keys: []models.JsonWebKeyModel{},
+		}
+
+		for _, key := range dto.Jwks.Keys {
+			jsonWebKeyModel := models.JsonWebKeyModel{
+				Kid: types.StringValue(key.Kid),
+				Use: types.StringValue(key.Use),
+				Kty: types.StringValue(key.Kty),
+				Alg: types.StringValue(key.Alg),
+			}
+
+			if key.Alg == "RS256" {
+				jsonWebKeyModel.N = types.StringValue(key.N)
+				jsonWebKeyModel.E = types.StringValue(key.E)
+			}
+
+			if key.Alg == "ES256" {
+				jsonWebKeyModel.X = types.StringValue(key.X)
+				jsonWebKeyModel.Y = types.StringValue(key.Y)
+				jsonWebKeyModel.Crv = types.StringValue(key.Crv)
+			}
+
+			model.Jwks.Keys = append(model.Jwks.Keys, jsonWebKeyModel)
+		}
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {
