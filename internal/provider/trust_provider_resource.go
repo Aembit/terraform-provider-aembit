@@ -692,15 +692,15 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"oidc_id_token": schema.SingleNestedAttribute{
-				Description: "Oidc Id Token type Trust Provider configuration.",
+				Description: "OIDC ID Token type Trust Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"issuer": schema.StringAttribute{
-						Description: "The Issuer (`iss` claim) of the Oidc Id Token.",
+						Description: "The Issuer (`iss` claim) of the OIDC ID Token.",
 						Optional:    true,
 					},
 					"issuers": schema.SetAttribute{
-						Description: "The set of accepted Issuer values of the associated Oidc Id Token. Used only for cases where multiple Issuers can be matched.",
+						Description: "The set of accepted Issuer values of the associated OIDC ID Token. Used only for cases where multiple Issuers can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
 						Validators: []validator.Set{
@@ -709,11 +709,11 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						},
 					},
 					"subject": schema.StringAttribute{
-						Description: "The Subject (`sub` claim) of the Oidc Id Token.",
+						Description: "The Subject (`sub` claim) of the OIDC ID Token.",
 						Optional:    true,
 					},
 					"subjects": schema.SetAttribute{
-						Description: "The set of accepted Subject values of the associated Oidc Id Token. Used only for cases where multiple Subjects can be matched.",
+						Description: "The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
 						Validators: []validator.Set{
@@ -722,11 +722,11 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						},
 					},
 					"audience": schema.StringAttribute{
-						Description: "The Audience (`aud` claim) of the Oidc Id Token.",
+						Description: "The Audience (`aud` claim) of the OIDC ID Token.",
 						Optional:    true,
 					},
 					"audiences": schema.SetAttribute{
-						Description: "The set of accepted Audience values of the associated Oidc Id Token. Used only for cases where multiple Audiences can be matched.",
+						Description: "The set of accepted Audience values of the associated OIDC ID Token. Used only for cases where multiple Audiences can be matched.",
 						ElementType: types.StringType,
 						Optional:    true,
 						Validators: []validator.Set{
@@ -735,11 +735,11 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						},
 					},
 					"oidc_endpoint": schema.StringAttribute{
-						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Oidc Id Token.",
+						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.",
 						Optional:    true,
 					},
 					"public_key": schema.StringAttribute{
-						Description: "The Public Key that can be used to verify the signature of the Oidc Id Token.",
+						Description: "The Public Key that can be used to verify the signature of the OIDC ID Token.",
 						Optional:    true,
 					},
 					"jwks": schema.SingleNestedAttribute{
@@ -960,7 +960,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("terraform_workspace").AtName("workspace_id"),
 			path.MatchRoot("terraform_workspace").AtName("workspace_ids"),
 		),
-		// Ensure we don't have conflicting single and multiple match rule configurations (Oidc Id Token)
+		// Ensure we don't have conflicting single and multiple match rule configurations (OIDC ID Token)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("oidc_id_token").AtName("issuer"),
 			path.MatchRoot("oidc_id_token").AtName("issuers"),

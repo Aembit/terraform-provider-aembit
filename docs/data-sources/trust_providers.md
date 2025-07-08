@@ -36,7 +36,7 @@ Read-Only:
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kerberos))
 - `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kubernetes_service_account))
 - `name` (String) User-provided name of the trust provider.
-- `oidc_id_token` (Attributes) Oidc Id Token type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--oidc_id_token))
+- `oidc_id_token` (Attributes) OIDC ID Token type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--oidc_id_token))
 - `tags` (Map of String)
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
 
@@ -201,15 +201,15 @@ Optional:
 
 Read-Only:
 
-- `audience` (String) The Audience (`aud` claim) of the Oidc Id Token Token.
-- `audiences` (Set of String) The set of accepted Audience values of the Oidc Id Token Token.
-- `issuer` (String) The Issuer (`iss` claim) of the Oidc Id Token Token.
-- `issuers` (Set of String) The set of accepted Issuer values of the Oidc Id Token Token.
+- `audience` (String) The Audience (`aud` claim) of the OIDC ID Token Token.
+- `audiences` (Set of String) The set of accepted Audience values of the OIDC ID Token Token.
+- `issuer` (String) The Issuer (`iss` claim) of the OIDC ID Token Token.
+- `issuers` (Set of String) The set of accepted Issuer values of the OIDC ID Token Token.
 - `jwks` (Attributes) The JSON Web Key Set (JWKS) containing public keys used for signature verification. (see [below for nested schema](#nestedatt--trust_providers--oidc_id_token--jwks))
-- `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Oidc Id Token Token.
-- `public_key` (String) The Public Key that can be used to verify the signature of the Oidc Id Token Token.
-- `subject` (String) The Subject (`sub` claim) of the Oidc Id Token Token.
-- `subjects` (Set of String) The set of accepted Subject values of the Oidc Id Token Token.
+- `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token Token.
+- `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token Token.
+- `subject` (String) The Subject (`sub` claim) of the OIDC ID Token Token.
+- `subjects` (Set of String) The set of accepted Subject values of the OIDC ID Token Token.
 
 <a id="nestedatt--trust_providers--oidc_id_token--jwks"></a>
 ### Nested Schema for `trust_providers.oidc_id_token.jwks`

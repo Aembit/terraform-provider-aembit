@@ -474,42 +474,42 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 							},
 						},
 						"oidc_id_token": schema.SingleNestedAttribute{
-							Description: "Oidc Id Token type Trust Provider configuration.",
+							Description: "OIDC ID Token type Trust Provider configuration.",
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"issuer": schema.StringAttribute{
-									Description: "The Issuer (`iss` claim) of the Oidc Id Token Token.",
+									Description: "The Issuer (`iss` claim) of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 								"issuers": schema.SetAttribute{
-									Description: "The set of accepted Issuer values of the Oidc Id Token Token.",
+									Description: "The set of accepted Issuer values of the OIDC ID Token Token.",
 									ElementType: types.StringType,
 									Computed:    true,
 								},
 								"subject": schema.StringAttribute{
-									Description: "The Subject (`sub` claim) of the Oidc Id Token Token.",
+									Description: "The Subject (`sub` claim) of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 								"subjects": schema.SetAttribute{
-									Description: "The set of accepted Subject values of the Oidc Id Token Token.",
+									Description: "The set of accepted Subject values of the OIDC ID Token Token.",
 									ElementType: types.StringType,
 									Computed:    true,
 								},
 								"audience": schema.StringAttribute{
-									Description: "The Audience (`aud` claim) of the Oidc Id Token Token.",
+									Description: "The Audience (`aud` claim) of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 								"audiences": schema.SetAttribute{
-									Description: "The set of accepted Audience values of the Oidc Id Token Token.",
+									Description: "The set of accepted Audience values of the OIDC ID Token Token.",
 									ElementType: types.StringType,
 									Computed:    true,
 								},
 								"oidc_endpoint": schema.StringAttribute{
-									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Oidc Id Token Token.",
+									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 								"public_key": schema.StringAttribute{
-									Description: "The Public Key that can be used to verify the signature of the Oidc Id Token Token.",
+									Description: "The Public Key that can be used to verify the signature of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 								"jwks": schema.SingleNestedAttribute{
