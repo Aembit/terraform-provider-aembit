@@ -53,7 +53,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
       "e": "AQAB",
       "n": "vEJ5_IKWyoGjoB-Us5uooNWR0dvvTC_8eilRWPth1LxsbAahxORlOO8asmFc0C1pDwIo74XZlbwfLfet8Q0WzSre_8IJHDStiQUgiDPnh9Z5vDIH3HoSVQIOW9W4AIdYeQd5iW7hGVucwm6eal3jv3sF1CvvYZT77vf8bBFKl26xr_cIpsl77wECIFij6dR_dtE59g7etsz1EeDvwm75OOgNL7z-bCum149E7luyE5y7bNtpqtbthQK31vyaifrGABYXragi4vWcw7yWif1IV7M_smlZBHPeGbRZ4xCKiVkL7vtwz6AgW8BfhewGI4_qQfEONAXEJv70VK6OpJ5oZw",
       "alg": "RS256"
-    },    
+    }
   ]
 }
 EOT		

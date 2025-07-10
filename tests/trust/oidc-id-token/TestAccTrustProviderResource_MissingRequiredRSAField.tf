@@ -17,7 +17,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
       "kid": "T41hVcPtA3ehDjSaZXSI9LKuanyTkBOf0YKlAM6gtNQ=",
       "e": "AQAB",
       "alg": "RS256"
-    },    
+    }
   ]
 }		
 EOT		

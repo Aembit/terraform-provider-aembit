@@ -20,7 +20,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
       "y": "C2z0b9zNhvywzboDt03F2xb_7fOaw8LWbakgudjN3kE",
     }
   ]
-}		
+}
 EOT	
 	}
     tags = {
