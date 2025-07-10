@@ -8,18 +8,20 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
 		issuer = "issuer"
 		subject = "subject"
 		audience = "audience"
-		jwks = {
-			keys = [
-				{
-					kid = "mxAhc1VybhA8LT2jHRQFEzcWSoLbFmnDWGYoViS/aKw="
-					kty = "EC"
-					use = "sig"
-					alg = "ES256"
-					x: "x-pRNOyN2BwmgvPuLTOEJMLB1vcc4vljjU41W0jz5Sw",
-					crv: "P-256"				
-				}
-			]		
-		}
+		jwks = <<-EOT
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "use": "sig",
+      "kid": "iTYG7jb2cyaQ04cp69CpoMBzxNjRmixlGGxZTIHSpXg=",
+      "alg": "ES256",
+      "x": "ItvdSxTnkMqPq3kKeHYlAF1ArZqz4_CXjUmiPvHDQ08",
+      "y": "C2z0b9zNhvywzboDt03F2xb_7fOaw8LWbakgudjN3kE",
+    }
+  ]
+}		
+EOT	
 	}
     tags = {
         color = "blue"

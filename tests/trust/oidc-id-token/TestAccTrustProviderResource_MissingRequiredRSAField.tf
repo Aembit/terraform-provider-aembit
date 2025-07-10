@@ -8,17 +8,19 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
 		issuer = "issuer"
 		subject = "subject"
 		audience = "audience"
-		jwks = {
-			keys = [
-				{
-					kid = "Tbm3LtlhYlNObRdRc+Tz3mEo2SASPbfR03HI4dmoUkg="
-					kty = "RSA"
-					use = "sig"
-					alg = "RS256"
-					e = "AQAB"
-				}
-			]			
-		}
+		jwks = <<-EOT
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "kid": "T41hVcPtA3ehDjSaZXSI9LKuanyTkBOf0YKlAM6gtNQ=",
+      "e": "AQAB",
+      "alg": "RS256"
+    },    
+  ]
+}		
+EOT		
 	}
     tags = {
         color = "blue"

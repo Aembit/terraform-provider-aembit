@@ -83,51 +83,31 @@ type TrustProviderKerberosModel struct {
 }
 
 type TrustProviderKubernetesModel struct {
-	Issuer              types.String      `tfsdk:"issuer"`
-	Issuers             []types.String    `tfsdk:"issuers"`
-	Namespace           types.String      `tfsdk:"namespace"`
-	Namespaces          []types.String    `tfsdk:"namespaces"`
-	PodName             types.String      `tfsdk:"pod_name"`
-	PodNames            []types.String    `tfsdk:"pod_names"`
-	ServiceAccountName  types.String      `tfsdk:"service_account_name"`
-	ServiceAccountNames []types.String    `tfsdk:"service_account_names"`
-	Subject             types.String      `tfsdk:"subject"`
-	Subjects            []types.String    `tfsdk:"subjects"`
-	OIDCEndpoint        types.String      `tfsdk:"oidc_endpoint"`
-	PublicKey           types.String      `tfsdk:"public_key"`
-	Jwks                *JsonWebKeysModel `tfsdk:"jwks"`
+	Issuer              types.String   `tfsdk:"issuer"`
+	Issuers             []types.String `tfsdk:"issuers"`
+	Namespace           types.String   `tfsdk:"namespace"`
+	Namespaces          []types.String `tfsdk:"namespaces"`
+	PodName             types.String   `tfsdk:"pod_name"`
+	PodNames            []types.String `tfsdk:"pod_names"`
+	ServiceAccountName  types.String   `tfsdk:"service_account_name"`
+	ServiceAccountNames []types.String `tfsdk:"service_account_names"`
+	Subject             types.String   `tfsdk:"subject"`
+	Subjects            []types.String `tfsdk:"subjects"`
+	OIDCEndpoint        types.String   `tfsdk:"oidc_endpoint"`
+	PublicKey           types.String   `tfsdk:"public_key"`
+	Jwks                types.String   `tfsdk:"jwks"`
 }
 
 type TrustProviderOidcIdTokenModel struct {
-	Issuer       types.String      `tfsdk:"issuer"`
-	Issuers      []types.String    `tfsdk:"issuers"`
-	Subject      types.String      `tfsdk:"subject"`
-	Subjects     []types.String    `tfsdk:"subjects"`
-	Audience     types.String      `tfsdk:"audience"`
-	Audiences    []types.String    `tfsdk:"audiences"`
-	OIDCEndpoint types.String      `tfsdk:"oidc_endpoint"`
-	PublicKey    types.String      `tfsdk:"public_key"`
-	Jwks         *JsonWebKeysModel `tfsdk:"jwks"`
-}
-
-type JsonWebKeysModel struct {
-	Keys []JsonWebKeyModel `tfsdk:"keys"`
-}
-
-type JsonWebKeyModel struct {
-	Kid types.String `tfsdk:"kid"`
-	Kty types.String `tfsdk:"kty"`
-	Use types.String `tfsdk:"use"`
-	Alg types.String `tfsdk:"alg"`
-
-	// RSA
-	N types.String `tfsdk:"n"`
-	E types.String `tfsdk:"e"`
-
-	// EC
-	X   types.String `tfsdk:"x"`
-	Y   types.String `tfsdk:"y"`
-	Crv types.String `tfsdk:"crv"`
+	Issuer       types.String   `tfsdk:"issuer"`
+	Issuers      []types.String `tfsdk:"issuers"`
+	Subject      types.String   `tfsdk:"subject"`
+	Subjects     []types.String `tfsdk:"subjects"`
+	Audience     types.String   `tfsdk:"audience"`
+	Audiences    []types.String `tfsdk:"audiences"`
+	OIDCEndpoint types.String   `tfsdk:"oidc_endpoint"`
+	PublicKey    types.String   `tfsdk:"public_key"`
+	Jwks         types.String   `tfsdk:"jwks"`
 }
 
 type TrustProviderGcpIdentityModel struct {

@@ -1,8 +1,10 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -16,10 +18,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -580,68 +585,12 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
 						Optional:    true,
 					},
-					"jwks": schema.SingleNestedAttribute{
-						Optional:    true,
+					"jwks": schema.StringAttribute{
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
-						Attributes: map[string]schema.Attribute{
-							"keys": schema.ListNestedAttribute{
-								Required:    true,
-								Description: "A list of JSON Web Keys used to validate signed tokens.",
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"kid": schema.StringAttribute{
-											Required:    true,
-											Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
-										},
-										"kty": schema.StringAttribute{
-											Required:    true,
-											Description: "Key type (kty). Possible values: RSA, EC.",
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"RSA",
-													"EC",
-												}...),
-											},
-										},
-										"use": schema.StringAttribute{
-											Required:    true,
-											Description: "Public key use typically 'sig' for signature.",
-										},
-										"alg": schema.StringAttribute{
-											Required:    true,
-											Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"RS256",
-													"ES256",
-												}...),
-											},
-										},
-										// RSA fields
-										"e": schema.StringAttribute{
-											Optional:    true,
-											Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
-										},
-										"n": schema.StringAttribute{
-											Optional:    true,
-											Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
-										},
-										// EC fields
-										"x": schema.StringAttribute{
-											Optional:    true,
-											Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
-										},
-										"y": schema.StringAttribute{
-											Optional:    true,
-											Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
-										},
-										"crv": schema.StringAttribute{
-											Optional:    true,
-											Description: "Elliptic curve used with the key. Only Possible value: P-256",
-										},
-									},
-								},
-							},
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
@@ -742,68 +691,12 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Description: "The Public Key that can be used to verify the signature of the OIDC ID Token.",
 						Optional:    true,
 					},
-					"jwks": schema.SingleNestedAttribute{
-						Optional:    true,
+					"jwks": schema.StringAttribute{
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
-						Attributes: map[string]schema.Attribute{
-							"keys": schema.ListNestedAttribute{
-								Required:    true,
-								Description: "A list of JSON Web Keys used to validate signed tokens.",
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"kid": schema.StringAttribute{
-											Required:    true,
-											Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
-										},
-										"kty": schema.StringAttribute{
-											Required:    true,
-											Description: "Key type (kty). Possible values: RSA, EC.",
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"RSA",
-													"EC",
-												}...),
-											},
-										},
-										"use": schema.StringAttribute{
-											Required:    true,
-											Description: "Public key use typically 'sig' for signature.",
-										},
-										"alg": schema.StringAttribute{
-											Required:    true,
-											Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
-											Validators: []validator.String{
-												stringvalidator.OneOf([]string{
-													"RS256",
-													"ES256",
-												}...),
-											},
-										},
-										// RSA fields
-										"e": schema.StringAttribute{
-											Optional:    true,
-											Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
-										},
-										"n": schema.StringAttribute{
-											Optional:    true,
-											Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
-										},
-										// EC fields
-										"x": schema.StringAttribute{
-											Optional:    true,
-											Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
-										},
-										"y": schema.StringAttribute{
-											Optional:    true,
-											Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
-										},
-										"crv": schema.StringAttribute{
-											Optional:    true,
-											Description: "Elliptic curve used with the key. Required if kty is EC. Only Possible value: P-256",
-										},
-									},
-								},
-							},
+						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
 						},
 					},
 				},
@@ -1009,6 +902,21 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	// Map response body to schema and populate Computed attribute values
 	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
+	// normalize json in plan
+	if plan.OidcIdToken != nil && !plan.OidcIdToken.Jwks.IsNull() && !plan.OidcIdToken.Jwks.IsUnknown() {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(plan.OidcIdToken.Jwks.ValueString()))
+		plan.OidcIdToken.Jwks = types.StringValue(buf.String())
+
+		tflog.Error(ctx, "Faca duzeltmeceOidcIdToken ")
+		tflog.Error(ctx, plan.OidcIdToken.Jwks.ValueString())
+	}
+	if plan.KubernetesService != nil && !plan.KubernetesService.Jwks.IsNull() && !plan.KubernetesService.Jwks.IsUnknown() {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(plan.KubernetesService.Jwks.ValueString()))
+		plan.KubernetesService.Jwks = types.StringValue(buf.String())
+	}
+
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -1095,6 +1003,20 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
+
+	if state.OidcIdToken != nil && !state.OidcIdToken.Jwks.IsNull() && !state.OidcIdToken.Jwks.IsUnknown() {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(state.OidcIdToken.Jwks.ValueString()))
+		state.OidcIdToken.Jwks = types.StringValue(buf.String())
+
+		// tflog.Error(ctx, "OidcIdToken.Jwks")
+		// tflog.Error(ctx, state.OidcIdToken.Jwks.ValueString())
+	}
+	if state.KubernetesService != nil && !state.KubernetesService.Jwks.IsNull() && !state.KubernetesService.Jwks.IsUnknown() {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(state.KubernetesService.Jwks.ValueString()))
+		state.KubernetesService.Jwks = types.StringValue(buf.String())
+	}
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -1332,7 +1254,7 @@ func convertKubernetesModelToDTO(model models.TrustProviderResourceModel, dto *a
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
 
-	err := convertJWKSModelToDto(model.KubernetesService.Jwks, dto)
+	err := convertJWKSModelToDto(model.KubernetesService.Jwks.ValueString(), dto)
 	if err != nil {
 		return err
 	}
@@ -1359,7 +1281,7 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
-	err := convertJWKSModelToDto(model.OidcIdToken.Jwks, dto)
+	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.ValueString(), dto)
 	if err != nil {
 		return err
 	}
@@ -1375,55 +1297,45 @@ func convertOidcIdTokenTpModelToDTO(model models.TrustProviderResourceModel, dto
 	return nil
 }
 
-func convertJWKSModelToDto(jwksModel *models.JsonWebKeysModel, dto *aembit.TrustProviderDTO) error {
-	if jwksModel == nil {
+func convertJWKSModelToDto(jwksJson string, dto *aembit.TrustProviderDTO) error {
+	if jwksJson == "" {
 		return nil
 	}
 
-	var jwks aembit.JsonWebKeysDTO = aembit.JsonWebKeysDTO{
-		Keys: []aembit.JsonWebKeyDTO{},
+	// convert jwksJson to model
+	var jwks aembit.JsonWebKeysDTO
+	err := json.Unmarshal([]byte(jwksJson), &jwks)
+	if err != nil {
+		return fmt.Errorf("JWKS content is not valid")
 	}
 
-	for i, key := range jwksModel.Keys {
-		alg := key.Alg.ValueString()
+	if len(jwks.Keys) == 0 {
+		return fmt.Errorf("JWKS does not have any keys")
+	}
 
-		if alg == "RS256" {
-			if key.E.IsUnknown() || key.E.IsNull() || key.N.IsUnknown() || key.N.IsNull() {
-				return fmt.Errorf("JWKS key at %v does not have RSA required fields: e, n", i)
+	for _, key := range jwks.Keys {
+		if key.Kty == "" {
+			return fmt.Errorf("kty (Key Type) must be present in a JWK")
+		}
+
+		if key.Kty == "RSA" {
+			if key.E == "" || key.N == "" {
+				return fmt.Errorf("JWKS key does not have RSA required fields: e, n")
 			}
 		}
 
-		if alg == "ES256" {
-			if key.Crv.IsUnknown() || key.Crv.IsNull() ||
-				key.X.IsUnknown() || key.X.IsNull() ||
-				key.Y.IsUnknown() || key.Y.IsNull() {
-
-				return fmt.Errorf("JWKS key at %v does not have ECDSA required fields: x, y, crv", i)
+		if key.Kty == "EC" {
+			if key.Crv == "" || key.X == "" || key.Y == "" {
+				return fmt.Errorf("JWKS key does not have ECDSA required fields: x, y, crv")
 			}
 		}
-
-		jsonWebKeyDTO := aembit.JsonWebKeyDTO{
-			Kid: key.Kid.ValueString(),
-			Kty: key.Kty.ValueString(),
-			Alg: key.Alg.ValueString(),
-			Use: key.Use.ValueString(),
-		}
-
-		if alg == "RS256" {
-			jsonWebKeyDTO.N = key.N.ValueString()
-			jsonWebKeyDTO.E = key.E.ValueString()
-		}
-
-		if alg == "ES256" {
-			jsonWebKeyDTO.X = key.X.ValueString()
-			jsonWebKeyDTO.Y = key.Y.ValueString()
-			jsonWebKeyDTO.Crv = key.Crv.ValueString()
-		}
-
-		jwks.Keys = append(jwks.Keys, jsonWebKeyDTO)
 	}
 
-	dto.Jwks = &jwks
+	// normalizing JSON
+	// var buf bytes.Buffer
+	// json.Compact(&buf, []byte(jwksJson))
+	// dto.Jwks = buf.String()
+	dto.Jwks = jwksJson
 	return nil
 }
 
@@ -1616,39 +1528,17 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 		Subject:            types.StringNull(),
 		PublicKey:          types.StringNull(),
 		OIDCEndpoint:       types.StringNull(),
+		Jwks:               types.StringNull(),
 	}
+
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
 	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
-	}
-
-	if dto.Jwks != nil {
-		model.Jwks = &models.JsonWebKeysModel{
-			Keys: []models.JsonWebKeyModel{},
-		}
-
-		for _, key := range dto.Jwks.Keys {
-			jsonWebKeyModel := models.JsonWebKeyModel{
-				Kid: types.StringValue(key.Kid),
-				Use: types.StringValue(key.Use),
-				Kty: types.StringValue(key.Kty),
-				Alg: types.StringValue(key.Alg),
-			}
-
-			if key.Alg == "RS256" {
-				jsonWebKeyModel.N = types.StringValue(key.N)
-				jsonWebKeyModel.E = types.StringValue(key.E)
-			}
-
-			if key.Alg == "ES256" {
-				jsonWebKeyModel.X = types.StringValue(key.X)
-				jsonWebKeyModel.Y = types.StringValue(key.Y)
-				jsonWebKeyModel.Crv = types.StringValue(key.Crv)
-			}
-
-			model.Jwks.Keys = append(model.Jwks.Keys, jsonWebKeyModel)
-		}
+	} else if len(dto.Jwks) > 0 {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(dto.Jwks))
+		model.Jwks = types.StringValue(buf.String())
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
@@ -1678,39 +1568,16 @@ func convertOidcIdTokenTpDTOToModel(dto aembit.TrustProviderDTO) *models.TrustPr
 		Audience:     types.StringNull(),
 		PublicKey:    types.StringNull(),
 		OIDCEndpoint: types.StringNull(),
+		Jwks:         types.StringNull(),
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
 	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
-	}
-
-	if dto.Jwks != nil {
-		model.Jwks = &models.JsonWebKeysModel{
-			Keys: []models.JsonWebKeyModel{},
-		}
-
-		for _, key := range dto.Jwks.Keys {
-			jsonWebKeyModel := models.JsonWebKeyModel{
-				Kid: types.StringValue(key.Kid),
-				Use: types.StringValue(key.Use),
-				Kty: types.StringValue(key.Kty),
-				Alg: types.StringValue(key.Alg),
-			}
-
-			if key.Alg == "RS256" {
-				jsonWebKeyModel.N = types.StringValue(key.N)
-				jsonWebKeyModel.E = types.StringValue(key.E)
-			}
-
-			if key.Alg == "ES256" {
-				jsonWebKeyModel.X = types.StringValue(key.X)
-				jsonWebKeyModel.Y = types.StringValue(key.Y)
-				jsonWebKeyModel.Crv = types.StringValue(key.Crv)
-			}
-
-			model.Jwks.Keys = append(model.Jwks.Keys, jsonWebKeyModel)
-		}
+	} else if len(dto.Jwks) > 0 {
+		var buf bytes.Buffer
+		json.Compact(&buf, []byte(dto.Jwks))
+		model.Jwks = types.StringValue(buf.String())
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {
@@ -1837,3 +1704,13 @@ func extractMatchRules(matchRules []aembit.TrustProviderMatchRuleDTO, attributeN
 	}
 	return singleValue, multiValue
 }
+
+// normalizeJSON takes raw JSON (string) and returns canonicalized version (minified)
+// func normalizeJSON(input string) (string, error) {
+// 	var buf bytes.Buffer
+// 	err := json.Compact(&buf, []byte(input))
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to normalize JSON: %w", err)
+// 	}
+// 	return buf.String(), nil
+// }
