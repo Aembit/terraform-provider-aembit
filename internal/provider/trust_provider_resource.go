@@ -587,7 +587,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 					"jwks": schema.StringAttribute{
 						CustomType:  jsontypes.NormalizedType{},
-						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
 					},
@@ -694,7 +694,7 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					},
 					"jwks": schema.StringAttribute{
 						CustomType:  jsontypes.NormalizedType{},
-						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
 					},

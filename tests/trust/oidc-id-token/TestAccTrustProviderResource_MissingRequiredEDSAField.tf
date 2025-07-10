@@ -17,7 +17,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
       "kid": "iTYG7jb2cyaQ04cp69CpoMBzxNjRmixlGGxZTIHSpXg=",
       "alg": "ES256",
       "x": "ItvdSxTnkMqPq3kKeHYlAF1ArZqz4_CXjUmiPvHDQ08",
-      "y": "C2z0b9zNhvywzboDt03F2xb_7fOaw8LWbakgudjN3kE",
+      "y": "C2z0b9zNhvywzboDt03F2xb_7fOaw8LWbakgudjN3kE"
     }
   ]
 }

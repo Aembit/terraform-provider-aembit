@@ -234,7 +234,7 @@ Optional:
 
 - `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the associated Kubernetes Service Account Token. Used only for cases where multiple Issuers can be matched.
-- `jwks` (Attributes) The JSON Web Key Set (JWKS) containing public keys used for signature verification. (see [below for nested schema](#nestedatt--kubernetes_service_account--jwks))
+- `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.
 - `namespace` (String) The Namespace of the Kubernetes Service Account Token.
 - `namespaces` (Set of String) The set of accepted Namespace values of the associated Kubernetes Service Account Token. Used only for cases where multiple Namespaces can be matched.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
@@ -246,33 +246,6 @@ Optional:
 - `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated Kubernetes Service Account Token. Used only for cases where multiple Subjects can be matched.
 
-<a id="nestedatt--kubernetes_service_account--jwks"></a>
-### Nested Schema for `kubernetes_service_account.jwks`
-
-Required:
-
-- `keys` (Attributes List) A list of JSON Web Keys used to validate signed tokens. (see [below for nested schema](#nestedatt--kubernetes_service_account--jwks--keys))
-
-<a id="nestedatt--kubernetes_service_account--jwks--keys"></a>
-### Nested Schema for `kubernetes_service_account.jwks.keys`
-
-Required:
-
-- `alg` (String) Algorithm intended for use with the key. Possible values: RS256 or ES256.
-- `kid` (String) Key ID (kid) used to match a specific key when multiple keys are available.
-- `kty` (String) Key type (kty). Possible values: RSA, EC.
-- `use` (String) Public key use typically 'sig' for signature.
-
-Optional:
-
-- `crv` (String) Elliptic curve used with the key. Only Possible value: P-256
-- `e` (String) RSA public exponent (base64url-encoded). Required if kty is RSA.
-- `n` (String) RSA modulus (base64url-encoded). Required if kty is RSA.
-- `x` (String) X coordinate for the elliptic curve point. Required if kty is EC.
-- `y` (String) Y coordinate for the elliptic curve point. Required if kty is EC.
-
-
-
 
 <a id="nestedatt--oidc_id_token"></a>
 ### Nested Schema for `oidc_id_token`
@@ -283,38 +256,11 @@ Optional:
 - `audiences` (Set of String) The set of accepted Audience values of the associated OIDC ID Token. Used only for cases where multiple Audiences can be matched.
 - `issuer` (String) The Issuer (`iss` claim) of the OIDC ID Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the associated OIDC ID Token. Used only for cases where multiple Issuers can be matched.
-- `jwks` (Attributes) The JSON Web Key Set (JWKS) containing public keys used for signature verification. (see [below for nested schema](#nestedatt--oidc_id_token--jwks))
+- `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.
 - `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token.
 - `subject` (String) The Subject (`sub` claim) of the OIDC ID Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.
-
-<a id="nestedatt--oidc_id_token--jwks"></a>
-### Nested Schema for `oidc_id_token.jwks`
-
-Required:
-
-- `keys` (Attributes List) A list of JSON Web Keys used to validate signed tokens. (see [below for nested schema](#nestedatt--oidc_id_token--jwks--keys))
-
-<a id="nestedatt--oidc_id_token--jwks--keys"></a>
-### Nested Schema for `oidc_id_token.jwks.keys`
-
-Required:
-
-- `alg` (String) Algorithm intended for use with the key. Possible values: RS256 or ES256.
-- `kid` (String) Key ID (kid) used to match a specific key when multiple keys are available.
-- `kty` (String) Key type (kty). Possible values: RSA, EC.
-- `use` (String) Public key use typically 'sig' for signature.
-
-Optional:
-
-- `crv` (String) Elliptic curve used with the key. Required if kty is EC. Only Possible value: P-256
-- `e` (String) RSA public exponent (base64url-encoded). Required if kty is RSA.
-- `n` (String) RSA modulus (base64url-encoded). Required if kty is RSA.
-- `x` (String) X coordinate for the elliptic curve point. Required if kty is EC.
-- `y` (String) Y coordinate for the elliptic curve point. Required if kty is EC.
-
-
 
 
 <a id="nestedatt--terraform_workspace"></a>
