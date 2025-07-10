@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -20,6 +21,7 @@ type TrustProviderResourceModel struct {
 	GitLabJob          *TrustProviderGitLabJobModel     `tfsdk:"gitlab_job"`
 	Kerberos           *TrustProviderKerberosModel      `tfsdk:"kerberos"`
 	KubernetesService  *TrustProviderKubernetesModel    `tfsdk:"kubernetes_service_account"`
+	OidcIdToken        *TrustProviderOidcIdTokenModel   `tfsdk:"oidc_id_token"`
 	TerraformWorkspace *TrustProviderTerraformModel     `tfsdk:"terraform_workspace"`
 }
 
@@ -82,18 +84,31 @@ type TrustProviderKerberosModel struct {
 }
 
 type TrustProviderKubernetesModel struct {
-	Issuer              types.String   `tfsdk:"issuer"`
-	Issuers             []types.String `tfsdk:"issuers"`
-	Namespace           types.String   `tfsdk:"namespace"`
-	Namespaces          []types.String `tfsdk:"namespaces"`
-	PodName             types.String   `tfsdk:"pod_name"`
-	PodNames            []types.String `tfsdk:"pod_names"`
-	ServiceAccountName  types.String   `tfsdk:"service_account_name"`
-	ServiceAccountNames []types.String `tfsdk:"service_account_names"`
-	Subject             types.String   `tfsdk:"subject"`
-	Subjects            []types.String `tfsdk:"subjects"`
-	OIDCEndpoint        types.String   `tfsdk:"oidc_endpoint"`
-	PublicKey           types.String   `tfsdk:"public_key"`
+	Issuer              types.String         `tfsdk:"issuer"`
+	Issuers             []types.String       `tfsdk:"issuers"`
+	Namespace           types.String         `tfsdk:"namespace"`
+	Namespaces          []types.String       `tfsdk:"namespaces"`
+	PodName             types.String         `tfsdk:"pod_name"`
+	PodNames            []types.String       `tfsdk:"pod_names"`
+	ServiceAccountName  types.String         `tfsdk:"service_account_name"`
+	ServiceAccountNames []types.String       `tfsdk:"service_account_names"`
+	Subject             types.String         `tfsdk:"subject"`
+	Subjects            []types.String       `tfsdk:"subjects"`
+	OIDCEndpoint        types.String         `tfsdk:"oidc_endpoint"`
+	PublicKey           types.String         `tfsdk:"public_key"`
+	Jwks                jsontypes.Normalized `tfsdk:"jwks"`
+}
+
+type TrustProviderOidcIdTokenModel struct {
+	Issuer       types.String         `tfsdk:"issuer"`
+	Issuers      []types.String       `tfsdk:"issuers"`
+	Subject      types.String         `tfsdk:"subject"`
+	Subjects     []types.String       `tfsdk:"subjects"`
+	Audience     types.String         `tfsdk:"audience"`
+	Audiences    []types.String       `tfsdk:"audiences"`
+	OIDCEndpoint types.String         `tfsdk:"oidc_endpoint"`
+	PublicKey    types.String         `tfsdk:"public_key"`
+	Jwks         jsontypes.Normalized `tfsdk:"jwks"`
 }
 
 type TrustProviderGcpIdentityModel struct {

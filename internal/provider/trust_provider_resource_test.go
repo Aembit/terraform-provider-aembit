@@ -341,6 +341,10 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/kubernetes/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/kubernetes/TestAccTrustProviderResource.tfmod")
 
+	const trustProviderKubernetes string = "aembit_trust_provider.kubernetes"
+	const trustProviderKubernetesKey string = "aembit_trust_provider.kubernetes_key"
+	const trustProviderKubernetesJWKS string = "aembit_trust_provider.kubernetes_jwks"
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -349,41 +353,53 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "name", "TF Acceptance Kubernetes"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, "name", "TF Acceptance Kubernetes"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsCount, "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsColor, "blue"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_key", "name", "TF Acceptance Kubernetes Key"),
+					resource.TestCheckResourceAttr(trustProviderKubernetesKey, "name", "TF Acceptance Kubernetes Key"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesKey, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesKey, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderKubernetesJWKS, "name", "TF Acceptance Kubernetes JWKS"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_trust_provider.kubernetes", ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", "name", "TF Acceptance Kubernetes - Modified"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, "name", "TF Acceptance Kubernetes - Modified"),
 					// Verify Tags.
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsCount, "2"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsColor, "orange"),
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes", tagsDay, "Tuesday"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "orange"),
+					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Tuesday"),
 					// Verify Trust Provider Name
-					resource.TestCheckResourceAttr("aembit_trust_provider.kubernetes_key", "name", "TF Acceptance Kubernetes Key - Modified"),
+					resource.TestCheckResourceAttr(trustProviderKubernetesKey, "name", "TF Acceptance Kubernetes Key - Modified"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesKey, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kubernetes_key", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesKey, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderKubernetesJWKS, "name", "TF Acceptance Kubernetes JWKS - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -423,6 +439,104 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tfmod")
+
+	const trustProviderOidcidToken = "aembit_trust_provider.oidcidtoken"
+	const trustProviderOidcidTokenKey = "aembit_trust_provider.oidcidtoken_key"
+	const trustProviderOidcidTokenJWKS = "aembit_trust_provider.oidcidtoken_jwks"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, "name", "TF Acceptance OIDC ID Token"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderOidcidTokenKey, "name", "TF Acceptance OIDC ID Token Key"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenKey, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenKey, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderOidcidTokenJWKS, "name", "TF Acceptance OIDC ID Token JWKS"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, "name", "TF Acceptance OIDC ID Token - Modified"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderOidcidTokenKey, "name", "TF Acceptance OIDC ID Token Key - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenKey, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenKey, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(trustProviderOidcidTokenJWKS, "name", "TF Acceptance OIDC ID Token JWKS - Modified"),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken_MissingRequiredRSAField(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredRSAField.tf")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`does not have RSA required fields: e, n`),
+			},
+		},
+	})
+}
+
+func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredEDSAField.tf")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`does not have ECDSA required fields: x, y, crv`),
+			},
 		},
 	})
 }
