@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -99,15 +100,15 @@ type TrustProviderKubernetesModel struct {
 }
 
 type TrustProviderOidcIdTokenModel struct {
-	Issuer       types.String   `tfsdk:"issuer"`
-	Issuers      []types.String `tfsdk:"issuers"`
-	Subject      types.String   `tfsdk:"subject"`
-	Subjects     []types.String `tfsdk:"subjects"`
-	Audience     types.String   `tfsdk:"audience"`
-	Audiences    []types.String `tfsdk:"audiences"`
-	OIDCEndpoint types.String   `tfsdk:"oidc_endpoint"`
-	PublicKey    types.String   `tfsdk:"public_key"`
-	Jwks         types.String   `tfsdk:"jwks"`
+	Issuer       types.String         `tfsdk:"issuer"`
+	Issuers      []types.String       `tfsdk:"issuers"`
+	Subject      types.String         `tfsdk:"subject"`
+	Subjects     []types.String       `tfsdk:"subjects"`
+	Audience     types.String         `tfsdk:"audience"`
+	Audiences    []types.String       `tfsdk:"audiences"`
+	OIDCEndpoint types.String         `tfsdk:"oidc_endpoint"`
+	PublicKey    types.String         `tfsdk:"public_key"`
+	Jwks         jsontypes.Normalized `tfsdk:"jwks"`
 }
 
 type TrustProviderGcpIdentityModel struct {

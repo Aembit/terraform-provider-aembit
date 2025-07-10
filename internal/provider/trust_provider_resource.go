@@ -12,6 +12,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -24,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -698,12 +698,10 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 					},
 					"jwks": schema.StringAttribute{
+						CustomType:  jsontypes.NormalizedType{},
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
 					},
 				},
 			},
@@ -908,21 +906,6 @@ func (r *trustProviderResource) Create(ctx context.Context, req resource.CreateR
 	// Map response body to schema and populate Computed attribute values
 	plan = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
 
-	// normalize json in plan
-	if plan.OidcIdToken != nil && !plan.OidcIdToken.Jwks.IsNull() && !plan.OidcIdToken.Jwks.IsUnknown() {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(plan.OidcIdToken.Jwks.ValueString()))
-		plan.OidcIdToken.Jwks = types.StringValue(buf.String())
-
-		tflog.Error(ctx, "Faca duzeltmeceOidcIdToken ")
-		tflog.Error(ctx, plan.OidcIdToken.Jwks.ValueString())
-	}
-	if plan.KubernetesService != nil && !plan.KubernetesService.Jwks.IsNull() && !plan.KubernetesService.Jwks.IsUnknown() {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(plan.KubernetesService.Jwks.ValueString()))
-		plan.KubernetesService.Jwks = types.StringValue(buf.String())
-	}
-
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -1009,20 +992,6 @@ func (r *trustProviderResource) Update(ctx context.Context, req resource.UpdateR
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertTrustProviderDTOToModel(ctx, *trustProvider, r.client.Tenant, r.client.StackDomain)
-
-	if state.OidcIdToken != nil && !state.OidcIdToken.Jwks.IsNull() && !state.OidcIdToken.Jwks.IsUnknown() {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(state.OidcIdToken.Jwks.ValueString()))
-		state.OidcIdToken.Jwks = types.StringValue(buf.String())
-
-		// tflog.Error(ctx, "OidcIdToken.Jwks")
-		// tflog.Error(ctx, state.OidcIdToken.Jwks.ValueString())
-	}
-	if state.KubernetesService != nil && !state.KubernetesService.Jwks.IsNull() && !state.KubernetesService.Jwks.IsUnknown() {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(state.KubernetesService.Jwks.ValueString()))
-		state.KubernetesService.Jwks = types.StringValue(buf.String())
-	}
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -1574,16 +1543,14 @@ func convertOidcIdTokenTpDTOToModel(dto aembit.TrustProviderDTO) *models.TrustPr
 		Audience:     types.StringNull(),
 		PublicKey:    types.StringNull(),
 		OIDCEndpoint: types.StringNull(),
-		Jwks:         types.StringNull(),
+		Jwks:         jsontypes.NewNormalizedNull(),
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
 	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(dto.Jwks))
-		model.Jwks = types.StringValue(buf.String())
+		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {

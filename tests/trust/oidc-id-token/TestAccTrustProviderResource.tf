@@ -64,7 +64,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
       "crv": "P-256"
     }
   ]
-}		
+}
 EOT		
 	}
     tags = {
