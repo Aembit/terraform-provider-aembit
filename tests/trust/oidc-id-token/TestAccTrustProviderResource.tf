@@ -65,7 +65,7 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
     }
   ]
 }
-EOT		
+EOT
 	}
     tags = {
         color = "blue"

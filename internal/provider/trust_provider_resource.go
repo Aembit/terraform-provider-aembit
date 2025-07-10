@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -19,9 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -589,12 +586,10 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 						Optional:    true,
 					},
 					"jwks": schema.StringAttribute{
+						CustomType:  jsontypes.NormalizedType{},
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplace(),
-						},
 					},
 				},
 			},
@@ -1503,7 +1498,7 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 		Subject:            types.StringNull(),
 		PublicKey:          types.StringNull(),
 		OIDCEndpoint:       types.StringNull(),
-		Jwks:               types.StringNull(),
+		Jwks:               jsontypes.NewNormalizedNull(),
 	}
 
 	if len(dto.Certificate) > 0 {
@@ -1511,9 +1506,7 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 	} else if len(dto.OidcUrl) > 0 {
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
-		var buf bytes.Buffer
-		json.Compact(&buf, []byte(dto.Jwks))
-		model.Jwks = types.StringValue(buf.String())
+		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
