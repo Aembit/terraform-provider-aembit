@@ -580,6 +580,9 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 					"oidc_endpoint": schema.StringAttribute{
 						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
 						Optional:    true,
+						Validators: []validator.String{
+							validators.OidcEndpointValidation(),
+						},
 					},
 					"public_key": schema.StringAttribute{
 						Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
