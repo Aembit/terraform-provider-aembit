@@ -366,6 +366,14 @@ func (r *trustProviderResource) Schema(_ context.Context, _ resource.SchemaReque
 							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
 					},
+					"oidc_client_id": schema.StringAttribute{
+						Description: "The OAuth Client ID value required for authenticating a GitHub Action.",
+						Computed:    true,
+					},
+					"oidc_audience": schema.StringAttribute{
+						Description: "The audience value required for the GitHub Action ID Token.",
+						Computed:    true,
+					},
 				},
 			},
 			"gitlab_job": schema.SingleNestedAttribute{

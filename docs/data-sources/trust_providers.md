@@ -111,6 +111,8 @@ Read-Only:
 
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
 - `actors` (Set of String) The set of accepted GitHub ID Token Actors which initiated the GitHub Action.
+- `oidc_audience` (String) The audience value required for the GitHub Action ID Token.
+- `oidc_client_id` (String) The OAuth Client ID value required for authenticating a GitHub Action.
 - `repositories` (Set of String) The set of accepted GitHub ID Token Repositories which initiated the GitHub Action.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
