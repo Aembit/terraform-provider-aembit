@@ -23,7 +23,11 @@ func (v oidcEndpointValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v oidcEndpointValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (v oidcEndpointValidator) ValidateString(
+	ctx context.Context,
+	req validator.StringRequest,
+	resp *validator.StringResponse,
+) {
 	if strings.Contains(req.ConfigValue.ValueString(), "/.well-known/openid-configuration") {
 		resp.Diagnostics.AddError(
 			"Invalid OIDC Endpoint",

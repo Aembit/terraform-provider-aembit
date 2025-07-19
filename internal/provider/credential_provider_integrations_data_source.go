@@ -2,11 +2,11 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,17 +26,29 @@ type credentialProviderIntegrationsDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *credentialProviderIntegrationsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *credentialProviderIntegrationsDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *credentialProviderIntegrationsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *credentialProviderIntegrationsDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_credential_provider_integrations"
 }
 
 // Schema defines the schema for the resource.
-func (d *credentialProviderIntegrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *credentialProviderIntegrationsDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a credential provider integration.",
 		Attributes: map[string]schema.Attribute{
@@ -81,13 +93,16 @@ func (d *credentialProviderIntegrationsDataSource) Schema(_ context.Context, _ d
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *credentialProviderIntegrationsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *credentialProviderIntegrationsDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.CredentialProviderIntegrationsDataSourceModel
 
 	req.Config.Get(ctx, &state)
 
 	integrations, err := d.client.GetCredentialProviderIntegrations(nil)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Provider Integrations",
@@ -98,9 +113,15 @@ func (d *credentialProviderIntegrationsDataSource) Read(ctx context.Context, req
 
 	// Map response body to model
 	for _, integration := range integrations {
-		integrationState := convertCredentialProviderIntegrationDTOToModel(integration, models.CredentialProviderIntegrationResourceModel{})
+		integrationState := convertCredentialProviderIntegrationDTOToModel(
+			integration,
+			models.CredentialProviderIntegrationResourceModel{},
+		)
 
-		state.CredentialProviderIntegrations = append(state.CredentialProviderIntegrations, integrationState)
+		state.CredentialProviderIntegrations = append(
+			state.CredentialProviderIntegrations,
+			integrationState,
+		)
 	}
 
 	// Set state

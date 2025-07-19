@@ -273,9 +273,9 @@ func TestRegex_SafeWildcardHostname_Invalid(t *testing.T) {
 
 func TestRegex_IPHost_Valid(t *testing.T) {
 	validInputs := []string{
-		"192.168.1.1",
-		"10.0.0.1",
-		"172.16.0.1",
+		"192.168.1.1", // NOSONAR
+		"10.0.0.1",    // NOSONAR
+		"172.16.0.1",  // NOSONAR
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {

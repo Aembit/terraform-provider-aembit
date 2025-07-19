@@ -11,10 +11,7 @@ formatters:
   enable:
     - gci
     - gofmt
-    - gofumpt
-    - goimports
     - golines
-    - swaggo
 
 linters:
   default: none
@@ -32,3 +29,9 @@ linters:
     - unconvert
     - unparam
     - unused
+  exclusions:
+    rules:
+      # Exclusion for errcheck: Error return value of `resp.Body.Close` is not checked (errcheck)
+      # Reference: https://github.com/kisielk/errcheck/issues/101
+      - linters: ["errcheck"]
+        source: "^\\s*defer\\s+"

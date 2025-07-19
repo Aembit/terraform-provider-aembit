@@ -26,17 +26,29 @@ type timezonesDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *timezonesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *timezonesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *timezonesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *timezonesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_timezones"
 }
 
 // Schema defines the schema for the resource.
-func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *timezonesDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "List of available timezones, including their UTC offset, region grouping, and a user-friendly label.",
 		Attributes: map[string]schema.Attribute{
@@ -65,7 +77,11 @@ func (d *timezonesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *timezonesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *timezonesDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	state := GetTimezones(d.client)
 	// Set state
 	diags := resp.State.Set(ctx, &state)

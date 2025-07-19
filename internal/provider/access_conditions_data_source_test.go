@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testAccessConditionsDataSource string = "data.aembit_access_conditions.test"
-const testAccessConditionResource string = "aembit_access_condition.crowdstrike"
+const (
+	testAccessConditionsDataSource string = "data.aembit_access_conditions.test"
+	testAccessConditionResource    string = "aembit_access_condition.crowdstrike"
+)
 
 func testFindAccessCondition(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -30,7 +32,11 @@ func testFindAccessCondition(resourceName string) resource.TestCheckFunc {
 
 func TestAccAccessConditionsDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Crowdstrike")
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance Crowdstrike",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -40,7 +46,10 @@ func TestAccAccessConditionsDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Access Conditions returned
-					resource.TestCheckResourceAttrSet(testAccessConditionsDataSource, "access_conditions.#"),
+					resource.TestCheckResourceAttrSet(
+						testAccessConditionsDataSource,
+						"access_conditions.#",
+					),
 					// Find newly created entry
 					testFindAccessCondition(testAccessConditionResource),
 				),

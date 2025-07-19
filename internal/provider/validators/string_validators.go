@@ -7,24 +7,42 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var UUIDRegex = regexp.MustCompile(`^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$`)
-var EmailRegex = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`)
-var SnowflakeAccountRegex = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
-var SnowflakeUserNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_@]+$`)
-var UrlSchemeRegex = regexp.MustCompile(`^http(s)?:\/\/.*$`)
-var SecureURLRegex = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$`)
-var HostNameRegex = regexp.MustCompile(`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$`)
-var HostIPRegex = regexp.MustCompile(`^((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$`)
-var StructuralHostRegex = regexp.MustCompile(`^(?:(?:[a-zA-Z\d*](?:[a-zA-Z\d*-]*[a-zA-Z\d*])?\.)*(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\.(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)|[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)$`)
-var S3BucketRegionRegex = regexp.MustCompile(`^[a-z\-\d]+$`)
-var S3BucketNameRegex = regexp.MustCompile(`^[a-z\d][a-z\-\.\d]{1,61}?[a-z\d]$`)
-var S3PathPrefixRegex = regexp.MustCompile(`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\<\|\x80-\xff]*$`)
-var GCSBucketNameSimpleRegex = regexp.MustCompile(`^[a-z0-9-_]{3,63}$`)
-var GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
-var GCSPathPrefixRegex = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
-var HecHostPortRegex = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
-var AuthenticationTokenRegex = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
-var ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
+var (
+	UUIDRegex = regexp.MustCompile(
+		`^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$`,
+	)
+	EmailRegex = regexp.MustCompile(
+		`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`,
+	)
+	SnowflakeAccountRegex  = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+	SnowflakeUserNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_@]+$`)
+	UrlSchemeRegex         = regexp.MustCompile(`^http(s)?:\/\/.*$`)
+	SecureURLRegex         = regexp.MustCompile(
+		`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$`,
+	)
+	HostNameRegex = regexp.MustCompile(
+		`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$`,
+	)
+	HostIPRegex = regexp.MustCompile(
+		`^((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$`,
+	)
+	StructuralHostRegex = regexp.MustCompile(
+		`^(?:(?:[a-zA-Z\d*](?:[a-zA-Z\d*-]*[a-zA-Z\d*])?\.)*(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\.(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)|[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)$`,
+	)
+	S3BucketRegionRegex = regexp.MustCompile(`^[a-z\-\d]+$`)
+	S3BucketNameRegex   = regexp.MustCompile(`^[a-z\d][a-z\-\.\d]{1,61}?[a-z\d]$`)
+	S3PathPrefixRegex   = regexp.MustCompile(
+		`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\<\|\x80-\xff]*$`,
+	)
+	GCSBucketNameSimpleRegex     = regexp.MustCompile(`^[a-z0-9-_]{3,63}$`)
+	GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
+	GCSPathPrefixRegex           = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
+	HecHostPortRegex             = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
+	AuthenticationTokenRegex     = regexp.MustCompile(
+		`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`,
+	)
+	ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
+)
 
 func NameLengthValidation() validator.String {
 	return stringvalidator.LengthBetween(1, 128)
@@ -39,11 +57,17 @@ func EmailValidation() validator.String {
 }
 
 func SnowflakeAccountValidation() validator.String {
-	return stringvalidator.RegexMatches(SnowflakeAccountRegex, "must be a valid Snowflake Account ID")
+	return stringvalidator.RegexMatches(
+		SnowflakeAccountRegex,
+		"must be a valid Snowflake Account ID",
+	)
 }
 
 func SnowflakeUserNameValidation() validator.String {
-	return stringvalidator.RegexMatches(SnowflakeUserNameRegex, "must be a valid Snowflake Username")
+	return stringvalidator.RegexMatches(
+		SnowflakeUserNameRegex,
+		"must be a valid Snowflake Username",
+	)
 }
 
 func UrlSchemeValidation() validator.String {
@@ -94,7 +118,10 @@ func GCSBucketNameSimpleValidation() validator.String {
 }
 
 func GCSBucketNameWithPeriodValidation() validator.String {
-	return stringvalidator.RegexMatches(GCSBucketNameWithPeriodRegex, "must be a valid GCS Bucket name")
+	return stringvalidator.RegexMatches(
+		GCSBucketNameWithPeriodRegex,
+		"must be a valid GCS Bucket name",
+	)
 }
 
 func GCSPathPrefixValidation() validator.String {
@@ -110,7 +137,10 @@ func HecHostPortValidation() validator.String {
 }
 
 func AuthenticationTokenValidation() validator.String {
-	return stringvalidator.RegexMatches(AuthenticationTokenRegex, "must be a valid authentication token")
+	return stringvalidator.RegexMatches(
+		AuthenticationTokenRegex,
+		"must be a valid authentication token",
+	)
 }
 
 func CrowdstrikeApiKeyValidation() validator.String {

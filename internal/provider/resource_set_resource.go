@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -14,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -34,17 +34,29 @@ type resourceSetResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *resourceSetResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *resourceSetResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_resource_set"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *resourceSetResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *resourceSetResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *resourceSetResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -75,7 +87,9 @@ func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
 				},
-				Default: setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+				Default: setdefault.StaticValue(
+					types.SetValueMust(types.StringType, []attr.Value{}),
+				),
 			},
 			"standalone_certificate_authority": schema.StringAttribute{
 				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
@@ -90,7 +104,11 @@ func (r *resourceSetResource) Schema(_ context.Context, _ resource.SchemaRequest
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *resourceSetResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.ResourceSetResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -100,7 +118,7 @@ func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Generate API request body from plan
-	var trust = convertResourceSetModelToDTO(ctx, plan, nil)
+	trust := convertResourceSetModelToDTO(ctx, plan, nil)
 
 	// Create new ResourceSet
 	role, err := r.client.CreateResourceSet(trust, nil)
@@ -124,7 +142,11 @@ func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *resourceSetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *resourceSetResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -159,7 +181,11 @@ func (r *resourceSetResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *resourceSetResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -180,7 +206,7 @@ func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Generate API request body from plan
-	var trust aembit.ResourceSetDTO = convertResourceSetModelToDTO(ctx, plan, &externalID)
+	trust := convertResourceSetModelToDTO(ctx, plan, &externalID)
 
 	// Update ResourceSet
 	role, err := r.client.UpdateResourceSet(trust, nil)
@@ -204,7 +230,11 @@ func (r *resourceSetResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *resourceSetResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *resourceSetResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.ResourceSetResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -225,13 +255,21 @@ func (r *resourceSetResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 // Imports an existing resource by passing externalId.
-func (r *resourceSetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *resourceSetResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Model to DTO conversion methods.
-func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetResourceModel, externalID *string) aembit.ResourceSetDTO {
+func convertResourceSetModelToDTO(
+	_ context.Context,
+	model models.ResourceSetResourceModel,
+	externalID *string,
+) aembit.ResourceSetDTO {
 	var dto aembit.ResourceSetDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -239,7 +277,7 @@ func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetRes
 		IsActive:    true,
 	}
 	if externalID != nil {
-		dto.EntityDTO.ExternalID = *externalID
+		dto.ExternalID = *externalID
 	}
 
 	dto.Roles = make([]string, len(model.Roles))
@@ -259,11 +297,14 @@ func convertResourceSetModelToDTO(_ context.Context, model models.ResourceSetRes
 }
 
 // DTO to Model conversion methods.
-func convertResourceSetDTOToModel(_ context.Context, dto aembit.ResourceSetDTO) models.ResourceSetResourceModel {
+func convertResourceSetDTOToModel(
+	_ context.Context,
+	dto aembit.ResourceSetDTO,
+) models.ResourceSetResourceModel {
 	var model models.ResourceSetResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
 	model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 
 	model.Roles = make([]types.String, len(dto.Roles))

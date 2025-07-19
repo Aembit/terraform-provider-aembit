@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -10,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -29,17 +29,29 @@ type integrationsDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *integrationsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *integrationsDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *integrationsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *integrationsDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_integrations"
 }
 
 // Schema defines the schema for the resource.
-func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *integrationsDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an integration.",
 		Attributes: map[string]schema.Attribute{
@@ -47,7 +59,8 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				Optional:    true,
 				Description: "Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)",
 				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"AembitTimeCondition", "AembitGeoIPCondition"}...),
+					stringvalidator.OneOf(
+						[]string{"AembitTimeCondition", "AembitGeoIPCondition"}...),
 				},
 			},
 			"integrations": schema.ListNestedAttribute{
@@ -81,7 +94,8 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 							Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
 							Computed:    true,
 							Validators: []validator.String{
-								stringvalidator.OneOf([]string{"WizIntegrationApi", "CrowdStrike"}...),
+								stringvalidator.OneOf(
+									[]string{"WizIntegrationApi", "CrowdStrike"}...),
 							},
 						},
 						"sync_frequency": schema.Int64Attribute{
@@ -113,13 +127,16 @@ func (d *integrationsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *integrationsDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.IntegrationsDataSourceModel
 
 	req.Config.Get(ctx, &state)
 
 	integrations, err := d.client.GetIntegrations(nil)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",
@@ -137,7 +154,11 @@ func (d *integrationsDataSource) Read(ctx context.Context, req datasource.ReadRe
 			}
 		}
 
-		integrationState := convertIntegrationDTOToModel(ctx, integration, models.IntegrationResourceModel{})
+		integrationState := convertIntegrationDTOToModel(
+			ctx,
+			integration,
+			models.IntegrationResourceModel{},
+		)
 		state.Integrations = append(state.Integrations, integrationState)
 	}
 

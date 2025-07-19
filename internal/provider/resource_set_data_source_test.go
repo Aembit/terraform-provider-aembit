@@ -8,8 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testResourceSetDefault string = "data.aembit_resource_set.default"
-const testResourceSetsAll string = "data.aembit_resource_sets.all"
+const (
+	testResourceSetDefault string = "data.aembit_resource_set.default"
+	testResourceSetsAll    string = "data.aembit_resource_sets.all"
+)
 
 func TestAccDefaultResourceSet(t *testing.T) {
 	readFile, _ := os.ReadFile("../../tests/resource_set/TestAccDefaultResourceSet.tf")
@@ -22,9 +24,17 @@ func TestAccDefaultResourceSet(t *testing.T) {
 				Config: string(readFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(testResourceSetDefault, "name", "Default"),
-					resource.TestCheckResourceAttr(testResourceSetDefault, "id", "ffffffff-ffff-ffff-ffff-ffffffffffff"),
+					resource.TestCheckResourceAttr(
+						testResourceSetDefault,
+						"id",
+						"ffffffff-ffff-ffff-ffff-ffffffffffff",
+					),
 
-					resource.TestMatchResourceAttr(testResourceSetsAll, "resource_sets.#", regexp.MustCompile(`[2-9]`)),
+					resource.TestMatchResourceAttr(
+						testResourceSetsAll,
+						"resource_sets.#",
+						regexp.MustCompile(`[2-9]`),
+					),
 				),
 			},
 		},

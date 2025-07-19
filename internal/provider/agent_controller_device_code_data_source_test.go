@@ -20,7 +20,10 @@ func TestAccAgentControllerDeviceCodeDataSource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testAgentControllerDeviceCodeDataSource, "device_code"),
+					resource.TestCheckResourceAttrSet(
+						testAgentControllerDeviceCodeDataSource,
+						"device_code",
+					),
 				),
 			},
 		},
