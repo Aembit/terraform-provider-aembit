@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -10,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -29,17 +29,29 @@ type credentialProvidersDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *credentialProvidersDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *credentialProvidersDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *credentialProvidersDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *credentialProvidersDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_credential_providers"
 }
 
 // Schema defines the schema for the resource.
-func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *credentialProvidersDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an credential provider.",
 		Attributes: map[string]schema.Attribute{
@@ -461,7 +473,11 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *credentialProvidersDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.CredentialProvidersDataSourceModel
 
 	credentialProviders, err := d.client.GetCredentialProvidersV2(nil)
@@ -475,7 +491,13 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := convertCredentialProviderV2DTOToModel(ctx, credentialProvider, models.CredentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
+		credentialProviderState := convertCredentialProviderV2DTOToModel(
+			ctx,
+			credentialProvider,
+			models.CredentialProviderResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
+		)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

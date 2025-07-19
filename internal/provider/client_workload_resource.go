@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -14,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -34,17 +34,29 @@ type clientWorkloadResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *clientWorkloadResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *clientWorkloadResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_client_workload"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *clientWorkloadResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *clientWorkloadResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *clientWorkloadResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -174,7 +186,11 @@ func (r *clientWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *clientWorkloadResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *clientWorkloadResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.ClientWorkloadResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -184,7 +200,7 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, nil)
+	workload := convertClientWorkloadModelToDTO(ctx, plan, nil)
 
 	// Create new Client Workload
 	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
@@ -208,7 +224,11 @@ func (r *clientWorkloadResource) Create(ctx context.Context, req resource.Create
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *clientWorkloadResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -244,7 +264,11 @@ func (r *clientWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *clientWorkloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *clientWorkloadResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -254,7 +278,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var externalID string = state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan models.ClientWorkloadResourceModel
@@ -265,7 +289,7 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ClientWorkloadExternalDTO = convertClientWorkloadModelToDTO(ctx, plan, &externalID)
+	workload := convertClientWorkloadModelToDTO(ctx, plan, &externalID)
 
 	// Update Client Workload
 	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
@@ -289,7 +313,11 @@ func (r *clientWorkloadResource) Update(ctx context.Context, req resource.Update
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *clientWorkloadResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.ClientWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -322,12 +350,20 @@ func (r *clientWorkloadResource) Delete(ctx context.Context, req resource.Delete
 }
 
 // Imports an existing resource by passing externalId.
-func (r *clientWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *clientWorkloadResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertClientWorkloadModelToDTO(ctx context.Context, model models.ClientWorkloadResourceModel, externalID *string) aembit.ClientWorkloadExternalDTO {
+func convertClientWorkloadModelToDTO(
+	ctx context.Context,
+	model models.ClientWorkloadResourceModel,
+	externalID *string,
+) aembit.ClientWorkloadExternalDTO {
 	var workload aembit.ClientWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -361,7 +397,7 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model models.ClientWor
 	}
 
 	if externalID != nil {
-		workload.EntityDTO.ExternalID = *externalID
+		workload.ExternalID = *externalID
 	}
 
 	workload.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
@@ -369,14 +405,17 @@ func convertClientWorkloadModelToDTO(ctx context.Context, model models.ClientWor
 	return workload
 }
 
-func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkloadExternalDTO) models.ClientWorkloadResourceModel {
+func convertClientWorkloadDTOToModel(
+	ctx context.Context,
+	dto aembit.ClientWorkloadExternalDTO,
+) models.ClientWorkloadResourceModel {
 	var model models.ClientWorkloadResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 	if dto.StandaloneCertificateAuthority == "" {
 		model.StandaloneCertificateAuthority = types.StringNull()
 	} else {
@@ -386,7 +425,10 @@ func convertClientWorkloadDTOToModel(ctx context.Context, dto aembit.ClientWorkl
 	return model
 }
 
-func newClientWorkloadIdentityModel(ctx context.Context, clientWorkloadIdentities []aembit.ClientWorkloadIdentityDTO) types.Set {
+func newClientWorkloadIdentityModel(
+	ctx context.Context,
+	clientWorkloadIdentities []aembit.ClientWorkloadIdentityDTO,
+) types.Set {
 	identities := make([]models.IdentitiesModel, len(clientWorkloadIdentities))
 
 	for i, identity := range clientWorkloadIdentities {
