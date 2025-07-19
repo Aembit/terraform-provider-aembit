@@ -179,32 +179,32 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential set values
 					resource.TestCheckResourceAttr(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"name",
 						"TF Acceptance AWS STS",
 					),
 					resource.TestCheckResourceAttr(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"aws_sts.lifetime",
 						"1800",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAWS, "id"),
 					resource.TestCheckResourceAttrSet(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"aws_sts.oidc_issuer",
 					),
 					resource.TestCheckResourceAttrSet(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"aws_sts.token_audience",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAWS, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      testCredentialProviderGCP,
+				ResourceName:      testCredentialProviderAWS,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -214,18 +214,18 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"name",
 						"TF Acceptance AWS STS - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderAWS, "id"),
 					resource.TestCheckResourceAttrSet(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"aws_sts.oidc_issuer",
 					),
 					resource.TestCheckResourceAttrSet(
-						testCredentialProviderGCP,
+						testCredentialProviderAWS,
 						"aws_sts.token_audience",
 					),
 				),
