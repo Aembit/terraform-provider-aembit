@@ -366,11 +366,11 @@ func appendReadOnlyPermissionToDTO(list []aembit.RolePermissionDTO, name string,
 // DTO to Model conversion methods.
 func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleResourceModel {
 	var model models.RoleResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	for _, permission := range dto.Permissions {
 		switch permission.Name {

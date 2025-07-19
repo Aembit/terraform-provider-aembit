@@ -14,6 +14,8 @@ var SnowflakeUserNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_@]+$`)
 var UrlSchemeRegex = regexp.MustCompile(`^http(s)?:\/\/.*$`)
 var SecureURLRegex = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$`)
 var HostNameRegex = regexp.MustCompile(`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$`)
+var HostIPRegex = regexp.MustCompile(`^((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$`)
+var StructuralHostRegex = regexp.MustCompile(`^(?:(?:[a-zA-Z\d*](?:[a-zA-Z\d*-]*[a-zA-Z\d*])?\.)*(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\.(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)|[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)$`)
 var S3BucketRegionRegex = regexp.MustCompile(`^[a-z\-\d]+$`)
 var S3BucketNameRegex = regexp.MustCompile(`^[a-z\d][a-z\-\.\d]{1,61}?[a-z\d]$`)
 var S3PathPrefixRegex = regexp.MustCompile(`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\<\|\x80-\xff]*$`)
@@ -54,6 +56,13 @@ func SecureURLValidation() validator.String {
 
 func HostValidation() validator.String {
 	return stringvalidator.RegexMatches(HostNameRegex, "must be a valid hostname")
+}
+
+func SafeWildcardHostNameValidation() validator.String {
+	return stringvalidator.Any(
+		stringvalidator.RegexMatches(HostIPRegex, "must be a valid hostname or IP address"),
+		stringvalidator.RegexMatches(StructuralHostRegex, "must be a valid hostname or IP address"),
+	)
 }
 
 func S3BucketRegionLengthValidation() validator.String {

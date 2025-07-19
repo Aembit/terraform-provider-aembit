@@ -11,6 +11,7 @@ import (
 )
 
 const testServerWorkloadResource string = "aembit_server_workload.test"
+const testServerWorkloadResourceWildcard string = "aembit_server_workload.test_wildcard"
 
 func testDeleteServerWorkload(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -47,6 +48,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Sunday"),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.host", "unittest.testhost.com"),
+					resource.TestCheckResourceAttr(testServerWorkloadResourceWildcard, "service_endpoint.host", "*.testhost.com"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.port", "443"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.app_protocol", "HTTP"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.transport_protocol", "TCP"),
@@ -85,6 +87,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.host", "unittest.testhost2.com"),
+					resource.TestCheckResourceAttr(testServerWorkloadResourceWildcard, "service_endpoint.host", "*.testhost2.com"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.authentication_config.method", "HTTP Authentication"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.authentication_config.scheme", "Header"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "service_endpoint.authentication_config.config", "X-Vault-Token"),

@@ -30,7 +30,7 @@ func checkValidClientID(resourceName, attributeName, arnType string) resource.Te
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		var clientID string = rs.Primary.Attributes[attributeName]
+		var clientID = rs.Primary.Attributes[attributeName]
 		if len(clientID) <= 0 {
 			return fmt.Errorf("empty client id: %s %s", resourceName, attributeName)
 		}

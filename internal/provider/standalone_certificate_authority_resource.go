@@ -262,7 +262,7 @@ func convertStandaloneCertificateModelToDTO(ctx context.Context, model models.St
 	standaloneCertificate.NotAfter = model.NotAfter.ValueString()
 
 	if externalID != nil {
-		standaloneCertificate.EntityDTO.ExternalID = *externalID
+		standaloneCertificate.ExternalID = *externalID
 	}
 
 	return standaloneCertificate
@@ -270,10 +270,10 @@ func convertStandaloneCertificateModelToDTO(ctx context.Context, model models.St
 
 func convertStandaloneCertificateDTOToModel(ctx context.Context, dto aembit.StandaloneCertificateDTO) models.StandaloneCertificateAuthorityResourceModel {
 	var model models.StandaloneCertificateAuthorityResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 	model.LeafLifetime = types.Int32Value(dto.LeafLifetime)
 	model.NotBefore = types.StringValue(dto.NotBefore)
 	model.NotAfter = types.StringValue(dto.NotAfter)

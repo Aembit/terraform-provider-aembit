@@ -92,7 +92,7 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Description: "Hostname of the Server Workload service endpoint.",
 						Required:    true,
 						Validators: []validator.String{
-							validators.HostValidation(),
+							validators.SafeWildcardHostNameValidation(),
 						},
 					},
 					"port": schema.Int64Attribute{
@@ -430,7 +430,7 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model models.ServerWor
 	}
 
 	if externalID != nil {
-		workload.EntityDTO.ExternalID = *externalID
+		workload.ExternalID = *externalID
 	}
 
 	return workload
@@ -438,11 +438,11 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model models.ServerWor
 
 func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) models.ServerWorkloadResourceModel {
 	var model models.ServerWorkloadResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	model.ServiceEndpoint = &models.ServiceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),

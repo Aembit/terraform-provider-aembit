@@ -1324,11 +1324,11 @@ func convertTerraformModelToDTO(model models.TrustProviderResourceModel, dto *ae
 // DTO to Model conversion methods.
 func convertTrustProviderDTOToModel(ctx context.Context, dto aembit.TrustProviderDTO, tenant, stackDomain string) models.TrustProviderResourceModel {
 	var model models.TrustProviderResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	switch dto.Provider {
 	case "AWSRole":
@@ -1655,9 +1655,9 @@ func matchRuleAttributeFunc(attributeName string) func(aembit.TrustProviderMatch
 
 // extractMatchRules pulls out the match rules with the specified attribute name.
 func extractMatchRules(matchRules []aembit.TrustProviderMatchRuleDTO, attributeName string) (types.String, []types.String) {
-	var singleValue types.String = types.StringNull()
+	var singleValue = types.StringNull()
 	var multiValue []types.String = nil
-	var multipleMatchRules bool = matchRuleOccurrences(matchRules, attributeName) > 1
+	var multipleMatchRules = matchRuleOccurrences(matchRules, attributeName) > 1
 
 	for _, rule := range matchRules {
 		if rule.Attribute == attributeName {

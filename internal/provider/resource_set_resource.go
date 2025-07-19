@@ -100,7 +100,7 @@ func (r *resourceSetResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Generate API request body from plan
-	var trust aembit.ResourceSetDTO = convertResourceSetModelToDTO(ctx, plan, nil)
+	var trust = convertResourceSetModelToDTO(ctx, plan, nil)
 
 	// Create new ResourceSet
 	role, err := r.client.CreateResourceSet(trust, nil)

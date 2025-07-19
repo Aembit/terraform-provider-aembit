@@ -321,7 +321,7 @@ func (r *logStreamResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Generate API request body from plan
-	var dto aembit.LogStreamDTO = convertLogStreamModelToDTO(plan, &externalID)
+	var dto = convertLogStreamModelToDTO(plan, &externalID)
 
 	// Update Log Stream
 	logStream, err := r.client.UpdateLogStream(dto, nil)
