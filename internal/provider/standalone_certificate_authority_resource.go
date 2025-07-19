@@ -3,8 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -13,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -33,17 +33,29 @@ type standaloneCertificateAuthorityResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *standaloneCertificateAuthorityResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *standaloneCertificateAuthorityResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_standalone_certificate_authority"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *standaloneCertificateAuthorityResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *standaloneCertificateAuthorityResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *standaloneCertificateAuthorityResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -99,7 +111,11 @@ func (r *standaloneCertificateAuthorityResource) Schema(_ context.Context, _ res
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *standaloneCertificateAuthorityResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *standaloneCertificateAuthorityResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.StandaloneCertificateAuthorityResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -109,10 +125,13 @@ func (r *standaloneCertificateAuthorityResource) Create(ctx context.Context, req
 	}
 
 	// Generate API request body from plan
-	var standaloneCertificate aembit.StandaloneCertificateDTO = convertStandaloneCertificateModelToDTO(ctx, plan, nil)
+	standaloneCertificate := convertStandaloneCertificateModelToDTO(ctx, plan, nil)
 
 	// Create new Standalone Certificate Authority
-	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil)
+	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(
+		standaloneCertificate,
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Standalone Certificate Authority",
@@ -133,7 +152,11 @@ func (r *standaloneCertificateAuthorityResource) Create(ctx context.Context, req
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *standaloneCertificateAuthorityResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *standaloneCertificateAuthorityResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.StandaloneCertificateAuthorityResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -143,11 +166,18 @@ func (r *standaloneCertificateAuthorityResource) Read(ctx context.Context, req r
 	}
 
 	// Get refreshed workload value from Aembit
-	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(state.ID.ValueString(), nil)
+	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(
+		state.ID.ValueString(),
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Standalone Certificate Authority",
-			fmt.Sprintf("An error occurred while attempting to fetch the Standalone Certificate Authority with External ID '%s' from Terraform state: %v", state.ID.ValueString(), err.Error()),
+			fmt.Sprintf(
+				"An error occurred while attempting to fetch the Standalone Certificate Authority with External ID '%s' from Terraform state: %v",
+				state.ID.ValueString(),
+				err.Error(),
+			),
 		)
 
 		// If the resource is not found on Aembit Cloud, delete it locally
@@ -169,7 +199,11 @@ func (r *standaloneCertificateAuthorityResource) Read(ctx context.Context, req r
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *standaloneCertificateAuthorityResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *standaloneCertificateAuthorityResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.StandaloneCertificateAuthorityResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -179,7 +213,7 @@ func (r *standaloneCertificateAuthorityResource) Update(ctx context.Context, req
 	}
 
 	// Extract external ID from state
-	var externalID string = state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan models.StandaloneCertificateAuthorityResourceModel
@@ -190,7 +224,7 @@ func (r *standaloneCertificateAuthorityResource) Update(ctx context.Context, req
 	}
 
 	// Generate API request body from plan
-	var workload aembit.StandaloneCertificateDTO = convertStandaloneCertificateModelToDTO(ctx, plan, &externalID)
+	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID)
 
 	// Update Standalone Certificate Authority
 	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil)
@@ -214,7 +248,11 @@ func (r *standaloneCertificateAuthorityResource) Update(ctx context.Context, req
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *standaloneCertificateAuthorityResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *standaloneCertificateAuthorityResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.StandaloneCertificateAuthorityResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -235,12 +273,20 @@ func (r *standaloneCertificateAuthorityResource) Delete(ctx context.Context, req
 }
 
 // Imports an existing resource by passing externalID.
-func (r *standaloneCertificateAuthorityResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *standaloneCertificateAuthorityResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertStandaloneCertificateModelToDTO(ctx context.Context, model models.StandaloneCertificateAuthorityResourceModel, externalID *string) aembit.StandaloneCertificateDTO {
+func convertStandaloneCertificateModelToDTO(
+	ctx context.Context,
+	model models.StandaloneCertificateAuthorityResourceModel,
+	externalID *string,
+) aembit.StandaloneCertificateDTO {
 	var standaloneCertificate aembit.StandaloneCertificateDTO
 	standaloneCertificate.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -262,18 +308,21 @@ func convertStandaloneCertificateModelToDTO(ctx context.Context, model models.St
 	standaloneCertificate.NotAfter = model.NotAfter.ValueString()
 
 	if externalID != nil {
-		standaloneCertificate.EntityDTO.ExternalID = *externalID
+		standaloneCertificate.ExternalID = *externalID
 	}
 
 	return standaloneCertificate
 }
 
-func convertStandaloneCertificateDTOToModel(ctx context.Context, dto aembit.StandaloneCertificateDTO) models.StandaloneCertificateAuthorityResourceModel {
+func convertStandaloneCertificateDTOToModel(
+	ctx context.Context,
+	dto aembit.StandaloneCertificateDTO,
+) models.StandaloneCertificateAuthorityResourceModel {
 	var model models.StandaloneCertificateAuthorityResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 	model.LeafLifetime = types.Int32Value(dto.LeafLifetime)
 	model.NotBefore = types.StringValue(dto.NotBefore)
 	model.NotAfter = types.StringValue(dto.NotAfter)

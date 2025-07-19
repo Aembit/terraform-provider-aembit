@@ -26,17 +26,29 @@ type countriesDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *countriesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *countriesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *countriesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *countriesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_countries"
 }
 
 // Schema defines the schema for the resource.
-func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *countriesDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "List of countries and their administrative subdivisions.",
 		Attributes: map[string]schema.Attribute{
@@ -81,7 +93,11 @@ func (d *countriesDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *countriesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *countriesDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	state := GetCountries(d.client)
 	// Set state
 	diags := resp.State.Set(ctx, &state)

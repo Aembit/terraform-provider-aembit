@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testTrustProvidersDataSource string = "data.aembit_trust_providers.test"
-const testTrustProviderResource string = "aembit_trust_provider.kubernetes_key"
+const (
+	testTrustProvidersDataSource string = "data.aembit_trust_providers.test"
+	testTrustProviderResource    string = "aembit_trust_provider.kubernetes_key"
+)
 
 func testFindTrustProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -30,7 +32,11 @@ func testFindTrustProvider(resourceName string) resource.TestCheckFunc {
 
 func TestAccTrustProvidersDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Kubernetes")
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance Kubernetes",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -40,9 +46,15 @@ func TestAccTrustProvidersDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Trust Providers returned
-					resource.TestCheckResourceAttrSet(testTrustProvidersDataSource, "trust_providers.#"),
+					resource.TestCheckResourceAttrSet(
+						testTrustProvidersDataSource,
+						"trust_providers.#",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testTrustProvidersDataSource, "trust_providers.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testTrustProvidersDataSource,
+						"trust_providers.0.id",
+					),
 					// Find newly created entry
 					testFindTrustProvider(testTrustProviderResource),
 				),

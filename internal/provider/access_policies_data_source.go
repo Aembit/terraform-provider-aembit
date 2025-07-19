@@ -3,12 +3,11 @@ package provider
 import (
 	"context"
 
-	"terraform-provider-aembit/internal/provider/models"
-
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -28,17 +27,29 @@ type accessPoliciesDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *accessPoliciesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *accessPoliciesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *accessPoliciesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *accessPoliciesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_access_policies"
 }
 
 // Schema defines the schema for the resource.
-func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *accessPoliciesDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages access policies.",
 		Attributes: map[string]schema.Attribute{
@@ -134,7 +145,11 @@ func (d *accessPoliciesDataSource) Schema(_ context.Context, _ datasource.Schema
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *accessPoliciesDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.AccessPoliciesDataSourceModel
 
 	accessPolicies, err := d.client.GetAccessPoliciesV2(nil)
@@ -149,7 +164,10 @@ func (d *accessPoliciesDataSource) Read(ctx context.Context, req datasource.Read
 	// Map response body to model
 	for _, accessPolicy := range accessPolicies {
 		// fetch mappings values individually
-		credentialMappings, err, _ := d.client.GetAccessPolicyV2CredentialMappings(accessPolicy.ExternalID, nil)
+		credentialMappings, err, _ := d.client.GetAccessPolicyV2CredentialMappings(
+			accessPolicy.ExternalID,
+			nil,
+		)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error retrieving credential mappings",

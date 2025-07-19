@@ -29,10 +29,26 @@ func TestAcc_GPC_DataSource_Read(t *testing.T) {
 				ResourceName: gpcDatasourceName,
 				Config:       gpcDatasourceDef,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(gpcDatasourceName, "access_policy_trust_provider_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpcDatasourceName, "access_policy_access_condition_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpcDatasourceName, "agent_controller_trust_provider_compliance", "Optional"),
-					resource.TestCheckResourceAttr(gpcDatasourceName, "agent_controller_allowed_tls_hostname_compliance", "Optional"),
+					resource.TestCheckResourceAttr(
+						gpcDatasourceName,
+						"access_policy_trust_provider_compliance",
+						"Optional",
+					),
+					resource.TestCheckResourceAttr(
+						gpcDatasourceName,
+						"access_policy_access_condition_compliance",
+						"Optional",
+					),
+					resource.TestCheckResourceAttr(
+						gpcDatasourceName,
+						"agent_controller_trust_provider_compliance",
+						"Optional",
+					),
+					resource.TestCheckResourceAttr(
+						gpcDatasourceName,
+						"agent_controller_allowed_tls_hostname_compliance",
+						"Optional",
+					),
 				),
 			},
 		},

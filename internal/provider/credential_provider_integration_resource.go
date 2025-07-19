@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -11,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -31,17 +31,29 @@ type credentialProviderIntegrationResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *credentialProviderIntegrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *credentialProviderIntegrationResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_credential_provider_integration"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *credentialProviderIntegrationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *credentialProviderIntegrationResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *credentialProviderIntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *credentialProviderIntegrationResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -87,7 +99,11 @@ func (r *credentialProviderIntegrationResource) Schema(_ context.Context, _ reso
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *credentialProviderIntegrationResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.CredentialProviderIntegrationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -97,7 +113,7 @@ func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req 
 	}
 
 	// Generate API request body from plan
-	var dto aembit.CredentialProviderIntegrationDTO = convertCredentialProviderIntegrationModelToDTO(plan, nil)
+	dto := convertCredentialProviderIntegrationModelToDTO(plan, nil)
 
 	// Create new Integration
 	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil)
@@ -121,7 +137,11 @@ func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req 
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *credentialProviderIntegrationResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -131,7 +151,10 @@ func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req re
 	}
 
 	// Get refreshed trust value from Aembit
-	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(state.ID.ValueString(), nil)
+	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
+		state.ID.ValueString(),
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Credential Provider Integration",
@@ -156,7 +179,11 @@ func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req re
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *credentialProviderIntegrationResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -177,7 +204,7 @@ func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req 
 	}
 
 	// Generate API request body from plan
-	var dto aembit.CredentialProviderIntegrationDTO = convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
+	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
 	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil)
@@ -201,7 +228,11 @@ func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req 
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *credentialProviderIntegrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *credentialProviderIntegrationResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -222,12 +253,19 @@ func (r *credentialProviderIntegrationResource) Delete(ctx context.Context, req 
 }
 
 // Imports an existing resource by passing externalId.
-func (r *credentialProviderIntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *credentialProviderIntegrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderIntegrationModelToDTO(model models.CredentialProviderIntegrationResourceModel, externalID *string) aembit.CredentialProviderIntegrationDTO {
+func convertCredentialProviderIntegrationModelToDTO(
+	model models.CredentialProviderIntegrationResourceModel,
+	externalID *string,
+) aembit.CredentialProviderIntegrationDTO {
 	var credentialIntegration aembit.CredentialProviderIntegrationDTO
 	credentialIntegration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -235,7 +273,7 @@ func convertCredentialProviderIntegrationModelToDTO(model models.CredentialProvi
 	}
 
 	if externalID != nil {
-		credentialIntegration.EntityDTO.ExternalID = *externalID
+		credentialIntegration.ExternalID = *externalID
 	}
 
 	credentialIntegration.Type = "GitLab"
@@ -245,11 +283,14 @@ func convertCredentialProviderIntegrationModelToDTO(model models.CredentialProvi
 	return credentialIntegration
 }
 
-func convertCredentialProviderIntegrationDTOToModel(dto aembit.CredentialProviderIntegrationDTO, state models.CredentialProviderIntegrationResourceModel) models.CredentialProviderIntegrationResourceModel {
+func convertCredentialProviderIntegrationDTOToModel(
+	dto aembit.CredentialProviderIntegrationDTO,
+	state models.CredentialProviderIntegrationResourceModel,
+) models.CredentialProviderIntegrationResourceModel {
 	var model models.CredentialProviderIntegrationResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
 
 	model.GitLab = &models.CredentialProviderIntegrationGitlabModel{
 		Url:                 types.StringValue(dto.Url),

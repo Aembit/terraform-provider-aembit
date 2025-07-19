@@ -30,8 +30,12 @@ func testDeleteCredentialProviderIntegration(resourceName string) resource.TestC
 func TestAccCredentialProviderIntegrationResource_GitLab(t *testing.T) {
 	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 
-	createFile, _ := os.ReadFile("../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tfmod")
+	createFile, _ := os.ReadFile(
+		"../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential_provider_integration/gitlab/TestAccCredentialProviderIntegrationResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -41,25 +45,49 @@ func TestAccCredentialProviderIntegrationResource_GitLab(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Integration Name
-					resource.TestCheckResourceAttr(testCredentialProviderIntegrationGitLab, "name", "TF Acceptance GitLab Credential Integration"),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationGitLab,
+						"name",
+						"TF Acceptance GitLab Credential Integration",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProviderIntegrationGitLab, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderIntegrationGitLab,
+						"id",
+					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testCredentialProviderIntegrationGitLab, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderIntegrationGitLab,
+						"id",
+					),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: string(createFile), Check: testDeleteCredentialProviderIntegration(testCredentialProviderIntegrationGitLab), ExpectNonEmptyPlan: true},
+			{
+				Config: string(createFile),
+				Check: testDeleteCredentialProviderIntegration(
+					testCredentialProviderIntegrationGitLab,
+				),
+				ExpectNonEmptyPlan: true,
+			},
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: testCredentialProviderIntegrationGitLab, ImportState: true, ImportStateVerify: false},
+			{
+				ResourceName:      testCredentialProviderIntegrationGitLab,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testCredentialProviderIntegrationGitLab, "name", "TF Acceptance GitLab Credential Integration - Modified"),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationGitLab,
+						"name",
+						"TF Acceptance GitLab Credential Integration - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

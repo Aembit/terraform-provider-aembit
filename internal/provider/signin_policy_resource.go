@@ -2,13 +2,13 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -29,17 +29,29 @@ type SignInPolicyResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *SignInPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *SignInPolicyResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_signin_policy"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *SignInPolicyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *SignInPolicyResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *SignInPolicyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *SignInPolicyResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -60,7 +72,11 @@ func (r *SignInPolicyResource) Schema(_ context.Context, _ resource.SchemaReques
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *SignInPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *SignInPolicyResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.SignInPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -81,7 +97,11 @@ func (r *SignInPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	}
 }
 
-func (r *SignInPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *SignInPolicyResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Get refreshed signInPolicy value from Aembit
 	signInPolicy, _, _ := r.client.GetSignInPolicy(nil)
 	state := convertSignInPolicyDTOToModel(ctx, signInPolicy, r.client.Tenant)
@@ -90,7 +110,11 @@ func (r *SignInPolicyResource) ImportState(ctx context.Context, req resource.Imp
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *SignInPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *SignInPolicyResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.SignInPolicyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -107,7 +131,7 @@ func (r *SignInPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	var signInPolicy aembit.GetSignInPolicyDTO = convertSignInPolicyModelToDTO(ctx, &plan, r.client.Tenant)
+	signInPolicy := convertSignInPolicyModelToDTO(ctx, &plan, r.client.Tenant)
 	updateSignInResponse, err := UpdateSignInSettings(r.client, &signInPolicy)
 	if err != nil {
 		addResponseError(&resp.Diagnostics, err)
@@ -126,9 +150,15 @@ func (r *SignInPolicyResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 }
 
-func (r *SignInPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-
-	resp.Diagnostics.AddWarning("Setting Tenant SignIn Policy Configuration", "The Aembit SignIn Policy is a tenant-wide configuration and cannot be defined in multiple Resource Sets. Please be sure to only define a single aembit_signin_policy resource per Aembit tenant.")
+func (r *SignInPolicyResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	resp.Diagnostics.AddWarning(
+		"Setting Tenant SignIn Policy Configuration",
+		"The Aembit SignIn Policy is a tenant-wide configuration and cannot be defined in multiple Resource Sets. Please be sure to only define a single aembit_signin_policy resource per Aembit tenant.",
+	)
 
 	// Retrieve values from plan
 	var plan models.SignInPolicyResourceModel
@@ -138,7 +168,7 @@ func (r *SignInPolicyResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	var signInPolicy aembit.GetSignInPolicyDTO = convertSignInPolicyModelToDTO(ctx, &plan, r.client.Tenant)
+	signInPolicy := convertSignInPolicyModelToDTO(ctx, &plan, r.client.Tenant)
 	updateSignInResponse, err := UpdateSignInSettings(r.client, &signInPolicy)
 	if err != nil {
 		addResponseError(&resp.Diagnostics, err)
@@ -158,8 +188,15 @@ func (r *SignInPolicyResource) Create(ctx context.Context, req resource.CreateRe
 	// set and return the state
 }
 
-func (r *SignInPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.Diagnostics.AddWarning("Resetting SignIn Policy to Non-Enforcing Default", "The Aembit SignIn Policy cannot be deleted, only reset to it's original non-enforcing default state.")
+func (r *SignInPolicyResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	resp.Diagnostics.AddWarning(
+		"Resetting SignIn Policy to Non-Enforcing Default",
+		"The Aembit SignIn Policy cannot be deleted, only reset to it's original non-enforcing default state.",
+	)
 
 	// Retrieve values from state
 	var state models.SignInPolicyResourceModel
@@ -169,7 +206,10 @@ func (r *SignInPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	_, err := UpdateSignInSettings(r.client, &aembit.GetSignInPolicyDTO{SSORequired: false, MFARequired: false})
+	_, err := UpdateSignInSettings(
+		r.client,
+		&aembit.GetSignInPolicyDTO{SSORequired: false, MFARequired: false},
+	)
 	if err != nil {
 		addResponseError(&resp.Diagnostics, err)
 		return
@@ -187,7 +227,10 @@ func (r *SignInPolicyResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 }
 
-func UpdateSignInSettings(client *aembit.CloudClient, dto *aembit.GetSignInPolicyDTO) (*aembit.GetSignInPolicyDTO, error) {
+func UpdateSignInSettings(
+	client *aembit.CloudClient,
+	dto *aembit.GetSignInPolicyDTO,
+) (*aembit.GetSignInPolicyDTO, error) {
 	mfaRequestDTO := aembit.MFASignInPolicyDTO{MFARequired: dto.MFARequired}
 	mfaResponseDTO, err := client.UpdateSignInPolicyMFA(mfaRequestDTO, nil)
 	if err != nil {
@@ -200,11 +243,18 @@ func UpdateSignInSettings(client *aembit.CloudClient, dto *aembit.GetSignInPolic
 		return nil, err
 	}
 
-	return &aembit.GetSignInPolicyDTO{SSORequired: ssoResponseDTO.SSORequired, MFARequired: mfaResponseDTO.MFARequired}, nil
+	return &aembit.GetSignInPolicyDTO{
+		SSORequired: ssoResponseDTO.SSORequired,
+		MFARequired: mfaResponseDTO.MFARequired,
+	}, nil
 }
 
 // Model to DTO conversion methods.
-func convertSignInPolicyModelToDTO(_ context.Context, model *models.SignInPolicyResourceModel, tenantId string) aembit.GetSignInPolicyDTO {
+func convertSignInPolicyModelToDTO(
+	_ context.Context,
+	model *models.SignInPolicyResourceModel,
+	tenantId string,
+) aembit.GetSignInPolicyDTO {
 	var dto aembit.GetSignInPolicyDTO
 	dto.MFARequired = model.MFARequired.ValueBool()
 	dto.SSORequired = model.SSORequired.ValueBool()
@@ -213,7 +263,11 @@ func convertSignInPolicyModelToDTO(_ context.Context, model *models.SignInPolicy
 }
 
 // DTO to Model conversion methods.
-func convertSignInPolicyDTOToModel(_ context.Context, dto aembit.GetSignInPolicyDTO, tenantId string) models.SignInPolicyResourceModel {
+func convertSignInPolicyDTOToModel(
+	_ context.Context,
+	dto aembit.GetSignInPolicyDTO,
+	tenantId string,
+) models.SignInPolicyResourceModel {
 	var model models.SignInPolicyResourceModel
 	model.MFARequired = types.BoolValue(dto.MFARequired)
 	model.SSORequired = types.BoolValue(dto.SSORequired)

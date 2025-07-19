@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -14,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -34,17 +34,29 @@ type logStreamResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *logStreamResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *logStreamResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_log_stream"
 }
 
 // Configure adds the log stream to the resource.
-func (r *logStreamResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *logStreamResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *logStreamResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -231,7 +243,11 @@ func (r *logStreamResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *logStreamResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *logStreamResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.LogStreamResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -241,7 +257,7 @@ func (r *logStreamResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Generate API request body from plan
-	var dto aembit.LogStreamDTO = convertLogStreamModelToDTO(plan, nil)
+	dto := convertLogStreamModelToDTO(plan, nil)
 
 	// Create new log stream
 	logStream, err := r.client.CreateLogStream(dto, nil)
@@ -265,7 +281,11 @@ func (r *logStreamResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *logStreamResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *logStreamResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.LogStreamResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -300,7 +320,11 @@ func (r *logStreamResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *logStreamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *logStreamResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.LogStreamResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -321,7 +345,7 @@ func (r *logStreamResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Generate API request body from plan
-	var dto aembit.LogStreamDTO = convertLogStreamModelToDTO(plan, &externalID)
+	dto := convertLogStreamModelToDTO(plan, &externalID)
 
 	// Update Log Stream
 	logStream, err := r.client.UpdateLogStream(dto, nil)
@@ -345,7 +369,11 @@ func (r *logStreamResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *logStreamResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *logStreamResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.LogStreamResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -366,12 +394,19 @@ func (r *logStreamResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 // Imports an existing resource by passing externalId.
-func (r *logStreamResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *logStreamResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID *string) aembit.LogStreamDTO {
+func convertLogStreamModelToDTO(
+	model models.LogStreamResourceModel,
+	externalID *string,
+) aembit.LogStreamDTO {
 	var logStream aembit.LogStreamDTO
 	logStream.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -380,7 +415,7 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 	}
 
 	if externalID != nil {
-		logStream.EntityDTO.ExternalID = *externalID
+		logStream.ExternalID = *externalID
 	}
 
 	logStream.DataType = model.DataType.ValueString()
@@ -419,12 +454,15 @@ func convertLogStreamModelToDTO(model models.LogStreamResourceModel, externalID 
 	return logStream
 }
 
-func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamResourceModel) models.LogStreamResourceModel {
+func convertLogStreamDTOToModel(
+	dto aembit.LogStreamDTO,
+	state models.LogStreamResourceModel,
+) models.LogStreamResourceModel {
 	var model models.LogStreamResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
 
 	model.DataType = types.StringValue(dto.DataType)
 	model.Type = types.StringValue(dto.Type)
@@ -456,7 +494,9 @@ func convertLogStreamDTOToModel(dto aembit.LogStreamDTO, state models.LogStreamR
 		}
 
 		if dto.AuthenticationToken != "" {
-			model.SplunkHttpEventCollector.AuthenticationToken = types.StringValue(dto.AuthenticationToken)
+			model.SplunkHttpEventCollector.AuthenticationToken = types.StringValue(
+				dto.AuthenticationToken,
+			)
 		} else if state.SplunkHttpEventCollector != nil {
 			model.SplunkHttpEventCollector.AuthenticationToken = state.SplunkHttpEventCollector.AuthenticationToken
 		} else {

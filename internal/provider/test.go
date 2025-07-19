@@ -12,15 +12,25 @@ import (
 
 var maxRand = big.NewInt(10000000)
 
-const tagsCount = "tags.%"
-const tagsColor = "tags.color"
-const tagsDay = "tags.day"
+const (
+	tagsCount = "tags.%"
+	tagsColor = "tags.color"
+	tagsDay   = "tags.day"
+)
 
 func randomizeFileConfigs(newConfig, modifyConfig, startValue string) (string, string, string) {
 	randID, _ := rand.Int(rand.Reader, maxRand)
 
 	endValue := fmt.Sprintf("%s%d", startValue, randID)
-	return strings.ReplaceAll(newConfig, startValue, endValue), strings.ReplaceAll(modifyConfig, startValue, endValue), endValue
+	return strings.ReplaceAll(
+			newConfig,
+			startValue,
+			endValue,
+		), strings.ReplaceAll(
+			modifyConfig,
+			startValue,
+			endValue,
+		), endValue
 }
 
 func checkValidClientID(resourceName, attributeName, arnType string) resource.TestCheckFunc {
@@ -30,7 +40,7 @@ func checkValidClientID(resourceName, attributeName, arnType string) resource.Te
 			return fmt.Errorf("not found: %s", resourceName)
 		}
 
-		var clientID string = rs.Primary.Attributes[attributeName]
+		clientID := rs.Primary.Attributes[attributeName]
 		if len(clientID) <= 0 {
 			return fmt.Errorf("empty client id: %s %s", resourceName, attributeName)
 		}

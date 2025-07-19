@@ -1,26 +1,37 @@
 # Visit https://golangci-lint.run/ for usage documentation
 # and information on other useful linters
+version: "2"
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
 
+formatters:
+  # Enable specific formatter.
+  # Default: [] (uses standard Go formatting)
+  enable:
+    - gci
+    - gofmt
+    - golines
+
 linters:
-  disable-all: true
+  default: none
   enable:
     - durationcheck
     - errcheck
     - forcetypeassert
     - godot
-    - gofmt
-    - gosimple
     - ineffassign
     - makezero
     - misspell
     - nilerr
     - predeclared
     - staticcheck
-    - tenv
     - unconvert
     - unparam
     - unused
-    - vet
+  exclusions:
+    rules:
+      # Exclusion for errcheck: Error return value of `resp.Body.Close` is not checked (errcheck)
+      # Reference: https://github.com/kisielk/errcheck/issues/101
+      - linters: ["errcheck"]
+        source: "^\\s*defer\\s+"

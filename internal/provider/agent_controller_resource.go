@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -11,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -31,17 +31,29 @@ type agentControllerResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *agentControllerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *agentControllerResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_agent_controller"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *agentControllerResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *agentControllerResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *agentControllerResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -91,7 +103,11 @@ func (r *agentControllerResource) Schema(_ context.Context, _ resource.SchemaReq
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *agentControllerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *agentControllerResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.AgentControllerResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -101,7 +117,7 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Generate API request body from plan
-	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(ctx, plan, nil)
+	controller := convertAgentControllerModelToDTO(ctx, plan, nil)
 
 	// Create new Agent Controller
 	agentController, err := r.client.CreateAgentController(controller, nil)
@@ -125,7 +141,11 @@ func (r *agentControllerResource) Create(ctx context.Context, req resource.Creat
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *agentControllerResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -160,7 +180,11 @@ func (r *agentControllerResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *agentControllerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *agentControllerResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -181,7 +205,7 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Generate API request body from plan
-	var controller aembit.AgentControllerDTO = convertAgentControllerModelToDTO(ctx, plan, &externalID)
+	controller := convertAgentControllerModelToDTO(ctx, plan, &externalID)
 
 	// Update Agent Controller
 	agentController, err := r.client.UpdateAgentController(controller, nil)
@@ -205,7 +229,11 @@ func (r *agentControllerResource) Update(ctx context.Context, req resource.Updat
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *agentControllerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *agentControllerResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.AgentControllerResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -238,12 +266,20 @@ func (r *agentControllerResource) Delete(ctx context.Context, req resource.Delet
 }
 
 // Imports an existing resource by passing externalId.
-func (r *agentControllerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *agentControllerResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAgentControllerModelToDTO(ctx context.Context, model models.AgentControllerResourceModel, externalID *string) aembit.AgentControllerDTO {
+func convertAgentControllerModelToDTO(
+	ctx context.Context,
+	model models.AgentControllerResourceModel,
+	externalID *string,
+) aembit.AgentControllerDTO {
 	var controller aembit.AgentControllerDTO
 	controller.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -262,7 +298,7 @@ func convertAgentControllerModelToDTO(ctx context.Context, model models.AgentCon
 		}
 	}
 	if externalID != nil {
-		controller.EntityDTO.ExternalID = *externalID
+		controller.ExternalID = *externalID
 	}
 	controller.TrustProviderID = model.TrustProviderID.ValueString()
 	controller.AllowedTLSHostname = model.AllowedTLSHostname.ValueString()
@@ -270,19 +306,22 @@ func convertAgentControllerModelToDTO(ctx context.Context, model models.AgentCon
 	return controller
 }
 
-func convertAgentControllerDTOToModel(ctx context.Context, dto aembit.AgentControllerDTO) models.AgentControllerResourceModel {
+func convertAgentControllerDTOToModel(
+	ctx context.Context,
+	dto aembit.AgentControllerDTO,
+) models.AgentControllerResourceModel {
 	var model models.AgentControllerResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
 	if len(dto.TrustProviderID) > 0 {
 		model.TrustProviderID = types.StringValue(dto.TrustProviderID)
 	} else {
 		model.TrustProviderID = types.StringNull()
 	}
 	model.AllowedTLSHostname = types.StringValue(dto.AllowedTLSHostname)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	return model
 }

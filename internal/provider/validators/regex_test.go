@@ -224,3 +224,78 @@ func TestRegex_Hostname_Invalid(t *testing.T) {
 		})
 	}
 }
+
+func TestRegex_SafeWildcardHostname_Valid(t *testing.T) {
+	validInputs := []string{
+		"example.com",
+		"sub.domain.com",
+		"my-site.co.uk",
+		"localhost",
+		"example.travel",
+		"aembit.io",
+		"host",
+		"test.com",
+		"*.amazonaws.com",
+		"bucket.*.amazonaws.com",
+		"bucket.*.microsoft.com",
+		"wild*card.amazonaws.com",
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			if !StructuralHostRegex.MatchString(input) {
+				t.Errorf("Expected valid structural hostname, but got invalid: %s", input)
+			}
+		})
+	}
+}
+
+func TestRegex_SafeWildcardHostname_Invalid(t *testing.T) {
+	validInputs := []string{
+		"-invalid.com",
+		"example..com",
+		"example_com",
+		".example.com",
+		"example.com-",
+		"google.*",
+		"google.n*t",
+		"*.com",
+		"goo*gle.com",
+		"", // Empty string
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			if StructuralHostRegex.MatchString(input) {
+				t.Errorf("Expected invalid structural hostname, but got valid: %s", input)
+			}
+		})
+	}
+}
+
+func TestRegex_IPHost_Valid(t *testing.T) {
+	validInputs := []string{
+		"192.168.1.1", // NOSONAR
+		"10.0.0.1",    // NOSONAR
+		"172.16.0.1",  // NOSONAR
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			if !HostIPRegex.MatchString(input) {
+				t.Errorf("Expected valid IP host, but got invalid: %s", input)
+			}
+		})
+	}
+}
+
+func TestRegex_IPHost_Invalid(t *testing.T) {
+	validInputs := []string{
+		"192.*.86.1", // IP with wildcard
+		"",           // Empty string
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			if HostIPRegex.MatchString(input) {
+				t.Errorf("Expected invalid IP host, but got valid: %s", input)
+			}
+		})
+	}
+}

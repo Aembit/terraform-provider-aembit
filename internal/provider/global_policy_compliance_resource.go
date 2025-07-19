@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -11,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 const (
@@ -35,10 +35,17 @@ func NewGlobalPolicyComplianceResource() resource.Resource {
 }
 
 // ImportState implements resource.ResourceWithImportState.
-func (gpcResource *GlobalPolicyComplianceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (gpcResource *GlobalPolicyComplianceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	gpcSettings, err := gpcResource.client.GetGlobalPolicyComplianceSettings(nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Unable to retrieve Global Policy Compliance settings", err.Error())
+		resp.Diagnostics.AddError(
+			"Unable to retrieve Global Policy Compliance settings",
+			err.Error(),
+		)
 		return
 	}
 	state := convertGlobalPolicyComplianceDTOToModel(gpcSettings, gpcResource.client.Tenant)
@@ -46,12 +53,20 @@ func (gpcResource *GlobalPolicyComplianceResource) ImportState(ctx context.Conte
 }
 
 // Configure implements resource.ResourceWithConfigure.
-func (g *GlobalPolicyComplianceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (g *GlobalPolicyComplianceResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	g.client = resourceConfigure(req, resp)
 }
 
 // Create implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (g *GlobalPolicyComplianceResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var gpcModel models.GlobalPolicyComplianceModel
 	diags := req.Plan.Get(ctx, &gpcModel)
@@ -59,16 +74,20 @@ func (g *GlobalPolicyComplianceResource) Create(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.AddWarning("A note about Global Policy Compliance settings",
+	resp.Diagnostics.AddWarning(
+		"A note about Global Policy Compliance settings",
 		`The 'aembit_global_policy_compliance' resource type represents a system-wide collection of settings which already exist
 in Aembit Cloud. This configuration will now manage the existing instance.
 
-Please ensure only one 'resource "aembit_global_policy_compliance" "<name>" {}' block is defined across your entire Terraform configuration.`)
+Please ensure only one 'resource "aembit_global_policy_compliance" "<name>" {}' block is defined across your entire Terraform configuration.`,
+	)
 
 	err := updateComplianceSettings(g.client, &gpcModel, nil)
-
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings during resource creation", err.Error())
+		resp.Diagnostics.AddError(
+			"Error updating Global Policy Compliance settings during resource creation",
+			err.Error(),
+		)
 		return
 	}
 	gpcModel.Id = types.StringValue(g.client.Tenant + "-gpc")
@@ -80,9 +99,15 @@ Please ensure only one 'resource "aembit_global_policy_compliance" "<name>" {}' 
 }
 
 // Delete implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.Diagnostics.AddWarning("About deleting Global Policy Compliance resource",
-		"Deleting the Global Policy Compliance resource  will result in resetting all settings to their default value ('Recommended')")
+func (g *GlobalPolicyComplianceResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	resp.Diagnostics.AddWarning(
+		"About deleting Global Policy Compliance resource",
+		"Deleting the Global Policy Compliance resource  will result in resetting all settings to their default value ('Recommended')",
+	)
 
 	var state models.GlobalPolicyComplianceModel
 	diags := req.State.Get(ctx, &state)
@@ -91,7 +116,7 @@ func (g *GlobalPolicyComplianceResource) Delete(ctx context.Context, req resourc
 		return
 	}
 
-	var defaultModel = models.GlobalPolicyComplianceModel{
+	defaultModel := models.GlobalPolicyComplianceModel{
 		Id:                             types.StringValue(g.client.Tenant + "-gpc"),
 		APTrustProviderCompliance:      types.StringValue("Recommended"),
 		APAccessConditionCompliance:    types.StringValue("Recommended"),
@@ -100,18 +125,29 @@ func (g *GlobalPolicyComplianceResource) Delete(ctx context.Context, req resourc
 	}
 	err := updateComplianceSettings(g.client, &defaultModel, nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating Global Policy Compliance settings to their default values", err.Error())
+		resp.Diagnostics.AddError(
+			"Error updating Global Policy Compliance settings to their default values",
+			err.Error(),
+		)
 		return
 	}
 }
 
 // Metadata implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (g *GlobalPolicyComplianceResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_global_policy_compliance"
 }
 
 // Read implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (g *GlobalPolicyComplianceResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	var state models.GlobalPolicyComplianceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -134,7 +170,11 @@ func (g *GlobalPolicyComplianceResource) Read(ctx context.Context, req resource.
 }
 
 // Schema implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (g *GlobalPolicyComplianceResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "A resource to manage the Global Policy Compliance settings",
 		Attributes: map[string]schema.Attribute{
@@ -176,7 +216,11 @@ func (g *GlobalPolicyComplianceResource) Schema(_ context.Context, _ resource.Sc
 }
 
 // Update implements resource.Resource.
-func (g *GlobalPolicyComplianceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (g *GlobalPolicyComplianceResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	var currentModel models.GlobalPolicyComplianceModel
 	diags := req.State.Get(ctx, &currentModel)
 	resp.Diagnostics.Append(diags...)
@@ -192,7 +236,6 @@ func (g *GlobalPolicyComplianceResource) Update(ctx context.Context, req resourc
 	}
 
 	err := updateComplianceSettings(g.client, &updatedModel, &currentModel)
-
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating Global Policy Compliance setting", err.Error())
 		return
@@ -205,7 +248,10 @@ func (g *GlobalPolicyComplianceResource) Update(ctx context.Context, req resourc
 	}
 }
 
-func convertGlobalPolicyComplianceDTOToModel(gpcSettings *aembit.GlobalPolicyComplianceSettingsDTO, tenantId string) models.GlobalPolicyComplianceModel {
+func convertGlobalPolicyComplianceDTOToModel(
+	gpcSettings *aembit.GlobalPolicyComplianceSettingsDTO,
+	tenantId string,
+) models.GlobalPolicyComplianceModel {
 	model := models.GlobalPolicyComplianceModel{}
 	model.Id = types.StringValue(tenantId + "-gpc")
 	for _, settingDto := range *gpcSettings {
@@ -223,24 +269,34 @@ func convertGlobalPolicyComplianceDTOToModel(gpcSettings *aembit.GlobalPolicyCom
 	return model
 }
 
-func convertGlobalPolicyComplianceModelToDTO(model models.GlobalPolicyComplianceModel) aembit.GlobalPolicyComplianceSettingsDTO {
+func convertGlobalPolicyComplianceModelToDTO(
+	model models.GlobalPolicyComplianceModel,
+) aembit.GlobalPolicyComplianceSettingsDTO {
 	dto := aembit.GlobalPolicyComplianceSettingsDTO{}
 	dto = append(dto, aembit.TenantSettingDTO{
 		Name:  AccessPolicyTrustProviderComplianceSettingName,
-		Value: model.APTrustProviderCompliance.ValueString()})
+		Value: model.APTrustProviderCompliance.ValueString(),
+	})
 	dto = append(dto, aembit.TenantSettingDTO{
 		Name:  AccessPolicyAccessConditionComplianceSettingName,
-		Value: model.APAccessConditionCompliance.ValueString()})
+		Value: model.APAccessConditionCompliance.ValueString(),
+	})
 	dto = append(dto, aembit.TenantSettingDTO{
 		Name:  AgentControllerTrustProviderComplianceSettingName,
-		Value: model.ACTrustProviderCompliance.ValueString()})
+		Value: model.ACTrustProviderCompliance.ValueString(),
+	})
 	dto = append(dto, aembit.TenantSettingDTO{
 		Name:  AgentControllerTlsHostNameComplianceSettingName,
-		Value: model.ACAllowedTLSHostanmeCompliance.ValueString()})
+		Value: model.ACAllowedTLSHostanmeCompliance.ValueString(),
+	})
 	return dto
 }
 
-func updateComplianceSettings(client *aembit.CloudClient, currentModel *models.GlobalPolicyComplianceModel, previousModel *models.GlobalPolicyComplianceModel) error {
+func updateComplianceSettings(
+	client *aembit.CloudClient,
+	currentModel *models.GlobalPolicyComplianceModel,
+	previousModel *models.GlobalPolicyComplianceModel,
+) error {
 	if previousModel == nil {
 		dto := convertGlobalPolicyComplianceModelToDTO(*currentModel)
 		for _, settingDto := range dto {
@@ -258,28 +314,58 @@ func updateComplianceSettings(client *aembit.CloudClient, currentModel *models.G
 	return nil
 }
 
-func compareAndUpdate(client *aembit.CloudClient, currentModel *models.GlobalPolicyComplianceModel, previousModel *models.GlobalPolicyComplianceModel) error {
-	//update only what has changed
+func compareAndUpdate(
+	client *aembit.CloudClient,
+	currentModel *models.GlobalPolicyComplianceModel,
+	previousModel *models.GlobalPolicyComplianceModel,
+) error {
+	// update only what has changed
 	if !currentModel.APTrustProviderCompliance.Equal(previousModel.APTrustProviderCompliance) {
-		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyTrustProviderComplianceSettingName, Value: currentModel.APTrustProviderCompliance.ValueString()}, nil)
+		_, err := client.UpdateGlobalPolicyComplianceSetting(
+			aembit.TenantSettingDTO{
+				Name:  AccessPolicyTrustProviderComplianceSettingName,
+				Value: currentModel.APTrustProviderCompliance.ValueString(),
+			},
+			nil,
+		)
 		if err != nil {
 			return err
 		}
 	}
 	if !currentModel.APAccessConditionCompliance.Equal(previousModel.APAccessConditionCompliance) {
-		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AccessPolicyAccessConditionComplianceSettingName, Value: currentModel.APAccessConditionCompliance.ValueString()}, nil)
+		_, err := client.UpdateGlobalPolicyComplianceSetting(
+			aembit.TenantSettingDTO{
+				Name:  AccessPolicyAccessConditionComplianceSettingName,
+				Value: currentModel.APAccessConditionCompliance.ValueString(),
+			},
+			nil,
+		)
 		if err != nil {
 			return err
 		}
 	}
 	if !currentModel.ACTrustProviderCompliance.Equal(previousModel.ACTrustProviderCompliance) {
-		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTrustProviderComplianceSettingName, Value: currentModel.ACTrustProviderCompliance.ValueString()}, nil)
+		_, err := client.UpdateGlobalPolicyComplianceSetting(
+			aembit.TenantSettingDTO{
+				Name:  AgentControllerTrustProviderComplianceSettingName,
+				Value: currentModel.ACTrustProviderCompliance.ValueString(),
+			},
+			nil,
+		)
 		if err != nil {
 			return err
 		}
 	}
-	if !currentModel.ACAllowedTLSHostanmeCompliance.Equal(previousModel.ACAllowedTLSHostanmeCompliance) {
-		_, err := client.UpdateGlobalPolicyComplianceSetting(aembit.TenantSettingDTO{Name: AgentControllerTlsHostNameComplianceSettingName, Value: currentModel.ACAllowedTLSHostanmeCompliance.ValueString()}, nil)
+	if !currentModel.ACAllowedTLSHostanmeCompliance.Equal(
+		previousModel.ACAllowedTLSHostanmeCompliance,
+	) {
+		_, err := client.UpdateGlobalPolicyComplianceSetting(
+			aembit.TenantSettingDTO{
+				Name:  AgentControllerTlsHostNameComplianceSettingName,
+				Value: currentModel.ACAllowedTLSHostanmeCompliance.ValueString(),
+			},
+			nil,
+		)
 		if err != nil {
 			return err
 		}

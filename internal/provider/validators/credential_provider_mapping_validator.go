@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"terraform-provider-aembit/internal/provider/models"
-
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 type CredentialProviderMappingValidator struct{}
@@ -19,7 +18,11 @@ func (v CredentialProviderMappingValidator) MarkdownDescription(ctx context.Cont
 	return v.Description(ctx)
 }
 
-func (v CredentialProviderMappingValidator) ValidateSet(ctx context.Context, req validator.SetRequest, resp *validator.SetResponse) {
+func (v CredentialProviderMappingValidator) ValidateSet(
+	ctx context.Context,
+	req validator.SetRequest,
+	resp *validator.SetResponse,
+) {
 	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
 		return
 	}

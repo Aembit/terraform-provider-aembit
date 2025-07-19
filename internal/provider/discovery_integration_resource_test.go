@@ -10,8 +10,12 @@ import (
 const testDiscoveryIntegrationResourceWiz string = "aembit_discovery_integration.wiz"
 
 func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/discovery_integration/wiz/TestAccDiscoveryIntegrationResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/discovery_integration/wiz/TestAccDiscoveryIntegrationResource.tfmod")
+	createFile, _ := os.ReadFile(
+		"../../tests/discovery_integration/wiz/TestAccDiscoveryIntegrationResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/discovery_integration/wiz/TestAccDiscoveryIntegrationResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -21,7 +25,11 @@ func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testDiscoveryIntegrationResourceWiz, "name", "TF Acceptance Wiz"),
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						"name",
+						"TF Acceptance Wiz",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationResourceWiz, "id"),
 					// Verify placeholder ID is set
@@ -29,13 +37,21 @@ func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testDiscoveryIntegrationResourceWiz, ImportState: true, ImportStateVerify: false},
+			{
+				ResourceName:      testDiscoveryIntegrationResourceWiz,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testDiscoveryIntegrationResourceWiz, "name", "TF Acceptance Wiz - Modified"),
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						"name",
+						"TF Acceptance Wiz - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

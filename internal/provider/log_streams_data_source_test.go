@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testLogStreamsDataSource string = "data.aembit_log_streams.test"
-const testLogStreamResource string = "aembit_log_stream.aws_s3_bucket"
+const (
+	testLogStreamsDataSource string = "data.aembit_log_streams.test"
+	testLogStreamResource    string = "aembit_log_stream.aws_s3_bucket"
+)
 
 func testFindLogStream(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -30,7 +32,11 @@ func testFindLogStream(resourceName string) resource.TestCheckFunc {
 
 func TestAccLogStreamsDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/log_stream/data/TestAccLogStreamsDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance AWSS3Bucket LogStream")
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance AWSS3Bucket LogStream",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

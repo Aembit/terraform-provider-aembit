@@ -30,7 +30,11 @@ func testDeleteRole(resourceName string) resource.TestCheckFunc {
 func TestAccRoleResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tfmod")
-	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Role")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"TF Acceptance Role",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -16,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -36,17 +36,29 @@ type discoveryIntegrationResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *discoveryIntegrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *discoveryIntegrationResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_discovery_integration"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *discoveryIntegrationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *discoveryIntegrationResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *discoveryIntegrationResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -137,7 +149,11 @@ func (r *discoveryIntegrationResource) Schema(_ context.Context, _ resource.Sche
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *discoveryIntegrationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *discoveryIntegrationResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.DiscoveryIntegrationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -147,10 +163,13 @@ func (r *discoveryIntegrationResource) Create(ctx context.Context, req resource.
 	}
 
 	// Generate API request body from plan
-	var discoveryIntegration aembit.DiscoveryIntegrationDTO = convertDiscoveryIntegrationModelToDTO(ctx, plan, nil)
+	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(ctx, plan, nil)
 
 	// Create new Discovery Integration
-	discoveryIntegrationResponse, err := r.client.CreateDiscoveryIntegration(discoveryIntegration, nil)
+	discoveryIntegrationResponse, err := r.client.CreateDiscoveryIntegration(
+		discoveryIntegration,
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Discovery Integration",
@@ -171,7 +190,11 @@ func (r *discoveryIntegrationResource) Create(ctx context.Context, req resource.
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *discoveryIntegrationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *discoveryIntegrationResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.DiscoveryIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -181,11 +204,18 @@ func (r *discoveryIntegrationResource) Read(ctx context.Context, req resource.Re
 	}
 
 	// Get refreshed workload value from Aembit
-	discoveryIntegration, err, notFound := r.client.GetDiscoveryIntegration(state.ID.ValueString(), nil)
+	discoveryIntegration, err, notFound := r.client.GetDiscoveryIntegration(
+		state.ID.ValueString(),
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Discovery Integration",
-			fmt.Sprintf("An error occurred while attempting to fetch the Discovery Integration with ID '%s' from Terraform state: %v", state.ID.ValueString(), err.Error()),
+			fmt.Sprintf(
+				"An error occurred while attempting to fetch the Discovery Integration with ID '%s' from Terraform state: %v",
+				state.ID.ValueString(),
+				err.Error(),
+			),
 		)
 
 		// If the resource is not found on Aembit Cloud, delete it locally
@@ -207,7 +237,11 @@ func (r *discoveryIntegrationResource) Read(ctx context.Context, req resource.Re
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *discoveryIntegrationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *discoveryIntegrationResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.DiscoveryIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -217,7 +251,7 @@ func (r *discoveryIntegrationResource) Update(ctx context.Context, req resource.
 	}
 
 	// Extract external ID from state
-	var externalID string = state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan models.DiscoveryIntegrationResourceModel
@@ -228,7 +262,7 @@ func (r *discoveryIntegrationResource) Update(ctx context.Context, req resource.
 	}
 
 	// Generate API request body from plan
-	var discoveryIntegration aembit.DiscoveryIntegrationDTO = convertDiscoveryIntegrationModelToDTO(ctx, plan, &externalID)
+	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(ctx, plan, &externalID)
 
 	// Update Discovery Integration
 	serverWorkload, err := r.client.UpdateDiscoveryIntegration(discoveryIntegration, nil)
@@ -252,7 +286,11 @@ func (r *discoveryIntegrationResource) Update(ctx context.Context, req resource.
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *discoveryIntegrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *discoveryIntegrationResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.DiscoveryIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -285,12 +323,20 @@ func (r *discoveryIntegrationResource) Delete(ctx context.Context, req resource.
 }
 
 // Imports an existing resource by passing externalID.
-func (r *discoveryIntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *discoveryIntegrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertDiscoveryIntegrationModelToDTO(ctx context.Context, model models.DiscoveryIntegrationResourceModel, externalID *string) aembit.DiscoveryIntegrationDTO {
+func convertDiscoveryIntegrationModelToDTO(
+	ctx context.Context,
+	model models.DiscoveryIntegrationResourceModel,
+	externalID *string,
+) aembit.DiscoveryIntegrationDTO {
 	var discoveryIntegration aembit.DiscoveryIntegrationDTO
 	discoveryIntegration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -302,7 +348,7 @@ func convertDiscoveryIntegrationModelToDTO(ctx context.Context, model models.Dis
 	discoveryIntegration.Endpoint = model.Endpoint.ValueString()
 
 	if externalID != nil {
-		discoveryIntegration.EntityDTO.ExternalID = *externalID
+		discoveryIntegration.ExternalID = *externalID
 	}
 
 	if len(model.Tags.Elements()) > 0 {
@@ -332,13 +378,17 @@ func convertDiscoveryIntegrationModelToDTO(ctx context.Context, model models.Dis
 	return discoveryIntegration
 }
 
-func convertDiscoveryIntegrationDTOToModel(ctx context.Context, dto aembit.DiscoveryIntegrationDTO, state models.DiscoveryIntegrationResourceModel) models.DiscoveryIntegrationResourceModel {
+func convertDiscoveryIntegrationDTOToModel(
+	ctx context.Context,
+	dto aembit.DiscoveryIntegrationDTO,
+	state models.DiscoveryIntegrationResourceModel,
+) models.DiscoveryIntegrationResourceModel {
 	var model models.DiscoveryIntegrationResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 	model.Type = types.StringValue(dto.Type)
 	model.SyncFrequencySeconds = types.Int64Value(dto.SyncFrequencySeconds)
 	model.LastSync = types.StringValue(dto.LastSync)
