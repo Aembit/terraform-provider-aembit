@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	testCredentialProviderAembit    string = "aembit_credential_provider.aembit"
-	testCredentialProviderApiKey    string = "aembit_credential_provider.api_key"
-	testCredentialProviderAWS       string = "aembit_credential_provider.aws"
-	testCredentialProviderGCP       string = "aembit_credential_provider.gcp"
-	testCredentialProviderSnowflake string = "aembit_credential_provider.snowflake"
-	testCredentialProviderUserPass  string = "aembit_credential_provider.userpass"
-	testCredentialProviderVault     string = "aembit_credential_provider.vault"
+	testCredentialProviderAembit    = "aembit_credential_provider.aembit"
+	testCredentialProviderApiKey    = "aembit_credential_provider.api_key"
+	testCredentialProviderAWS       = "aembit_credential_provider.aws"
+	testCredentialProviderGCP       = "aembit_credential_provider.gcp"
+	testCredentialProviderSnowflake = "aembit_credential_provider.snowflake"
+	testCredentialProviderUserPass  = "aembit_credential_provider.userpass"
+	testCredentialProviderVault     = "aembit_credential_provider.vault"
 )
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
