@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	testServerWorkloadResource         string = "aembit_server_workload.test"
-	testServerWorkloadResourceWildcard string = "aembit_server_workload.test_wildcard"
-	serverWorkloadEndpointHost         string = "service_endpoint.host"
+	testServerWorkloadResource         = "aembit_server_workload.test"
+	testServerWorkloadResourceWildcard = "aembit_server_workload.test_wildcard"
+	serverWorkloadEndpointHost         = "service_endpoint.host"
 )
 
 func testDeleteServerWorkload(resourceName string) resource.TestCheckFunc {
@@ -65,7 +65,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResourceWildcard,
-						"service_endpoint.host",
+						serverWorkloadEndpointHost,
 						"*.testhost.com",
 					),
 					resource.TestCheckResourceAttr(
@@ -162,12 +162,12 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,
-						"service_endpoint.host",
+						serverWorkloadEndpointHost,
 						"unittest.testhost2.com",
 					),
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResourceWildcard,
-						"service_endpoint.host",
+						serverWorkloadEndpointHost,
 						"*.testhost2.com",
 					),
 					resource.TestCheckResourceAttr(
