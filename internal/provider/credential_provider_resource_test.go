@@ -12,7 +12,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testCredentialProviderAembit string = "aembit_credential_provider.aembit"
+const (
+	testCredentialProviderAembit    string = "aembit_credential_provider.aembit"
+	testCredentialProviderApiKey    string = "aembit_credential_provider.api_key"
+	testCredentialProviderAWS       string = "aembit_credential_provider.aws"
+	testCredentialProviderGCP       string = "aembit_credential_provider.gcp"
+	testCredentialProviderSnowflake string = "aembit_credential_provider.snowflake"
+	testCredentialProviderUserPass  string = "aembit_credential_provider.userpass"
+	testCredentialProviderVault     string = "aembit_credential_provider.vault"
+)
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -123,19 +131,19 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.api_key",
+						testCredentialProviderApiKey,
 						"name",
 						"TF Acceptance API Key",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.api_key", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderApiKey, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.api_key", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderApiKey, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.api_key",
+				ResourceName:      testCredentialProviderApiKey,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -145,7 +153,7 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.api_key",
+						testCredentialProviderApiKey,
 						"name",
 						"TF Acceptance API Key - Modified",
 					),
@@ -171,32 +179,32 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential set values
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"name",
 						"TF Acceptance AWS STS",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"aws_sts.lifetime",
 						"1800",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aws", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"aws_sts.oidc_issuer",
 					),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"aws_sts.token_audience",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aws", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.aws",
+				ResourceName:      testCredentialProviderGCP,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -206,18 +214,18 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"name",
 						"TF Acceptance AWS STS - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.aws", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"aws_sts.oidc_issuer",
 					),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.aws",
+						testCredentialProviderGCP,
 						"aws_sts.token_audience",
 					),
 				),
@@ -242,28 +250,28 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider set values
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.gcp",
+						testCredentialProviderGCP,
 						"name",
 						"TF Acceptance GCP Workload",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.gcp",
+						testCredentialProviderGCP,
 						"google_workload_identity.lifetime",
 						"1800",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.gcp",
+						testCredentialProviderGCP,
 						"google_workload_identity.oidc_issuer",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.gcp",
+				ResourceName:      testCredentialProviderGCP,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -273,14 +281,14 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.gcp",
+						testCredentialProviderGCP,
 						"name",
 						"TF Acceptance GCP Workload - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderGCP, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.gcp",
+						testCredentialProviderGCP,
 						"google_workload_identity.oidc_issuer",
 					),
 				),
@@ -414,23 +422,23 @@ func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.snowflake",
+						testCredentialProviderSnowflake,
 						"name",
 						"TF Acceptance Snowflake Token",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.snowflake", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderSnowflake, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.snowflake",
+						testCredentialProviderSnowflake,
 						"snowflake_jwt.alter_user_command",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.snowflake", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderSnowflake, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.snowflake",
+				ResourceName:      testCredentialProviderSnowflake,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -440,14 +448,14 @@ func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.snowflake",
+						testCredentialProviderSnowflake,
 						"name",
 						"TF Acceptance Snowflake Token - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.snowflake", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderSnowflake, "id"),
 					resource.TestCheckResourceAttrSet(
-						"aembit_credential_provider.snowflake",
+						testCredentialProviderSnowflake,
 						"snowflake_jwt.alter_user_command",
 					),
 				),
@@ -663,19 +671,19 @@ func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.userpass",
+						testCredentialProviderUserPass,
 						"name",
 						"TF Acceptance Username Password",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.userpass", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderUserPass, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.userpass", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderUserPass, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.userpass",
+				ResourceName:      testCredentialProviderUserPass,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -685,7 +693,7 @@ func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.userpass",
+						testCredentialProviderUserPass,
 						"name",
 						"TF Acceptance Username Password - Modified",
 					),
@@ -713,40 +721,40 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						"name",
 						"TF Acceptance Vault",
 					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsCount,
 						"2",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsColor,
 						"blue",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsDay,
 						"Sunday",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderVault, "id"),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						"vault_client_token.vault_forwarding",
 						"",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_credential_provider.vault", "id"),
+					resource.TestCheckResourceAttrSet(testCredentialProviderVault, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_credential_provider.vault",
+				ResourceName:      testCredentialProviderVault,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -756,29 +764,29 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						"name",
 						"TF Acceptance Vault - Modified",
 					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsCount,
 						"2",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsColor,
 						"orange",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						tagsDay,
 						"Tuesday",
 					),
 					// Verify Vault_Forwarding update
 					resource.TestCheckResourceAttr(
-						"aembit_credential_provider.vault",
+						testCredentialProviderVault,
 						"vault_client_token.vault_forwarding",
 						"conditional",
 					),

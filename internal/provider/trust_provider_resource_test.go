@@ -12,13 +12,18 @@ import (
 )
 
 const (
-	trustProviderPathRole    string = "aembit_trust_provider.aws_role"
-	trustProviderPathAzure   string = "aembit_trust_provider.azure"
-	trustProviderGitLab1     string = "aembit_trust_provider.gitlab1"
-	trustProviderGitLab2     string = "aembit_trust_provider.gitlab2"
-	trustProviderGitLabMixed string = "aembit_trust_provider.gitlab_mixed"
-	gitLabOidcClientID       string = "gitlab_job.oidc_client_id"
-	gitLabIdentityArnMatch   string = ":identity:gitlab_idtoken:"
+	trustProviderPathRole          = "aembit_trust_provider.aws_role"
+	trustProviderPathAzure         = "aembit_trust_provider.azure"
+	trustProviderGitLab1           = "aembit_trust_provider.gitlab1"
+	trustProviderGitLab2           = "aembit_trust_provider.gitlab2"
+	trustProviderGitLabMixed       = "aembit_trust_provider.gitlab_mixed"
+	gitLabOidcClientID             = "gitlab_job.oidc_client_id"
+	gitLabIdentityArnMatch         = ":identity:gitlab_idtoken:"
+	trustProviderAwsPath           = "aembit_trust_provider.aws"
+	trustProviderGcp               = "aembit_trust_provider.gcp"
+	trustProviderGitHub            = "aembit_trust_provider.github"
+	trustProviderKerberos          = "aembit_trust_provider.kerberos"
+	trustProviderTerraformResource = "aembit_trust_provider.terraform"
 )
 
 func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
@@ -143,25 +148,25 @@ func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.aws",
+						trustProviderAwsPath,
 						"name",
 						"TF Acceptance AWS",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderAwsPath, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.aws", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderAwsPath, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_trust_provider.aws", ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderAwsPath, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.aws",
+						trustProviderAwsPath,
 						"name",
 						"TF Acceptance AWS - Modified",
 					),
@@ -185,30 +190,30 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.gcp",
+						trustProviderGcp,
 						"name",
 						"TF Acceptance GCP Identity",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGcp, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGcp, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: "aembit_trust_provider.gcp", ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderGcp, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.gcp",
+						trustProviderGcp,
 						"name",
 						"TF Acceptance GCP Identity - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.gcp", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGcp, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -229,19 +234,19 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.github",
+						trustProviderGitHub,
 						"name",
 						"TF Acceptance GitHub Action",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.github", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.github", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_trust_provider.github",
+				ResourceName:      trustProviderGitHub,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -251,12 +256,12 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.github",
+						trustProviderGitHub,
 						"name",
 						"TF Acceptance GitHub Action - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.github", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -414,27 +419,27 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						"name",
 						"TF Acceptance Kerberos",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kerberos", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.kerberos", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsCount,
 						"2",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsColor,
 						"blue",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsDay,
 						"Sunday",
 					),
@@ -442,7 +447,7 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_trust_provider.kerberos",
+				ResourceName:      trustProviderKerberos,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -452,23 +457,23 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						"name",
 						"TF Acceptance Kerberos - Modified",
 					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsCount,
 						"2",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsColor,
 						"orange",
 					),
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.kerberos",
+						trustProviderKerberos,
 						tagsDay,
 						"Tuesday",
 					),
@@ -586,19 +591,19 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.terraform",
+						trustProviderTerraformResource,
 						"name",
 						"TF Acceptance Terraform Workspace",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.terraform", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderTerraformResource, "id"),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.terraform", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderTerraformResource, "id"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "aembit_trust_provider.terraform",
+				ResourceName:      trustProviderTerraformResource,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -608,12 +613,12 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						"aembit_trust_provider.terraform",
+						trustProviderTerraformResource,
 						"name",
 						"TF Acceptance Terraform Workspace - Modified",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("aembit_trust_provider.terraform", "id"),
+					resource.TestCheckResourceAttrSet(trustProviderTerraformResource, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
