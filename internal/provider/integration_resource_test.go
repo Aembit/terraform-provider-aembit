@@ -10,8 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testIntegrationWiz string = "aembit_integration.wiz"
-const testIntegrationCrowdstrike string = "aembit_integration.crowdstrike"
+const (
+	testIntegrationWiz         string = "aembit_integration.wiz"
+	testIntegrationCrowdstrike string = "aembit_integration.crowdstrike"
+)
 
 func testDeleteIntegration(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -52,7 +54,11 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: string(createFile), Check: testDeleteIntegration(testIntegrationWiz), ExpectNonEmptyPlan: true},
+			{
+				Config:             string(createFile),
+				Check:              testDeleteIntegration(testIntegrationWiz),
+				ExpectNonEmptyPlan: true,
+			},
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
@@ -62,7 +68,11 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testIntegrationWiz, "name", "TF Acceptance Wiz - Modified"),
+					resource.TestCheckResourceAttr(
+						testIntegrationWiz,
+						"name",
+						"TF Acceptance Wiz - Modified",
+					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testIntegrationWiz, tagsCount, "2"),
 					resource.TestCheckResourceAttr(testIntegrationWiz, tagsColor, "orange"),
@@ -75,8 +85,12 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 }
 
 func TestAccIntegrationResource_Crowdstrike(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/integration/crowdstrike/TestAccIntegrationResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/integration/crowdstrike/TestAccIntegrationResource.tfmod")
+	createFile, _ := os.ReadFile(
+		"../../tests/integration/crowdstrike/TestAccIntegrationResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/integration/crowdstrike/TestAccIntegrationResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -86,7 +100,11 @@ func TestAccIntegrationResource_Crowdstrike(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Integration Name
-					resource.TestCheckResourceAttr(testIntegrationCrowdstrike, "name", "TF Acceptance Crowdstrike"),
+					resource.TestCheckResourceAttr(
+						testIntegrationCrowdstrike,
+						"name",
+						"TF Acceptance Crowdstrike",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testIntegrationCrowdstrike, "id"),
 					// Verify placeholder ID is set
@@ -100,7 +118,11 @@ func TestAccIntegrationResource_Crowdstrike(t *testing.T) {
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testIntegrationCrowdstrike, "name", "TF Acceptance Crowdstrike - Modified"),
+					resource.TestCheckResourceAttr(
+						testIntegrationCrowdstrike,
+						"name",
+						"TF Acceptance Crowdstrike - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

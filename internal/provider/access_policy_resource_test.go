@@ -8,11 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const AccessPolicyPathFirst string = "aembit_access_policy.first_policy"
-const AccessPolicyPathSecond string = "aembit_access_policy.second_policy"
-const AccessPolicyPathMultiCPFirst string = "aembit_access_policy.multi_cp_first_policy"
-const AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
-const CredentialProvidersCount string = "credential_providers.#"
+const (
+	AccessPolicyPathFirst         string = "aembit_access_policy.first_policy"
+	AccessPolicyPathSecond        string = "aembit_access_policy.second_policy"
+	AccessPolicyPathMultiCPFirst  string = "aembit_access_policy.multi_cp_first_policy"
+	AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
+	CredentialProvidersCount      string = "credential_providers.#"
+)
 
 var accessPolicyChecks = []resource.TestCheckFunc{
 	// Verify values for First Policy.
@@ -25,7 +27,11 @@ var accessPolicyChecks = []resource.TestCheckFunc{
 func TestAccAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"clientworkloadNamespace",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -69,8 +75,16 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 func TestAccBasicAccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
-	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"clientworkloadNamespace",
+	)
+	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(
+		createFileConfig,
+		modifyFileConfig,
+		"secondClientWorkloadNamespace",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -79,9 +93,18 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					append(basicAccessPolicyChecks,
-						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "TF First Policy"),
-						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "TF Second Policy"),
+					append(
+						basicAccessPolicyChecks,
+						resource.TestCheckResourceAttr(
+							AccessPolicyPathFirst,
+							"name",
+							"TF First Policy",
+						),
+						resource.TestCheckResourceAttr(
+							AccessPolicyPathSecond,
+							"name",
+							"TF Second Policy",
+						),
 					)...,
 				),
 			},
@@ -91,9 +114,18 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					append(basicAccessPolicyChecks,
-						resource.TestCheckResourceAttr(AccessPolicyPathFirst, "name", "Placeholder"),
-						resource.TestCheckResourceAttr(AccessPolicyPathSecond, "name", "Placeholder"),
+					append(
+						basicAccessPolicyChecks,
+						resource.TestCheckResourceAttr(
+							AccessPolicyPathFirst,
+							"name",
+							"Placeholder",
+						),
+						resource.TestCheckResourceAttr(
+							AccessPolicyPathSecond,
+							"name",
+							"Placeholder",
+						),
 					)...,
 				),
 			},
@@ -105,8 +137,16 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(string(createFile), string(modifyFile), "clientworkloadNamespace")
-	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(createFileConfig, modifyFileConfig, "secondClientWorkloadNamespace")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"clientworkloadNamespace",
+	)
+	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(
+		createFileConfig,
+		modifyFileConfig,
+		"secondClientWorkloadNamespace",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -115,24 +155,60 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 			{
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPFirst,
+						"name",
+						"TF Multi CP First Policy",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPFirst,
+						CredentialProvidersCount,
+						"2",
+					),
 
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "3"),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPSecond,
+						"name",
+						"TF Multi CP Second Policy",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPSecond,
+						CredentialProvidersCount,
+						"3",
+					),
 				),
 			},
 			// ImportState testing
-			{ResourceName: AccessPolicyPathMultiCPFirst, ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName:      AccessPolicyPathMultiCPFirst,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, "name", "TF Multi CP First Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPFirst, CredentialProvidersCount, "2"),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPFirst,
+						"name",
+						"TF Multi CP First Policy Updated",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPFirst,
+						CredentialProvidersCount,
+						"2",
+					),
 
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, "name", "TF Multi CP Second Policy Updated"),
-					resource.TestCheckResourceAttr(AccessPolicyPathMultiCPSecond, CredentialProvidersCount, "2"),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPSecond,
+						"name",
+						"TF Multi CP Second Policy Updated",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiCPSecond,
+						CredentialProvidersCount,
+						"2",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -142,14 +218,20 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 
 func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyDuplicateMappings.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "clientworkloadNamespace")
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"clientworkloadNamespace",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      createFileConfig,
-				ExpectError: regexp.MustCompile(`duplicate credential provider mapping already exists`),
+				Config: createFileConfig,
+				ExpectError: regexp.MustCompile(
+					`duplicate credential provider mapping already exists`,
+				),
 			},
 		},
 	})

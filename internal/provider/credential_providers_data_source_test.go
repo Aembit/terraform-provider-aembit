@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
-const testCredentialProviderResource string = "aembit_credential_provider.oauth"
+const (
+	testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
+	testCredentialProviderResource    string = "aembit_credential_provider.oauth"
+)
 
 func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -29,7 +31,9 @@ func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccCredentialProvidersDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource.tf")
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/data/TestAccCredentialProvidersDataSource.tf",
+	)
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance OAuth")
 
 	resource.Test(t, resource.TestCase{
@@ -40,9 +44,15 @@ func TestAccCredentialProvidersDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Credential Providers returned
-					resource.TestCheckResourceAttrSet(testCredentialProvidersDataSource, "credential_providers.#"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProvidersDataSource,
+						"credential_providers.#",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProvidersDataSource, "credential_providers.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProvidersDataSource,
+						"credential_providers.0.id",
+					),
 					// Find newly created entry
 					testFindCredentialProvider(testCredentialProviderResource),
 				),

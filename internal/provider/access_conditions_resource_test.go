@@ -10,10 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testAccessConditionResourceWiz string = "aembit_access_condition.wiz"
-const testAccessConditionResourceCrowdstrike string = "aembit_access_condition.crowdstrike"
-const testAccessConditionResourceGeoIp string = "aembit_access_condition.geoip"
-const testAccessConditionResourceTimeZone string = "aembit_access_condition.timezone"
+const (
+	testAccessConditionResourceWiz         string = "aembit_access_condition.wiz"
+	testAccessConditionResourceCrowdstrike string = "aembit_access_condition.crowdstrike"
+	testAccessConditionResourceGeoIp       string = "aembit_access_condition.geoip"
+	testAccessConditionResourceTimeZone    string = "aembit_access_condition.timezone"
+)
 
 func testDeleteAccessCondition(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -42,7 +44,11 @@ func TestAccAccessConditionResource_Wiz(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testAccessConditionResourceWiz, "name", "TF Acceptance Wiz"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceWiz,
+						"name",
+						"TF Acceptance Wiz",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceWiz, "id"),
 					// Verify placeholder ID is set
@@ -50,17 +56,29 @@ func TestAccAccessConditionResource_Wiz(t *testing.T) {
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
-			{Config: string(createFile), Check: testDeleteAccessCondition(testAccessConditionResourceWiz), ExpectNonEmptyPlan: true},
+			{
+				Config:             string(createFile),
+				Check:              testDeleteAccessCondition(testAccessConditionResourceWiz),
+				ExpectNonEmptyPlan: true,
+			},
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: testAccessConditionResourceWiz, ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName:      testAccessConditionResourceWiz,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testAccessConditionResourceWiz, "name", "TF Acceptance Wiz - Modified"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceWiz,
+						"name",
+						"TF Acceptance Wiz - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -69,8 +87,12 @@ func TestAccAccessConditionResource_Wiz(t *testing.T) {
 }
 
 func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/condition/crowdstrike/TestAccAccessConditionResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/condition/crowdstrike/TestAccAccessConditionResource.tfmod")
+	createFile, _ := os.ReadFile(
+		"../../tests/condition/crowdstrike/TestAccAccessConditionResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/condition/crowdstrike/TestAccAccessConditionResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -80,11 +102,27 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "name", "TF Acceptance Crowdstrike"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceCrowdstrike,
+						"name",
+						"TF Acceptance Crowdstrike",
+					),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceCrowdstrike,
+						tagsCount,
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceCrowdstrike,
+						tagsColor,
+						"blue",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceCrowdstrike,
+						tagsDay,
+						"Sunday",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceCrowdstrike, "id"),
 					// Verify placeholder ID is set
@@ -92,13 +130,21 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testAccessConditionResourceCrowdstrike, ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName:      testAccessConditionResourceCrowdstrike,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testAccessConditionResourceCrowdstrike, "name", "TF Acceptance Crowdstrike - Modified"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceCrowdstrike,
+						"name",
+						"TF Acceptance Crowdstrike - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -118,11 +164,27 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testAccessConditionResourceGeoIp, "name", "TF Acceptance GeoIp"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						"name",
+						"TF Acceptance GeoIp",
+					),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAccessConditionResourceGeoIp, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceGeoIp, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceGeoIp, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						tagsCount,
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						tagsColor,
+						"blue",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						tagsDay,
+						"Sunday",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceGeoIp, "id"),
 					// Verify placeholder ID is set
@@ -130,13 +192,21 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testAccessConditionResourceGeoIp, ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName:      testAccessConditionResourceGeoIp,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testAccessConditionResourceGeoIp, "name", "TF Acceptance GeoIp - Modified"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						"name",
+						"TF Acceptance GeoIp - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -146,7 +216,9 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 
 func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/condition/timezone/TestAccAccessConditionResource.tf")
-	modifyFile, _ := os.ReadFile("../../tests/condition/timezone/TestAccAccessConditionResource.tfmod")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/condition/timezone/TestAccAccessConditionResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -156,11 +228,27 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify AccessCondition Name
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance Timezone"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceTimeZone,
+						"name",
+						"TF Acceptance Timezone",
+					),
 					// Verify Tags.
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceTimeZone,
+						tagsCount,
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceTimeZone,
+						tagsColor,
+						"blue",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceTimeZone,
+						tagsDay,
+						"Sunday",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceTimeZone, "id"),
 					// Verify placeholder ID is set
@@ -168,13 +256,21 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testAccessConditionResourceTimeZone, ImportState: true, ImportStateVerify: true},
+			{
+				ResourceName:      testAccessConditionResourceTimeZone,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
-					resource.TestCheckResourceAttr(testAccessConditionResourceTimeZone, "name", "TF Acceptance Timezone - Modified"),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceTimeZone,
+						"name",
+						"TF Acceptance Timezone - Modified",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

@@ -3,12 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -28,7 +28,11 @@ type agentControllerDeviceCodeDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *agentControllerDeviceCodeDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *agentControllerDeviceCodeDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -37,7 +41,10 @@ func (d *agentControllerDeviceCodeDataSource) Configure(_ context.Context, req d
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return
@@ -47,12 +54,20 @@ func (d *agentControllerDeviceCodeDataSource) Configure(_ context.Context, req d
 }
 
 // Metadata returns the data source type name.
-func (d *agentControllerDeviceCodeDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *agentControllerDeviceCodeDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_agent_controller_device_code"
 }
 
 // Schema defines the schema for the resource.
-func (d *agentControllerDeviceCodeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *agentControllerDeviceCodeDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Generates an agent controller device code.",
 		Attributes: map[string]schema.Attribute{
@@ -69,7 +84,11 @@ func (d *agentControllerDeviceCodeDataSource) Schema(_ context.Context, _ dataso
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *agentControllerDeviceCodeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *agentControllerDeviceCodeDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var deviceCodeRequest models.AgentControllerDeviceCodeDataSourceModel
 	var state models.AgentControllerDeviceCodeDataSourceModel
 

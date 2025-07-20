@@ -2,11 +2,11 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,17 +26,29 @@ type logStreamsDataSource struct {
 }
 
 // Configure adds the logStream to the data source.
-func (d *logStreamsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *logStreamsDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *logStreamsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *logStreamsDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_log_streams"
 }
 
 // Schema defines the schema for the resource.
-func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *logStreamsDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get information about all Aembit Log Streams",
 		Attributes: map[string]schema.Attribute{
@@ -166,7 +178,11 @@ func (d *logStreamsDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *logStreamsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *logStreamsDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.LogStreamsDataSourceModel
 
 	logStreams, err := d.client.GetLogStreams(nil)

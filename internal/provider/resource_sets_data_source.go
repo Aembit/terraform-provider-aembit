@@ -2,12 +2,12 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -27,17 +27,29 @@ type resourceSetsDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *resourceSetsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *resourceSetsDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *resourceSetsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *resourceSetsDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_resource_sets"
 }
 
 // Schema defines the schema for the resource.
-func (d *resourceSetsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *resourceSetsDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Use this data source to get information about all Aembit ResourceSets.",
 		Attributes: map[string]schema.Attribute{
@@ -76,7 +88,11 @@ func (d *resourceSetsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 }
 
 // Read checks for the datasource ID and retrieves the associated ResourceSet.
-func (d *resourceSetsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *resourceSetsDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.ResourceSetsDataModel
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -105,15 +121,18 @@ func (d *resourceSetsDataSource) Read(ctx context.Context, req datasource.ReadRe
 }
 
 // DTO to Model conversion methods.
-func convertResourceSetsDTOToModel(_ context.Context, dto []aembit.ResourceSetDTO) models.ResourceSetsDataModel {
-	var model models.ResourceSetsDataModel = models.ResourceSetsDataModel{
+func convertResourceSetsDTOToModel(
+	_ context.Context,
+	dto []aembit.ResourceSetDTO,
+) models.ResourceSetsDataModel {
+	model := models.ResourceSetsDataModel{
 		ResourceSets: make([]models.ResourceSetResourceModel, len(dto)),
 	}
 	for index, resourceSet := range dto {
 		model.ResourceSets[index] = models.ResourceSetResourceModel{
-			ID:          types.StringValue(resourceSet.EntityDTO.ExternalID),
-			Name:        types.StringValue(resourceSet.EntityDTO.Name),
-			Description: types.StringValue(resourceSet.EntityDTO.Description),
+			ID:          types.StringValue(resourceSet.ExternalID),
+			Name:        types.StringValue(resourceSet.Name),
+			Description: types.StringValue(resourceSet.Description),
 			Roles:       make([]types.String, len(resourceSet.Roles)),
 		}
 		model.ResourceSets[index].Roles = make([]types.String, len(resourceSet.Roles))

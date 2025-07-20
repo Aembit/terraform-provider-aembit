@@ -2,12 +2,12 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -27,17 +27,29 @@ type trustProvidersDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *trustProvidersDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *trustProvidersDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *trustProvidersDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *trustProvidersDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_trust_providers"
 }
 
 // Schema defines the schema for the resource.
-func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *trustProvidersDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an trust provider.",
 		Attributes: map[string]schema.Attribute{
@@ -588,7 +600,11 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *trustProvidersDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.TrustProvidersDataSourceModel
 
 	trustProviders, err := d.client.GetTrustProviders(nil)
@@ -602,7 +618,12 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
-		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider, d.client.Tenant, d.client.StackDomain)
+		trustProviderState := convertTrustProviderDTOToModel(
+			ctx,
+			trustProvider,
+			d.client.Tenant,
+			d.client.StackDomain,
+		)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

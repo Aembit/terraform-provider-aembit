@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testDiscoveryIntegrationssDataSource string = "data.aembit_discovery_integrations.test"
-const testDiscoveryIntegrationResource string = "aembit_discovery_integration.wiz"
+const (
+	testDiscoveryIntegrationssDataSource string = "data.aembit_discovery_integrations.test"
+	testDiscoveryIntegrationResource     string = "aembit_discovery_integration.wiz"
+)
 
 func testFindDiscoveryIntegration(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -29,7 +31,9 @@ func testFindDiscoveryIntegration(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccDiscoveryIntegrationsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/discovery_integration/data/TestAccDiscoveryIntegrationsDataSource.tf")
+	createFile, _ := os.ReadFile(
+		"../../tests/discovery_integration/data/TestAccDiscoveryIntegrationsDataSource.tf",
+	)
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Wiz")
 
 	resource.Test(t, resource.TestCase{
@@ -40,7 +44,10 @@ func TestAccDiscoveryIntegrationsDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Discovery Integrations returned
-					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationssDataSource, "discovery_integrations.#"),
+					resource.TestCheckResourceAttrSet(
+						testDiscoveryIntegrationssDataSource,
+						"discovery_integrations.#",
+					),
 					// Find newly created entry
 					testFindDiscoveryIntegration(testDiscoveryIntegrationResource),
 				),
