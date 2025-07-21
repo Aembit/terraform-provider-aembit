@@ -8,9 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
-
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -23,6 +20,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -1879,7 +1879,10 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvide
 	return model
 }
 
-func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO, state models.TrustProviderResourceModel) *models.TrustProviderKubernetesModel {
+func convertKubernetesDTOToModel(
+	dto aembit.TrustProviderDTO,
+	state models.TrustProviderResourceModel,
+) *models.TrustProviderKubernetesModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &models.TrustProviderKubernetesModel{
