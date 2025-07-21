@@ -188,11 +188,6 @@ Optional:
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
 - `workflows` (Set of String) The set of accepted GitHub ID Token Workflows which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Workflows can be matched.
 
-Read-Only:
-
-- `oidc_audience` (String) The audience value required for the GitHub Action ID Token.
-- `oidc_client_id` (String) The OAuth Client ID value required for authenticating a GitHub Action.
-
 
 <a id="nestedatt--gitlab_job"></a>
 ### Nested Schema for `gitlab_job`
