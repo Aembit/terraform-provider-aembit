@@ -72,3 +72,18 @@ EOT
         day   = "Sunday"
     }
 }
+
+resource "aembit_trust_provider" "oidcidtoken_symmetric_key" {
+	name = "TF Acceptance OIDC ID Token Symmetric Key"
+	is_active = true
+	oidc_id_token = {
+		issuer = "issuer"
+		subject = "subject"
+		audience = "audience"
+		symmetric_key = "a2V5MQ=="
+	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
+}

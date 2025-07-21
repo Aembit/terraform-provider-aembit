@@ -491,6 +491,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 	const trustProviderKubernetes string = "aembit_trust_provider.kubernetes"
 	const trustProviderKubernetesKey string = "aembit_trust_provider.kubernetes_key"
 	const trustProviderKubernetesJWKS string = "aembit_trust_provider.kubernetes_jwks"
+	const trustProviderKubernetesSymmetricKey string = "aembit_trust_provider.kubernetes_symmetric_key"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -533,6 +534,16 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesSymmetricKey,
+						"name",
+						"TF Acceptance Kubernetes Symmetric Key",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesSymmetricKey, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesSymmetricKey, "id"),
 				),
 			},
 			// ImportState testing
@@ -571,6 +582,16 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesSymmetricKey,
+						"name",
+						"TF Acceptance Kubernetes Symmetric Key - Modified",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesSymmetricKey, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesSymmetricKey, "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

@@ -8,6 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -20,8 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -603,6 +604,14 @@ func (r *trustProviderResource) Schema(
 						Optional:    true,
 						Computed:    true,
 					},
+					"symmetric_key": schema.StringAttribute{
+						Description: "The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.",
+						Optional:    true,
+						Sensitive:   true,
+						Validators: []validator.String{
+							validators.Base64Validation(),
+						},
+					},
 				},
 			},
 			"terraform_workspace": schema.SingleNestedAttribute{
@@ -709,6 +718,14 @@ func (r *trustProviderResource) Schema(
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
+					},
+					"symmetric_key": schema.StringAttribute{
+						Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token.",
+						Optional:    true,
+						Sensitive:   true,
+						Validators: []validator.String{
+							validators.Base64Validation(),
+						},
 					},
 				},
 			},
@@ -918,6 +935,7 @@ func (r *trustProviderResource) Create(
 	plan = convertTrustProviderDTOToModel(
 		ctx,
 		*trustProvider,
+		plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -962,6 +980,7 @@ func (r *trustProviderResource) Read(
 	state = convertTrustProviderDTOToModel(
 		ctx,
 		trustProvider,
+		state,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -1023,6 +1042,7 @@ func (r *trustProviderResource) Update(
 	state = convertTrustProviderDTOToModel(
 		ctx,
 		*trustProvider,
+		plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -1676,6 +1696,7 @@ func convertTerraformModelToDTO(
 func convertTrustProviderDTOToModel(
 	ctx context.Context,
 	dto aembit.TrustProviderDTO,
+	state models.TrustProviderResourceModel,
 	tenant, stackDomain string,
 ) models.TrustProviderResourceModel {
 	var model models.TrustProviderResourceModel
@@ -1701,9 +1722,9 @@ func convertTrustProviderDTOToModel(
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
-		model.KubernetesService = convertKubernetesDTOToModel(dto)
+		model.KubernetesService = convertKubernetesDTOToModel(dto, state)
 	case "OidcIdToken":
-		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto)
+		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto, state)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	}
@@ -1858,7 +1879,7 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvide
 	return model
 }
 
-func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProviderKubernetesModel {
+func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO, state models.TrustProviderResourceModel) *models.TrustProviderKubernetesModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &models.TrustProviderKubernetesModel{
@@ -1870,6 +1891,7 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 		PublicKey:          types.StringNull(),
 		OIDCEndpoint:       types.StringNull(),
 		Jwks:               jsontypes.NewNormalizedNull(),
+		SymmetricKey:       types.StringNull(),
 	}
 
 	if len(dto.Certificate) > 0 {
@@ -1878,6 +1900,8 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
+	} else {
+		model.SymmetricKey = state.KubernetesService.SymmetricKey
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
@@ -1909,6 +1933,7 @@ func convertKubernetesDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvi
 
 func convertOidcIdTokenTpDTOToModel(
 	dto aembit.TrustProviderDTO,
+	state models.TrustProviderResourceModel,
 ) *models.TrustProviderOidcIdTokenModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
@@ -1919,6 +1944,7 @@ func convertOidcIdTokenTpDTOToModel(
 		PublicKey:    types.StringNull(),
 		OIDCEndpoint: types.StringNull(),
 		Jwks:         jsontypes.NewNormalizedNull(),
+		SymmetricKey: types.StringNull(),
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
@@ -1926,6 +1952,8 @@ func convertOidcIdTokenTpDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
+	} else {
+		model.SymmetricKey = state.OidcIdToken.SymmetricKey
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {

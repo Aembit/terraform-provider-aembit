@@ -78,3 +78,20 @@ EOT
         day   = "Sunday"
     }
 }
+
+resource "aembit_trust_provider" "kubernetes_symmetric_key" {
+	name = "TF Acceptance Kubernetes Symmetric Key"
+	is_active = true
+	kubernetes_service_account = {
+		issuer = "issuer"
+		namespace = "namespace"
+		pod_name = "pod_name"
+		service_account_name = "service_account_name"
+		subject = "subject"
+		symmetric_key = "a2V5MQ=="
+	}
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
+}

@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -388,6 +389,10 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 									Computed:    true,
 								},
+								"symmetric_key": schema.StringAttribute{
+									Description: "The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
 								// "jwks": schema.SingleNestedAttribute{
 								// 	Computed:    true,
 								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
@@ -530,6 +535,10 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 									Computed:    true,
 								},
+								"symmetric_key": schema.StringAttribute{
+									Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token Token.",
+									Computed:    true,
+								},
 								// "jwks": schema.SingleNestedAttribute{
 								// 	Computed:    true,
 								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
@@ -613,6 +622,7 @@ func (d *trustProvidersDataSource) Read(
 		trustProviderState := convertTrustProviderDTOToModel(
 			ctx,
 			trustProvider,
+			models.TrustProviderResourceModel{},
 			d.client.Tenant,
 			d.client.StackDomain,
 		)

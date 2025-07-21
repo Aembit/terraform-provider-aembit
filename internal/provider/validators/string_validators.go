@@ -42,6 +42,7 @@ var (
 		`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`,
 	)
 	ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
+	Base64Regex = regexp.MustCompile(`^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`)
 )
 
 func NameLengthValidation() validator.String {
@@ -145,4 +146,8 @@ func AuthenticationTokenValidation() validator.String {
 
 func CrowdstrikeApiKeyValidation() validator.String {
 	return stringvalidator.RegexMatches(ApiKeyRegex, "must be a valid API Key")
+}
+
+func Base64Validation() validator.String {
+	return stringvalidator.RegexMatches(Base64Regex, "must be a valid base64-encoded string")
 }
