@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -46,6 +48,9 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Identity Provider.",
 				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Identity Provider.",
@@ -82,7 +87,7 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 				Optional:    true,
 			},
 			"saml_statement_role_mappings": schema.SingleNestedAttribute{
-				Description: "Mapping of SAML attributes configured in the Identity Provider to Aembit user roles.",
+				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"attribute_name": schema.StringAttribute{
@@ -93,8 +98,8 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 						Description: "SAML attribute value.",
 						Required:    true,
 					},
-					"roles": schema.SetAttribute{
-						Description: "List of Aembit roles to be assigned to a user.",
+					"roles_ids": schema.SetAttribute{
+						Description: "List of Aembit Role Identifiers to be assigned to a user.",
 						Required:    true,
 					},
 				},
@@ -106,7 +111,7 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 // Create creates the resource and sets the initial Terraform state.
 func (r *identityProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan identityProviderResourceModel
+	var plan models.IdentityProviderDataSourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -140,7 +145,7 @@ func (r *identityProviderResource) Create(ctx context.Context, req resource.Crea
 // Read refreshes the Terraform state with the latest data.
 func (r *identityProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state identityProviderResourceModel
+	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -255,7 +260,7 @@ func (r *identityProviderResource) ImportState(ctx context.Context, req resource
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIdentityProviderModelToDTO(ctx context.Context, model identityProviderResourceModel, externalID *string) aembit.IdentityProviderDTO {
+func convertIdentityProviderModelToDTO(ctx context.Context, model models.IdentityProviderResourceModel, externalID *string) aembit.IdentityProviderDTO {
 	var identityProvider aembit.IdentityProviderDTO
 	identityProvider.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
