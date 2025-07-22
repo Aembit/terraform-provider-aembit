@@ -1910,7 +1910,7 @@ func convertKubernetesDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
-	} else {
+	} else if state.KubernetesService != nil {
 		model.SymmetricKey = state.KubernetesService.SymmetricKey
 	}
 
@@ -1962,7 +1962,7 @@ func convertOidcIdTokenTpDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
-	} else {
+	} else if state.OidcIdToken != nil {
 		model.SymmetricKey = state.OidcIdToken.SymmetricKey
 	}
 
