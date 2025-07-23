@@ -12,7 +12,7 @@ import (
 
 const testCredentialProviderIntegrationGitLab string = "aembit_credential_provider_integration.gitlab"
 
-// resource id set in the test file
+// resource id set in the test file.
 const testCredentialProviderIntegrationAwsIamRole string = "aembit_credential_provider_integration.awsiamrole_cpi"
 
 func testDeleteCredentialProviderIntegration(resourceName string) resource.TestCheckFunc {
