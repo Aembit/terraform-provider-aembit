@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
-
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -161,7 +159,12 @@ func (r *credentialProviderIntegrationResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan, r.client.Tenant, r.client.StackDomain)
+	plan = convertCredentialProviderIntegrationDTOToModel(
+		*credentialIntegration,
+		plan,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -257,7 +260,12 @@ func (r *credentialProviderIntegrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan, r.client.Tenant, r.client.StackDomain)
+	state = convertCredentialProviderIntegrationDTOToModel(
+		*credentialIntegration,
+		plan,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -354,8 +362,10 @@ func convertCredentialProviderIntegrationDTOToModel(
 		model.AwsIamRole = &models.CredentialProviderIntegrationAwsIamRoleModel{
 			RoleArn:           types.StringValue(dto.RoleArn),
 			LifetimeInSeconds: types.Int32Value(dto.LifetimeInSeconds),
-			OIDCIssuerUrl:     types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
-			TokenAudience:     types.StringValue("sts.amazonaws.com"),
+			OIDCIssuerUrl: types.StringValue(
+				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
+			),
+			TokenAudience: types.StringValue("sts.amazonaws.com"),
 		}
 	}
 	return model

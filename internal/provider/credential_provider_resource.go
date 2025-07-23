@@ -6,9 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
-
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -26,6 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -1231,11 +1230,13 @@ func convertCredentialProviderV2DTOToModel(
 		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, state)
 	case "aws-secret-manager-value":
 		model.AwsSecretsManagerValue = &models.CredentialProviderAwsSecretsManagerValueModel{
-			SecretArn:                               types.StringValue(dto.SecretArn),
-			SecretKey1:                              types.StringValue(dto.SecretKey1),
-			SecretKey2:                              types.StringValue(dto.SecretKey2),
-			PrivateNetworkAccess:                    types.BoolValue(dto.PrivateNetworkAccess),
-			CredentialProviderIntegrationExternalId: types.StringValue(dto.CredentialProviderIntegrationExternalId),
+			SecretArn:            types.StringValue(dto.SecretArn),
+			SecretKey1:           types.StringValue(dto.SecretKey1),
+			SecretKey2:           types.StringValue(dto.SecretKey2),
+			PrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
+			CredentialProviderIntegrationExternalId: types.StringValue(
+				dto.CredentialProviderIntegrationExternalId,
+			),
 		}
 	}
 	return model

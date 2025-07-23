@@ -3,11 +3,10 @@ package provider
 import (
 	"context"
 
-	"terraform-provider-aembit/internal/provider/models"
-
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
