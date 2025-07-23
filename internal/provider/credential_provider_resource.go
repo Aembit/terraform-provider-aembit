@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -23,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -538,7 +539,7 @@ func (r *credentialProviderResource) Schema(
 				},
 			},
 			"managed_gitlab_account": schema.SingleNestedAttribute{
-				Description: "Vault Client Token type Credential Provider configuration.",
+				Description: "Managed GitLab Account type Credential Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"service_account_username": schema.StringAttribute{
@@ -683,6 +684,40 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"aws_secrets_manager_value": schema.SingleNestedAttribute{
+				Description: "AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider" +
+					" supports secret values in plaintext or JSON formats. Do not provide values in `secret_key_1` and `secret_key_2`" +
+					" fields for plaintext secrets. These fields are used to specify property names when a secret contains a JSON.",
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"secret_arn": schema.StringAttribute{
+						Description: "ARN of the AWS Secrets Manager secret to be used by the Credential Provider.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.AwsSecretArnValidation(),
+						},
+					},
+					"secret_key_1": schema.StringAttribute{
+						Description: "Used when an AWS Secrets Manager secret object is in JSON format. Specifies a key of an element with the secret value.",
+						Optional:    true,
+					},
+					"secret_key_2": schema.StringAttribute{
+						Description: "Similar to `secret_key_1` but used when you need a credential provider to work with 2 secret values." +
+							" For example, a username / password pair.",
+						Optional: true,
+					},
+					"private_network_access": schema.BoolAttribute{
+						Description: "Indicates that the AWS Secrets Manager is accessible via a private network only.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"credential_provider_integration_id": schema.StringAttribute{
+						Description: "The unique identifier of the Credential Provider Integration of type AWS IAM Role.",
+						Required:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -705,6 +740,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("vault_client_token"),
 			path.MatchRoot("managed_gitlab_account"),
 			path.MatchRoot("oidc_id_token"),
+			path.MatchRoot("aws_secrets_manager_value"),
 		),
 	}
 }
@@ -1129,6 +1165,15 @@ func convertCredentialProviderModelToV2DTO(
 		}
 	}
 
+	if model.AwsSecretsManagerValue != nil {
+		credential.Type = "aws-secret-manager-value"
+		credential.SecretArn = model.AwsSecretsManagerValue.SecretArn.ValueString()
+		credential.SecretKey1 = model.AwsSecretsManagerValue.SecretKey1.ValueString()
+		credential.SecretKey2 = model.AwsSecretsManagerValue.SecretKey2.ValueString()
+		credential.PrivateNetworkAccess = model.AwsSecretsManagerValue.PrivateNetworkAccess.ValueBool()
+		credential.CredentialProviderIntegrationExternalId = model.AwsSecretsManagerValue.CredentialProviderIntegrationExternalId.ValueString()
+	}
+
 	return credential
 }
 
@@ -1156,6 +1201,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.VaultClientToken = nil
 	model.ManagedGitlabAccount = nil
 	model.OidcIdToken = nil
+	model.AwsSecretsManagerValue = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1183,6 +1229,14 @@ func convertCredentialProviderV2DTOToModel(
 		model.ManagedGitlabAccount = convertManagedGitlabAccountDTOToModel(dto, state)
 	case "oidc-id-token":
 		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, state)
+	case "aws-secret-manager-value":
+		model.AwsSecretsManagerValue = &models.CredentialProviderAwsSecretsManagerValueModel{
+			SecretArn:                               types.StringValue(dto.SecretArn),
+			SecretKey1:                              types.StringValue(dto.SecretKey1),
+			SecretKey2:                              types.StringValue(dto.SecretKey2),
+			PrivateNetworkAccess:                    types.BoolValue(dto.PrivateNetworkAccess),
+			CredentialProviderIntegrationExternalId: types.StringValue(dto.CredentialProviderIntegrationExternalId),
+		}
 	}
 	return model
 }

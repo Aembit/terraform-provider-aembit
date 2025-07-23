@@ -2,15 +2,20 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
-	"aembit.io/aembit"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
+
+	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -78,7 +83,7 @@ func (r *credentialProviderIntegrationResource) Schema(
 			},
 			"gitlab": schema.SingleNestedAttribute{
 				Description: "GitLab Managed Account type Credential Provider Integration configuration.",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"url": schema.StringAttribute{
 						Description: "GitLab URL.",
@@ -91,6 +96,36 @@ func (r *credentialProviderIntegrationResource) Schema(
 						Description: "GitLab personal access token value.",
 						Required:    true,
 						Sensitive:   true,
+					},
+				},
+			},
+			"aws_iam_role": schema.SingleNestedAttribute{
+				Description: "Configuration of Credential Provider Integration of type AWS IAM Role",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"role_arn": schema.StringAttribute{
+						Description: "AWS IAM Role ARN.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.AwsIamRoleArnValidation(),
+						},
+					},
+					"lifetime_in_seconds": schema.Int32Attribute{
+						Description: "Lifetime in seconds for the AWS IAM Role credentials.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int32default.StaticInt32(3600),
+						Validators: []validator.Int32{
+							int32validator.Between(900, 43200), // 15 minutes to 12 hours
+						},
+					},
+					"oidc_issuer_url": schema.StringAttribute{
+						Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
+						Computed:    true,
+					},
+					"token_audience": schema.StringAttribute{
+						Description: "Token Audience for AWS IAM Identity Provider configuration",
+						Computed:    true,
 					},
 				},
 			},
@@ -126,7 +161,7 @@ func (r *credentialProviderIntegrationResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan)
+	plan = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -168,7 +203,12 @@ func (r *credentialProviderIntegrationResource) Read(
 		return
 	}
 
-	state = convertCredentialProviderIntegrationDTOToModel(credentialIntegration, state)
+	state = convertCredentialProviderIntegrationDTOToModel(
+		credentialIntegration,
+		state,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -217,7 +257,7 @@ func (r *credentialProviderIntegrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan)
+	state = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan, r.client.Tenant, r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -276,30 +316,47 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.ExternalID = *externalID
 	}
 
-	credentialIntegration.Type = "GitLab"
-	credentialIntegration.Url = model.GitLab.Url.ValueString()
-	credentialIntegration.PersonalAccessToken = model.GitLab.PersonalAccessToken.ValueString()
+	if model.GitLab != nil {
+		credentialIntegration.Type = "GitLab"
+		credentialIntegration.Url = model.GitLab.Url.ValueString()
+		credentialIntegration.PersonalAccessToken = model.GitLab.PersonalAccessToken.ValueString()
+	}
 
+	if model.AwsIamRole != nil {
+		credentialIntegration.Type = "AwsIamRole"
+		credentialIntegration.RoleArn = model.AwsIamRole.RoleArn.ValueString()
+		credentialIntegration.LifetimeInSeconds = model.AwsIamRole.LifetimeInSeconds.ValueInt32()
+	}
 	return credentialIntegration
 }
 
 func convertCredentialProviderIntegrationDTOToModel(
 	dto aembit.CredentialProviderIntegrationDTO,
 	state models.CredentialProviderIntegrationResourceModel,
+	tenant string,
+	stackDomain string,
 ) models.CredentialProviderIntegrationResourceModel {
 	var model models.CredentialProviderIntegrationResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 
-	model.GitLab = &models.CredentialProviderIntegrationGitlabModel{
-		Url:                 types.StringValue(dto.Url),
-		PersonalAccessToken: types.StringValue(dto.PersonalAccessToken),
+	switch dto.Type {
+	case "GitLab":
+		model.GitLab = &models.CredentialProviderIntegrationGitlabModel{
+			Url:                 types.StringValue(dto.Url),
+			PersonalAccessToken: types.StringValue(dto.PersonalAccessToken),
+		}
+		if len(dto.PersonalAccessToken) == 0 && state.GitLab != nil {
+			model.GitLab.PersonalAccessToken = state.GitLab.PersonalAccessToken
+		}
+	case "AwsIamRole":
+		model.AwsIamRole = &models.CredentialProviderIntegrationAwsIamRoleModel{
+			RoleArn:           types.StringValue(dto.RoleArn),
+			LifetimeInSeconds: types.Int32Value(dto.LifetimeInSeconds),
+			OIDCIssuerUrl:     types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
+			TokenAudience:     types.StringValue("sts.amazonaws.com"),
+		}
 	}
-
-	if len(dto.PersonalAccessToken) == 0 && state.GitLab != nil {
-		model.GitLab.PersonalAccessToken = state.GitLab.PersonalAccessToken
-	}
-
 	return model
 }

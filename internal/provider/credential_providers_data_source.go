@@ -3,13 +3,14 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -462,6 +463,40 @@ func (d *credentialProvidersDataSource) Schema(
 											},
 										},
 									},
+								},
+							},
+						},
+						"aws_secrets_manager_value": schema.SingleNestedAttribute{
+							Description: "AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider" +
+								" supports secret values in plaintext or JSON formats.",
+							Optional: true,
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"secret_arn": schema.StringAttribute{
+									Description: "ARN of the AWS Secrets Manager secret to be used by the Credential Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"secret_key_1": schema.StringAttribute{
+									Description: "Used when an AWS Secrets Manager secret object is in JSON format. Specifies a key of an element with the secret value.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"secret_key_2": schema.StringAttribute{
+									Description: "Similar to `secret_key_1` but used when you need a credential provider to work with 2 secret values." +
+										" For example, a username / password pair.",
+									Optional: true,
+									Computed: true,
+								},
+								"private_network_access": schema.BoolAttribute{
+									Description: "Indicates that the AWS Secrets Manager is accessible via a private network only.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"credential_provider_integration_id": schema.StringAttribute{
+									Description: "The unique identifier of the Credential Provider Integration of type AWS IAM Role.",
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},

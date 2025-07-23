@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -85,6 +86,28 @@ func (d *credentialProviderIntegrationsDataSource) Schema(
 								},
 							},
 						},
+						"aws_iam_role": schema.SingleNestedAttribute{
+							Description: "AWS IAM Role type Credential Provider Integration configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"role_arn": schema.StringAttribute{
+									Description: "AWS IAM Role ARN.",
+									Computed:    true,
+								},
+								"lifetime_in_seconds": schema.Int32Attribute{
+									Description: "Lifetime in seconds for the requested AWS temporary credentials.",
+									Computed:    true,
+								},
+								"oidc_issuer_url": schema.StringAttribute{
+									Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
+									Computed:    true,
+								},
+								"token_audience": schema.StringAttribute{
+									Description: "Token Audience for AWS IAM Identity Provider configuration",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},
@@ -116,6 +139,8 @@ func (d *credentialProviderIntegrationsDataSource) Read(
 		integrationState := convertCredentialProviderIntegrationDTOToModel(
 			integration,
 			models.CredentialProviderIntegrationResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
 		)
 
 		state.CredentialProviderIntegrations = append(

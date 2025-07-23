@@ -1,0 +1,11 @@
+provider "aembit" {
+}
+
+resource "aembit_credential_provider_integration" "awsiamrole_cpi" {
+	name = "TF Acceptance Aws IAM Role Credential Provider Integration - Updated"
+	description = "TF Acceptance Aws IAM Role Credential Provider Integration Description - Updated"
+	aws_iam_role = {
+		role_arn = "arn:aws:iam::123456789012:role/MyRoleUpdated"
+		lifetime_in_seconds = 5000
+	}
+}
