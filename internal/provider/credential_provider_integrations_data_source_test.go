@@ -11,7 +11,7 @@ import (
 
 const (
 	testCredentialProviderIntegrationsDataSource string = "data.aembit_credential_provider_integrations.test"
-	testCredentialProviderIntegrationResource    string = "aembit_credential_provider_integration.gitlab"
+	testCredentialProviderIntegrationResource    string = "aembit_credential_provider_integration.aws_sm_secret"
 )
 
 func testFindCredentialProviderIntegration(resourceName string) resource.TestCheckFunc {
@@ -31,8 +31,6 @@ func testFindCredentialProviderIntegration(resourceName string) resource.TestChe
 }
 
 func TestAccGitLabCredentialProviderIntegrationsDataSource(t *testing.T) {
-	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
-
 	createFile, _ := os.ReadFile(
 		"../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource.tf",
 	)
