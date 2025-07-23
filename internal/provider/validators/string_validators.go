@@ -46,6 +46,10 @@ var (
 		`^(?:[A-Za-z0-9+/]{4})*` +
 			`(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`,
 	)
+	AwsIamRoleArnRegex = regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[\w+=,.@/-]+$`)
+	AwsSecretArnRegex  = regexp.MustCompile(
+		`^arn:aws:secretsmanager:[a-z0-9-]+:\d{12}:secret:[A-Za-z0-9/_+=.@-]+-[A-Za-z0-9]{6}$`,
+	)
 )
 
 func NameLengthValidation() validator.String {
@@ -153,4 +157,15 @@ func CrowdstrikeApiKeyValidation() validator.String {
 
 func Base64Validation() validator.String {
 	return stringvalidator.RegexMatches(Base64Regex, "must be a valid base64-encoded string")
+}
+
+func AwsIamRoleArnValidation() validator.String {
+	return stringvalidator.RegexMatches(AwsIamRoleArnRegex, "must be a valid AWS ARN")
+}
+
+func AwsSecretArnValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		AwsSecretArnRegex,
+		"must be a valid AWS Secrets Manager secret ARN",
+	)
 }

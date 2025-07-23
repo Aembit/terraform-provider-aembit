@@ -25,6 +25,7 @@ type CredentialProviderResourceModel struct {
 	VaultClientToken       *CredentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`
 	ManagedGitlabAccount   *CredentialProviderManagedGitlabAccountModel   `tfsdk:"managed_gitlab_account"`
 	OidcIdToken            *CredentialProviderManagedOidcIdToken          `tfsdk:"oidc_id_token"`
+	AwsSecretsManagerValue *CredentialProviderAwsSecretsManagerValueModel `tfsdk:"aws_secrets_manager_value"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -152,4 +153,12 @@ type CredentialProviderCustomClaimsModel struct {
 	Key       string `tfsdk:"key"`
 	Value     string `tfsdk:"value"`
 	ValueType string `tfsdk:"value_type"`
+}
+
+type CredentialProviderAwsSecretsManagerValueModel struct {
+	SecretArn                               types.String `tfsdk:"secret_arn"`
+	SecretKey1                              types.String `tfsdk:"secret_key_1"`
+	SecretKey2                              types.String `tfsdk:"secret_key_2"`
+	PrivateNetworkAccess                    types.Bool   `tfsdk:"private_network_access"`
+	CredentialProviderIntegrationExternalId types.String `tfsdk:"credential_provider_integration_id"`
 }

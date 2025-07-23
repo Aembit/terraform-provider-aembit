@@ -903,3 +903,98 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 		},
 	})
 }
+
+func TestAccAwsSecretsManagerValueCP(t *testing.T) {
+	cpResourcePath := "aembit_credential_provider.aws_sm_value"
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"name",
+						"TF Acceptance AWS Secrets Manager Value CP",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"description",
+						"TF Acceptance AWS Secrets Manager Value CP Description",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_arn",
+						"arn:aws:secretsmanager:us-east-2:123456789012:secret:secretname-ABCDEF",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_key_1",
+						"key1",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_key_2",
+						"key2",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.private_network_access",
+						"false",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(cpResourcePath, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: cpResourcePath, ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"name",
+						"TF Acceptance AWS Secrets Manager Value CP - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"description",
+						"TF Acceptance AWS Secrets Manager Value CP Description - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_arn",
+						"arn:aws:secretsmanager:us-east-2:123456789012:secret:anothersecretname-ABCDEF",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_key_1",
+						"key1-updated",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.secret_key_2",
+						"key2-updated",
+					),
+					resource.TestCheckResourceAttr(
+						cpResourcePath,
+						"aws_secrets_manager_value.private_network_access",
+						"true",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

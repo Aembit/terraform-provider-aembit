@@ -25,6 +25,7 @@ Manages an credential provider.
 Optional:
 
 - `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aembit_access_token))
+- `aws_secrets_manager_value` (Attributes) AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext or JSON formats. (see [below for nested schema](#nestedatt--credential_providers--aws_secrets_manager_value))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aws_sts))
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--azure_entra_workload_identity))
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
@@ -53,6 +54,18 @@ Read-Only:
 - `audience` (String) Audience of the Credential Provider.
 - `lifetime` (Number) Lifetime of the Credential Provider.
 - `role_id` (String) Aembit Role ID of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--aws_secrets_manager_value"></a>
+### Nested Schema for `credential_providers.aws_secrets_manager_value`
+
+Optional:
+
+- `credential_provider_integration_id` (String) The unique identifier of the Credential Provider Integration of type AWS IAM Role.
+- `private_network_access` (Boolean) Indicates that the AWS Secrets Manager is accessible via a private network only.
+- `secret_arn` (String) ARN of the AWS Secrets Manager secret to be used by the Credential Provider.
+- `secret_key_1` (String) Used when an AWS Secrets Manager secret object is in JSON format. Specifies a key of an element with the secret value.
+- `secret_key_2` (String) Similar to `secret_key_1` but used when you need a credential provider to work with 2 secret values. For example, a username / password pair.
 
 
 <a id="nestedatt--credential_providers--aws_sts"></a>

@@ -299,3 +299,27 @@ func TestRegex_IPHost_Invalid(t *testing.T) {
 		})
 	}
 }
+
+func TestAwsIamRoleArnRegex(t *testing.T) {
+	valid := "arn:aws:iam::123456789012:role/MyRole"
+	invalid := "arn:aws:iam::123456789012:role/"
+
+	if !AwsIamRoleArnRegex.MatchString(valid) {
+		t.Errorf("expected valid AWS IAM Role ARN to match regex")
+	}
+	if AwsIamRoleArnRegex.MatchString(invalid) {
+		t.Errorf("expected invalid AWS IAM Role ARN to not match regex")
+	}
+}
+
+func TestAwsSecretArnRegex(t *testing.T) {
+	valid := "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret-ABC123"
+	invalid := "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret"
+
+	if !AwsSecretArnRegex.MatchString(valid) {
+		t.Errorf("expected valid AWS Secret ARN to match regex")
+	}
+	if AwsSecretArnRegex.MatchString(invalid) {
+		t.Errorf("expected invalid AWS Secret ARN to not match regex")
+	}
+}

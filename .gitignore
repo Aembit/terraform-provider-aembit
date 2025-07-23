@@ -27,6 +27,9 @@ website/node_modules
 
 website/vendor
 
+# Visual Studio Code workspace, debug and cache settings directory
+.vscode/
+
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
