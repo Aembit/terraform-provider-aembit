@@ -64,6 +64,8 @@ Required:
 	* `Redis`
 	* `Snowflake`
 - `host` (String) Hostname of the Server Workload service endpoint.
+Wildcard hostnames are supported, for example `*.amazonaws.com`, `*.azure.com`, or `*.googleapis.com`.
+Note: Wildcards are not supported in the top or second-level domain, such as `*.com`.
 - `port` (Number) Port of the Server Workload service endpoint.
 - `requested_port` (Number) Requested port of the Server Workload service endpoint.
 - `tls_verification` (String) TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.
