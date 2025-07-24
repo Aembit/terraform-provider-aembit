@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -11,8 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -101,8 +102,10 @@ func (r *serverWorkloadResource) Schema(
 						Computed:    true,
 					},
 					"host": schema.StringAttribute{
-						Description: "Hostname of the Server Workload service endpoint.",
-						Required:    true,
+						Description: "Hostname of the Server Workload service endpoint.\n" +
+							"Wildcard hostnames are supported, for example `*.amazonaws.com`, `*.azure.com`, or `*.googleapis.com`.\n" +
+							"Note: Wildcards are not supported in the top or second-level domain, such as `*.com`.",
+						Required: true,
 						Validators: []validator.String{
 							validators.SafeWildcardHostNameValidation(),
 						},
