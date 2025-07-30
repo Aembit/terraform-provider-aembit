@@ -41,6 +41,8 @@ Read-Only:
 Required:
 
 - `match_hostname` (Boolean)
+- `match_local_ip` (Boolean)
+- `match_mac_address` (Boolean)
 - `match_serial_number` (Boolean)
 - `max_last_seen` (Number)
 - `prevent_rfm` (Boolean)

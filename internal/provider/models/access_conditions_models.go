@@ -29,6 +29,8 @@ type AccessConditionCrowdstrikeModel struct {
 	MatchHostname                      types.Bool  `tfsdk:"match_hostname"`
 	MatchSerialNumber                  types.Bool  `tfsdk:"match_serial_number"`
 	PreventRestrictedFunctionalityMode types.Bool  `tfsdk:"prevent_rfm"`
+	MatchMacAddress                    types.Bool  `tfsdk:"match_mac_address"`
+	MatchLocalIP                       types.Bool  `tfsdk:"match_local_ip"`
 }
 
 type AccessConditionGeoIpModel struct {

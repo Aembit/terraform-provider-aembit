@@ -102,6 +102,8 @@ func (d *accessConditionsDataSource) Schema(
 								"match_hostname":      schema.BoolAttribute{Required: true},
 								"match_serial_number": schema.BoolAttribute{Required: true},
 								"prevent_rfm":         schema.BoolAttribute{Required: true},
+								"match_mac_address":   schema.BoolAttribute{Required: true},
+								"match_local_ip":      schema.BoolAttribute{Required: true},
 							},
 						},
 						"geoip_conditions": schema.SingleNestedAttribute{

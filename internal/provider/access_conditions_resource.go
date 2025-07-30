@@ -128,6 +128,14 @@ func (r *accessConditionResource) Schema(
 						Description: "The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.",
 						Required:    true,
 					},
+					"match_mac_address": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.",
+						Required:    true,
+					},
+					"match_local_ip": schema.BoolAttribute{
+						Description: "The condition requires that manages hosts have a local IP which matches the CrowdStrike identified local IP.",
+						Required:    true,
+					},
 				},
 			},
 			"geoip_conditions": schema.SingleNestedAttribute{
@@ -427,6 +435,8 @@ func convertAccessConditionModelToDTO(
 		accessCondition.Conditions.MatchHostname = model.CrowdStrike.MatchHostname.ValueBool()
 		accessCondition.Conditions.MatchSerialNumber = model.CrowdStrike.MatchSerialNumber.ValueBool()
 		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
+		accessCondition.Conditions.MatchMacAddress = model.CrowdStrike.MatchMacAddress.ValueBool()
+		accessCondition.Conditions.MatchLocalIP = model.CrowdStrike.MatchLocalIP.ValueBool()
 	}
 	if model.GeoIp != nil {
 		// retrieve countries datasource for validation
@@ -573,6 +583,8 @@ func convertAccessConditionDTOToModel(
 			PreventRestrictedFunctionalityMode: types.BoolValue(
 				dto.Conditions.PreventRestrictedFunctionalityMode,
 			),
+			MatchMacAddress: types.BoolValue(dto.Conditions.MatchMacAddress),
+			MatchLocalIP:    types.BoolValue(dto.Conditions.MatchLocalIP),
 		}
 	case "AembitGeoIPCondition":
 		geoIpModel := models.AccessConditionGeoIpModel{}
