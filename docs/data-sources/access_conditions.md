@@ -45,6 +45,11 @@ Required:
 - `max_last_seen` (Number)
 - `prevent_rfm` (Boolean)
 
+Read-Only:
+
+- `match_local_ip` (Boolean)
+- `match_mac_address` (Boolean)
+
 
 <a id="nestedatt--access_conditions--geoip_conditions"></a>
 ### Nested Schema for `access_conditions.geoip_conditions`

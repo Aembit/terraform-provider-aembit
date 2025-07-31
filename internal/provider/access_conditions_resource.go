@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
@@ -127,6 +128,18 @@ func (r *accessConditionResource) Schema(
 					"prevent_rfm": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.",
 						Required:    true,
+					},
+					"match_mac_address": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"match_local_ip": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -427,6 +440,8 @@ func convertAccessConditionModelToDTO(
 		accessCondition.Conditions.MatchHostname = model.CrowdStrike.MatchHostname.ValueBool()
 		accessCondition.Conditions.MatchSerialNumber = model.CrowdStrike.MatchSerialNumber.ValueBool()
 		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
+		accessCondition.Conditions.MatchMacAddress = model.CrowdStrike.MatchMacAddress.ValueBool()
+		accessCondition.Conditions.MatchLocalIP = model.CrowdStrike.MatchLocalIP.ValueBool()
 	}
 	if model.GeoIp != nil {
 		// retrieve countries datasource for validation
@@ -573,6 +588,8 @@ func convertAccessConditionDTOToModel(
 			PreventRestrictedFunctionalityMode: types.BoolValue(
 				dto.Conditions.PreventRestrictedFunctionalityMode,
 			),
+			MatchMacAddress: types.BoolValue(dto.Conditions.MatchMacAddress),
+			MatchLocalIP:    types.BoolValue(dto.Conditions.MatchLocalIP),
 		}
 	case "AembitGeoIPCondition":
 		geoIpModel := models.AccessConditionGeoIpModel{}
