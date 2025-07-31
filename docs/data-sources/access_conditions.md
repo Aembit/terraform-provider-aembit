@@ -41,11 +41,14 @@ Read-Only:
 Required:
 
 - `match_hostname` (Boolean)
-- `match_local_ip` (Boolean)
-- `match_mac_address` (Boolean)
 - `match_serial_number` (Boolean)
 - `max_last_seen` (Number)
 - `prevent_rfm` (Boolean)
+
+Read-Only:
+
+- `match_local_ip` (Boolean)
+- `match_mac_address` (Boolean)
 
 
 <a id="nestedatt--access_conditions--geoip_conditions"></a>

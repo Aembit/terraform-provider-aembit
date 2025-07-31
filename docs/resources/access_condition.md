@@ -94,11 +94,14 @@ resource "aembit_access_condition" "wiz" {
 Required:
 
 - `match_hostname` (Boolean) The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.
-- `match_local_ip` (Boolean) The condition requires that manages hosts have a local IP which matches the CrowdStrike identified local IP.
-- `match_mac_address` (Boolean) The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.
 - `match_serial_number` (Boolean) The condition requires that managed hosts have a system serial number which matches the CrowdStrike identified serial number.
 - `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.
 - `prevent_rfm` (Boolean) The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.
+
+Optional:
+
+- `match_local_ip` (Boolean) The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.
+- `match_mac_address` (Boolean) The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.
 
 
 <a id="nestedatt--geoip_conditions"></a>
