@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
@@ -130,11 +131,15 @@ func (r *accessConditionResource) Schema(
 					},
 					"match_mac_address": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"match_local_ip": schema.BoolAttribute{
-						Description: "The condition requires that manages hosts have a local IP which matches the CrowdStrike identified local IP.",
-						Required:    true,
+						Description: "The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},

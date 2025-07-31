@@ -50,6 +50,16 @@ func TestAccAccessConditionsDataSource(t *testing.T) {
 						testAccessConditionsDataSource,
 						"access_conditions.#",
 					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResource,
+						"crowdstrike_conditions.match_mac_address",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResource,
+						"crowdstrike_conditions.match_local_ip",
+						"true",
+					),
 					// Find newly created entry
 					testFindAccessCondition(testAccessConditionResource),
 				),
