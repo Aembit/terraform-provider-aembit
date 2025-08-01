@@ -37,7 +37,7 @@ func TestAccCallerIdentityDataSource(t *testing.T) {
 	}
 
 	randID := rand.Intn(10000000)
-	config := strings.ReplaceAll(string(createFile), "unittest_tenant", fmt.Sprintf("unittest_tenant_%d", randID))
+	config := string(createFile)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
