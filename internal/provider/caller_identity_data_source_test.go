@@ -1,11 +1,9 @@
 package provider
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -36,7 +34,6 @@ func TestAccCallerIdentityDataSource(t *testing.T) {
 		t.Fatalf("failed to read config file: %s", err)
 	}
 
-	randID := rand.Intn(10000000)
 	config := string(createFile)
 
 	resource.Test(t, resource.TestCase{
