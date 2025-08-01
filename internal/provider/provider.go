@@ -356,6 +356,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewDiscoveryIntegrationsDataSource,
 		NewGlobalPolicyComplianceDataSource,
 		NewLogStreamsDataSource,
+		NewCallerIdentityDataSource,
 	}
 }
 
