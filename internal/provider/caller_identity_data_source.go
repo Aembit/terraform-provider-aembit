@@ -68,7 +68,10 @@ func (d *callerIdentityDataSource) Read(
 	resp *datasource.ReadResponse,
 ) {
 	if d.client == nil {
-		resp.Diagnostics.AddError("Missing client", "Client was not configured for the data source.")
+		resp.Diagnostics.AddError(
+			"Missing client",
+			"Client was not configured for the data source.",
+		)
 		return
 	}
 
