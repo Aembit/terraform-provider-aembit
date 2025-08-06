@@ -35,7 +35,7 @@ func TestAccCallerIdentityDataSource(t *testing.T) {
 
 func TestAccCallerIdentityDataSource_SecondaryProvider(t *testing.T) {
 	createFile, _ := os.ReadFile(
-		"../../tests/caller_identity/data/TestAccCallerIdentityDataSource_SecondaryProvider.tf",
+		"../../tests/caller_identity/data/TestAccCallerIdentityDataSourceSecondaryProvider.tf",
 	)
 
 	resource.Test(t, resource.TestCase{
