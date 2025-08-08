@@ -168,6 +168,7 @@ Read-Only:
 - `lifetime_expiration` (String) ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.
 - `oauth_authorization_url` (String)
 - `oauth_discovery_url` (String)
+- `oauth_introspection_url` (String)
 - `oauth_token_url` (String)
 - `scopes` (String)
 - `state` (String)

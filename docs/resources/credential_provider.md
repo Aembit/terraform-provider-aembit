@@ -259,6 +259,7 @@ Optional:
 - `custom_parameters` (Attributes Set) Set Custom Parameters for the OAuth Credential Provider. (see [below for nested schema](#nestedatt--oauth_authorization_code--custom_parameters))
 - `is_pkce_required` (Boolean) PKCE required flag for the OAuth Credential Provider.
 - `lifetime` (Number) Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.
+- `oauth_introspection_url` (String) Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens
 
 Read-Only:
 
