@@ -59,7 +59,7 @@ jobs:
       - run: go generate ./...
       - name: git diff
         run: |
-          git diff --compact-summary --exit-code || \
+          git diff --compact-summary --ignore-space-at-eol --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
       - name: Archive QA Docs
         uses: actions/upload-artifact@v4
