@@ -95,7 +95,7 @@ Required:
 
 - `match_hostname` (Boolean) The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.
 - `match_serial_number` (Boolean) The condition requires that managed hosts have a system serial number which matches the CrowdStrike identified serial number.
-- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.
+- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike. Accepted range: 1-31449600 seconds
 - `prevent_rfm` (Boolean) The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.
 
 Optional:
@@ -157,6 +157,6 @@ Required:
 Required:
 
 - `container_cluster_connected` (Boolean) The condition requires that managed Clusters be defined as Container Cluster Connected by Wiz.
-- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by Wiz.
+- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by Wiz. Accepted range: 1-31449600 seconds
 
 
