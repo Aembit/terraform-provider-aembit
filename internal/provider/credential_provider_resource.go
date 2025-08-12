@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -23,8 +26,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -336,6 +337,10 @@ func (r *credentialProviderResource) Schema(
 					"oauth_token_url": schema.StringAttribute{
 						Description: "Token URL for the OAuth Credential Provider.",
 						Required:    true,
+					},
+					"oauth_introspection_url": schema.StringAttribute{
+						Description: "Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens",
+						Optional:    true,
 					},
 					"user_authorization_url": schema.StringAttribute{
 						Description: "3rd Party Authorization URL for User Consent for the OAuth Credential Provider.",
@@ -1071,6 +1076,7 @@ func convertCredentialProviderModelToV2DTO(
 		credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
 			OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
 			AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
+			IntrospectionUrl:     model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString(),
 			TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
 			UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
 			IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
@@ -1373,6 +1379,7 @@ func convertOAuthAuthorizationCodeV2DTOToModel(
 	value.OAuthAuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
 	value.OAuthTokenUrl = types.StringValue(dto.TokenUrl)
 	value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
+	value.OAuthIntrospectionUrl = types.StringValue(dto.IntrospectionUrl)
 	value.ClientID = types.StringValue(dto.ClientID)
 	value.Scopes = types.StringValue(dto.Scope)
 	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
