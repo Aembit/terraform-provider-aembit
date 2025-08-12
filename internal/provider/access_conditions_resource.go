@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -100,8 +101,11 @@ func (r *accessConditionResource) Schema(
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"max_last_seen": schema.Int64Attribute{
-						Description: "The maximum number of seconds since the managed Cluster was last seen by Wiz.",
+						Description: "The maximum number of seconds since the managed Cluster was last seen by Wiz. Accepted range: 1-31449600 seconds",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 31449600),
+						},
 					},
 					"container_cluster_connected": schema.BoolAttribute{
 						Description: "The condition requires that managed Clusters be defined as Container Cluster Connected by Wiz.",
@@ -114,8 +118,11 @@ func (r *accessConditionResource) Schema(
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"max_last_seen": schema.Int64Attribute{
-						Description: "The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.",
+						Description: "The maximum number of seconds since the managed Cluster was last seen by CrowdStrike. Accepted range: 1-31449600 seconds",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 31449600),
+						},
 					},
 					"match_hostname": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.",
