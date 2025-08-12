@@ -3,13 +3,14 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -250,6 +251,9 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed: true,
 								},
 								"oauth_token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_introspection_url": schema.StringAttribute{
 									Computed: true,
 								},
 								"user_authorization_url": schema.StringAttribute{
