@@ -394,3 +394,6 @@ Required:
 - `key` (String) Key for the JWT Token Custom Claim.
 - `value` (String) Value for the JWT Token Custom Claim.
 - `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.
+
+
+
