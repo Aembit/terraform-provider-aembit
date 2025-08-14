@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -12,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -87,7 +88,7 @@ func (r *credentialProviderIntegrationResource) Schema(
 						Description: "GitLab URL.",
 						Required:    true,
 						Validators: []validator.String{
-							validators.UrlSchemeValidation(),
+							validators.SecureURLValidation(),
 						},
 					},
 					"personal_access_token": schema.StringAttribute{
