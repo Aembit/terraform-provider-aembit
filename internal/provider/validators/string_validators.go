@@ -50,6 +50,9 @@ var (
 	AwsSecretArnRegex  = regexp.MustCompile(
 		`^arn:aws:secretsmanager:[a-z0-9-]+:\d{12}:secret:[A-Za-z0-9/_+=.@-]+-[A-Za-z0-9]{6}$`,
 	)
+	SpiffeRegex = regexp.MustCompile(
+		`^spiffe:\/\/`,
+	)
 )
 
 func NameLengthValidation() validator.String {
@@ -168,4 +171,8 @@ func AwsSecretArnValidation() validator.String {
 		AwsSecretArnRegex,
 		"must be a valid AWS Secrets Manager secret ARN",
 	)
+}
+
+func SpiffeSubjectValidation() validator.String {
+	return stringvalidator.RegexMatches(SpiffeRegex, "format should be: spiffe://trust-domain-name/path'")
 }

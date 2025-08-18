@@ -722,6 +722,77 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"jwt_svid_token": schema.SingleNestedAttribute{
+				Description: "JWT-SVID Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"subject": schema.StringAttribute{
+						Description: "Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SpiffeSubjectValidation(),
+						},
+					},
+					"subject_type": schema.StringAttribute{
+						Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"literal",
+								"dynamic",
+							}...),
+						},
+					},
+					"issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for JWT-SVID Token configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"lifetime_in_minutes": schema.Int32Attribute{
+						Description: "Lifetime of the Credential Provider in minutes.",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(1, 5256000), // max ten years
+						},
+					},
+					"algorithm_type": schema.StringAttribute{
+						Description: "JWT Signing algorithm type (RS256 or ES256)",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for JWT-SVID Token configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"custom_claims": schema.SetNestedAttribute{
+						Description: "Set of Custom Claims for the JWT Token.",
+						Optional:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"key": schema.StringAttribute{
+									Description: "Key for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "Value for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.",
+									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -745,6 +816,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("managed_gitlab_account"),
 			path.MatchRoot("oidc_id_token"),
 			path.MatchRoot("aws_secrets_manager_value"),
+			path.MatchRoot("jwt_svid_token"),
 		),
 	}
 }
@@ -1170,6 +1242,29 @@ func convertCredentialProviderModelToV2DTO(
 		}
 	}
 
+	// Handle the JWT-SVID use case
+	if model.JwtSvidToken != nil {
+		credential.Type = "jwt-svid-token"
+		credential.LifetimeTimeSpanSeconds = model.JwtSvidToken.LifetimeInMinutes * 60
+		credential.Subject = model.JwtSvidToken.Subject
+		credential.SubjectType = model.JwtSvidToken.SubjectType
+		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
+		credential.Audience = model.JwtSvidToken.Audience
+		credential.AlgorithmType = model.JwtSvidToken.AlgorithmType
+
+		credential.CustomClaims = make(
+			[]aembit.CustomClaimsDTO,
+			len(model.JwtSvidToken.CustomClaims),
+		)
+		for i, claim := range model.JwtSvidToken.CustomClaims {
+			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
+				Key:       claim.Key,
+				Value:     claim.Value,
+				ValueType: claim.ValueType,
+			}
+		}
+	}
+
 	if model.AwsSecretsManagerValue != nil {
 		credential.Type = "aws-secret-manager-value"
 		credential.SecretArn = model.AwsSecretsManagerValue.SecretArn.ValueString()
@@ -1207,6 +1302,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.ManagedGitlabAccount = nil
 	model.OidcIdToken = nil
 	model.AwsSecretsManagerValue = nil
+	model.JwtSvidToken = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1244,6 +1340,8 @@ func convertCredentialProviderV2DTOToModel(
 				dto.CredentialProviderIntegrationExternalId,
 			),
 		}
+	case "jwt-svid-token":
+		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto, state)
 	}
 	return model
 }

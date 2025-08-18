@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -995,6 +996,70 @@ func TestAccAwsSecretsManagerValueCP(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+var jwtSvidTokenResourcePath = "aembit_credential_provider.jwt_svid_token"
+
+func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/jwt-svid-token/TestAccCredentialProviderResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/jwt-svid-token/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath,
+						"name",
+						"TF Acceptance JWT-SVID Token",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(jwtSvidTokenResourcePath, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(jwtSvidTokenResourcePath, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: jwtSvidTokenResourcePath, ImportState: true, ImportStateVerify: false},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath,
+						"name",
+						"TF Acceptance JWT-SVID Token - Modified",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_JwtSvidToken_InvalidSubject(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/jwt-svid-token/TestAccCredentialProviderResource_InvalidSubject.tf",
+	)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`format should be`),
+			},
 		},
 	})
 }
