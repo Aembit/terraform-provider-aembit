@@ -174,5 +174,5 @@ func AwsSecretArnValidation() validator.String {
 }
 
 func SpiffeSubjectValidation() validator.String {
-	return stringvalidator.RegexMatches(SpiffeRegex, "format should be: spiffe://trust-domain-name/path'")
+	return stringvalidator.RegexMatches(SpiffeRegex, "format must be in the format: spiffe://trust-domain-name/path")
 }
