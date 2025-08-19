@@ -38,6 +38,7 @@ Read-Only:
 - `description` (String) User-provided description of the credential provider.
 - `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
+- `jwt_svid_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
@@ -134,6 +135,30 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String, Sensitive)
+
+
+<a id="nestedatt--credential_providers--jwt_svid_token"></a>
+### Nested Schema for `credential_providers.jwt_svid_token`
+
+Read-Only:
+
+- `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
+- `audience` (String) Audience for JWT-SVID Token configuration of the Credential Provider.
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token--custom_claims))
+- `issuer` (String) Issuer claim for JWT-SVID Token configuration of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `subject` (String) Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+
+<a id="nestedatt--credential_providers--jwt_svid_token--custom_claims"></a>
+### Nested Schema for `credential_providers.jwt_svid_token.custom_claims`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
 
 
 <a id="nestedatt--credential_providers--managed_gitlab_account"></a>

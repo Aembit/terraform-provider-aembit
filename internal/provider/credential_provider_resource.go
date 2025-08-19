@@ -722,6 +722,77 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"jwt_svid_token": schema.SingleNestedAttribute{
+				Description: "JWT-SVID Token type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"subject": schema.StringAttribute{
+						Description: "Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SpiffeSubjectValidation(),
+						},
+					},
+					"subject_type": schema.StringAttribute{
+						Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"literal",
+								"dynamic",
+							}...),
+						},
+					},
+					"issuer": schema.StringAttribute{
+						Description: "Issuer claim for JWT-SVID Token configuration of the Credential Provider.",
+						Computed:    true,
+					},
+					"lifetime_in_minutes": schema.Int32Attribute{
+						Description: "Lifetime of the Credential Provider in minutes.",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(1, 5256000), // max ten years
+						},
+					},
+					"algorithm_type": schema.StringAttribute{
+						Description: "JWT Signing algorithm type (RS256 or ES256)",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "Audience for JWT-SVID Token configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"custom_claims": schema.SetNestedAttribute{
+						Description: "Set of Custom Claims for the JWT Token.",
+						Optional:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"key": schema.StringAttribute{
+									Description: "Key for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "Value for the JWT Token Custom Claim.",
+									Required:    true,
+								},
+								"value_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.",
+									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -745,6 +816,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("managed_gitlab_account"),
 			path.MatchRoot("oidc_id_token"),
 			path.MatchRoot("aws_secrets_manager_value"),
+			path.MatchRoot("jwt_svid_token"),
 		),
 	}
 }
@@ -985,198 +1057,86 @@ func convertCredentialProviderModelToV2DTO(
 
 	// Handle the Aembit Token use case
 	if model.AembitToken != nil {
-		credential.Type = "aembit-access-token"
-		credential.LifetimeInSeconds = model.AembitToken.Lifetime
-		credential.Audience = fmt.Sprintf("%s.api.%s", tenantID, stackDomain)
-		credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
-			RoleID: model.AembitToken.Role.ValueString(),
-		}
+		convertToAembitTokenDTO(&credential, model, fmt.Sprintf("%s.api.%s", tenantID, stackDomain))
 	}
 
 	// Handle the API Key use case
 	if model.APIKey != nil {
-		credential.Type = "apikey"
-		credential.CredentialAPIKeyDTO = aembit.CredentialAPIKeyDTO{
-			APIKey: model.APIKey.APIKey.ValueString(),
-		}
+		convertToApiKeyDTO(&credential, model)
 	}
 
 	// Handle the AWS STS use case
 	if model.AwsSTS != nil {
-		credential.Type = "aws-sts-oidc"
-		credential.Lifetime = model.AwsSTS.Lifetime
-		credential.CredentialAwsSTSV2DTO = aembit.CredentialAwsSTSV2DTO{
-			RoleArn:  model.AwsSTS.RoleARN.ValueString(),
-			Lifetime: model.AwsSTS.Lifetime,
-		}
+		convertToAwsSTSDTO(&credential, model)
 	}
 
 	// Handle the GCP Workload Identity Federation use case
 	if model.GoogleWorkload != nil {
-		credential.Type = "gcp-identity-federation"
-		credential.Audience = model.GoogleWorkload.Audience.ValueString()
-		credential.Lifetime = model.GoogleWorkload.Lifetime
-		credential.CredentialGoogleWorkloadV2DTO = aembit.CredentialGoogleWorkloadV2DTO{
-			ServiceAccount: model.GoogleWorkload.ServiceAccount.ValueString(),
-		}
+		convertToGoogleWorkloadDTO(&credential, model)
 	}
 
 	// Handle the Azure Entra Workload Identity Federation use case
 	if model.AzureEntraWorkload != nil {
-		credential.Type = "azure-entra-federation"
-		credential.Audience = model.AzureEntraWorkload.Audience.ValueString()
-		credential.Subject = model.AzureEntraWorkload.Subject.ValueString()
-		credential.Scope = model.AzureEntraWorkload.Scope.ValueString()
-		credential.ClientID = model.AzureEntraWorkload.ClientID.ValueString()
-		credential.CredentialAzureEntraWorkloadV2DTO = aembit.CredentialAzureEntraWorkloadV2DTO{
-			AzureTenant: model.AzureEntraWorkload.AzureTenant.ValueString(),
-		}
+		convertToAzureEntraDTO(&credential, model)
 	}
 
 	// Handle the Snowflake JWT use case
 	if model.SnowflakeToken != nil {
-		credential.Type = "signed-jwt"
-		credential.Issuer = fmt.Sprintf(
-			"%s.%s.SHA256:{sha256(publicKey)}",
-			model.SnowflakeToken.AccountID.ValueString(),
-			model.SnowflakeToken.Username.ValueString(),
-		)
-		credential.Subject = fmt.Sprintf(
-			"%s.%s",
-			model.SnowflakeToken.AccountID.ValueString(),
-			model.SnowflakeToken.Username.ValueString(),
-		)
-		credential.Lifetime = 1
-		credential.AlgorithmType = "RS256"
-		credential.CredentialSnowflakeTokenV2DTO = aembit.CredentialSnowflakeTokenV2DTO{
-			TokenConfiguration: "snowflake",
-		}
+		convertToSnowflakeTokenDTO(&credential, model)
 	}
 
 	// Handle the OAuth Client Credentials use case
 	if model.OAuthClientCredentials != nil {
-		credential.Type = "oauth-client-credential"
-		credential.ClientID = model.OAuthClientCredentials.ClientID.ValueString()
-		credential.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
-		credential.Scope = model.OAuthClientCredentials.Scopes.ValueString()
-		credential.CustomParameters = convertCredentialOAuthClientCredentialsCustomParameters(model)
-		credential.CredentialOAuthClientCredentialV2DTO = aembit.CredentialOAuthClientCredentialV2DTO{
-			TokenURL:        model.OAuthClientCredentials.TokenURL.ValueString(),
-			CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
-		}
+		convertToOAuthClientCredentialsDTO(&credential, model)
 	}
 
 	// Handle the OAuth Authorization Code use case
 	if model.OAuthAuthorizationCode != nil {
-		credential.Type = "oauth-authorization-code"
-		credential.ClientID = model.OAuthAuthorizationCode.ClientID.ValueString()
-		credential.ClientSecret = model.OAuthAuthorizationCode.ClientSecret.ValueString()
-		credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
-		credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
-		credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-			OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
-			AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
-			IntrospectionUrl:     model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString(),
-			TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
-			UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
-			IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
-			CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
-			State:                model.OAuthAuthorizationCode.State.ValueString(),
-		}
-		if len(model.ID.ValueString()) > 0 {
-			credential.ExternalID = model.ID.ValueString()
-		}
-
-		credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime
+		convertToOAuthAuthorizationCodeDTO(&credential, model)
 	}
 
 	// Handle the Username Password use case
 	if model.UsernamePassword != nil {
-		credential.Type = "username-password"
-		credential.CredentialUsernamePasswordDTO = aembit.CredentialUsernamePasswordDTO{
-			Username: model.UsernamePassword.Username.ValueString(),
-			Password: model.UsernamePassword.Password.ValueString(),
-		}
+		convertToUsernamePasswordDTO(&credential, model)
 	}
 
 	// Handle the Vault Client Token use case
 	if model.VaultClientToken != nil {
-		credential.Type = "vaultClientToken"
-		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
-		credential.Subject = model.VaultClientToken.Subject
-		credential.Lifetime = model.VaultClientToken.Lifetime
-		credential.SubjectType = model.VaultClientToken.SubjectType
-		credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
-			VaultHost:            model.VaultClientToken.VaultHost,
-			Port:                 model.VaultClientToken.VaultPort,
-			TLS:                  model.VaultClientToken.VaultTLS,
-			Namespace:            model.VaultClientToken.VaultNamespace,
-			Role:                 model.VaultClientToken.VaultRole,
-			AuthenticationPath:   model.VaultClientToken.VaultPath,
-			ForwardingConfig:     model.VaultClientToken.VaultForwarding,
-			PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess.ValueBool(),
-		}
-		credential.CustomClaims = make(
-			[]aembit.CustomClaimsDTO,
-			len(model.VaultClientToken.CustomClaims),
+		convertToVaultClientTokenDTO(
+			&credential,
+			model,
+			fmt.Sprintf(oidcIssuerTemplate, tenantID, stackDomain),
 		)
-		for i, claim := range model.VaultClientToken.CustomClaims {
-			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
-				Key:       claim.Key,
-				Value:     claim.Value,
-				ValueType: claim.ValueType,
-			}
-		}
 	}
 
 	// Handle the Managed Gitlab Account use case
 	if model.ManagedGitlabAccount != nil {
-		credential.Type = "gitlab-managed-account"
-		credential.Username = model.ManagedGitlabAccount.ServiceAccountUsername.ValueString()
-		credential.GroupIds = strings.Join(
-			convertSetToSlice(model.ManagedGitlabAccount.GroupIds),
-			",",
-		)
-		credential.ProjectIds = strings.Join(
-			convertSetToSlice(model.ManagedGitlabAccount.ProjectIds),
-			",",
-		)
-		credential.LifetimeInSeconds = model.ManagedGitlabAccount.LifetimeInHours.ValueInt32() * 3600
-		credential.AccessLevel = model.ManagedGitlabAccount.AccessLevel
-		credential.Scope = model.ManagedGitlabAccount.Scope
-		credential.CredentialProviderIntegrationExternalId = model.ManagedGitlabAccount.CredentialProviderIntegrationExternalId
+		convertToManagedGitlabAccountDTO(&credential, model)
 	}
 
 	// Handle the OidcIdToken use case
 	if model.OidcIdToken != nil {
-		credential.Type = "oidc-id-token"
-		credential.LifetimeTimeSpanSeconds = model.OidcIdToken.LifetimeInMinutes * 60
-		credential.Subject = model.OidcIdToken.Subject
-		credential.SubjectType = model.OidcIdToken.SubjectType
-		credential.Issuer = fmt.Sprintf("https://%s.id.%s/", tenantID, stackDomain)
-		credential.Audience = model.OidcIdToken.Audience
-		credential.AlgorithmType = model.OidcIdToken.AlgorithmType
-
-		credential.CustomClaims = make(
-			[]aembit.CustomClaimsDTO,
-			len(model.OidcIdToken.CustomClaims),
+		convertToOidcIdTokenDTO(
+			&credential,
+			*model.OidcIdToken,
+			fmt.Sprintf(oidcIssuerTemplate, tenantID, stackDomain),
+			"oidc-id-token",
 		)
-		for i, claim := range model.OidcIdToken.CustomClaims {
-			credential.CustomClaims[i] = aembit.CustomClaimsDTO{
-				Key:       claim.Key,
-				Value:     claim.Value,
-				ValueType: claim.ValueType,
-			}
-		}
 	}
 
+	// Handle the JWT-SVID use case
+	if model.JwtSvidToken != nil {
+		convertToOidcIdTokenDTO(
+			&credential,
+			*model.JwtSvidToken,
+			fmt.Sprintf(oidcIssuerTemplate, tenantID, stackDomain),
+			"jwt-svid-token",
+		)
+	}
+
+	// Handle the AWS Secret use case
 	if model.AwsSecretsManagerValue != nil {
-		credential.Type = "aws-secret-manager-value"
-		credential.SecretArn = model.AwsSecretsManagerValue.SecretArn.ValueString()
-		credential.SecretKey1 = model.AwsSecretsManagerValue.SecretKey1.ValueString()
-		credential.SecretKey2 = model.AwsSecretsManagerValue.SecretKey2.ValueString()
-		credential.PrivateNetworkAccess = model.AwsSecretsManagerValue.PrivateNetworkAccess.ValueBool()
-		credential.CredentialProviderIntegrationExternalId = model.AwsSecretsManagerValue.CredentialProviderIntegrationExternalId.ValueString()
+		convertToAwsSecretsManagerValueDTO(&credential, model)
 	}
 
 	return credential
@@ -1207,6 +1167,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.ManagedGitlabAccount = nil
 	model.OidcIdToken = nil
 	model.AwsSecretsManagerValue = nil
+	model.JwtSvidToken = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1244,6 +1205,8 @@ func convertCredentialProviderV2DTOToModel(
 				dto.CredentialProviderIntegrationExternalId,
 			),
 		}
+	case "jwt-svid-token":
+		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto, state)
 	}
 	return model
 }
@@ -1550,6 +1513,233 @@ func convertCredentialOAuthAuthorizationCodeCustomParameters(
 		}
 	}
 	return parameters
+}
+
+func convertToAembitTokenDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+	audience string,
+) {
+	credential.Type = "aembit-access-token"
+	credential.LifetimeInSeconds = model.AembitToken.Lifetime
+	credential.Audience = audience
+	credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
+		RoleID: model.AembitToken.Role.ValueString(),
+	}
+}
+
+func convertToApiKeyDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "apikey"
+	credential.CredentialAPIKeyDTO = aembit.CredentialAPIKeyDTO{
+		APIKey: model.APIKey.APIKey.ValueString(),
+	}
+}
+
+func convertToAwsSTSDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "aws-sts-oidc"
+	credential.Lifetime = model.AwsSTS.Lifetime
+	credential.CredentialAwsSTSV2DTO = aembit.CredentialAwsSTSV2DTO{
+		RoleArn:  model.AwsSTS.RoleARN.ValueString(),
+		Lifetime: model.AwsSTS.Lifetime,
+	}
+}
+
+func convertToGoogleWorkloadDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "gcp-identity-federation"
+	credential.Audience = model.GoogleWorkload.Audience.ValueString()
+	credential.Lifetime = model.GoogleWorkload.Lifetime
+	credential.CredentialGoogleWorkloadV2DTO = aembit.CredentialGoogleWorkloadV2DTO{
+		ServiceAccount: model.GoogleWorkload.ServiceAccount.ValueString(),
+	}
+}
+
+func convertToAzureEntraDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "azure-entra-federation"
+	credential.Audience = model.AzureEntraWorkload.Audience.ValueString()
+	credential.Subject = model.AzureEntraWorkload.Subject.ValueString()
+	credential.Scope = model.AzureEntraWorkload.Scope.ValueString()
+	credential.ClientID = model.AzureEntraWorkload.ClientID.ValueString()
+	credential.CredentialAzureEntraWorkloadV2DTO = aembit.CredentialAzureEntraWorkloadV2DTO{
+		AzureTenant: model.AzureEntraWorkload.AzureTenant.ValueString(),
+	}
+}
+
+func convertToSnowflakeTokenDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "signed-jwt"
+	credential.Issuer = fmt.Sprintf(
+		"%s.%s.SHA256:{sha256(publicKey)}",
+		model.SnowflakeToken.AccountID.ValueString(),
+		model.SnowflakeToken.Username.ValueString(),
+	)
+	credential.Subject = fmt.Sprintf(
+		"%s.%s",
+		model.SnowflakeToken.AccountID.ValueString(),
+		model.SnowflakeToken.Username.ValueString(),
+	)
+	credential.Lifetime = 1
+	credential.AlgorithmType = "RS256"
+	credential.CredentialSnowflakeTokenV2DTO = aembit.CredentialSnowflakeTokenV2DTO{
+		TokenConfiguration: "snowflake",
+	}
+}
+
+func convertToOAuthClientCredentialsDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "oauth-client-credential"
+	credential.ClientID = model.OAuthClientCredentials.ClientID.ValueString()
+	credential.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
+	credential.Scope = model.OAuthClientCredentials.Scopes.ValueString()
+	credential.CustomParameters = convertCredentialOAuthClientCredentialsCustomParameters(model)
+	credential.CredentialOAuthClientCredentialV2DTO = aembit.CredentialOAuthClientCredentialV2DTO{
+		TokenURL:        model.OAuthClientCredentials.TokenURL.ValueString(),
+		CredentialStyle: model.OAuthClientCredentials.CredentialStyle.ValueString(),
+	}
+}
+
+func convertToOAuthAuthorizationCodeDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "oauth-authorization-code"
+	credential.ClientID = model.OAuthAuthorizationCode.ClientID.ValueString()
+	credential.ClientSecret = model.OAuthAuthorizationCode.ClientSecret.ValueString()
+	credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
+	credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
+	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
+		OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
+		AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
+		IntrospectionUrl:     model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString(),
+		TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
+		UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
+		IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
+		CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
+		State:                model.OAuthAuthorizationCode.State.ValueString(),
+	}
+	if len(model.ID.ValueString()) > 0 {
+		credential.ExternalID = model.ID.ValueString()
+	}
+
+	credential.LifetimeTimeSpanSeconds = model.OAuthAuthorizationCode.Lifetime
+}
+
+func convertToUsernamePasswordDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "username-password"
+	credential.CredentialUsernamePasswordDTO = aembit.CredentialUsernamePasswordDTO{
+		Username: model.UsernamePassword.Username.ValueString(),
+		Password: model.UsernamePassword.Password.ValueString(),
+	}
+}
+
+func convertToVaultClientTokenDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+	issuer string,
+) {
+	credential.Type = "vaultClientToken"
+	credential.Issuer = issuer
+	credential.Subject = model.VaultClientToken.Subject
+	credential.Lifetime = model.VaultClientToken.Lifetime
+	credential.SubjectType = model.VaultClientToken.SubjectType
+	credential.CredentialVaultClientTokenV2DTO = aembit.CredentialVaultClientTokenV2DTO{
+		VaultHost:            model.VaultClientToken.VaultHost,
+		Port:                 model.VaultClientToken.VaultPort,
+		TLS:                  model.VaultClientToken.VaultTLS,
+		Namespace:            model.VaultClientToken.VaultNamespace,
+		Role:                 model.VaultClientToken.VaultRole,
+		AuthenticationPath:   model.VaultClientToken.VaultPath,
+		ForwardingConfig:     model.VaultClientToken.VaultForwarding,
+		PrivateNetworkAccess: model.VaultClientToken.VaultPrivateNetworkAccess.ValueBool(),
+	}
+	credential.CustomClaims = make(
+		[]aembit.CustomClaimsDTO,
+		len(model.VaultClientToken.CustomClaims),
+	)
+	for i, claim := range model.VaultClientToken.CustomClaims {
+		credential.CustomClaims[i] = aembit.CustomClaimsDTO{
+			Key:       claim.Key,
+			Value:     claim.Value,
+			ValueType: claim.ValueType,
+		}
+	}
+}
+
+func convertToManagedGitlabAccountDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "gitlab-managed-account"
+	credential.Username = model.ManagedGitlabAccount.ServiceAccountUsername.ValueString()
+	credential.GroupIds = strings.Join(
+		convertSetToSlice(model.ManagedGitlabAccount.GroupIds),
+		",",
+	)
+	credential.ProjectIds = strings.Join(
+		convertSetToSlice(model.ManagedGitlabAccount.ProjectIds),
+		",",
+	)
+	credential.LifetimeInSeconds = model.ManagedGitlabAccount.LifetimeInHours.ValueInt32() * 3600
+	credential.AccessLevel = model.ManagedGitlabAccount.AccessLevel
+	credential.Scope = model.ManagedGitlabAccount.Scope
+	credential.CredentialProviderIntegrationExternalId = model.ManagedGitlabAccount.CredentialProviderIntegrationExternalId
+}
+
+func convertToOidcIdTokenDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	oidcToken models.CredentialProviderManagedOidcIdToken,
+	issuer string,
+	credentialType string,
+) {
+	credential.Type = credentialType
+	credential.LifetimeTimeSpanSeconds = oidcToken.LifetimeInMinutes * 60
+	credential.Subject = oidcToken.Subject
+	credential.SubjectType = oidcToken.SubjectType
+	credential.Issuer = issuer
+	credential.Audience = oidcToken.Audience
+	credential.AlgorithmType = oidcToken.AlgorithmType
+
+	credential.CustomClaims = make(
+		[]aembit.CustomClaimsDTO,
+		len(oidcToken.CustomClaims),
+	)
+	for i, claim := range oidcToken.CustomClaims {
+		credential.CustomClaims[i] = aembit.CustomClaimsDTO{
+			Key:       claim.Key,
+			Value:     claim.Value,
+			ValueType: claim.ValueType,
+		}
+	}
+}
+
+func convertToAwsSecretsManagerValueDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "aws-secret-manager-value"
+	credential.SecretArn = model.AwsSecretsManagerValue.SecretArn.ValueString()
+	credential.SecretKey1 = model.AwsSecretsManagerValue.SecretKey1.ValueString()
+	credential.SecretKey2 = model.AwsSecretsManagerValue.SecretKey2.ValueString()
+	credential.PrivateNetworkAccess = model.AwsSecretsManagerValue.PrivateNetworkAccess.ValueBool()
+	credential.CredentialProviderIntegrationExternalId = model.AwsSecretsManagerValue.CredentialProviderIntegrationExternalId.ValueString()
 }
 
 func convertSetToSlice(set []types.String) []string {

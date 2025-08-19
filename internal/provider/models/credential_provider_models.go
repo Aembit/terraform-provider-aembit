@@ -26,6 +26,7 @@ type CredentialProviderResourceModel struct {
 	ManagedGitlabAccount   *CredentialProviderManagedGitlabAccountModel   `tfsdk:"managed_gitlab_account"`
 	OidcIdToken            *CredentialProviderManagedOidcIdToken          `tfsdk:"oidc_id_token"`
 	AwsSecretsManagerValue *CredentialProviderAwsSecretsManagerValueModel `tfsdk:"aws_secrets_manager_value"`
+	JwtSvidToken           *CredentialProviderManagedOidcIdToken          `tfsdk:"jwt_svid_token"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.

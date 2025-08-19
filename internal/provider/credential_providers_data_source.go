@@ -503,6 +503,61 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"jwt_svid_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"subject": schema.StringAttribute{
+									Description: "Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+								"issuer": schema.StringAttribute{
+									Description: "Issuer claim for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime_in_minutes": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider in minutes.",
+									Computed:    true,
+								},
+								"algorithm_type": schema.StringAttribute{
+									Description: "JWT Signing algorithm type (RS256 or ES256)",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+									},
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"custom_claims": schema.SetNestedAttribute{
+									Description: "Set of Custom Claims for the JWT Token",
+									Computed:    true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},

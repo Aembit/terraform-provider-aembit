@@ -129,6 +129,7 @@ resource "aembit_credential_provider" "aws_sm_value" {
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
 - `is_active` (Boolean) Active status of the Credential Provider.
+- `jwt_svid_token` (Attributes) JWT-SVID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) Managed GitLab Account type Credential Provider configuration. (see [below for nested schema](#nestedatt--managed_gitlab_account))
 - `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
@@ -222,6 +223,36 @@ Optional:
 Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.
+
+
+<a id="nestedatt--jwt_svid_token"></a>
+### Nested Schema for `jwt_svid_token`
+
+Required:
+
+- `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
+- `audience` (String) Audience for JWT-SVID Token configuration of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `subject` (String) Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+
+Optional:
+
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token. (see [below for nested schema](#nestedatt--jwt_svid_token--custom_claims))
+
+Read-Only:
+
+- `issuer` (String) Issuer claim for JWT-SVID Token configuration of the Credential Provider.
+
+<a id="nestedatt--jwt_svid_token--custom_claims"></a>
+### Nested Schema for `jwt_svid_token.custom_claims`
+
+Required:
+
+- `key` (String) Key for the JWT Token Custom Claim.
+- `value` (String) Value for the JWT Token Custom Claim.
+- `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.
+
 
 
 <a id="nestedatt--managed_gitlab_account"></a>

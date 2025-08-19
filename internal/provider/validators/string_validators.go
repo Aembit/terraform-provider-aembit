@@ -50,6 +50,9 @@ var (
 	AwsSecretArnRegex  = regexp.MustCompile(
 		`^arn:aws:secretsmanager:[a-z0-9-]+:\d{12}:secret:[A-Za-z0-9/_+=.@-]+-[A-Za-z0-9]{6}$`,
 	)
+	SpiffeRegex = regexp.MustCompile(
+		`^spiffe:\/\/`,
+	)
 )
 
 func NameLengthValidation() validator.String {
@@ -156,7 +159,10 @@ func CrowdstrikeApiKeyValidation() validator.String {
 }
 
 func Base64Validation() validator.String {
-	return stringvalidator.RegexMatches(Base64Regex, "must be a valid base64-encoded string")
+	return stringvalidator.RegexMatches(
+		Base64Regex,
+		"must be a valid base64-encoded string",
+	)
 }
 
 func AwsIamRoleArnValidation() validator.String {
@@ -167,5 +173,12 @@ func AwsSecretArnValidation() validator.String {
 	return stringvalidator.RegexMatches(
 		AwsSecretArnRegex,
 		"must be a valid AWS Secrets Manager secret ARN",
+	)
+}
+
+func SpiffeSubjectValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		SpiffeRegex,
+		"must be in the format: spiffe://trust-domain-name/path",
 	)
 }
