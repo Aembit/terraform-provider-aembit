@@ -242,7 +242,7 @@ Optional:
 
 Read-Only:
 
-- `issuer` (String) OIDC Issuer for JWT-SVID Token configuration of the Credential Provider.
+- `issuer` (String) Issuer claim for JWT-SVID Token configuration of the Credential Provider.
 
 <a id="nestedatt--jwt_svid_token--custom_claims"></a>
 ### Nested Schema for `jwt_svid_token.custom_claims`

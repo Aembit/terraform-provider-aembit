@@ -145,7 +145,7 @@ Read-Only:
 - `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
 - `audience` (String) Audience for JWT-SVID Token configuration of the Credential Provider.
 - `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token--custom_claims))
-- `issuer` (String) OIDC Issuer for JWT-SVID Token configuration of the Credential Provider.
+- `issuer` (String) Issuer claim for JWT-SVID Token configuration of the Credential Provider.
 - `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
 - `subject` (String) Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.
 - `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
