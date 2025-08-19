@@ -161,7 +161,7 @@ func CrowdstrikeApiKeyValidation() validator.String {
 func Base64Validation() validator.String {
 	return stringvalidator.RegexMatches(
 		Base64Regex,
-		"must be a valid base64-encoded strinasdgsssss",
+		"must be a valid base64-encoded string",
 	)
 }
 

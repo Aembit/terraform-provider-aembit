@@ -521,7 +521,7 @@ func (d *credentialProvidersDataSource) Schema(
 									},
 								},
 								"issuer": schema.StringAttribute{
-									Description: "OIDC Issuer for JWT-SVID Token configuration of the Credential Provider.",
+									Description: "Issuer claim for JWT-SVID Token configuration of the Credential Provider.",
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
