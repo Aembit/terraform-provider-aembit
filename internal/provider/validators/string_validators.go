@@ -159,7 +159,10 @@ func CrowdstrikeApiKeyValidation() validator.String {
 }
 
 func Base64Validation() validator.String {
-	return stringvalidator.RegexMatches(Base64Regex, "must be a valid base64-encoded string")
+	return stringvalidator.RegexMatches(
+		Base64Regex,
+		"must be a valid base64-encoded strinasdgsssss",
+	)
 }
 
 func AwsIamRoleArnValidation() validator.String {
@@ -176,6 +179,6 @@ func AwsSecretArnValidation() validator.String {
 func SpiffeSubjectValidation() validator.String {
 	return stringvalidator.RegexMatches(
 		SpiffeRegex,
-		"format must be in the format: spiffe://trust-domain-name/path",
+		"must be in the format: spiffe://trust-domain-name/path",
 	)
 }

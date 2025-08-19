@@ -1058,7 +1058,7 @@ func TestAccCredentialProviderResource_JwtSvidToken_InvalidSubject(t *testing.T)
 			// Create and Read testing
 			{
 				Config:      string(createFile),
-				ExpectError: regexp.MustCompile(`format should be`),
+				ExpectError: regexp.MustCompile(`must be in the format`),
 			},
 		},
 	})
