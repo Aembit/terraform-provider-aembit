@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -16,8 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -221,10 +222,13 @@ func (r *accessPolicyResource) Create(
 		return
 	}
 
-	credentialProvider := !plan.CredentialProvider.IsNull() && !plan.CredentialProvider.IsUnknown() && plan.CredentialProvider.ValueString() != ""
+	credentialProvider := !plan.CredentialProvider.IsNull() &&
+		!plan.CredentialProvider.IsUnknown() &&
+		plan.CredentialProvider.ValueString() != ""
 	credentialProviders := len(plan.CredentialProviders) > 0
 
-	if (credentialProvider && credentialProviders) || (!credentialProvider && !credentialProviders) {
+	if (credentialProvider && credentialProviders) ||
+		(!credentialProvider && !credentialProviders) {
 		resp.Diagnostics.AddError(
 			"Error creating Access Policy",
 			"Only one of 'credential_provider' or 'credential_providers' should be set.",
@@ -344,10 +348,13 @@ func (r *accessPolicyResource) Update(
 		return
 	}
 
-	credentialProvider := !state.CredentialProvider.IsNull() && !state.CredentialProvider.IsUnknown() && state.CredentialProvider.ValueString() != ""
+	credentialProvider := !state.CredentialProvider.IsNull() &&
+		!state.CredentialProvider.IsUnknown() &&
+		state.CredentialProvider.ValueString() != ""
 	credentialProviders := len(state.CredentialProviders) > 0
 
-	if (credentialProvider && credentialProviders) || (!credentialProvider && !credentialProviders) {
+	if (credentialProvider && credentialProviders) ||
+		(!credentialProvider && !credentialProviders) {
 		resp.Diagnostics.AddError(
 			"Error creating Access Policy",
 			"Only one of 'credential_provider' or 'credential_providers' should be set.",
