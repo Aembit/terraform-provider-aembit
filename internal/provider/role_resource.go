@@ -112,6 +112,10 @@ func (r *roleResource) Schema(
 				"Credential Provider",
 				false,
 			),
+			"credential_provider_integrations": definePermissionAttribute(
+				"Credential Provider Integration",
+				false,
+			),
 			"server_workloads": definePermissionAttribute(
 				"Server Workload",
 				false,
@@ -120,12 +124,20 @@ func (r *roleResource) Schema(
 				"Agent Controller",
 				false,
 			),
+			"discovery_integrations": definePermissionAttribute(
+				"Discovery Integration",
+				false,
+			),
 			"standalone_certificate_authorities": definePermissionAttribute(
 				"Standalone Certificate Authority",
 				false,
 			),
 			"access_authorization_events": definePermissionReadOnlyAttribute(
 				"Access Authorization Event",
+				false,
+			),
+			"global_policy_compliance_report": definePermissionReadOnlyAttribute(
+				"Global Policy Compliance Report",
 				false,
 			),
 			"audit_logs": definePermissionReadOnlyAttribute(
@@ -145,6 +157,10 @@ func (r *roleResource) Schema(
 			),
 			"signon_policy": definePermissionAttribute(
 				SignOnPolicyPermissionName,
+				false,
+			),
+			"global_policy_compliance": definePermissionAttribute(
+				"Global Policy Compliance",
 				false,
 			),
 			"resource_sets": definePermissionAttribute("Resource Set", false),
@@ -429,6 +445,11 @@ func convertRoleModelToDTO(
 	)
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
+		"Credential Provider Integrations",
+		model.CredentialProviderIntegrations,
+	)
+	dto.Permissions = appendPermissionToDTO(
+		dto.Permissions,
 		"Server Workloads",
 		model.ServerWorkloads,
 	)
@@ -440,6 +461,11 @@ func convertRoleModelToDTO(
 	)
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
+		"Discovery Integrations",
+		model.DiscoveryIntegrations,
+	)
+	dto.Permissions = appendPermissionToDTO(
+		dto.Permissions,
 		StandaloneCertificateAuthoritiesPermissionName,
 		model.StandaloneCertificateAuthorities,
 	)
@@ -448,6 +474,11 @@ func convertRoleModelToDTO(
 		dto.Permissions,
 		"Access Authorization Events",
 		model.AccessAuthorizationEvents,
+	)
+	dto.Permissions = appendReadOnlyPermissionToDTO(
+		dto.Permissions,
+		"Global Policy Compliance Report",
+		model.GlobalPolicyComplianceReport,
 	)
 	dto.Permissions = appendReadOnlyPermissionToDTO(dto.Permissions, "Audit Logs", model.AuditLogs)
 	dto.Permissions = appendReadOnlyPermissionToDTO(
@@ -461,6 +492,11 @@ func convertRoleModelToDTO(
 		dto.Permissions,
 		SignOnPolicyPermissionName,
 		model.SignOnPolicy,
+	)
+	dto.Permissions = appendPermissionToDTO(
+		dto.Permissions,
+		"Global Policy Compliance",
+		model.GlobalPolicyCompliance,
 	)
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Roles", model.Roles)
 	dto.Permissions = appendPermissionToDTO(
@@ -530,14 +566,20 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 			model.Integrations = convertPermissionDTOToPermission(permission)
 		case "Credential Providers":
 			model.CredentialProviders = convertPermissionDTOToPermission(permission)
+		case "Credential Provider Integrations":
+			model.CredentialProviderIntegrations = convertPermissionDTOToPermission(permission)
 		case "Server Workloads":
 			model.ServerWorkloads = convertPermissionDTOToPermission(permission)
 		case "Agent Controllers":
 			model.AgentControllers = convertPermissionDTOToPermission(permission)
+		case "Discovery Integrations":
+			model.DiscoveryIntegrations = convertPermissionDTOToPermission(permission)
 		case StandaloneCertificateAuthoritiesPermissionName:
 			model.StandaloneCertificateAuthorities = convertPermissionDTOToPermission(permission)
 		case "Access Authorization Events":
 			model.AccessAuthorizationEvents = convertPermissionDTOToReadOnlyPermission(permission)
+		case "Global Policy Compliance Report":
+			model.GlobalPolicyComplianceReport = convertPermissionDTOToReadOnlyPermission(permission)
 		case "Audit Logs":
 			model.AuditLogs = convertPermissionDTOToReadOnlyPermission(permission)
 		case "Workload Events":
@@ -546,6 +588,8 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 			model.Users = convertPermissionDTOToPermission(permission)
 		case SignOnPolicyPermissionName:
 			model.SignOnPolicy = convertPermissionDTOToPermission(permission)
+		case "Global Policy Compliance":
+			model.GlobalPolicyCompliance = convertPermissionDTOToPermission(permission)
 		case "Roles":
 			model.Roles = convertPermissionDTOToPermission(permission)
 		case "Log Streams":
