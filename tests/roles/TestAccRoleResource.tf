@@ -26,4 +26,6 @@ resource "aembit_role" "role" {
 	resource_sets = { read = true, write = true }
 	log_streams = { read = true, write = true }
 	identity_providers = { read = true, write = true }
+
+	resource_sets_assignments =  ["ffffffff-ffff-ffff-ffff-ffffffffffff"]
 }

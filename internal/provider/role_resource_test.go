@@ -49,6 +49,8 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceID, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(resourceID, "id"),
+					// Verify ResourceSet is set
+					resource.TestCheckResourceAttrSet(resourceID, "resource_sets_assignments.0"),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -63,6 +65,8 @@ func TestAccRoleResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(resourceID, "name", newName),
+					//Verify ResourceSet
+					resource.TestCheckResourceAttr(resourceID, "resource_sets_assignments.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

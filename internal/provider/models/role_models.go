@@ -7,13 +7,14 @@ import (
 // RoleResourceModel maps the resource schema.
 type RoleResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID             types.String    `tfsdk:"id"`
-	Name           types.String    `tfsdk:"name"`
-	Description    types.String    `tfsdk:"description"`
-	IsActive       types.Bool      `tfsdk:"is_active"`
-	Tags           types.Map       `tfsdk:"tags"`
-	AccessPolicies *RolePermission `tfsdk:"access_policies"`
-	Routing        *RolePermission `tfsdk:"routing"`
+	ID                      types.String    `tfsdk:"id"`
+	Name                    types.String    `tfsdk:"name"`
+	Description             types.String    `tfsdk:"description"`
+	IsActive                types.Bool      `tfsdk:"is_active"`
+	Tags                    types.Map       `tfsdk:"tags"`
+	ResourceSetsAssignments []types.String  `tfsdk:"resource_sets_assignments"`
+	AccessPolicies          *RolePermission `tfsdk:"access_policies"`
+	Routing                 *RolePermission `tfsdk:"routing"`
 
 	ClientWorkloads     *RolePermission `tfsdk:"client_workloads"`
 	TrustProviders      *RolePermission `tfsdk:"trust_providers"`
