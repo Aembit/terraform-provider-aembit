@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -581,7 +582,9 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 		case "Access Authorization Events":
 			model.AccessAuthorizationEvents = convertPermissionDTOToReadOnlyPermission(permission)
 		case GlobalPolicyComplianceReportPermissionName:
-			model.GlobalPolicyComplianceReport = convertPermissionDTOToReadOnlyPermission(permission)
+			model.GlobalPolicyComplianceReport = convertPermissionDTOToReadOnlyPermission(
+				permission,
+			)
 		case "Audit Logs":
 			model.AuditLogs = convertPermissionDTOToReadOnlyPermission(permission)
 		case "Workload Events":
