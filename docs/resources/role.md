@@ -42,6 +42,7 @@ description: |-
 
 - `description` (String) Description for the Role.
 - `is_active` (Boolean) Active status of the Role.
+- `resource_sets_assignments` (Set of String) IDs of the ResourceSets associated with this Role.
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
