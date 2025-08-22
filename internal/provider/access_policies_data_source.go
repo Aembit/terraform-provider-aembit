@@ -89,6 +89,7 @@ func (d *accessPoliciesDataSource) Schema(
 						},
 						"credential_provider": schema.StringAttribute{
 							Description: "Configured Credential Provider of the access policy.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"credential_providers": schema.ListNestedAttribute{

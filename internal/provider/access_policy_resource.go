@@ -221,6 +221,17 @@ func (r *accessPolicyResource) Create(
 		return
 	}
 
+	credentialProvider := !plan.CredentialProvider.IsNull() && !plan.CredentialProvider.IsUnknown() && plan.CredentialProvider.ValueString() != ""
+	credentialProviders := len(plan.CredentialProviders) > 0
+
+	if (credentialProvider && credentialProviders) || (!credentialProvider && !credentialProviders) {
+		resp.Diagnostics.AddError(
+			"Error creating Access Policy",
+			"Only one of 'credential_provider' or 'credential_providers' should be set.",
+		)
+		return
+	}
+
 	initialOrderOfCredentialProviders := make([]string, len(plan.CredentialProviders))
 	for i, cp := range plan.CredentialProviders {
 		initialOrderOfCredentialProviders[i] = cp.CredentialProviderId.ValueString()
@@ -330,6 +341,17 @@ func (r *accessPolicyResource) Update(
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	credentialProvider := !state.CredentialProvider.IsNull() && !state.CredentialProvider.IsUnknown() && state.CredentialProvider.ValueString() != ""
+	credentialProviders := len(state.CredentialProviders) > 0
+
+	if (credentialProvider && credentialProviders) || (!credentialProvider && !credentialProviders) {
+		resp.Diagnostics.AddError(
+			"Error creating Access Policy",
+			"Only one of 'credential_provider' or 'credential_providers' should be set.",
+		)
 		return
 	}
 
