@@ -12,17 +12,21 @@ resource "aembit_role" "role" {
 	access_conditions = { read = true, write = true }
 	integrations = { read = true, write = true }
 	credential_providers = { read = true, write = true }
+	credential_provider_integrations = { read = true, write = true }
 	server_workloads = { read = true, write = true }
 
 	agent_controllers = { read = true, write = true }
+	discovery_integrations = { read = true, write = true }
 	standalone_certificate_authorities = { read = true, write = true }
 
 	access_authorization_events = { read = true }
+	global_policy_compliance_report = { read = true }
 	audit_logs = { read = true }
 	workload_events = { read = true }
 
 	users = { read = true, write = true }
 	signon_policy = { read = true, write = true }
+	global_policy_compliance = { read = true, write = true }
 	roles = { read = true, write = true }
 	resource_sets = { read = true, write = true }
 	log_streams = { read = true, write = true }

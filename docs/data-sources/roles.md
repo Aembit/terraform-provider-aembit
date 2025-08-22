@@ -30,7 +30,11 @@ Required:
 - `agent_controllers` (Attributes) Permissions for Agent Controller resources. (see [below for nested schema](#nestedatt--roles--agent_controllers))
 - `audit_logs` (Attributes) Permissions for Audit Log resources. (see [below for nested schema](#nestedatt--roles--audit_logs))
 - `client_workloads` (Attributes) Permissions for Client Workload resources. (see [below for nested schema](#nestedatt--roles--client_workloads))
+- `credential_provider_integrations` (Attributes) Permissions for Credential Provider Integration resources. (see [below for nested schema](#nestedatt--roles--credential_provider_integrations))
 - `credential_providers` (Attributes) Permissions for Credential Provider resources. (see [below for nested schema](#nestedatt--roles--credential_providers))
+- `discovery_integrations` (Attributes) Permissions for Discovery Integration resources. (see [below for nested schema](#nestedatt--roles--discovery_integrations))
+- `global_policy_compliance` (Attributes) Permissions for Global Policy Compliance resources. (see [below for nested schema](#nestedatt--roles--global_policy_compliance))
+- `global_policy_compliance_report` (Attributes) Permissions for Global Policy Compliance Report resources. (see [below for nested schema](#nestedatt--roles--global_policy_compliance_report))
 - `identity_providers` (Attributes) Permissions for Identity Provider resources. (see [below for nested schema](#nestedatt--roles--identity_providers))
 - `integrations` (Attributes) Permissions for Integration resources. (see [below for nested schema](#nestedatt--roles--integrations))
 - `log_streams` (Attributes) Permissions for Log Stream resources. (see [below for nested schema](#nestedatt--roles--log_streams))
@@ -104,6 +108,15 @@ Read-Only:
 - `write` (Boolean) True if this Role should be able to create and update Client Workload resources.
 
 
+<a id="nestedatt--roles--credential_provider_integrations"></a>
+### Nested Schema for `roles.credential_provider_integrations`
+
+Read-Only:
+
+- `read` (Boolean) True if this Role should be able to query and view Credential Provider Integration resources.
+- `write` (Boolean) True if this Role should be able to create and update Credential Provider Integration resources.
+
+
 <a id="nestedatt--roles--credential_providers"></a>
 ### Nested Schema for `roles.credential_providers`
 
@@ -111,6 +124,32 @@ Read-Only:
 
 - `read` (Boolean) True if this Role should be able to query and view Credential Provider resources.
 - `write` (Boolean) True if this Role should be able to create and update Credential Provider resources.
+
+
+<a id="nestedatt--roles--discovery_integrations"></a>
+### Nested Schema for `roles.discovery_integrations`
+
+Read-Only:
+
+- `read` (Boolean) True if this Role should be able to query and view Discovery Integration resources.
+- `write` (Boolean) True if this Role should be able to create and update Discovery Integration resources.
+
+
+<a id="nestedatt--roles--global_policy_compliance"></a>
+### Nested Schema for `roles.global_policy_compliance`
+
+Read-Only:
+
+- `read` (Boolean) True if this Role should be able to query and view Global Policy Compliance resources.
+- `write` (Boolean) True if this Role should be able to create and update Global Policy Compliance resources.
+
+
+<a id="nestedatt--roles--global_policy_compliance_report"></a>
+### Nested Schema for `roles.global_policy_compliance_report`
+
+Read-Only:
+
+- `read` (Boolean) True if this Role should be able to query and view Global Policy Compliance Report data.
 
 
 <a id="nestedatt--roles--identity_providers"></a>
