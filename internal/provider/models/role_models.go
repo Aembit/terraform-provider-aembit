@@ -16,26 +16,30 @@ type RoleResourceModel struct {
 	AccessPolicies          *RolePermission `tfsdk:"access_policies"`
 	Routing                 *RolePermission `tfsdk:"routing"`
 
-	ClientWorkloads     *RolePermission `tfsdk:"client_workloads"`
-	TrustProviders      *RolePermission `tfsdk:"trust_providers"`
-	AccessConditions    *RolePermission `tfsdk:"access_conditions"`
-	Integrations        *RolePermission `tfsdk:"integrations"`
-	CredentialProviders *RolePermission `tfsdk:"credential_providers"`
-	ServerWorkloads     *RolePermission `tfsdk:"server_workloads"`
+	ClientWorkloads                *RolePermission `tfsdk:"client_workloads"`
+	TrustProviders                 *RolePermission `tfsdk:"trust_providers"`
+	AccessConditions               *RolePermission `tfsdk:"access_conditions"`
+	Integrations                   *RolePermission `tfsdk:"integrations"`
+	CredentialProviders            *RolePermission `tfsdk:"credential_providers"`
+	CredentialProviderIntegrations *RolePermission `tfsdk:"credential_provider_integrations"`
+	ServerWorkloads                *RolePermission `tfsdk:"server_workloads"`
 
 	AgentControllers                 *RolePermission `tfsdk:"agent_controllers"`
+	DiscoveryIntegrations            *RolePermission `tfsdk:"discovery_integrations"`
 	StandaloneCertificateAuthorities *RolePermission `tfsdk:"standalone_certificate_authorities"`
 
-	AccessAuthorizationEvents *RoleReadOnlyPermission `tfsdk:"access_authorization_events"`
-	AuditLogs                 *RoleReadOnlyPermission `tfsdk:"audit_logs"`
-	WorkloadEvents            *RoleReadOnlyPermission `tfsdk:"workload_events"`
+	AccessAuthorizationEvents    *RoleReadOnlyPermission `tfsdk:"access_authorization_events"`
+	GlobalPolicyComplianceReport *RoleReadOnlyPermission `tfsdk:"global_policy_compliance_report"`
+	AuditLogs                    *RoleReadOnlyPermission `tfsdk:"audit_logs"`
+	WorkloadEvents               *RoleReadOnlyPermission `tfsdk:"workload_events"`
 
-	Users             *RolePermission `tfsdk:"users"`
-	SignOnPolicy      *RolePermission `tfsdk:"signon_policy"`
-	Roles             *RolePermission `tfsdk:"roles"`
-	ResourceSets      *RolePermission `tfsdk:"resource_sets"`
-	LogStreams        *RolePermission `tfsdk:"log_streams"`
-	IdentityProviders *RolePermission `tfsdk:"identity_providers"`
+	Users                  *RolePermission `tfsdk:"users"`
+	SignOnPolicy           *RolePermission `tfsdk:"signon_policy"`
+	GlobalPolicyCompliance *RolePermission `tfsdk:"global_policy_compliance"`
+	Roles                  *RolePermission `tfsdk:"roles"`
+	ResourceSets           *RolePermission `tfsdk:"resource_sets"`
+	LogStreams             *RolePermission `tfsdk:"log_streams"`
+	IdentityProviders      *RolePermission `tfsdk:"identity_providers"`
 }
 
 // roleDataSourceModel maps the datasource schema.

@@ -10,7 +10,6 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
-	"github.com/hashicorp/terraform-plugin-framework-validators/float32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -589,19 +588,6 @@ func (r *credentialProviderResource) Schema(
 								50,
 							}...),
 						},
-					},
-					"lifetime_in_days": schema.Float32Attribute{
-						Description: "Lifetime of the managed GitLab token in days.</br>" +
-							"Use `lifetime_in_hours` instead. This field is no longer used and will be removed in a future version.</br>" +
-							"Until it is removed, please use the fractional equivalent.</br>" +
-							"For example, for a lifetime of 6 hours, use `lifetime_in_days = 0.25`.",
-						Required: false,
-						Optional: true,
-						Computed: true,
-						Validators: []validator.Float32{
-							float32validator.Between(0, 365),
-						},
-						DeprecationMessage: "Use `lifetime_in_hours` instead. This field is no longer used and will be removed in a future version.",
 					},
 					"lifetime_in_hours": schema.Int32Attribute{
 						Description: "Lifetime of the managed GitLab token in hours.",
@@ -1443,9 +1429,6 @@ func convertManagedGitlabAccountDTOToModel(
 		),
 		ProjectIds: convertSliceToSet(
 			strings.Split(dto.ProjectIds, ","),
-		),
-		LifetimeInDays: types.Float32Value(
-			float32(dto.LifetimeInSeconds) / 86400,
 		),
 		LifetimeInHours:                         types.Int32Value(dto.LifetimeInSeconds / 3600),
 		Scope:                                   dto.Scope,
