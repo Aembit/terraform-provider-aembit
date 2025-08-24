@@ -580,7 +580,10 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	for _, resourceSet := range dto.ResourceSets {
-		model.ResourceSetsAssignments = append(model.ResourceSetsAssignments, types.StringValue(resourceSet.ExternalID))
+		model.ResourceSetsAssignments = append(
+			model.ResourceSetsAssignments,
+			types.StringValue(resourceSet.ExternalID),
+		)
 	}
 
 	for _, permission := range dto.Permissions {
