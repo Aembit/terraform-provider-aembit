@@ -103,6 +103,10 @@ func (d *rolesDataSource) Schema(
 							"Credential Provider",
 							true,
 						),
+						"credential_provider_integrations": definePermissionAttribute(
+							"Credential Provider Integration",
+							true,
+						),
 						"server_workloads": definePermissionAttribute(
 							"Server Workload",
 							true,
@@ -111,12 +115,20 @@ func (d *rolesDataSource) Schema(
 							"Agent Controller",
 							true,
 						),
+						"discovery_integrations": definePermissionAttribute(
+							"Discovery Integration",
+							true,
+						),
 						"standalone_certificate_authorities": definePermissionAttribute(
 							StandaloneCertificateAuthoritiesPermissionName,
 							true,
 						),
 						"access_authorization_events": definePermissionReadOnlyAttribute(
 							"Access Authorization Event",
+							true,
+						),
+						"global_policy_compliance_report": definePermissionReadOnlyAttribute(
+							"Global Policy Compliance Report",
 							true,
 						),
 						"audit_logs": definePermissionReadOnlyAttribute(
@@ -145,6 +157,10 @@ func (d *rolesDataSource) Schema(
 						),
 						"signon_policy": definePermissionAttribute(
 							SignOnPolicyPermissionName,
+							true,
+						),
+						"global_policy_compliance": definePermissionAttribute(
+							"Global Policy Compliance",
 							true,
 						),
 						"routing": definePermissionAttribute(

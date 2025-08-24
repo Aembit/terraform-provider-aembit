@@ -395,11 +395,6 @@ func (d *credentialProvidersDataSource) Schema(
 									Description: "The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).",
 									Computed:    true,
 								},
-								"lifetime_in_days": schema.Int32Attribute{
-									Description:        "Lifetime of the Credential Provider in days.",
-									Computed:           true,
-									DeprecationMessage: "Use `lifetime_in_hours` instead. This field will be removed in a future version.",
-								},
 								"lifetime_in_hours": schema.Int32Attribute{
 									Description: "Lifetime of the Credential Provider in hours.",
 									Computed:    true,
