@@ -8,9 +8,12 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -96,6 +99,20 @@ func (r *roleResource) Schema(
 				Description: "Tags are key-value pairs.",
 				ElementType: types.StringType,
 				Optional:    true,
+			},
+			"resource_sets_assignments": schema.SetAttribute{
+				Description: "IDs of the ResourceSets associated with this Role.",
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+				},
+				Default: setdefault.StaticValue(
+					types.SetValueMust(types.StringType, []attr.Value{
+						types.StringValue("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+					}),
+				),
 			},
 			"access_policies": definePermissionAttribute("Access Policy", false),
 			"client_workloads": definePermissionAttribute(
@@ -402,6 +419,7 @@ func convertRoleModelToDTO(
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
+
 	if len(model.Tags.Elements()) > 0 {
 		tagsMap := make(map[string]string)
 		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
@@ -413,8 +431,17 @@ func convertRoleModelToDTO(
 			})
 		}
 	}
+
 	if externalID != nil {
 		dto.ExternalID = *externalID
+	}
+
+	for _, resourceSet := range model.ResourceSetsAssignments {
+		dto.ResourceSets = append(dto.ResourceSets, aembit.EntityDTO{
+			ExternalID: resourceSet.ValueString(),
+			Name:       "Placeholder",
+			IsActive:   true,
+		})
 	}
 
 	dto.Permissions = make([]aembit.RolePermissionDTO, 0)
@@ -428,12 +455,12 @@ func convertRoleModelToDTO(
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
 		"Client Workloads",
-		model.AccessPolicies,
+		model.ClientWorkloads,
 	)
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
 		"Trust Providers",
-		model.ClientWorkloads,
+		model.TrustProviders,
 	)
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
@@ -456,7 +483,6 @@ func convertRoleModelToDTO(
 		"Server Workloads",
 		model.ServerWorkloads,
 	)
-
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
 		"Agent Controllers",
@@ -472,7 +498,6 @@ func convertRoleModelToDTO(
 		StandaloneCertificateAuthoritiesPermissionName,
 		model.StandaloneCertificateAuthorities,
 	)
-
 	dto.Permissions = appendReadOnlyPermissionToDTO(
 		dto.Permissions,
 		"Access Authorization Events",
@@ -489,7 +514,6 @@ func convertRoleModelToDTO(
 		"Workload Events",
 		model.WorkloadEvents,
 	)
-
 	dto.Permissions = appendPermissionToDTO(dto.Permissions, "Users", model.Users)
 	dto.Permissions = appendPermissionToDTO(
 		dto.Permissions,
@@ -554,6 +578,13 @@ func convertRoleDTOToModel(ctx context.Context, dto aembit.RoleDTO) models.RoleR
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	for _, resourceSet := range dto.ResourceSets {
+		model.ResourceSetsAssignments = append(
+			model.ResourceSetsAssignments,
+			types.StringValue(resourceSet.ExternalID),
+		)
+	}
 
 	for _, permission := range dto.Permissions {
 		switch permission.Name {

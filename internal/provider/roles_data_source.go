@@ -79,6 +79,11 @@ func (d *rolesDataSource) Schema(
 							ElementType: types.StringType,
 							Computed:    true,
 						},
+						"resource_sets_assignments": schema.SetAttribute{
+							Description: "IDs of the Resource Sets associated with this Role.",
+							Computed:    true,
+							ElementType: types.StringType,
+						},
 						"access_policies": definePermissionAttribute(
 							"Access Policy",
 							true,
@@ -189,7 +194,7 @@ func (d *rolesDataSource) Read(
 	roles, err := d.client.GetRoles(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read Aembit Trust Providers",
+			"Unable to Read Aembit Roles",
 			err.Error(),
 		)
 		return
