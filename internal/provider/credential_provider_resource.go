@@ -1402,6 +1402,10 @@ func convertVaultClientTokenV2DTOToModel(
 		VaultPrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
 	}
 
+	if len(dto.CustomClaims) == 0 {
+		return &value
+	}
+
 	// Get the custom claims to be injected into the model
 	claims := make([]*models.CredentialProviderCustomClaimsModel, len(dto.CustomClaims))
 	// types.ObjectValue(models.CredentialProviderCustomClaimsModel.AttrTypes),
@@ -1451,6 +1455,10 @@ func convertOidcIdTokenDTOToModel(
 		Audience:          dto.Audience,
 		AlgorithmType:     dto.AlgorithmType,
 		Issuer:            types.StringValue(dto.Issuer),
+	}
+
+	if len(dto.CustomClaims) == 0 {
+		return &value
 	}
 
 	// Get the custom claims to be injected into the model
