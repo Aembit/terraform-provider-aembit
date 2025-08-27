@@ -554,8 +554,8 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 		)
 
 		createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(
-			string(createFileConfig),
-			string(modifyFileConfig),
+			createFileConfig,
+			modifyFileConfig,
 			"unittest1podname1",
 		)
 
