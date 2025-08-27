@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/modifiers"
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
@@ -21,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -460,6 +462,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -481,6 +484,9 @@ func (r *credentialProviderResource) Schema(
 									},
 								},
 							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							modifiers.UseEmptySet(),
 						},
 					},
 					"lifetime": schema.Int64Attribute{
@@ -649,6 +655,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -670,6 +677,9 @@ func (r *credentialProviderResource) Schema(
 									},
 								},
 							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							modifiers.UseEmptySet(),
 						},
 					},
 				},
@@ -754,6 +764,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -775,6 +786,9 @@ func (r *credentialProviderResource) Schema(
 									},
 								},
 							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							modifiers.UseEmptySet(),
 						},
 					},
 				},
@@ -1402,10 +1416,6 @@ func convertVaultClientTokenV2DTOToModel(
 		VaultPrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
 	}
 
-	if len(dto.CustomClaims) == 0 {
-		return &value
-	}
-
 	// Get the custom claims to be injected into the model
 	claims := make([]*models.CredentialProviderCustomClaimsModel, len(dto.CustomClaims))
 	// types.ObjectValue(models.CredentialProviderCustomClaimsModel.AttrTypes),
@@ -1455,10 +1465,6 @@ func convertOidcIdTokenDTOToModel(
 		Audience:          dto.Audience,
 		AlgorithmType:     dto.AlgorithmType,
 		Issuer:            types.StringValue(dto.Issuer),
-	}
-
-	if len(dto.CustomClaims) == 0 {
-		return &value
 	}
 
 	// Get the custom claims to be injected into the model
