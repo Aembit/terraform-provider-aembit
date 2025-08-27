@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/modifiers"
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
@@ -22,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -485,9 +483,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
-						PlanModifiers: []planmodifier.Set{
-							modifiers.UseEmptySet(),
-						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
@@ -678,9 +680,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
-						PlanModifiers: []planmodifier.Set{
-							modifiers.UseEmptySet(),
-						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 				},
 			},
@@ -787,9 +793,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
-						PlanModifiers: []planmodifier.Set{
-							modifiers.UseEmptySet(),
-						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 				},
 			},
