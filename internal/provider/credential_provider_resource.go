@@ -460,6 +460,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token used to authenticate to the Vault Cluster.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -482,6 +483,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
@@ -649,6 +657,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -671,6 +680,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 				},
 			},
@@ -754,6 +770,7 @@ func (r *credentialProviderResource) Schema(
 					"custom_claims": schema.SetNestedAttribute{
 						Description: "Set of Custom Claims for the JWT Token.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key": schema.StringAttribute{
@@ -776,6 +793,13 @@ func (r *credentialProviderResource) Schema(
 								},
 							},
 						},
+						Default: setdefault.StaticValue(
+							types.SetValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{
+								"key":        types.StringType,
+								"value":      types.StringType,
+								"value_type": types.StringType,
+							}}, []attr.Value{}),
+						),
 					},
 				},
 			},
