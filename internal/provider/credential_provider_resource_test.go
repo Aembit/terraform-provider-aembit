@@ -14,13 +14,14 @@ import (
 )
 
 const (
-	testCredentialProviderAembit    = "aembit_credential_provider.aembit"
-	testCredentialProviderApiKey    = "aembit_credential_provider.api_key"
-	testCredentialProviderAWS       = "aembit_credential_provider.aws"
-	testCredentialProviderGCP       = "aembit_credential_provider.gcp"
-	testCredentialProviderSnowflake = "aembit_credential_provider.snowflake"
-	testCredentialProviderUserPass  = "aembit_credential_provider.userpass"
-	testCredentialProviderVault     = "aembit_credential_provider.vault"
+	testCredentialProviderAembit     = "aembit_credential_provider.aembit"
+	testCredentialProviderApiKey     = "aembit_credential_provider.api_key"
+	testCredentialProviderAWS        = "aembit_credential_provider.aws"
+	testCredentialProviderGCP        = "aembit_credential_provider.gcp"
+	testCredentialProviderSnowflake  = "aembit_credential_provider.snowflake"
+	testCredentialProviderUserPass   = "aembit_credential_provider.userpass"
+	gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
+	awsSecretManagerResourcePath     = "aembit_credential_provider.aws_sm_value"
 )
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -572,9 +573,9 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing
 }
 
 const (
-	testOAuthAuthCodeResource              string = "aembit_credential_provider.oauth_authorization_code"
-	testOAuthAuthCodeEmptyCustomParameters string = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
-	testOAuthAuthCodeUserAuthUrl                  = "oauth_authorization_code.user_authorization_url"
+	testOAuthAuthCodeResource              = "aembit_credential_provider.oauth_authorization_code"
+	testOAuthAuthCodeEmptyCustomParameters = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
+	testOAuthAuthCodeUserAuthUrl           = "oauth_authorization_code.user_authorization_url"
 )
 
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
@@ -705,101 +706,6 @@ func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
 	})
 }
 
-func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
-	createFile, _ := os.ReadFile(
-		"../../tests/credential/vault/TestAccCredentialProviderResource.tf",
-	)
-	modifyFile, _ := os.ReadFile(
-		"../../tests/credential/vault/TestAccCredentialProviderResource.tfmod",
-	)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: string(createFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						"name",
-						"TF Acceptance Vault",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsDay,
-						"Sunday",
-					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProviderVault, "id"),
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						"vault_client_token.vault_forwarding",
-						"",
-					),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testCredentialProviderVault, "id"),
-				),
-			},
-			// ImportState testing
-			{
-				ResourceName:      testCredentialProviderVault,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			// Update and Read testing
-			{
-				Config: string(modifyFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						"name",
-						"TF Acceptance Vault - Modified",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsColor,
-						"orange",
-					),
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						tagsDay,
-						"Tuesday",
-					),
-					// Verify Vault_Forwarding update
-					resource.TestCheckResourceAttr(
-						testCredentialProviderVault,
-						"vault_client_token.vault_forwarding",
-						"conditional",
-					),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-var gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
-
 func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 	t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 
@@ -857,7 +763,242 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 	})
 }
 
-var oidcIdTokenResourcePath = "aembit_credential_provider.oidc_id_token"
+func TestAccAwsSecretsManagerValueCP(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"name",
+						"TF Acceptance AWS Secrets Manager Value CP",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"description",
+						"TF Acceptance AWS Secrets Manager Value CP Description",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_arn",
+						"arn:aws:secretsmanager:us-east-2:123456789012:secret:secretname-ABCDEF",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_key_1",
+						"key1",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_key_2",
+						"key2",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.private_network_access",
+						"false",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(awsSecretManagerResourcePath, "id"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      awsSecretManagerResourcePath,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"name",
+						"TF Acceptance AWS Secrets Manager Value CP - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"description",
+						"TF Acceptance AWS Secrets Manager Value CP Description - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_arn",
+						"arn:aws:secretsmanager:us-east-2:123456789012:secret:anothersecretname-ABCDEF",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_key_1",
+						"key1-updated",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.secret_key_2",
+						"key2-updated",
+					),
+					resource.TestCheckResourceAttr(
+						awsSecretManagerResourcePath,
+						"aws_secrets_manager_value.private_network_access",
+						"true",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+const (
+	vaultClientTokenResourcePath                   = "aembit_credential_provider.vault"
+	vaultClientTokenResourcePath_emptyCustomClaims = "aembit_credential_provider.vault_empty_custom_claims"
+	vaultClientTokenResourcePath_nullCustomClaims  = "aembit_credential_provider.vault_null_custom_claims"
+	oidcIdTokenResourcePath                        = "aembit_credential_provider.oidc_id_token"
+	oidcIdTokenResourcePath_emptyCustomClaims      = "aembit_credential_provider.oidc_id_token_empty_custom_claims"
+	oidcIdTokenResourcePath_nullCustomClaims       = "aembit_credential_provider.oidc_id_token_null_custom_claims"
+	jwtSvidTokenResourcePath                       = "aembit_credential_provider.jwt_svid_token"
+	jwtSvidTokenResourcePath_emptyCustomClaims     = "aembit_credential_provider.jwt_svid_token_empty_custom_claims"
+	jwtSvidTokenResourcePath_nullCustomClaims      = "aembit_credential_provider.jwt_svid_token_null_custom_claims"
+)
+
+func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/vault/TestAccCredentialProviderResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/vault/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						"name",
+						"TF Acceptance Vault",
+					),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsCount,
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsColor,
+						"blue",
+					),
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsDay,
+						"Sunday",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(vaultClientTokenResourcePath, "id"),
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						"vault_client_token.vault_forwarding",
+						"",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(vaultClientTokenResourcePath, "id"),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath_emptyCustomClaims,
+						"name",
+						"TF Acceptance Vault - EmptyClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath_nullCustomClaims,
+						"name",
+						"TF Acceptance Vault - NullClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      vaultClientTokenResourcePath,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						"name",
+						"TF Acceptance Vault - Modified",
+					),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsCount,
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsColor,
+						"orange",
+					),
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						tagsDay,
+						"Tuesday",
+					),
+					// Verify Vault_Forwarding update
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath,
+						"vault_client_token.vault_forwarding",
+						"conditional",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
 
 func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 	createFile, _ := os.ReadFile(
@@ -884,6 +1025,40 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						oidcIdTokenResourcePath_emptyCustomClaims,
+						"name",
+						"TF Acceptance OIDC ID Token - EmptyClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						oidcIdTokenResourcePath_nullCustomClaims,
+						"name",
+						"TF Acceptance OIDC ID Token - NullClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_nullCustomClaims,
+						"id",
+					),
 				),
 			},
 			// ImportState testing
@@ -904,103 +1079,6 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 		},
 	})
 }
-
-func TestAccAwsSecretsManagerValueCP(t *testing.T) {
-	cpResourcePath := "aembit_credential_provider.aws_sm_value"
-	createFile, _ := os.ReadFile(
-		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tf",
-	)
-	modifyFile, _ := os.ReadFile(
-		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tfmod",
-	)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: string(createFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Credential Provider Name
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"name",
-						"TF Acceptance AWS Secrets Manager Value CP",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"description",
-						"TF Acceptance AWS Secrets Manager Value CP Description",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_arn",
-						"arn:aws:secretsmanager:us-east-2:123456789012:secret:secretname-ABCDEF",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_key_1",
-						"key1",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_key_2",
-						"key2",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.private_network_access",
-						"false",
-					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(cpResourcePath, "id"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: cpResourcePath, ImportState: true, ImportStateVerify: false},
-			// Update and Read testing
-			{
-				Config: string(modifyFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"name",
-						"TF Acceptance AWS Secrets Manager Value CP - Updated",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"description",
-						"TF Acceptance AWS Secrets Manager Value CP Description - Updated",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_arn",
-						"arn:aws:secretsmanager:us-east-2:123456789012:secret:anothersecretname-ABCDEF",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_key_1",
-						"key1-updated",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.secret_key_2",
-						"key2-updated",
-					),
-					resource.TestCheckResourceAttr(
-						cpResourcePath,
-						"aws_secrets_manager_value.private_network_access",
-						"true",
-					),
-				),
-			},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
-var jwtSvidTokenResourcePath = "aembit_credential_provider.jwt_svid_token"
 
 func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
 	createFile, _ := os.ReadFile(
@@ -1027,6 +1105,40 @@ func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(jwtSvidTokenResourcePath, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(jwtSvidTokenResourcePath, "id"),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath_emptyCustomClaims,
+						"name",
+						"TF Acceptance JWT-SVID Token - EmptyClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_emptyCustomClaims,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath_nullCustomClaims,
+						"name",
+						"TF Acceptance JWT-SVID Token - NullClaims",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_nullCustomClaims,
+						"id",
+					),
 				),
 			},
 			// ImportState testing
