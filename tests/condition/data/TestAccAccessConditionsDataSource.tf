@@ -24,6 +24,8 @@ resource "aembit_access_condition" "crowdstrike" {
 		match_hostname = true
 		match_serial_number = true
 		prevent_rfm = true
+		match_mac_address = true
+		match_local_ip = true
 	}
     tags = {
         color = "blue"

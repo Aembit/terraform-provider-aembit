@@ -24,6 +24,7 @@ Manages a credential provider integration.
 
 Optional:
 
+- `aws_iam_role` (Attributes) AWS IAM Role type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--credential_provider_integrations--aws_iam_role))
 - `gitlab` (Attributes) GitLab Managed Account type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--credential_provider_integrations--gitlab))
 
 Read-Only:
@@ -31,6 +32,17 @@ Read-Only:
 - `description` (String) User-provided description of the credential provider integration.
 - `id` (String) Unique identifier of the credential provider integration.
 - `name` (String) User-provided name of the credential provider integration.
+
+<a id="nestedatt--credential_provider_integrations--aws_iam_role"></a>
+### Nested Schema for `credential_provider_integrations.aws_iam_role`
+
+Read-Only:
+
+- `lifetime_in_seconds` (Number) Lifetime in seconds for the requested AWS temporary credentials.
+- `oidc_issuer_url` (String) OIDC Issuer URL for AWS IAM Identity Provider configuration
+- `role_arn` (String) AWS IAM Role ARN.
+- `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration
+
 
 <a id="nestedatt--credential_provider_integrations--gitlab"></a>
 ### Nested Schema for `credential_provider_integrations.gitlab`

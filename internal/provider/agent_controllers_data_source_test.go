@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testAgentControllersDataSource string = "data.aembit_agent_controllers.test"
-const testAgentControllerResource string = "aembit_agent_controller.azure_tp"
+const (
+	testAgentControllersDataSource string = "data.aembit_agent_controllers.test"
+	testAgentControllerResource    string = "aembit_agent_controller.azure_tp"
+)
 
 func testFindAgentController(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -29,8 +31,14 @@ func testFindAgentController(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAgentControllersDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/agent_controllers/data/TestAccAgentControllersDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Azure Trust Provider")
+	createFile, _ := os.ReadFile(
+		"../../tests/agent_controllers/data/TestAccAgentControllersDataSource.tf",
+	)
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance Azure Trust Provider",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -40,9 +48,15 @@ func TestAccAgentControllersDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Agent Controllers returned
-					resource.TestCheckResourceAttrSet(testAgentControllersDataSource, "agent_controllers.#"),
+					resource.TestCheckResourceAttrSet(
+						testAgentControllersDataSource,
+						"agent_controllers.#",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testAgentControllersDataSource, "agent_controllers.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testAgentControllersDataSource,
+						"agent_controllers.0.id",
+					),
 					// Find newly created entry
 					testFindAgentController(testAgentControllerResource),
 				),

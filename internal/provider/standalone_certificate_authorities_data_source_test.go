@@ -28,8 +28,9 @@ func testFindStandaloneCertificate(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccStandaloneCertificatesDataSource(t *testing.T) {
-
-	createFile, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource.tf")
+	createFile, _ := os.ReadFile(
+		"../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource.tf",
+	)
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
 
 	resource.Test(t, resource.TestCase{
@@ -40,13 +41,28 @@ func TestAccStandaloneCertificatesDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Standalone Certificate Authorities returned
-					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.#"),
+					resource.TestCheckResourceAttrSet(
+						testStandaloneCertificatesDataSource,
+						"standalone_certificate_authorities.#",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.0.id"),
-					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.0.not_before"),
-					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.0.not_after"),
+					resource.TestCheckResourceAttrSet(
+						testStandaloneCertificatesDataSource,
+						"standalone_certificate_authorities.0.id",
+					),
+					resource.TestCheckResourceAttrSet(
+						testStandaloneCertificatesDataSource,
+						"standalone_certificate_authorities.0.not_before",
+					),
+					resource.TestCheckResourceAttrSet(
+						testStandaloneCertificatesDataSource,
+						"standalone_certificate_authorities.0.not_after",
+					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testStandaloneCertificatesDataSource, "standalone_certificate_authorities.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testStandaloneCertificatesDataSource,
+						"standalone_certificate_authorities.0.id",
+					),
 					// Find newly created entry
 					testFindStandaloneCertificate(testStandaloneCertificateResource),
 				),

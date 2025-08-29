@@ -2,13 +2,17 @@ package provider
 
 import (
 	"context"
+	"fmt"
+
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -31,17 +35,29 @@ type credentialProviderIntegrationResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *credentialProviderIntegrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *credentialProviderIntegrationResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_credential_provider_integration"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *credentialProviderIntegrationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *credentialProviderIntegrationResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *credentialProviderIntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *credentialProviderIntegrationResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -66,13 +82,13 @@ func (r *credentialProviderIntegrationResource) Schema(_ context.Context, _ reso
 			},
 			"gitlab": schema.SingleNestedAttribute{
 				Description: "GitLab Managed Account type Credential Provider Integration configuration.",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"url": schema.StringAttribute{
 						Description: "GitLab URL.",
 						Required:    true,
 						Validators: []validator.String{
-							validators.UrlSchemeValidation(),
+							validators.SecureURLValidation(),
 						},
 					},
 					"personal_access_token": schema.StringAttribute{
@@ -82,12 +98,46 @@ func (r *credentialProviderIntegrationResource) Schema(_ context.Context, _ reso
 					},
 				},
 			},
+			"aws_iam_role": schema.SingleNestedAttribute{
+				Description: "Configuration of Credential Provider Integration of type AWS IAM Role",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"role_arn": schema.StringAttribute{
+						Description: "AWS IAM Role ARN.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.AwsIamRoleArnValidation(),
+						},
+					},
+					"lifetime_in_seconds": schema.Int32Attribute{
+						Description: "Lifetime in seconds for the AWS IAM Role credentials.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int32default.StaticInt32(3600),
+						Validators: []validator.Int32{
+							int32validator.Between(900, 43200), // 15 minutes to 12 hours
+						},
+					},
+					"oidc_issuer_url": schema.StringAttribute{
+						Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
+						Computed:    true,
+					},
+					"token_audience": schema.StringAttribute{
+						Description: "Token Audience for AWS IAM Identity Provider configuration",
+						Computed:    true,
+					},
+				},
+			},
 		},
 	}
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *credentialProviderIntegrationResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.CredentialProviderIntegrationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -97,7 +147,7 @@ func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req 
 	}
 
 	// Generate API request body from plan
-	var dto aembit.CredentialProviderIntegrationDTO = convertCredentialProviderIntegrationModelToDTO(plan, nil)
+	dto := convertCredentialProviderIntegrationModelToDTO(plan, nil)
 
 	// Create new Integration
 	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil)
@@ -110,7 +160,12 @@ func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req 
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan)
+	plan = convertCredentialProviderIntegrationDTOToModel(
+		*credentialIntegration,
+		plan,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -121,7 +176,11 @@ func (r *credentialProviderIntegrationResource) Create(ctx context.Context, req 
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *credentialProviderIntegrationResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -131,7 +190,10 @@ func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req re
 	}
 
 	// Get refreshed trust value from Aembit
-	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(state.ID.ValueString(), nil)
+	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
+		state.ID.ValueString(),
+		nil,
+	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Credential Provider Integration",
@@ -145,7 +207,12 @@ func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req re
 		return
 	}
 
-	state = convertCredentialProviderIntegrationDTOToModel(credentialIntegration, state)
+	state = convertCredentialProviderIntegrationDTOToModel(
+		credentialIntegration,
+		state,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -156,7 +223,11 @@ func (r *credentialProviderIntegrationResource) Read(ctx context.Context, req re
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *credentialProviderIntegrationResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -177,7 +248,7 @@ func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req 
 	}
 
 	// Generate API request body from plan
-	var dto aembit.CredentialProviderIntegrationDTO = convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
+	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
 	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil)
@@ -190,7 +261,12 @@ func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req 
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertCredentialProviderIntegrationDTOToModel(*credentialIntegration, plan)
+	state = convertCredentialProviderIntegrationDTOToModel(
+		*credentialIntegration,
+		plan,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -201,7 +277,11 @@ func (r *credentialProviderIntegrationResource) Update(ctx context.Context, req 
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *credentialProviderIntegrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *credentialProviderIntegrationResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.CredentialProviderIntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -222,12 +302,19 @@ func (r *credentialProviderIntegrationResource) Delete(ctx context.Context, req 
 }
 
 // Imports an existing resource by passing externalId.
-func (r *credentialProviderIntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *credentialProviderIntegrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertCredentialProviderIntegrationModelToDTO(model models.CredentialProviderIntegrationResourceModel, externalID *string) aembit.CredentialProviderIntegrationDTO {
+func convertCredentialProviderIntegrationModelToDTO(
+	model models.CredentialProviderIntegrationResourceModel,
+	externalID *string,
+) aembit.CredentialProviderIntegrationDTO {
 	var credentialIntegration aembit.CredentialProviderIntegrationDTO
 	credentialIntegration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -235,30 +322,52 @@ func convertCredentialProviderIntegrationModelToDTO(model models.CredentialProvi
 	}
 
 	if externalID != nil {
-		credentialIntegration.EntityDTO.ExternalID = *externalID
+		credentialIntegration.ExternalID = *externalID
 	}
 
-	credentialIntegration.Type = "GitLab"
-	credentialIntegration.Url = model.GitLab.Url.ValueString()
-	credentialIntegration.PersonalAccessToken = model.GitLab.PersonalAccessToken.ValueString()
+	if model.GitLab != nil {
+		credentialIntegration.Type = "GitLab"
+		credentialIntegration.Url = model.GitLab.Url.ValueString()
+		credentialIntegration.PersonalAccessToken = model.GitLab.PersonalAccessToken.ValueString()
+	}
 
+	if model.AwsIamRole != nil {
+		credentialIntegration.Type = "AwsIamRole"
+		credentialIntegration.RoleArn = model.AwsIamRole.RoleArn.ValueString()
+		credentialIntegration.LifetimeInSeconds = model.AwsIamRole.LifetimeInSeconds.ValueInt32()
+	}
 	return credentialIntegration
 }
 
-func convertCredentialProviderIntegrationDTOToModel(dto aembit.CredentialProviderIntegrationDTO, state models.CredentialProviderIntegrationResourceModel) models.CredentialProviderIntegrationResourceModel {
+func convertCredentialProviderIntegrationDTOToModel(
+	dto aembit.CredentialProviderIntegrationDTO,
+	state models.CredentialProviderIntegrationResourceModel,
+	tenant string,
+	stackDomain string,
+) models.CredentialProviderIntegrationResourceModel {
 	var model models.CredentialProviderIntegrationResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
 
-	model.GitLab = &models.CredentialProviderIntegrationGitlabModel{
-		Url:                 types.StringValue(dto.Url),
-		PersonalAccessToken: types.StringValue(dto.PersonalAccessToken),
+	switch dto.Type {
+	case "GitLab":
+		model.GitLab = &models.CredentialProviderIntegrationGitlabModel{
+			Url:                 types.StringValue(dto.Url),
+			PersonalAccessToken: types.StringValue(dto.PersonalAccessToken),
+		}
+		if len(dto.PersonalAccessToken) == 0 && state.GitLab != nil {
+			model.GitLab.PersonalAccessToken = state.GitLab.PersonalAccessToken
+		}
+	case "AwsIamRole":
+		model.AwsIamRole = &models.CredentialProviderIntegrationAwsIamRoleModel{
+			RoleArn:           types.StringValue(dto.RoleArn),
+			LifetimeInSeconds: types.Int32Value(dto.LifetimeInSeconds),
+			OIDCIssuerUrl: types.StringValue(
+				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
+			),
+			TokenAudience: types.StringValue("sts.amazonaws.com"),
+		}
 	}
-
-	if len(dto.PersonalAccessToken) == 0 && state.GitLab != nil {
-		model.GitLab.PersonalAccessToken = state.GitLab.PersonalAccessToken
-	}
-
 	return model
 }

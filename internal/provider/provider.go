@@ -59,7 +59,10 @@ type aembitProvider struct {
 }
 
 // Configure adds the provider configured client to the resource.
-func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureResponse) *aembit.CloudClient {
+func resourceConfigure(
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) *aembit.CloudClient {
 	if req.ProviderData == nil {
 		return nil
 	}
@@ -69,7 +72,10 @@ func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureRe
 	if client, ok = req.ProviderData.(*aembit.CloudClient); !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configuration Type",
-			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return nil
@@ -79,7 +85,10 @@ func resourceConfigure(req resource.ConfigureRequest, resp *resource.ConfigureRe
 }
 
 // Configure adds the provider configured client to the data source.
-func datasourceConfigure(req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) *aembit.CloudClient {
+func datasourceConfigure(
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) *aembit.CloudClient {
 	if req.ProviderData == nil {
 		return nil
 	}
@@ -89,7 +98,10 @@ func datasourceConfigure(req datasource.ConfigureRequest, resp *datasource.Confi
 	if client, ok = req.ProviderData.(*aembit.CloudClient); !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configuration Type",
-			fmt.Sprintf("Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *aembit.CloudClient, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return nil
@@ -99,13 +111,21 @@ func datasourceConfigure(req datasource.ConfigureRequest, resp *datasource.Confi
 }
 
 // Metadata returns the provider type name.
-func (p *aembitProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *aembitProvider) Metadata(
+	_ context.Context,
+	_ provider.MetadataRequest,
+	resp *provider.MetadataResponse,
+) {
 	resp.TypeName = "aembit"
 	resp.Version = p.version
 }
 
 // Schema defines the provider-level schema for configuration data.
-func (p *aembitProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *aembitProvider) Schema(
+	_ context.Context,
+	_ provider.SchemaRequest,
+	resp *provider.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"tenant": schema.StringAttribute{
@@ -139,7 +159,11 @@ func (p *aembitProvider) ConfigValidators(_ context.Context) []resource.ConfigVa
 	}
 }
 
-func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (p *aembitProvider) Configure(
+	ctx context.Context,
+	req provider.ConfigureRequest,
+	resp *provider.ConfigureResponse,
+) {
 	var err error
 	tflog.Info(ctx, "Configuring Aembit client...")
 
@@ -203,7 +227,11 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if len(aembitClientID) > 0 {
 		tenant = getAembitTenantId(aembitClientID)
-		tflog.Debug(ctx, "Using Aembit Native Authentication", map[string]interface{}{"tenantId": tenant})
+		tflog.Debug(
+			ctx,
+			"Using Aembit Native Authentication",
+			map[string]interface{}{"tenantId": tenant},
+		)
 
 		// Try with the resourceSetId first
 		if token, err = getToken(ctx, aembitClientID, stackDomain, resourceSetId, p.version); err != nil {
@@ -216,7 +244,11 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		// LEGACY: This is included to authenticate to the default resource set if resource_set_id is specified in the provider
 		if token == "" {
 			if token, err = getToken(ctx, aembitClientID, stackDomain, "", p.version); err != nil {
-				tflog.Warn(ctx, "Failed to get Aembit Auth Token", map[string]interface{}{"error": err})
+				tflog.Warn(
+					ctx,
+					"Failed to get Aembit Auth Token",
+					map[string]interface{}{"error": err},
+				)
 			}
 		} else {
 			tflog.Debug(ctx, "Retrieved Aembit Auth Token for Default ResourceSet")
@@ -275,7 +307,11 @@ func (p *aembitProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	resp.DataSourceData = client
 	resp.ResourceData = client
 
-	tflog.Info(ctx, fmt.Sprintf("Configured Aembit client (%s)", p.version), map[string]any{"success": true})
+	tflog.Info(
+		ctx,
+		fmt.Sprintf("Configured Aembit client (%s)", p.version),
+		map[string]any{"success": true},
+	)
 }
 
 func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -294,7 +330,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewCredentialProviderIntegrationResource,
 		NewDiscoveryIntegrationResource,
 		NewLogStreamResource,
-		//NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
+		// NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 		NewGlobalPolicyComplianceResource,
 	}
 }
@@ -320,14 +356,17 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewDiscoveryIntegrationsDataSource,
 		NewGlobalPolicyComplianceDataSource,
 		NewLogStreamsDataSource,
+		NewCallerIdentityDataSource,
 	}
 }
 
 // // Temporary until Aembit SDK is published.
-var GCP_ID_TOKEN string
-var GITHUB_ID_TOKEN string
-var TERRAFORM_ID_TOKEN string
-var AEMBIT_TOKEN string
+var (
+	GCP_ID_TOKEN       string
+	GITHUB_ID_TOKEN    string
+	TERRAFORM_ID_TOKEN string
+	AEMBIT_TOKEN       string
+)
 
 type ClientRequestNetwork struct {
 	TargetHost        string `json:"targetHost"`
@@ -364,7 +403,10 @@ type tokenAuth struct {
 	token string
 }
 
-func (t tokenAuth) GetRequestMetadata(ctx context.Context, in ...string) (map[string]string, error) {
+func (t tokenAuth) GetRequestMetadata(
+	ctx context.Context,
+	in ...string,
+) (map[string]string, error) {
 	return map[string]string{
 		"authorization": "Bearer " + t.token,
 	}, nil
@@ -374,12 +416,29 @@ func (tokenAuth) RequireTransportSecurity() bool {
 	return true
 }
 
-func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, version string) (string, error) {
+func getToken(
+	ctx context.Context,
+	aembitClientID, stackDomain, resourceSetId, version string,
+) (string, error) {
 	idToken, err := getIdentityToken(aembitClientID, stackDomain)
 	if err == nil {
-		aembitToken, err := getAembitToken(aembitClientID, stackDomain, idToken, resourceSetId, version)
+		aembitToken, err := getAembitToken(
+			aembitClientID,
+			stackDomain,
+			idToken,
+			resourceSetId,
+			version,
+		)
 		if err == nil {
-			roleToken, err := getAembitCredential(fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain), 443, aembitClientID, stackDomain, idToken, aembitToken, resourceSetId)
+			roleToken, err := getAembitCredential(
+				fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain),
+				443,
+				aembitClientID,
+				stackDomain,
+				idToken,
+				aembitToken,
+				resourceSetId,
+			)
 			if err == nil {
 				return roleToken, nil
 			} else {
@@ -402,14 +461,20 @@ func getToken(ctx context.Context, aembitClientID, stackDomain, resourceSetId, v
 	}
 }
 
-func getAembitCredential(targetHost string, targetPort int16, clientId, stackDomain, idToken, aembitToken, resourceSetId string) (string, error) {
+func getAembitCredential(
+	targetHost string,
+	targetPort int16,
+	clientId, stackDomain, idToken, aembitToken, resourceSetId string,
+) (string, error) {
 	var err error
 	var clientRequest, workloadAssessment string
 	var conn *grpc.ClientConn
 	var aembitClient EdgeCommanderClient
 	var credResponse *CredentialResponse
 
-	tlsCreds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: false, MinVersion: tls.VersionTLS12})
+	tlsCreds := credentials.NewTLS(
+		&tls.Config{InsecureSkipVerify: false, MinVersion: tls.VersionTLS12},
+	)
 	if conn, err = grpc.NewClient(fmt.Sprintf("%s.ec.%s:443", getAembitTenantId(clientId), stackDomain), grpc.WithTransportCredentials(tlsCreds), grpc.WithPerRPCCredentials(tokenAuth{token: aembitToken})); err != nil {
 		return "", err
 	}
@@ -437,7 +502,14 @@ func getAembitCredential(targetHost string, targetPort int16, clientId, stackDom
 func getClientRequest(targetHost string, targetPort int16) (string, error) {
 	var request []byte
 	var err error
-	var clientRequest ClientRequest = ClientRequest{Version: "1.0.0", Network: ClientRequestNetwork{TargetHost: targetHost, TargetPort: targetPort, TransportProtocol: "TCP"}}
+	clientRequest := ClientRequest{
+		Version: "1.0.0",
+		Network: ClientRequestNetwork{
+			TargetHost:        targetHost,
+			TargetPort:        targetPort,
+			TransportProtocol: "TCP",
+		},
+	}
 
 	if request, err = json.Marshal(clientRequest); err != nil {
 		return "", err
@@ -452,11 +524,20 @@ func getWorkloadAssessment(clientId, idToken, resourceSetId string) (string, err
 
 	switch getAembitIdentityType(clientId) {
 	case "gcp_idtoken":
-		workload = WorkloadAssessment{Version: "1.0.0", GCP: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+		workload = WorkloadAssessment{
+			Version: "1.0.0",
+			GCP:     WorkloadAssessmentIdToken{IdentityToken: idToken},
+		}
 	case "github_idtoken":
-		workload = WorkloadAssessment{Version: "1.0.0", GitHub: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+		workload = WorkloadAssessment{
+			Version: "1.0.0",
+			GitHub:  WorkloadAssessmentIdToken{IdentityToken: idToken},
+		}
 	case "terraform_idtoken":
-		workload = WorkloadAssessment{Version: "1.0.0", Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken}}
+		workload = WorkloadAssessment{
+			Version:   "1.0.0",
+			Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken},
+		}
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
 	}
@@ -509,7 +590,11 @@ func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version strin
 	}
 	details.Set("attestation", string(attestationJSON))
 
-	tokenEndpoint := fmt.Sprintf("https://%s.id.%s/connect/token", getAembitTenantId(clientId), stackDomain)
+	tokenEndpoint := fmt.Sprintf(
+		"https://%s.id.%s/connect/token",
+		getAembitTenantId(clientId),
+		stackDomain,
+	)
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
@@ -564,7 +649,10 @@ func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
 	}
 
 	audience := fmt.Sprintf("https://%s.id.%s", getAembitTenantId(clientId), stackDomain)
-	metadataIdentityTokenUrl := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s", url.QueryEscape(audience))
+	metadataIdentityTokenUrl := fmt.Sprintf(
+		"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=%s",
+		url.QueryEscape(audience),
+	)
 
 	req, err := http.NewRequest("GET", metadataIdentityTokenUrl, nil)
 	if err != nil {

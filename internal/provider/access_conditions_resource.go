@@ -5,16 +5,18 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -35,17 +37,29 @@ type accessConditionResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *accessConditionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *accessConditionResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_access_condition"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *accessConditionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *accessConditionResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *accessConditionResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -87,8 +101,11 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"max_last_seen": schema.Int64Attribute{
-						Description: "The maximum number of seconds since the managed Cluster was last seen by Wiz.",
+						Description: "The maximum number of seconds since the managed Cluster was last seen by Wiz. Accepted range: 1-31449600 seconds",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 31449600),
+						},
 					},
 					"container_cluster_connected": schema.BoolAttribute{
 						Description: "The condition requires that managed Clusters be defined as Container Cluster Connected by Wiz.",
@@ -101,8 +118,11 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"max_last_seen": schema.Int64Attribute{
-						Description: "The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.",
+						Description: "The maximum number of seconds since the managed Cluster was last seen by CrowdStrike. Accepted range: 1-31449600 seconds",
 						Required:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 31449600),
+						},
 					},
 					"match_hostname": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.",
@@ -115,6 +135,18 @@ func (r *accessConditionResource) Schema(_ context.Context, _ resource.SchemaReq
 					"prevent_rfm": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.",
 						Required:    true,
+					},
+					"match_mac_address": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"match_local_ip": schema.BoolAttribute{
+						Description: "The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -191,7 +223,11 @@ func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *accessConditionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *accessConditionResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.AccessConditionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -232,7 +268,11 @@ func (r *accessConditionResource) Create(ctx context.Context, req resource.Creat
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *accessConditionResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -267,7 +307,11 @@ func (r *accessConditionResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *accessConditionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *accessConditionResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -319,7 +363,11 @@ func (r *accessConditionResource) Update(ctx context.Context, req resource.Updat
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *accessConditionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *accessConditionResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -352,12 +400,21 @@ func (r *accessConditionResource) Delete(ctx context.Context, req resource.Delet
 }
 
 // Imports an existing resource by passing externalId.
-func (r *accessConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *accessConditionResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessConditionResourceModel, externalID *string, client *aembit.CloudClient) (aembit.AccessConditionDTO, error) {
+func convertAccessConditionModelToDTO(
+	ctx context.Context,
+	model models.AccessConditionResourceModel,
+	externalID *string,
+	client *aembit.CloudClient,
+) (aembit.AccessConditionDTO, error) {
 	var accessCondition aembit.AccessConditionDTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -365,7 +422,7 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 		IsActive:    model.IsActive.ValueBool(),
 	}
 	if externalID != nil {
-		accessCondition.EntityDTO.ExternalID = *externalID
+		accessCondition.ExternalID = *externalID
 	}
 
 	if len(model.Tags.Elements()) > 0 {
@@ -390,6 +447,8 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 		accessCondition.Conditions.MatchHostname = model.CrowdStrike.MatchHostname.ValueBool()
 		accessCondition.Conditions.MatchSerialNumber = model.CrowdStrike.MatchSerialNumber.ValueBool()
 		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
+		accessCondition.Conditions.MatchMacAddress = model.CrowdStrike.MatchMacAddress.ValueBool()
+		accessCondition.Conditions.MatchLocalIP = model.CrowdStrike.MatchLocalIP.ValueBool()
 	}
 	if model.GeoIp != nil {
 		// retrieve countries datasource for validation
@@ -398,12 +457,18 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 		for _, location := range model.GeoIp.Locations {
 			countryCodeInput := location.CountryCode.ValueString()
 
-			countryIndex := slices.IndexFunc(countriesResource.Countries, func(c *countryResourceModel) bool {
-				return c.CountryCode.ValueString() == countryCodeInput
-			})
+			countryIndex := slices.IndexFunc(
+				countriesResource.Countries,
+				func(c *countryResourceModel) bool {
+					return c.CountryCode.ValueString() == countryCodeInput
+				},
+			)
 
 			if countryIndex == -1 {
-				return accessCondition, fmt.Errorf("%v is not a valid CountryCode", countryCodeInput)
+				return accessCondition, fmt.Errorf(
+					"%v is not a valid CountryCode",
+					countryCodeInput,
+				)
 			}
 
 			countryFound := countriesResource.Countries[countryIndex]
@@ -426,9 +491,12 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 
 		timezoneInput := model.Time.Timezone.ValueString()
 
-		tsIndex := slices.IndexFunc(timezoneResource.Timezones, func(ts *timezoneResourceModel) bool {
-			return ts.Timezone.ValueString() == timezoneInput
-		})
+		tsIndex := slices.IndexFunc(
+			timezoneResource.Timezones,
+			func(ts *timezoneResourceModel) bool {
+				return ts.Timezone.ValueString() == timezoneInput
+			},
+		)
 
 		if tsIndex == -1 {
 			return accessCondition, fmt.Errorf("%v is not a valid timezone", timezoneInput)
@@ -444,32 +512,41 @@ func convertAccessConditionModelToDTO(ctx context.Context, model models.AccessCo
 
 		for _, schedule := range model.Time.Schedule {
 			ordinal, err := findOrdinal(schedule.Day.ValueString())
-
 			if err != nil {
 				return accessCondition, err
 			}
 
-			accessCondition.Conditions.Schedule = append(accessCondition.Conditions.Schedule, aembit.ScheduleDTO{
-				StartTime: schedule.StartTime.ValueString(),
-				EndTime:   schedule.EndTime.ValueString(),
-				WeekDay: &aembit.WeekDayDTO{
-					Name:    schedule.Day.ValueString(),
-					Ordinal: ordinal,
+			accessCondition.Conditions.Schedule = append(
+				accessCondition.Conditions.Schedule,
+				aembit.ScheduleDTO{
+					StartTime: schedule.StartTime.ValueString(),
+					EndTime:   schedule.EndTime.ValueString(),
+					WeekDay: &aembit.WeekDayDTO{
+						Name:    schedule.Day.ValueString(),
+						Ordinal: ordinal,
+					},
 				},
-			})
+			)
 		}
 	}
 
 	return accessCondition, nil
 }
 
-func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*models.GeoIpSubdivisionModel, countryFound *countryResourceModel) error {
+func FillSubdivisions(
+	loc *aembit.CountryDTO,
+	subDivisions []*models.GeoIpSubdivisionModel,
+	countryFound *countryResourceModel,
+) error {
 	for _, subDivision := range subDivisions {
 		subDivisionInput := subDivision.SubdivisionCode.ValueString()
 
-		subDivisionIndex := slices.IndexFunc(countryFound.Subdivisions, func(s *countrySubdivisionResourceModel) bool {
-			return s.SubdivisionCode.ValueString() == subDivisionInput
-		})
+		subDivisionIndex := slices.IndexFunc(
+			countryFound.Subdivisions,
+			func(s *countrySubdivisionResourceModel) bool {
+				return s.SubdivisionCode.ValueString() == subDivisionInput
+			},
+		)
 
 		if subDivisionIndex == -1 {
 			return fmt.Errorf("%v is not a valid SubdivisionCode", subDivisionInput)
@@ -487,13 +564,17 @@ func FillSubdivisions(loc *aembit.CountryDTO, subDivisions []*models.GeoIpSubdiv
 	return nil
 }
 
-func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessConditionDTO, _ models.AccessConditionResourceModel) models.AccessConditionResourceModel {
+func convertAccessConditionDTOToModel(
+	ctx context.Context,
+	dto aembit.AccessConditionDTO,
+	_ models.AccessConditionResourceModel,
+) models.AccessConditionResourceModel {
 	var model models.AccessConditionResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	if len(dto.IntegrationID) == 0 {
 		model.IntegrationID = types.StringValue(dto.Integration.ExternalID)
@@ -508,10 +589,14 @@ func convertAccessConditionDTOToModel(ctx context.Context, dto aembit.AccessCond
 		}
 	case "CrowdStrike":
 		model.CrowdStrike = &models.AccessConditionCrowdstrikeModel{
-			MaxLastSeen:                        types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
-			MatchHostname:                      types.BoolValue(dto.Conditions.MatchHostname),
-			MatchSerialNumber:                  types.BoolValue(dto.Conditions.MatchSerialNumber),
-			PreventRestrictedFunctionalityMode: types.BoolValue(dto.Conditions.PreventRestrictedFunctionalityMode),
+			MaxLastSeen:       types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
+			MatchHostname:     types.BoolValue(dto.Conditions.MatchHostname),
+			MatchSerialNumber: types.BoolValue(dto.Conditions.MatchSerialNumber),
+			PreventRestrictedFunctionalityMode: types.BoolValue(
+				dto.Conditions.PreventRestrictedFunctionalityMode,
+			),
+			MatchMacAddress: types.BoolValue(dto.Conditions.MatchMacAddress),
+			MatchLocalIP:    types.BoolValue(dto.Conditions.MatchLocalIP),
 		}
 	case "AembitGeoIPCondition":
 		geoIpModel := models.AccessConditionGeoIpModel{}

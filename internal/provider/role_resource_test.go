@@ -30,7 +30,11 @@ func testDeleteRole(resourceName string) resource.TestCheckFunc {
 func TestAccRoleResource(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tfmod")
-	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(string(createFile), string(modifyFile), "TF Acceptance Role")
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"TF Acceptance Role",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -45,6 +49,8 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceID, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(resourceID, "id"),
+					// Verify ResourceSet is set
+					resource.TestCheckResourceAttrSet(resourceID, "resource_sets_assignments.0"),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -59,6 +65,8 @@ func TestAccRoleResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(resourceID, "name", newName),
+					//Verify ResourceSet
+					resource.TestCheckResourceAttr(resourceID, "resource_sets_assignments.#", "1"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

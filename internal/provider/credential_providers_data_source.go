@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
@@ -29,17 +30,29 @@ type credentialProvidersDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *credentialProvidersDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *credentialProvidersDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *credentialProvidersDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *credentialProvidersDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_credential_providers"
 }
 
 // Schema defines the schema for the resource.
-func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *credentialProvidersDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an credential provider.",
 		Attributes: map[string]schema.Attribute{
@@ -240,6 +253,9 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								"oauth_token_url": schema.StringAttribute{
 									Computed: true,
 								},
+								"oauth_introspection_url": schema.StringAttribute{
+									Computed: true,
+								},
 								"user_authorization_url": schema.StringAttribute{
 									Computed: true,
 								},
@@ -361,6 +377,10 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 						"managed_gitlab_account": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
+								"service_account_username": schema.StringAttribute{
+									Description: "The name of the GitLab service account used by the Credential Provider.",
+									Computed:    true,
+								},
 								"group_ids": schema.SetAttribute{
 									Description: "The set of GitLab group IDs.",
 									ElementType: types.StringType,
@@ -375,8 +395,8 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 									Description: "The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).",
 									Computed:    true,
 								},
-								"lifetime_in_days": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in days.",
+								"lifetime_in_hours": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider in hours.",
 									Computed:    true,
 								},
 								"scope": schema.StringAttribute{
@@ -444,6 +464,95 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 								},
 							},
 						},
+						"aws_secrets_manager_value": schema.SingleNestedAttribute{
+							Description: "AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider" +
+								" supports secret values in plaintext or JSON formats.",
+							Optional: true,
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"secret_arn": schema.StringAttribute{
+									Description: "ARN of the AWS Secrets Manager secret to be used by the Credential Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"secret_key_1": schema.StringAttribute{
+									Description: "Used when an AWS Secrets Manager secret object is in JSON format. Specifies a key of an element with the secret value.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"secret_key_2": schema.StringAttribute{
+									Description: "Similar to `secret_key_1` but used when you need a credential provider to work with 2 secret values." +
+										" For example, a username / password pair.",
+									Optional: true,
+									Computed: true,
+								},
+								"private_network_access": schema.BoolAttribute{
+									Description: "Indicates that the AWS Secrets Manager is accessible via a private network only.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"credential_provider_integration_id": schema.StringAttribute{
+									Description: "The unique identifier of the Credential Provider Integration of type AWS IAM Role.",
+									Optional:    true,
+									Computed:    true,
+								},
+							},
+						},
+						"jwt_svid_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"subject": schema.StringAttribute{
+									Description: "Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject_type": schema.StringAttribute{
+									Description: "Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+								"issuer": schema.StringAttribute{
+									Description: "Issuer claim for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"lifetime_in_minutes": schema.Int32Attribute{
+									Description: "Lifetime of the Credential Provider in minutes.",
+									Computed:    true,
+								},
+								"algorithm_type": schema.StringAttribute{
+									Description: "JWT Signing algorithm type (RS256 or ES256)",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+									},
+								},
+								"audience": schema.StringAttribute{
+									Description: "Audience for JWT-SVID Token configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"custom_claims": schema.SetNestedAttribute{
+									Description: "Set of Custom Claims for the JWT Token",
+									Computed:    true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -452,7 +561,11 @@ func (d *credentialProvidersDataSource) Schema(_ context.Context, _ datasource.S
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *credentialProvidersDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.CredentialProvidersDataSourceModel
 
 	credentialProviders, err := d.client.GetCredentialProvidersV2(nil)
@@ -466,7 +579,13 @@ func (d *credentialProvidersDataSource) Read(ctx context.Context, req datasource
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
-		credentialProviderState := convertCredentialProviderV2DTOToModel(ctx, credentialProvider, models.CredentialProviderResourceModel{}, d.client.Tenant, d.client.StackDomain)
+		credentialProviderState := convertCredentialProviderV2DTOToModel(
+			ctx,
+			credentialProvider,
+			models.CredentialProviderResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
+		)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

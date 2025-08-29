@@ -19,6 +19,7 @@ require (
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0
 	github.com/stretchr/testify v1.9.0
 )
 

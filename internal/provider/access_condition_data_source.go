@@ -2,12 +2,12 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -27,17 +27,29 @@ type accessConditionsDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *accessConditionsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *accessConditionsDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *accessConditionsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *accessConditionsDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_access_conditions"
 }
 
 // Schema defines the schema for the resource.
-func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *accessConditionsDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an accessCondition.",
 		Attributes: map[string]schema.Attribute{
@@ -76,7 +88,9 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 							Description: "Wiz Specific rules for the Access Condition.",
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
-								"max_last_seen":               schema.Int64Attribute{Required: true},
+								"max_last_seen": schema.Int64Attribute{
+									Required: true,
+								},
 								"container_cluster_connected": schema.BoolAttribute{Required: true},
 							},
 						},
@@ -88,6 +102,8 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 								"match_hostname":      schema.BoolAttribute{Required: true},
 								"match_serial_number": schema.BoolAttribute{Required: true},
 								"prevent_rfm":         schema.BoolAttribute{Required: true},
+								"match_mac_address":   schema.BoolAttribute{Computed: true},
+								"match_local_ip":      schema.BoolAttribute{Computed: true},
 							},
 						},
 						"geoip_conditions": schema.SingleNestedAttribute{
@@ -157,7 +173,11 @@ func (d *accessConditionsDataSource) Schema(_ context.Context, _ datasource.Sche
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *accessConditionsDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.AccessConditionsDataSourceModel
 
 	accessConditions, err := d.client.GetAccessConditions(nil)
@@ -171,7 +191,11 @@ func (d *accessConditionsDataSource) Read(ctx context.Context, req datasource.Re
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
-		accessConditionState := convertAccessConditionDTOToModel(ctx, accessCondition, models.AccessConditionResourceModel{})
+		accessConditionState := convertAccessConditionDTOToModel(
+			ctx,
+			accessCondition,
+			models.AccessConditionResourceModel{},
+		)
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

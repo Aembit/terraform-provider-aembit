@@ -25,6 +25,7 @@ Manages an credential provider.
 Optional:
 
 - `aembit_access_token` (Attributes) Aembit Access Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aembit_access_token))
+- `aws_secrets_manager_value` (Attributes) AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext or JSON formats. (see [below for nested schema](#nestedatt--credential_providers--aws_secrets_manager_value))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aws_sts))
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--azure_entra_workload_identity))
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
@@ -37,6 +38,7 @@ Read-Only:
 - `description` (String) User-provided description of the credential provider.
 - `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
+- `jwt_svid_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
@@ -53,6 +55,18 @@ Read-Only:
 - `audience` (String) Audience of the Credential Provider.
 - `lifetime` (Number) Lifetime of the Credential Provider.
 - `role_id` (String) Aembit Role ID of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--aws_secrets_manager_value"></a>
+### Nested Schema for `credential_providers.aws_secrets_manager_value`
+
+Optional:
+
+- `credential_provider_integration_id` (String) The unique identifier of the Credential Provider Integration of type AWS IAM Role.
+- `private_network_access` (Boolean) Indicates that the AWS Secrets Manager is accessible via a private network only.
+- `secret_arn` (String) ARN of the AWS Secrets Manager secret to be used by the Credential Provider.
+- `secret_key_1` (String) Used when an AWS Secrets Manager secret object is in JSON format. Specifies a key of an element with the secret value.
+- `secret_key_2` (String) Similar to `secret_key_1` but used when you need a credential provider to work with 2 secret values. For example, a username / password pair.
 
 
 <a id="nestedatt--credential_providers--aws_sts"></a>
@@ -123,6 +137,30 @@ Read-Only:
 - `api_key` (String, Sensitive)
 
 
+<a id="nestedatt--credential_providers--jwt_svid_token"></a>
+### Nested Schema for `credential_providers.jwt_svid_token`
+
+Read-Only:
+
+- `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
+- `audience` (String) Audience for JWT-SVID Token configuration of the Credential Provider.
+- `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token--custom_claims))
+- `issuer` (String) Issuer claim for JWT-SVID Token configuration of the Credential Provider.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `subject` (String) Subject for JWT Token for JWT-SVID Token configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the JWT Token Subject. Possible values are `literal` or `dynamic`.
+
+<a id="nestedatt--credential_providers--jwt_svid_token--custom_claims"></a>
+### Nested Schema for `credential_providers.jwt_svid_token.custom_claims`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
+
+
 <a id="nestedatt--credential_providers--managed_gitlab_account"></a>
 ### Nested Schema for `credential_providers.managed_gitlab_account`
 
@@ -131,9 +169,10 @@ Read-Only:
 - `access_level` (Number) The access level of authorization. Valid values: 0 (No Access), 5 (Minimal Access), 10 (Guest), 15 (Planner), 20 (Reporter), 30 (Developer), 40 (Maintainer), 50 (Owner).
 - `credential_provider_integration_id` (String) The unique identifier of the credential provider integration.
 - `group_ids` (Set of String) The set of GitLab group IDs.
-- `lifetime_in_days` (Number) Lifetime of the Credential Provider in days.
+- `lifetime_in_hours` (Number) Lifetime of the Credential Provider in hours.
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
+- `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.
 
 
 <a id="nestedatt--credential_providers--oauth_authorization_code"></a>
@@ -153,6 +192,7 @@ Read-Only:
 - `lifetime_expiration` (String) ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.
 - `oauth_authorization_url` (String)
 - `oauth_discovery_url` (String)
+- `oauth_introspection_url` (String)
 - `oauth_token_url` (String)
 - `scopes` (String)
 - `state` (String)

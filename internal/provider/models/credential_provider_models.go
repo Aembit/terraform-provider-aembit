@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // CredentialProviderResourceModel maps the resource schema.
@@ -24,6 +25,8 @@ type CredentialProviderResourceModel struct {
 	VaultClientToken       *CredentialProviderVaultClientTokenModel       `tfsdk:"vault_client_token"`
 	ManagedGitlabAccount   *CredentialProviderManagedGitlabAccountModel   `tfsdk:"managed_gitlab_account"`
 	OidcIdToken            *CredentialProviderManagedOidcIdToken          `tfsdk:"oidc_id_token"`
+	AwsSecretsManagerValue *CredentialProviderAwsSecretsManagerValueModel `tfsdk:"aws_secrets_manager_value"`
+	JwtSvidToken           *CredentialProviderManagedOidcIdToken          `tfsdk:"jwt_svid_token"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -85,6 +88,7 @@ type CredentialProviderOAuthAuthorizationCodeModel struct {
 	OAuthDiscoveryUrl     types.String                                          `tfsdk:"oauth_discovery_url"`
 	OAuthAuthorizationUrl types.String                                          `tfsdk:"oauth_authorization_url"`
 	OAuthTokenUrl         types.String                                          `tfsdk:"oauth_token_url"`
+	OAuthIntrospectionUrl types.String                                          `tfsdk:"oauth_introspection_url"`
 	UserAuthorizationUrl  types.String                                          `tfsdk:"user_authorization_url"`
 	ClientID              types.String                                          `tfsdk:"client_id"`
 	ClientSecret          types.String                                          `tfsdk:"client_secret"`
@@ -126,12 +130,13 @@ type CredentialProviderVaultClientTokenModel struct {
 
 // CredentialProviderManagedGitlabAccountModel maps Managed Gitlab Account configuration.
 type CredentialProviderManagedGitlabAccountModel struct {
-	GroupIds                                []types.String `tfsdk:"group_ids"`
-	ProjectIds                              []types.String `tfsdk:"project_ids"`
-	AccessLevel                             int32          `tfsdk:"access_level"`
-	LifetimeInDays                          int32          `tfsdk:"lifetime_in_days"`
-	Scope                                   string         `tfsdk:"scope"`
-	CredentialProviderIntegrationExternalId string         `tfsdk:"credential_provider_integration_id"`
+	ServiceAccountUsername                  types.String         `tfsdk:"service_account_username"`
+	GroupIds                                []types.String       `tfsdk:"group_ids"`
+	ProjectIds                              []types.String       `tfsdk:"project_ids"`
+	AccessLevel                             int32                `tfsdk:"access_level"`
+	LifetimeInHours                         basetypes.Int32Value `tfsdk:"lifetime_in_hours"`
+	Scope                                   string               `tfsdk:"scope"`
+	CredentialProviderIntegrationExternalId string               `tfsdk:"credential_provider_integration_id"`
 }
 
 // CredentialProviderManagedOidcIdToken maps OIDC ID Token configuration.
@@ -149,4 +154,12 @@ type CredentialProviderCustomClaimsModel struct {
 	Key       string `tfsdk:"key"`
 	Value     string `tfsdk:"value"`
 	ValueType string `tfsdk:"value_type"`
+}
+
+type CredentialProviderAwsSecretsManagerValueModel struct {
+	SecretArn                               types.String `tfsdk:"secret_arn"`
+	SecretKey1                              types.String `tfsdk:"secret_key_1"`
+	SecretKey2                              types.String `tfsdk:"secret_key_2"`
+	PrivateNetworkAccess                    types.Bool   `tfsdk:"private_network_access"`
+	CredentialProviderIntegrationExternalId types.String `tfsdk:"credential_provider_integration_id"`
 }

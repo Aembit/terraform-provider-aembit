@@ -104,6 +104,7 @@ Please make sure to update your configuration accordingly.
 - `is_active` (Boolean) Active status of the Trust Provider.
 - `kerberos` (Attributes) Kerberos type Trust Provider configuration. (see [below for nested schema](#nestedatt--kerberos))
 - `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--kubernetes_service_account))
+- `oidc_id_token` (Attributes) OIDC ID Token type Trust Provider configuration. (see [below for nested schema](#nestedatt--oidc_id_token))
 - `tags` (Map of String) Tags are key-value pairs.
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--terraform_workspace))
 
@@ -187,6 +188,11 @@ Optional:
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
 - `workflows` (Set of String) The set of accepted GitHub ID Token Workflows which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Workflows can be matched.
 
+Read-Only:
+
+- `oidc_audience` (String) The audience value required for the GitHub Action ID Token.
+- `oidc_client_id` (String) The OAuth Client ID value required for authenticating a GitHub Action.
+
 
 <a id="nestedatt--gitlab_job"></a>
 ### Nested Schema for `gitlab_job`
@@ -233,6 +239,7 @@ Optional:
 
 - `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the associated Kubernetes Service Account Token. Used only for cases where multiple Issuers can be matched.
+- `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.
 - `namespace` (String) The Namespace of the Kubernetes Service Account Token.
 - `namespaces` (Set of String) The set of accepted Namespace values of the associated Kubernetes Service Account Token. Used only for cases where multiple Namespaces can be matched.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
@@ -243,6 +250,24 @@ Optional:
 - `service_account_names` (Set of String) The set of accepted Service Account Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Service Account Names can be matched.
 - `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated Kubernetes Service Account Token. Used only for cases where multiple Subjects can be matched.
+- `symmetric_key` (String, Sensitive) The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.
+
+
+<a id="nestedatt--oidc_id_token"></a>
+### Nested Schema for `oidc_id_token`
+
+Optional:
+
+- `audience` (String) The Audience (`aud` claim) of the OIDC ID Token.
+- `audiences` (Set of String) The set of accepted Audience values of the associated OIDC ID Token. Used only for cases where multiple Audiences can be matched.
+- `issuer` (String) The Issuer (`iss` claim) of the OIDC ID Token.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated OIDC ID Token. Used only for cases where multiple Issuers can be matched.
+- `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.
+- `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.
+- `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token.
+- `subject` (String) The Subject (`sub` claim) of the OIDC ID Token.
+- `subjects` (Set of String) The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.
+- `symmetric_key` (String, Sensitive) The Symmetric Key that can be used to verify the signature of the OIDC ID Token.
 
 
 <a id="nestedatt--terraform_workspace"></a>

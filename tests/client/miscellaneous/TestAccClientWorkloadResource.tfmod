@@ -10,6 +10,10 @@ resource "aembit_client_workload" "test" {
             type = "IDENTITY_TYPE_PLACEHOLDER"
             value = "IDENTITY_VALUE_PLACEHOLDER"
         },
+        {
+            type = "k8sPodName"
+            value = "unittest1podname1"
+        }
     ]
     tags = {
         color = "orange"

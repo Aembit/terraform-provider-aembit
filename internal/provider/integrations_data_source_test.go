@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-const testIntegrationsDataSource string = "data.aembit_integrations.test"
-const testIntegrationResource string = "aembit_integration.wiz"
+const (
+	testIntegrationsDataSource string = "data.aembit_integrations.test"
+	testIntegrationResource    string = "aembit_integration.wiz"
+)
 
 func testFindIntegration(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -42,7 +44,10 @@ func TestAccIntegrationsDataSource(t *testing.T) {
 					// Verify non-zero number of Integrations returned
 					resource.TestCheckResourceAttrSet(testIntegrationsDataSource, "integrations.#"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testIntegrationsDataSource, "integrations.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testIntegrationsDataSource,
+						"integrations.0.id",
+					),
 					// Find newly created entry
 					testFindIntegration(testIntegrationResource),
 				),

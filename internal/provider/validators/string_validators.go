@@ -7,22 +7,53 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var UUIDRegex = regexp.MustCompile(`^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$`)
-var EmailRegex = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`)
-var SnowflakeAccountRegex = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
-var SnowflakeUserNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_@]+$`)
-var UrlSchemeRegex = regexp.MustCompile(`^http(s)?:\/\/.*$`)
-var SecureURLRegex = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$`)
-var HostNameRegex = regexp.MustCompile(`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$`)
-var S3BucketRegionRegex = regexp.MustCompile(`^[a-z\-\d]+$`)
-var S3BucketNameRegex = regexp.MustCompile(`^[a-z\d][a-z\-\.\d]{1,61}?[a-z\d]$`)
-var S3PathPrefixRegex = regexp.MustCompile(`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\<\|\x80-\xff]*$`)
-var GCSBucketNameSimpleRegex = regexp.MustCompile(`^[a-z0-9-_]{3,63}$`)
-var GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
-var GCSPathPrefixRegex = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
-var HecHostPortRegex = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
-var AuthenticationTokenRegex = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
-var ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
+var (
+	UUIDRegex = regexp.MustCompile(
+		`^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$`,
+	)
+	EmailRegex = regexp.MustCompile(
+		`^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`,
+	)
+	SnowflakeAccountRegex  = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+	SnowflakeUserNameRegex = regexp.MustCompile(`^[a-zA-Z0-9_@]+$`)
+	UrlSchemeRegex         = regexp.MustCompile(`^http(s)?:\/\/.*$`)
+	SecureURLRegex         = regexp.MustCompile(
+		`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\/\S*)?$`,
+	)
+	HostNameRegex = regexp.MustCompile(
+		`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$`,
+	)
+	HostIPRegex = regexp.MustCompile(
+		`^((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$`,
+	)
+	StructuralHostRegex = regexp.MustCompile(
+		`^(?:(?:[a-zA-Z\d*](?:[a-zA-Z\d*-]*[a-zA-Z\d*])?\.)*(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\.(?:[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)|[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)$`,
+	)
+	S3BucketRegionRegex = regexp.MustCompile(`^[a-z\-\d]+$`)
+	S3BucketNameRegex   = regexp.MustCompile(`^[a-z\d][a-z\-\.\d]{1,61}?[a-z\d]$`)
+	S3PathPrefixRegex   = regexp.MustCompile(
+		`^[^\\\{\}\^\%` + "`" + `""'~#\[\]\>\<\|\x80-\xff]*$`,
+	)
+	GCSBucketNameSimpleRegex     = regexp.MustCompile(`^[a-z0-9-_]{3,63}$`)
+	GCSBucketNameWithPeriodRegex = regexp.MustCompile(`^[a-z0-9-\._]{3,222}$`)
+	GCSPathPrefixRegex           = regexp.MustCompile(`^[^#\[\]*?:\"<>|]{0,256}$`)
+	HecHostPortRegex             = regexp.MustCompile(`^([a-zA-Z0-9.-]+):(\d{2,5})$`)
+	AuthenticationTokenRegex     = regexp.MustCompile(
+		`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`,
+	)
+	ApiKeyRegex = regexp.MustCompile(`^[a-f0-9]{32}$`)
+	Base64Regex = regexp.MustCompile(
+		`^(?:[A-Za-z0-9+/]{4})*` +
+			`(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`,
+	)
+	AwsIamRoleArnRegex = regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[\w+=,.@/-]+$`)
+	AwsSecretArnRegex  = regexp.MustCompile(
+		`^arn:aws:secretsmanager:[a-z0-9-]+:\d{12}:secret:[A-Za-z0-9/_+=.@-]+-[A-Za-z0-9]{6}$`,
+	)
+	SpiffeRegex = regexp.MustCompile(
+		`^spiffe:\/\/`,
+	)
+)
 
 func NameLengthValidation() validator.String {
 	return stringvalidator.LengthBetween(1, 128)
@@ -37,11 +68,17 @@ func EmailValidation() validator.String {
 }
 
 func SnowflakeAccountValidation() validator.String {
-	return stringvalidator.RegexMatches(SnowflakeAccountRegex, "must be a valid Snowflake Account ID")
+	return stringvalidator.RegexMatches(
+		SnowflakeAccountRegex,
+		"must be a valid Snowflake Account ID",
+	)
 }
 
 func SnowflakeUserNameValidation() validator.String {
-	return stringvalidator.RegexMatches(SnowflakeUserNameRegex, "must be a valid Snowflake Username")
+	return stringvalidator.RegexMatches(
+		SnowflakeUserNameRegex,
+		"must be a valid Snowflake Username",
+	)
 }
 
 func UrlSchemeValidation() validator.String {
@@ -54,6 +91,13 @@ func SecureURLValidation() validator.String {
 
 func HostValidation() validator.String {
 	return stringvalidator.RegexMatches(HostNameRegex, "must be a valid hostname")
+}
+
+func SafeWildcardHostNameValidation() validator.String {
+	return stringvalidator.Any(
+		stringvalidator.RegexMatches(HostIPRegex, "must be a valid hostname or IP address"),
+		stringvalidator.RegexMatches(StructuralHostRegex, "must be a valid hostname or IP address"),
+	)
 }
 
 func S3BucketRegionLengthValidation() validator.String {
@@ -85,7 +129,10 @@ func GCSBucketNameSimpleValidation() validator.String {
 }
 
 func GCSBucketNameWithPeriodValidation() validator.String {
-	return stringvalidator.RegexMatches(GCSBucketNameWithPeriodRegex, "must be a valid GCS Bucket name")
+	return stringvalidator.RegexMatches(
+		GCSBucketNameWithPeriodRegex,
+		"must be a valid GCS Bucket name",
+	)
 }
 
 func GCSPathPrefixValidation() validator.String {
@@ -101,9 +148,37 @@ func HecHostPortValidation() validator.String {
 }
 
 func AuthenticationTokenValidation() validator.String {
-	return stringvalidator.RegexMatches(AuthenticationTokenRegex, "must be a valid authentication token")
+	return stringvalidator.RegexMatches(
+		AuthenticationTokenRegex,
+		"must be a valid authentication token",
+	)
 }
 
 func CrowdstrikeApiKeyValidation() validator.String {
 	return stringvalidator.RegexMatches(ApiKeyRegex, "must be a valid API Key")
+}
+
+func Base64Validation() validator.String {
+	return stringvalidator.RegexMatches(
+		Base64Regex,
+		"must be a valid base64-encoded string",
+	)
+}
+
+func AwsIamRoleArnValidation() validator.String {
+	return stringvalidator.RegexMatches(AwsIamRoleArnRegex, "must be a valid AWS ARN")
+}
+
+func AwsSecretArnValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		AwsSecretArnRegex,
+		"must be a valid AWS Secrets Manager secret ARN",
+	)
+}
+
+func SpiffeSubjectValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		SpiffeRegex,
+		"must be in the format: spiffe://trust-domain-name/path",
+	)
 }

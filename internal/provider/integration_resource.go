@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -12,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -32,17 +32,29 @@ type integrationResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *integrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *integrationResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_integration"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *integrationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *integrationResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *integrationResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -127,7 +139,11 @@ func (r *integrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *integrationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *integrationResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.IntegrationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -137,7 +153,7 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, nil)
+	dto := convertIntegrationModelToDTO(ctx, plan, nil)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegration(dto, nil)
@@ -161,7 +177,11 @@ func (r *integrationResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *integrationResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -196,7 +216,11 @@ func (r *integrationResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *integrationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *integrationResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -217,7 +241,7 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IntegrationDTO = convertIntegrationModelToDTO(ctx, plan, &externalID)
+	dto := convertIntegrationModelToDTO(ctx, plan, &externalID)
 
 	// Update Integration
 	integration, err := r.client.UpdateIntegration(dto, nil)
@@ -241,7 +265,11 @@ func (r *integrationResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *integrationResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.IntegrationResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -274,12 +302,20 @@ func (r *integrationResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 // Imports an existing resource by passing externalId.
-func (r *integrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *integrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIntegrationModelToDTO(ctx context.Context, model models.IntegrationResourceModel, externalID *string) aembit.IntegrationDTO {
+func convertIntegrationModelToDTO(
+	ctx context.Context,
+	model models.IntegrationResourceModel,
+	externalID *string,
+) aembit.IntegrationDTO {
 	var integration aembit.IntegrationDTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -299,7 +335,7 @@ func convertIntegrationModelToDTO(ctx context.Context, model models.IntegrationR
 	}
 
 	if externalID != nil {
-		integration.EntityDTO.ExternalID = *externalID
+		integration.ExternalID = *externalID
 	}
 
 	integration.Endpoint = model.Endpoint.ValueString()
@@ -315,13 +351,17 @@ func convertIntegrationModelToDTO(ctx context.Context, model models.IntegrationR
 	return integration
 }
 
-func convertIntegrationDTOToModel(ctx context.Context, dto aembit.IntegrationDTO, state models.IntegrationResourceModel) models.IntegrationResourceModel {
+func convertIntegrationDTOToModel(
+	ctx context.Context,
+	dto aembit.IntegrationDTO,
+	state models.IntegrationResourceModel,
+) models.IntegrationResourceModel {
 	var model models.IntegrationResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)

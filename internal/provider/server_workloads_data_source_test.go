@@ -28,7 +28,6 @@ func testFindServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadsDataSource(t *testing.T) {
-
 	createFile, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
 
@@ -40,12 +39,24 @@ func TestAccServerWorkloadsDataSource(t *testing.T) {
 				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify non-zero number of Server Workloads returned
-					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.#"),
+					resource.TestCheckResourceAttrSet(
+						testServerWorkloadsDataSource,
+						"server_workloads.#",
+					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.id"),
-					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.service_endpoint.external_id"),
+					resource.TestCheckResourceAttrSet(
+						testServerWorkloadsDataSource,
+						"server_workloads.0.id",
+					),
+					resource.TestCheckResourceAttrSet(
+						testServerWorkloadsDataSource,
+						"server_workloads.0.service_endpoint.external_id",
+					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testServerWorkloadsDataSource, "server_workloads.0.id"),
+					resource.TestCheckResourceAttrSet(
+						testServerWorkloadsDataSource,
+						"server_workloads.0.id",
+					),
 					// Find newly created entry
 					testFindServerWorkload(testServerWorkloadResource),
 				),

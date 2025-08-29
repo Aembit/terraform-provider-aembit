@@ -71,6 +71,9 @@ Required:
 	* `k8sPodNamePrefix`
 	* `k8sServiceAccountName`
 	* `k8sServiceAccountUID`
+	* `oidcIdTokenAudience`
+	* `oidcIdTokenIssuer`
+	* `oidcIdTokenSubject`
 	* `processName`
 	* `processUserName`
 	* `sourceIPAddress`

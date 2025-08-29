@@ -2,12 +2,12 @@ package provider
 
 import (
 	"context"
-	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -27,17 +27,29 @@ type trustProvidersDataSource struct {
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *trustProvidersDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *trustProvidersDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	d.client = datasourceConfigure(req, resp)
 }
 
 // Metadata returns the data source type name.
-func (d *trustProvidersDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *trustProvidersDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_trust_providers"
 }
 
 // Schema defines the schema for the resource.
-func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *trustProvidersDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an trust provider.",
 		Attributes: map[string]schema.Attribute{
@@ -228,6 +240,14 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									ElementType: types.StringType,
 									Computed:    true,
 								},
+								"oidc_client_id": schema.StringAttribute{
+									Description: "The OAuth Client ID value required for authenticating a GitHub Action.",
+									Computed:    true,
+								},
+								"oidc_audience": schema.StringAttribute{
+									Description: "The audience value required for the GitHub Action ID Token.",
+									Computed:    true,
+								},
 							},
 						},
 						"gitlab_job": schema.SingleNestedAttribute{
@@ -372,6 +392,78 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 									Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
 									Computed:    true,
 								},
+								"jwks": schema.StringAttribute{
+									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+									Computed:    true,
+								},
+								"symmetric_key": schema.StringAttribute{
+									Description: "The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.",
+									Computed:    true,
+								},
+								// "jwks": schema.SingleNestedAttribute{
+								// 	Computed:    true,
+								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+								// 	Attributes: map[string]schema.Attribute{
+								// 		"keys": schema.ListNestedAttribute{
+								// 			Required:    true,
+								// 			Description: "A list of JSON Web Keys used to validate signed tokens.",
+								// 			NestedObject: schema.NestedAttributeObject{
+								// 				Attributes: map[string]schema.Attribute{
+								// 					"kid": schema.StringAttribute{
+								// 						Required:    true,
+								// 						Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
+								// 					},
+								// 					"kty": schema.StringAttribute{
+								// 						Required:    true,
+								// 						Description: "Key type (kty). Possible values: RSA, EC.",
+								// 						Validators: []validator.String{
+								// 							stringvalidator.OneOf([]string{
+								// 								"RSA",
+								// 								"EC",
+								// 							}...),
+								// 						},
+								// 					},
+								// 					"use": schema.StringAttribute{
+								// 						Required:    true,
+								// 						Description: "Public key use — typically 'sig' for signature.",
+								// 					},
+								// 					"alg": schema.StringAttribute{
+								// 						Required:    true,
+								// 						Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
+								// 						Validators: []validator.String{
+								// 							stringvalidator.OneOf([]string{
+								// 								"RS256",
+								// 								"ES256",
+								// 							}...),
+								// 						},
+								// 					},
+								// 					// RSA fields
+								// 					"e": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
+								// 					},
+								// 					"n": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
+								// 					},
+								// 					// EC fields
+								// 					"x": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
+								// 					},
+								// 					"y": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
+								// 					},
+								// 					"crv": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "Elliptic curve used with the key. Only Possible value: P-256",
+								// 					},
+								// 				},
+								// 			},
+								// 		},
+								// 	},
+								// },
 							},
 						},
 						"terraform_workspace": schema.SingleNestedAttribute{
@@ -407,6 +499,107 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 								},
 							},
 						},
+						"oidc_id_token": schema.SingleNestedAttribute{
+							Description: "OIDC ID Token type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"issuer": schema.StringAttribute{
+									Description: "The Issuer (`iss` claim) of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"issuers": schema.SetAttribute{
+									Description: "The set of accepted Issuer values of the OIDC ID Token Token.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "The Subject (`sub` claim) of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"subjects": schema.SetAttribute{
+									Description: "The set of accepted Subject values of the OIDC ID Token Token.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "The Audience (`aud` claim) of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"audiences": schema.SetAttribute{
+									Description: "The set of accepted Audience values of the OIDC ID Token Token.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"oidc_endpoint": schema.StringAttribute{
+									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"public_key": schema.StringAttribute{
+									Description: "The Public Key that can be used to verify the signature of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"jwks": schema.StringAttribute{
+									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+									Computed:    true,
+								},
+								"symmetric_key": schema.StringAttribute{
+									Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								// "jwks": schema.SingleNestedAttribute{
+								// 	Computed:    true,
+								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+								// 	Attributes: map[string]schema.Attribute{
+								// 		"keys": schema.ListNestedAttribute{
+								// 			Computed:    true,
+								// 			Description: "A list of JSON Web Keys used to validate signed tokens.",
+								// 			NestedObject: schema.NestedAttributeObject{
+								// 				Attributes: map[string]schema.Attribute{
+								// 					"kid": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
+								// 					},
+								// 					"kty": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "Key type (kty). Possible values: RSA, EC.",
+								// 					},
+								// 					"use": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "Public key use — typically 'sig' for signature.",
+								// 					},
+								// 					"alg": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
+								// 					},
+								// 					// RSA fields
+								// 					"e": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
+								// 					},
+								// 					"n": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
+								// 					},
+								// 					// EC fields
+								// 					"x": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
+								// 					},
+								// 					"y": schema.StringAttribute{
+								// 						Optional:    true,
+								// 						Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
+								// 					},
+								// 					"crv": schema.StringAttribute{
+								// 						Computed:    true,
+								// 						Description: "Elliptic curve used with the key. Only Possible value: P-256",
+								// 					},
+								// 				},
+								// 			},
+								// 		},
+								// 	},
+								// },
+							},
+						},
 					},
 				},
 			},
@@ -415,7 +608,11 @@ func (d *trustProvidersDataSource) Schema(_ context.Context, _ datasource.Schema
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *trustProvidersDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	var state models.TrustProvidersDataSourceModel
 
 	trustProviders, err := d.client.GetTrustProviders(nil)
@@ -429,7 +626,13 @@ func (d *trustProvidersDataSource) Read(ctx context.Context, req datasource.Read
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
-		trustProviderState := convertTrustProviderDTOToModel(ctx, trustProvider, d.client.Tenant, d.client.StackDomain)
+		trustProviderState := convertTrustProviderDTOToModel(
+			ctx,
+			trustProvider,
+			models.TrustProviderResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
+		)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

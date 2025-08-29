@@ -35,6 +35,8 @@ resource "aembit_access_condition" "crowdstrike" {
 		match_hostname = true
 		match_serial_number = true
 		prevent_rfm = true
+		match_mac_address = true
+		match_local_ip = true
 	}
 }
 
@@ -93,8 +95,13 @@ Required:
 
 - `match_hostname` (Boolean) The condition requires that managed hosts have a hostname which matches the CrowdStrike identified hostname.
 - `match_serial_number` (Boolean) The condition requires that managed hosts have a system serial number which matches the CrowdStrike identified serial number.
-- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike.
+- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by CrowdStrike. Accepted range: 1-31449600 seconds
 - `prevent_rfm` (Boolean) The condition requires that managed hosts not be in CrowdStrike Reduced Functionality Mode.
+
+Optional:
+
+- `match_local_ip` (Boolean) The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.
+- `match_mac_address` (Boolean) The condition requires that managed hosts have a MAC address which matches the CrowdStrike identified MAC address.
 
 
 <a id="nestedatt--geoip_conditions"></a>
@@ -150,6 +157,6 @@ Required:
 Required:
 
 - `container_cluster_connected` (Boolean) The condition requires that managed Clusters be defined as Container Cluster Connected by Wiz.
-- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by Wiz.
+- `max_last_seen` (Number) The maximum number of seconds since the managed Cluster was last seen by Wiz. Accepted range: 1-31449600 seconds
 
 

@@ -33,17 +33,29 @@ type serverWorkloadResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *serverWorkloadResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *serverWorkloadResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_server_workload"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *serverWorkloadResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *serverWorkloadResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *serverWorkloadResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -89,10 +101,12 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 						Computed:    true,
 					},
 					"host": schema.StringAttribute{
-						Description: "Hostname of the Server Workload service endpoint.",
-						Required:    true,
+						Description: "Hostname of the Server Workload service endpoint.\n" +
+							"Wildcard hostnames are supported, for example `*.amazonaws.com`, `*.azure.com`, or `*.googleapis.com`.\n" +
+							"Note: Wildcards are not supported in the top or second-level domain, such as `*.com`.",
+						Required: true,
 						Validators: []validator.String{
-							validators.HostValidation(),
+							validators.SafeWildcardHostNameValidation(),
 						},
 					},
 					"port": schema.Int64Attribute{
@@ -225,7 +239,11 @@ func (r *serverWorkloadResource) Schema(_ context.Context, _ resource.SchemaRequ
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *serverWorkloadResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *serverWorkloadResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.ServerWorkloadResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -235,7 +253,7 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, nil)
+	workload := convertServerWorkloadModelToDTO(ctx, plan, nil)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
@@ -259,7 +277,11 @@ func (r *serverWorkloadResource) Create(ctx context.Context, req resource.Create
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *serverWorkloadResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -295,7 +317,11 @@ func (r *serverWorkloadResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *serverWorkloadResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *serverWorkloadResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -305,7 +331,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Extract external ID from state
-	var externalID string = state.ID.ValueString()
+	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
 	var plan models.ServerWorkloadResourceModel
@@ -316,7 +342,7 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Generate API request body from plan
-	var workload aembit.ServerWorkloadExternalDTO = convertServerWorkloadModelToDTO(ctx, plan, &externalID)
+	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID)
 
 	// Update Server Workload
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
@@ -340,7 +366,11 @@ func (r *serverWorkloadResource) Update(ctx context.Context, req resource.Update
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *serverWorkloadResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.ServerWorkloadResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -373,12 +403,20 @@ func (r *serverWorkloadResource) Delete(ctx context.Context, req resource.Delete
 }
 
 // Imports an existing resource by passing externalID.
-func (r *serverWorkloadResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *serverWorkloadResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertServerWorkloadModelToDTO(ctx context.Context, model models.ServerWorkloadResourceModel, externalID *string) aembit.ServerWorkloadExternalDTO {
+func convertServerWorkloadModelToDTO(
+	ctx context.Context,
+	model models.ServerWorkloadResourceModel,
+	externalID *string,
+) aembit.ServerWorkloadExternalDTO {
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -422,27 +460,33 @@ func convertServerWorkloadModelToDTO(ctx context.Context, model models.ServerWor
 		_ = model.ServiceEndpoint.HTTPHeaders.ElementsAs(ctx, &headersMap, true)
 
 		for key, value := range headersMap {
-			workload.ServiceEndpoint.HTTPHeaders = append(workload.ServiceEndpoint.HTTPHeaders, aembit.KeyValuePair{
-				Key:   key,
-				Value: value,
-			})
+			workload.ServiceEndpoint.HTTPHeaders = append(
+				workload.ServiceEndpoint.HTTPHeaders,
+				aembit.KeyValuePair{
+					Key:   key,
+					Value: value,
+				},
+			)
 		}
 	}
 
 	if externalID != nil {
-		workload.EntityDTO.ExternalID = *externalID
+		workload.ExternalID = *externalID
 	}
 
 	return workload
 }
 
-func convertServerWorkloadDTOToModel(ctx context.Context, dto aembit.ServerWorkloadExternalDTO) models.ServerWorkloadResourceModel {
+func convertServerWorkloadDTOToModel(
+	ctx context.Context,
+	dto aembit.ServerWorkloadExternalDTO,
+) models.ServerWorkloadResourceModel {
 	var model models.ServerWorkloadResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	model.ServiceEndpoint = &models.ServiceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),
