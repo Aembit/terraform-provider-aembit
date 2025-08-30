@@ -531,7 +531,6 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 	)
 
 	for _, test := range clientWorkloadIdentifierTests {
-
 		createFileConfig := strings.ReplaceAll(
 			string(createFileConfigWithPlaceholders),
 			"IDENTITY_TYPE_PLACEHOLDER",
@@ -552,6 +551,12 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 			modifyFileConfig,
 			"IDENTITY_VALUE_PLACEHOLDER",
 			test.identityValue,
+		)
+
+		createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(
+			createFileConfig,
+			modifyFileConfig,
+			"unittest1podname1",
 		)
 
 		resource.Test(t, resource.TestCase{
@@ -577,7 +582,7 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 						resource.TestCheckResourceAttr(
 							testCWResource,
 							testCWResourceIdentitiesCount,
-							"1",
+							"2",
 						),
 						resource.TestCheckResourceAttr(
 							testCWResource,
