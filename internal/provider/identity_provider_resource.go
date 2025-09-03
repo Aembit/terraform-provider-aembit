@@ -74,33 +74,34 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"entity_id": schema.StringAttribute{
-				Description: "Entity ID of the Identity Provider.",
-				Required:    true,
-			},
 			"metadata_url": schema.StringAttribute{
 				Description: "URL pointing to the metadata for the Identity Provider.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"metadata_xml": schema.StringAttribute{
 				Description: "XML containing the metadata for the Identity Provider.",
 				Optional:    true,
+				Computed:    true,
 			},
-			"saml_statement_role_mappings": schema.SingleNestedAttribute{
+			"saml_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"attribute_name": schema.StringAttribute{
-						Description: "SAML attribute name.",
-						Required:    true,
-					},
-					"attribute_value": schema.StringAttribute{
-						Description: "SAML attribute value.",
-						Required:    true,
-					},
-					"roles_ids": schema.SetAttribute{
-						Description: "List of Aembit Role Identifiers to be assigned to a user.",
-						Required:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"attribute_name": schema.StringAttribute{
+							Description: "SAML attribute name.",
+							Required:    true,
+						},
+						"attribute_value": schema.StringAttribute{
+							Description: "SAML attribute value.",
+							Required:    true,
+						},
+						"roles": schema.SetAttribute{
+							Description: "List of Aembit Role Identifiers to be assigned to a user.",
+							ElementType: types.StringType,
+							Required:    true,
+						},
 					},
 				},
 			},
@@ -111,7 +112,7 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 // Create creates the resource and sets the initial Terraform state.
 func (r *identityProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan models.IdentityProviderDataSourceModel
+	var plan models.IdentityProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -132,7 +133,7 @@ func (r *identityProviderResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIdentityProviderDTOToModel(ctx, *idp, plan)
+	plan = convertIdentityProviderDTOToModel(ctx, *idp)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -166,7 +167,7 @@ func (r *identityProviderResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	state = convertIdentityProviderDTOToModel(ctx, idpDto, state)
+	state = convertIdentityProviderDTOToModel(ctx, idpDto)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -179,7 +180,7 @@ func (r *identityProviderResource) Read(ctx context.Context, req resource.ReadRe
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *identityProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get current state
-	var state identityProviderResourceModel
+	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -190,7 +191,7 @@ func (r *identityProviderResource) Update(ctx context.Context, req resource.Upda
 	externalID := state.ID.ValueString()
 
 	// Retrieve values from plan
-	var plan identityProviderResourceModel
+	var plan models.IdentityProviderResourceModel
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -211,7 +212,7 @@ func (r *identityProviderResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIdentityProviderDTOToModel(ctx, *idpDto, plan)
+	state = convertIdentityProviderDTOToModel(ctx, *idpDto)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -224,7 +225,7 @@ func (r *identityProviderResource) Update(ctx context.Context, req resource.Upda
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *identityProviderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state identityProviderResourceModel
+	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -283,7 +284,6 @@ func convertIdentityProviderModelToDTO(ctx context.Context, model models.Identit
 		identityProvider.EntityDTO.ExternalID = *externalID
 	}
 
-	identityProvider.EntityId = model.EntityId.ValueString()
 	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
 	identityProvider.MetadataXml = model.MetadataXml.ValueString()
 
@@ -294,41 +294,44 @@ func convertIdentityProviderModelToDTO(ctx context.Context, model models.Identit
 		}
 		for _, roleId := range mapping.Roles {
 			mappingDto.RoleExternalId = roleId.ValueString()
+			identityProvider.SamlStatementRoleMappings = append(identityProvider.SamlStatementRoleMappings, mappingDto)
 		}
-		identityProvider.SamlStatementRoleMappings = append(identityProvider.SamlStatementRoleMappings, mappingDto)
 	}
 
 	return identityProvider
 }
 
-func convertIdentityProviderDTOToModel(ctx context.Context, dto aembit.IdentityProviderDTO, state identityProviderResourceModel) identityProviderResourceModel {
-	var model identityProviderResourceModel
+func convertIdentityProviderDTOToModel(ctx context.Context, dto aembit.IdentityProviderDTO) models.IdentityProviderResourceModel {
+	var model models.IdentityProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
 	model.Description = types.StringValue(dto.EntityDTO.Description)
 	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
 	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
 
-	model.EntityId = types.StringValue(dto.EntityId)
-	model.MetadataUrl = types.StringValue(dto.MetadataUrl)
+	if dto.MetadataUrl == "" {
+		model.MetadataUrl = types.StringNull()
+	} else {
+		model.MetadataUrl = types.StringValue(dto.MetadataUrl)
+	}
 	model.MetadataXml = types.StringValue(dto.MetadataXml)
 
 	//convert the mapping array from flat to unflatten form
-	tempMap := make(map[string]samlStatementRoleMappings)
+	tempMap := make(map[string]models.SamlStatementRoleMappings)
 	for _, mapping := range dto.SamlStatementRoleMappings {
 		key := mapping.AttributeName + mapping.AttributeValue
 		if newItem, exists := tempMap[key]; exists {
 			newItem.Roles = append(newItem.Roles, types.StringValue(mapping.RoleExternalId))
 			tempMap[key] = newItem
 		} else {
-			tempMap[key] = samlStatementRoleMappings{
+			tempMap[key] = models.SamlStatementRoleMappings{
 				AttributeName:  types.StringValue(mapping.AttributeName),
 				AttributeValue: types.StringValue(mapping.AttributeValue),
 				Roles:          []types.String{types.StringValue(mapping.RoleExternalId)},
 			}
 		}
 	}
-	model.SamlStatementRoleMappings = make([]samlStatementRoleMappings, 0, len(tempMap))
+	model.SamlStatementRoleMappings = make([]models.SamlStatementRoleMappings, 0, len(tempMap))
 	for _, item := range tempMap {
 		model.SamlStatementRoleMappings = append(model.SamlStatementRoleMappings, item)
 	}

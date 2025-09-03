@@ -10,7 +10,6 @@ type IdentityProviderResourceModel struct {
 	Description               types.String                `tfsdk:"description"`
 	IsActive                  types.Bool                  `tfsdk:"is_active"`
 	Tags                      types.Map                   `tfsdk:"tags"`
-	EntityId                  types.String                `tfsdk:"entity_id"`
 	MetadataUrl               types.String                `tfsdk:"metadata_url"`
 	MetadataXml               types.String                `tfsdk:"metadata_xml"`
 	SamlStatementRoleMappings []SamlStatementRoleMappings `tfsdk:"saml_statement_role_mappings"`
@@ -23,5 +22,5 @@ type SamlStatementRoleMappings struct {
 }
 
 type IdentityProviderDataSourceModel struct {
-	IdentityProviders []IdentityProviderResourceModel `tfskd:"identity_providers"`
+	IdentityProviders []IdentityProviderResourceModel `tfsdk:"identity_providers"`
 }
