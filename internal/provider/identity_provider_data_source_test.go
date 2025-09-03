@@ -25,7 +25,11 @@ func TestAccIdentityProviderDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testIdpDataSource, "identity_providers.#"),
 					resource.TestCheckResourceAttrSet(testIdpDataSource, "identity_providers.0.id"),
-					resource.TestCheckResourceAttr(testIdpDataSource, "identity_providers.0.name", "Identity Provider for TF Acceptance Test"),
+					resource.TestCheckResourceAttr(
+						testIdpDataSource,
+						"identity_providers.0.name",
+						"Identity Provider for TF Acceptance Test",
+					),
 				),
 			},
 		},

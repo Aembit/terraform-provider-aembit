@@ -28,13 +28,37 @@ func TestAccIdentityProviderResource(t *testing.T) {
 				Config: string(createFile),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "name", "Identity Provider for TF Acceptance Test"),
-					resource.TestCheckResourceAttr(resourceName, "description", "Description of Identity Provider for TF Acceptance Test"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"name",
+						"Identity Provider for TF Acceptance Test",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"description",
+						"Description of Identity Provider for TF Acceptance Test",
+					),
 					resource.TestCheckResourceAttr(resourceName, "is_active", "true"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.attribute_name", "test-attribute-name"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.attribute_value", "test-attribute-value"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.roles.#", "2"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.#",
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.attribute_name",
+						"test-attribute-name",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.attribute_value",
+						"test-attribute-value",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.roles.#",
+						"2",
+					),
 				),
 			},
 			{
@@ -46,13 +70,37 @@ func TestAccIdentityProviderResource(t *testing.T) {
 				Config: string(modifiedFile),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttr(resourceName, "name", "Identity Provider for TF Acceptance Test - Updated"),
-					resource.TestCheckResourceAttr(resourceName, "description", "Description of Identity Provider for TF Acceptance Test - Updated"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"name",
+						"Identity Provider for TF Acceptance Test - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"description",
+						"Description of Identity Provider for TF Acceptance Test - Updated",
+					),
 					resource.TestCheckResourceAttr(resourceName, "is_active", "true"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.attribute_name", "test-attribute-name-updated"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.attribute_value", "test-attribute-value-updated"),
-					resource.TestCheckResourceAttr(resourceName, "saml_statement_role_mappings.0.roles.#", "1"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.#",
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.attribute_name",
+						"test-attribute-name-updated",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.attribute_value",
+						"test-attribute-value-updated",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"saml_statement_role_mappings.0.roles.#",
+						"1",
+					),
 				),
 			},
 		},

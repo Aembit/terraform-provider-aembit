@@ -27,15 +27,27 @@ type identityProviderDataSource struct {
 	client *aembit.CloudClient
 }
 
-func (r *identityProviderDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (r *identityProviderDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_identity_providers"
 }
 
-func (r *identityProviderDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (r *identityProviderDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	r.client = datasourceConfigure(req, resp)
 }
 
-func (r *identityProviderDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *identityProviderDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Data source for Aembit Identity Providers.",
 		Attributes: map[string]schema.Attribute{
@@ -112,7 +124,11 @@ func (r *identityProviderDataSource) Schema(_ context.Context, _ datasource.Sche
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *identityProviderDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (r *identityProviderDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	// Get current state
 	var state models.IdentityProviderDataSourceModel
 	req.Config.Get(ctx, &state)

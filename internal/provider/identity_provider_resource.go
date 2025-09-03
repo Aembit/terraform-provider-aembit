@@ -31,17 +31,29 @@ type identityProviderResource struct {
 }
 
 // Metadata returns the resource type name.
-func (r *identityProviderResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *identityProviderResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_identity_provider"
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *identityProviderResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *identityProviderResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	r.client = resourceConfigure(req, resp)
 }
 
 // Schema defines the schema for the resource.
-func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *identityProviderResource) Schema(
+	_ context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
@@ -110,7 +122,11 @@ func (r *identityProviderResource) Schema(_ context.Context, _ resource.SchemaRe
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *identityProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *identityProviderResource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
 	// Retrieve values from plan
 	var plan models.IdentityProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -144,7 +160,11 @@ func (r *identityProviderResource) Create(ctx context.Context, req resource.Crea
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *identityProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *identityProviderResource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
 	// Get current state
 	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -178,7 +198,11 @@ func (r *identityProviderResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *identityProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *identityProviderResource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
 	// Get current state
 	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -223,7 +247,11 @@ func (r *identityProviderResource) Update(ctx context.Context, req resource.Upda
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *identityProviderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *identityProviderResource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
 	// Retrieve values from state
 	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -256,12 +284,20 @@ func (r *identityProviderResource) Delete(ctx context.Context, req resource.Dele
 }
 
 // Imports an existing resource by passing externalId.
-func (r *identityProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *identityProviderResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func convertIdentityProviderModelToDTO(ctx context.Context, model models.IdentityProviderResourceModel, externalID *string) aembit.IdentityProviderDTO {
+func convertIdentityProviderModelToDTO(
+	ctx context.Context,
+	model models.IdentityProviderResourceModel,
+	externalID *string,
+) aembit.IdentityProviderDTO {
 	var identityProvider aembit.IdentityProviderDTO
 	identityProvider.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -294,14 +330,20 @@ func convertIdentityProviderModelToDTO(ctx context.Context, model models.Identit
 		}
 		for _, roleId := range mapping.Roles {
 			mappingDto.RoleExternalId = roleId.ValueString()
-			identityProvider.SamlStatementRoleMappings = append(identityProvider.SamlStatementRoleMappings, mappingDto)
+			identityProvider.SamlStatementRoleMappings = append(
+				identityProvider.SamlStatementRoleMappings,
+				mappingDto,
+			)
 		}
 	}
 
 	return identityProvider
 }
 
-func convertIdentityProviderDTOToModel(ctx context.Context, dto aembit.IdentityProviderDTO) models.IdentityProviderResourceModel {
+func convertIdentityProviderDTOToModel(
+	ctx context.Context,
+	dto aembit.IdentityProviderDTO,
+) models.IdentityProviderResourceModel {
 	var model models.IdentityProviderResourceModel
 	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
 	model.Name = types.StringValue(dto.EntityDTO.Name)
