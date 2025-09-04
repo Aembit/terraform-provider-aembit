@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/base64"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -321,7 +322,7 @@ func convertIdentityProviderModelToDTO(
 	}
 
 	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
-	identityProvider.MetadataXml = model.MetadataXml.ValueString()
+	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString([]byte(model.MetadataXml.ValueString()))
 
 	for _, mapping := range model.SamlStatementRoleMappings {
 		mappingDto := aembit.SamlStatementRoleMappingDTO{
