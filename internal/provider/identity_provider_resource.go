@@ -322,7 +322,9 @@ func convertIdentityProviderModelToDTO(
 	}
 
 	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
-	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString([]byte(model.MetadataXml.ValueString()))
+	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
+		[]byte(model.MetadataXml.ValueString()),
+	)
 
 	for _, mapping := range model.SamlStatementRoleMappings {
 		mappingDto := aembit.SamlStatementRoleMappingDTO{
