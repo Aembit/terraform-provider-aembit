@@ -136,7 +136,7 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IdentityProviderDTO = convertIdentityProviderModelToDTO(ctx, plan, nil)
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil)
 
 	// Create new identity provider
 	idp, err := r.client.CreateIdentityProvider(dto, nil)
@@ -223,7 +223,7 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Generate API request body from plan
-	var dto aembit.IdentityProviderDTO = convertIdentityProviderModelToDTO(ctx, plan, &externalID)
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID)
 
 	// Update Identity Provider
 	idpDto, err := r.client.UpdateIdentityProvider(dto, nil)
@@ -317,7 +317,7 @@ func convertIdentityProviderModelToDTO(
 	}
 
 	if externalID != nil {
-		identityProvider.EntityDTO.ExternalID = *externalID
+		identityProvider.ExternalID = *externalID
 	}
 
 	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
@@ -345,11 +345,11 @@ func convertIdentityProviderDTOToModel(
 	dto aembit.IdentityProviderDTO,
 ) models.IdentityProviderResourceModel {
 	var model models.IdentityProviderResourceModel
-	model.ID = types.StringValue(dto.EntityDTO.ExternalID)
-	model.Name = types.StringValue(dto.EntityDTO.Name)
-	model.Description = types.StringValue(dto.EntityDTO.Description)
-	model.IsActive = types.BoolValue(dto.EntityDTO.IsActive)
-	model.Tags = newTagsModel(ctx, dto.EntityDTO.Tags)
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	if dto.MetadataUrl == "" {
 		model.MetadataUrl = types.StringNull()
