@@ -332,6 +332,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewLogStreamResource,
 		// NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 		NewGlobalPolicyComplianceResource,
+		NewIdentityProviderResource,
 	}
 }
 
@@ -357,6 +358,7 @@ func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewGlobalPolicyComplianceDataSource,
 		NewLogStreamsDataSource,
 		NewCallerIdentityDataSource,
+		NewIdentityProviderDataSource,
 	}
 }
 
