@@ -125,6 +125,7 @@ type TrustProviderGitHubActionModel struct {
 	Repositories []types.String `tfsdk:"repositories"`
 	Workflow     types.String   `tfsdk:"workflow"`
 	Workflows    []types.String `tfsdk:"workflows"`
+	OIDCEndpoint types.String   `tfsdk:"oidc_endpoint"`
 	OIDCClientID types.String   `tfsdk:"oidc_client_id"`
 	OIDCAudience types.String   `tfsdk:"oidc_audience"`
 }

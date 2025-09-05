@@ -183,6 +183,7 @@ Optional:
 
 - `actor` (String) The GitHub Actor which initiated the GitHub Action.
 - `actors` (Set of String) The set of accepted GitHub ID Token Actors which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Actors can be matched.
+- `oidc_endpoint` (String) The Github OIDC Endpoint used for validating Github Action generated ID Tokens. Default: `https://token.actions.githubusercontent.com`.
 - `repositories` (Set of String) The set of accepted GitHub ID Token Repositories which initiated the GitHub Action. Used only for cases where multiple GitHub ID Token Repositories can be matched.
 - `repository` (String) The GitHub Repository associated with the GitHub Action ID Token.
 - `workflow` (String) The GitHub Workflow execution associated with the GitHub Action ID Token.
