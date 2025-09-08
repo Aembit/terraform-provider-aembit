@@ -1,0 +1,13 @@
+provider "aembit" {
+}
+
+resource "aembit_trust_provider" "github" {
+	name = "TF Acceptance GitHub Action - Modified"
+	is_active = true
+	github_action = {
+		actors = ["actor","actor2"]
+		repositories = ["repository","repository2"]
+		workflows = ["workflow","workflow2"]
+		oidc_endpoint = "https://token.actions.githubusercontent.com"
+	}
+}

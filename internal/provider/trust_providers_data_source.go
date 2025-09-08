@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -238,6 +239,10 @@ func (d *trustProvidersDataSource) Schema(
 								"workflows": schema.SetAttribute{
 									Description: "The set of accepted GitHub ID Token Workflows which initiated the GitHub Action.",
 									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"oidc_endpoint": schema.StringAttribute{
+									Description: "The Github OIDC Endpoint used for validating Github Action generated ID Tokens.",
 									Computed:    true,
 								},
 								"oidc_client_id": schema.StringAttribute{
