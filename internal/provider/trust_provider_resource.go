@@ -8,6 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -20,8 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -377,6 +378,14 @@ func (r *trustProviderResource) Schema(
 							setvalidator.SizeAtLeast(2),
 							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
 						},
+					},
+					"oidc_endpoint": schema.StringAttribute{
+						Description: "The Github OIDC Endpoint used for validating Github Action generated ID Tokens. Default: `https://token.actions.githubusercontent.com`.",
+						Optional:    true,
+						Computed:    true,
+						Default: stringdefault.StaticString(
+							"https://token.actions.githubusercontent.com",
+						),
 					},
 					"oidc_client_id": schema.StringAttribute{
 						Description: "The OAuth Client ID value required for authenticating a GitHub Action.",
@@ -1383,6 +1392,8 @@ func convertGitHubActionModelToDTO(
 ) {
 	dto.Provider = "GitHubIdentityToken"
 
+	dto.OidcUrl = model.GitHubAction.OIDCEndpoint.ValueString()
+
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
@@ -1723,7 +1734,7 @@ func convertTrustProviderDTOToModel(
 	case "GcpIdentityToken":
 		model.GcpIdentity = convertGcpIdentityDTOToModel(dto)
 	case "GitHubIdentityToken":
-		model.GitHubAction = convertGitHubActionDTOToModel(dto)
+		model.GitHubAction = convertGitHubActionDTOToModel(dto, tenant, stackDomain)
 	case "GitLabIdentityToken":
 		model.GitLabJob = convertGitLabJobDTOToModel(dto, tenant, stackDomain)
 	case "Kerberos":
@@ -1993,11 +2004,19 @@ func convertGcpIdentityDTOToModel(
 
 func convertGitHubActionDTOToModel(
 	dto aembit.TrustProviderDTO,
+	tenant, stackDomain string,
 ) *models.TrustProviderGitHubActionModel {
+	stackDomain = strings.ToLower(stackDomain) // Force the stack/domain to be lowercase
+	stack := strings.Split(stackDomain, ".")[0]
 	model := &models.TrustProviderGitHubActionModel{
-		Actor:      types.StringNull(),
-		Repository: types.StringNull(),
-		Workflow:   types.StringNull(),
+		Actor:        types.StringNull(),
+		Repository:   types.StringNull(),
+		Workflow:     types.StringNull(),
+		OIDCEndpoint: types.StringValue(dto.OidcUrl),
+		OIDCClientID: types.StringValue(
+			fmt.Sprintf("aembit:%s:%s:identity:github_idtoken:%s", stack, tenant, dto.ExternalID),
+		),
+		OIDCAudience: types.StringValue(fmt.Sprintf("https://%s.id.%s", tenant, stackDomain)),
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GithubActor")) {

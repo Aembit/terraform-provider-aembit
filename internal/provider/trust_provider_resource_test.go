@@ -269,6 +269,68 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 	})
 }
 
+func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/trust/github/oidc_endpoint/TestAccTrustProviderResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/trust/github/oidc_endpoint/TestAccTrustProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderGitHub,
+						"name",
+						"TF Acceptance GitHub Action",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderGitHub,
+						"github_action.oidc_endpoint",
+						"https://gitlab.com",
+					),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      trustProviderGitHub,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderGitHub,
+						"name",
+						"TF Acceptance GitHub Action - Modified",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderGitHub,
+						"github_action.oidc_endpoint",
+						"https://token.actions.githubusercontent.com",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
