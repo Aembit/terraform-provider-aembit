@@ -7,24 +7,24 @@ import (
 // models.AccessConditionResourceModel maps the resource schema.
 type AccessConditionResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID            types.String                     `tfsdk:"id"`
-	Name          types.String                     `tfsdk:"name"`
-	Description   types.String                     `tfsdk:"description"`
-	IsActive      types.Bool                       `tfsdk:"is_active"`
-	Tags          types.Map                        `tfsdk:"tags"`
-	IntegrationID types.String                     `tfsdk:"integration_id"`
-	Wiz           *AccessConditionWizModel         `tfsdk:"wiz_conditions"`
-	CrowdStrike   *AccessConditionCrowdstrikeModel `tfsdk:"crowdstrike_conditions"`
-	GeoIp         *AccessConditionGeoIpModel       `tfsdk:"geoip_conditions"`
-	Time          *AccessConditionTimeZoneModel    `tfsdk:"time_conditions"`
+	ID            types.String                              `tfsdk:"id"`
+	Name          types.String                              `tfsdk:"name"`
+	Description   types.String                              `tfsdk:"description"`
+	IsActive      types.Bool                                `tfsdk:"is_active"`
+	Tags          types.Map                                 `tfsdk:"tags"`
+	IntegrationID types.String                              `tfsdk:"integration_id"`
+	Wiz           *AccessConditionWizConditionModel         `tfsdk:"wiz_conditions"`
+	CrowdStrike   *AccessConditionCrowdstrikeConditionModel `tfsdk:"crowdstrike_conditions"`
+	GeoIp         *AccessConditionGeoIpConditionModel       `tfsdk:"geoip_conditions"`
+	Time          *AccessConditionTimeConditionModel        `tfsdk:"time_conditions"`
 }
 
-type AccessConditionWizModel struct {
+type AccessConditionWizConditionModel struct {
 	MaxLastSeen               types.Int64 `tfsdk:"max_last_seen"`
 	ContainerClusterConnected types.Bool  `tfsdk:"container_cluster_connected"`
 }
 
-type AccessConditionCrowdstrikeModel struct {
+type AccessConditionCrowdstrikeConditionModel struct {
 	MaxLastSeen                        types.Int64 `tfsdk:"max_last_seen"`
 	MatchHostname                      types.Bool  `tfsdk:"match_hostname"`
 	MatchSerialNumber                  types.Bool  `tfsdk:"match_serial_number"`
@@ -33,7 +33,7 @@ type AccessConditionCrowdstrikeModel struct {
 	MatchLocalIP                       types.Bool  `tfsdk:"match_local_ip"`
 }
 
-type AccessConditionGeoIpModel struct {
+type AccessConditionGeoIpConditionModel struct {
 	Locations []*GeoIpLocationModel `tfsdk:"locations"`
 }
 
@@ -46,7 +46,7 @@ type GeoIpLocationModel struct {
 	Subdivisions []*GeoIpSubdivisionModel `tfsdk:"subdivisions"`
 }
 
-type AccessConditionTimeZoneModel struct {
+type AccessConditionTimeConditionModel struct {
 	Schedule []*ScheduleModel `tfsdk:"schedule"`
 	Timezone types.String     `tfsdk:"timezone"`
 }
