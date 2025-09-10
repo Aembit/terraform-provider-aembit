@@ -6,6 +6,9 @@ import (
 	"slices"
 	"strings"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -15,8 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -247,7 +248,7 @@ func (r *accessConditionResource) Create(
 	}
 
 	// Create new AccessCondition
-	accessCondition, err := r.client.CreateAccessCondition(dto, nil)
+	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Access Condition",
@@ -282,7 +283,7 @@ func (r *accessConditionResource) Read(
 	}
 
 	// Get refreshed trust value from Aembit
-	accessCondition, err, notFound := r.client.GetAccessCondition(state.ID.ValueString(), nil)
+	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Access Condition",
@@ -342,7 +343,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Update AccessCondition
-	accessCondition, err := r.client.UpdateAccessCondition(dto, nil)
+	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Access Condition",
@@ -378,7 +379,7 @@ func (r *accessConditionResource) Delete(
 
 	// Check if Access Condition is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessCondition(state.ID.ValueString(), nil)
+		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Condition",
@@ -414,8 +415,8 @@ func convertAccessConditionModelToDTO(
 	model models.AccessConditionResourceModel,
 	externalID *string,
 	client *aembit.CloudClient,
-) (aembit.AccessConditionDTO, error) {
-	var accessCondition aembit.AccessConditionDTO
+) (aembit.AccessConditionV2DTO, error) {
+	var accessCondition aembit.AccessConditionV2DTO
 	accessCondition.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
@@ -438,19 +439,18 @@ func convertAccessConditionModelToDTO(
 	}
 
 	accessCondition.IntegrationID = model.IntegrationID.ValueString()
+
 	if model.Wiz != nil {
-		accessCondition.Conditions.MaxLastSeenSeconds = model.Wiz.MaxLastSeen.ValueInt64()
-		accessCondition.Conditions.ContainerClusterConnected = model.Wiz.ContainerClusterConnected.ValueBool()
+		convertWizAccessConditionDTO(&accessCondition, model)
 	}
+
 	if model.CrowdStrike != nil {
-		accessCondition.Conditions.MaxLastSeenSeconds = model.CrowdStrike.MaxLastSeen.ValueInt64()
-		accessCondition.Conditions.MatchHostname = model.CrowdStrike.MatchHostname.ValueBool()
-		accessCondition.Conditions.MatchSerialNumber = model.CrowdStrike.MatchSerialNumber.ValueBool()
-		accessCondition.Conditions.PreventRestrictedFunctionalityMode = model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool()
-		accessCondition.Conditions.MatchMacAddress = model.CrowdStrike.MatchMacAddress.ValueBool()
-		accessCondition.Conditions.MatchLocalIP = model.CrowdStrike.MatchLocalIP.ValueBool()
+		accessCondition.MaxLastSeenSeconds = model.CrowdStrike.MaxLastSeen.ValueInt64()
+		convertCrowdStrikeAccessConditionDTO(&accessCondition, model)
 	}
+
 	if model.GeoIp != nil {
+		accessCondition.IntegrationType = "AembitGeoIPCondition"
 		// retrieve countries datasource for validation
 		countriesResource := GetCountries(client)
 
@@ -482,10 +482,11 @@ func convertAccessConditionModelToDTO(
 			if err != nil {
 				return accessCondition, err
 			}
-			accessCondition.Conditions.Locations = append(accessCondition.Conditions.Locations, loc)
+			accessCondition.Locations = append(accessCondition.Locations, loc)
 		}
 	}
 	if model.Time != nil {
+		accessCondition.IntegrationType = "AembitTimeCondition"
 		// retrieve timezones datasource for validation
 		timezoneResource := GetTimezones(client)
 
@@ -504,7 +505,7 @@ func convertAccessConditionModelToDTO(
 
 		timeZoneFound := timezoneResource.Timezones[tsIndex]
 
-		accessCondition.Conditions.Timezone = &aembit.TimezoneDTO{
+		accessCondition.Timezone = &aembit.TimezoneDTO{
 			Timezone: timeZoneFound.Timezone.ValueString(),
 			Group:    timeZoneFound.Group.ValueString(),
 			Label:    timeZoneFound.Label.ValueString(),
@@ -516,8 +517,8 @@ func convertAccessConditionModelToDTO(
 				return accessCondition, err
 			}
 
-			accessCondition.Conditions.Schedule = append(
-				accessCondition.Conditions.Schedule,
+			accessCondition.Schedule = append(
+				accessCondition.Schedule,
 				aembit.ScheduleDTO{
 					StartTime: schedule.StartTime.ValueString(),
 					EndTime:   schedule.EndTime.ValueString(),
@@ -531,6 +532,32 @@ func convertAccessConditionModelToDTO(
 	}
 
 	return accessCondition, nil
+}
+
+func convertCrowdStrikeAccessConditionDTO(
+	accessCondition *aembit.AccessConditionV2DTO,
+	model models.AccessConditionResourceModel,
+) {
+	accessCondition.IntegrationType = "CrowdStrike"
+	accessCondition.MaxLastSeenSeconds = model.CrowdStrike.MaxLastSeen.ValueInt64()
+	accessCondition.CrowdStrikeAccessConditionDTO = aembit.CrowdStrikeAccessConditionDTO{
+		MatchHostname:                      model.CrowdStrike.MatchHostname.ValueBool(),
+		MatchSerialNumber:                  model.CrowdStrike.MatchSerialNumber.ValueBool(),
+		PreventRestrictedFunctionalityMode: model.CrowdStrike.PreventRestrictedFunctionalityMode.ValueBool(),
+		MatchMacAddress:                    model.CrowdStrike.MatchMacAddress.ValueBool(),
+		MatchLocalIP:                       model.CrowdStrike.MatchLocalIP.ValueBool(),
+	}
+}
+
+func convertWizAccessConditionDTO(
+	accessCondition *aembit.AccessConditionV2DTO,
+	model models.AccessConditionResourceModel,
+) {
+	accessCondition.IntegrationType = "WizIntegrationApi"
+	accessCondition.MaxLastSeenSeconds = model.Wiz.MaxLastSeen.ValueInt64()
+	accessCondition.WizAccessConditionDTO = aembit.WizAccessConditionDTO{
+		ContainerClusterConnected: model.Wiz.ContainerClusterConnected.ValueBool(),
+	}
 }
 
 func FillSubdivisions(
@@ -566,7 +593,7 @@ func FillSubdivisions(
 
 func convertAccessConditionDTOToModel(
 	ctx context.Context,
-	dto aembit.AccessConditionDTO,
+	dto aembit.AccessConditionV2DTO,
 	_ models.AccessConditionResourceModel,
 ) models.AccessConditionResourceModel {
 	var model models.AccessConditionResourceModel
@@ -581,27 +608,28 @@ func convertAccessConditionDTOToModel(
 	} else {
 		model.IntegrationID = types.StringValue(dto.IntegrationID)
 	}
+
 	switch dto.Integration.Type {
 	case "WizIntegrationApi":
-		model.Wiz = &models.AccessConditionWizModel{
-			MaxLastSeen:               types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
-			ContainerClusterConnected: types.BoolValue(dto.Conditions.ContainerClusterConnected),
+		model.Wiz = &models.AccessConditionWizConditionModel{
+			MaxLastSeen:               types.Int64Value(dto.MaxLastSeenSeconds),
+			ContainerClusterConnected: types.BoolValue(dto.ContainerClusterConnected),
 		}
 	case "CrowdStrike":
-		model.CrowdStrike = &models.AccessConditionCrowdstrikeModel{
-			MaxLastSeen:       types.Int64Value(dto.Conditions.MaxLastSeenSeconds),
-			MatchHostname:     types.BoolValue(dto.Conditions.MatchHostname),
-			MatchSerialNumber: types.BoolValue(dto.Conditions.MatchSerialNumber),
+		model.CrowdStrike = &models.AccessConditionCrowdstrikeConditionModel{
+			MaxLastSeen:       types.Int64Value(dto.MaxLastSeenSeconds),
+			MatchHostname:     types.BoolValue(dto.MatchHostname),
+			MatchSerialNumber: types.BoolValue(dto.MatchSerialNumber),
 			PreventRestrictedFunctionalityMode: types.BoolValue(
-				dto.Conditions.PreventRestrictedFunctionalityMode,
+				dto.PreventRestrictedFunctionalityMode,
 			),
-			MatchMacAddress: types.BoolValue(dto.Conditions.MatchMacAddress),
-			MatchLocalIP:    types.BoolValue(dto.Conditions.MatchLocalIP),
+			MatchMacAddress: types.BoolValue(dto.MatchMacAddress),
+			MatchLocalIP:    types.BoolValue(dto.MatchLocalIP),
 		}
 	case "AembitGeoIPCondition":
-		geoIpModel := models.AccessConditionGeoIpModel{}
+		geoIpModel := models.AccessConditionGeoIpConditionModel{}
 
-		for _, location := range dto.Conditions.Locations {
+		for _, location := range dto.Locations {
 			loc := models.GeoIpLocationModel{
 				CountryCode:  types.StringValue(location.Alpha2Code),
 				Subdivisions: []*models.GeoIpSubdivisionModel{},
@@ -618,17 +646,17 @@ func convertAccessConditionDTOToModel(
 
 		model.GeoIp = &geoIpModel
 	case "AembitTimeCondition":
-		acTimeZone := models.AccessConditionTimeZoneModel{}
+		acTimeZone := models.AccessConditionTimeConditionModel{}
 
-		for _, schedule := range dto.Conditions.Schedule {
+		for _, schedule := range dto.Schedule {
 			acTimeZone.Schedule = append(acTimeZone.Schedule, &models.ScheduleModel{
-				StartTime: types.StringValue(schedule.StartTime),
-				EndTime:   types.StringValue(schedule.EndTime),
+				StartTime: types.StringValue(trimSeconds(schedule.StartTime)),
+				EndTime:   types.StringValue(trimSeconds(schedule.EndTime)),
 				Day:       types.StringValue(schedule.WeekDay.Name),
 			})
 		}
 
-		acTimeZone.Timezone = types.StringValue(dto.Conditions.Timezone.Timezone)
+		acTimeZone.Timezone = types.StringValue(dto.Timezone.Timezone)
 
 		model.Time = &acTimeZone
 	}
@@ -652,4 +680,11 @@ func findOrdinal(weekDay string) (int, error) {
 	}
 
 	return -1, fmt.Errorf("%v is not a valid weekday name", weekDay)
+}
+
+func trimSeconds(t string) string {
+	if strings.Count(t, ":") == 2 && strings.HasSuffix(t, ":00") {
+		return t[:len(t)-3]
+	}
+	return t
 }

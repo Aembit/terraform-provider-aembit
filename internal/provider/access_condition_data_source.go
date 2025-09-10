@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -180,7 +181,7 @@ func (d *accessConditionsDataSource) Read(
 ) {
 	var state models.AccessConditionsDataSourceModel
 
-	accessConditions, err := d.client.GetAccessConditions(nil)
+	accessConditions, err := d.client.GetAccessConditionsV2(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit AccessConditions",
