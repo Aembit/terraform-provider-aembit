@@ -41,7 +41,9 @@ var (
 	AuthenticationTokenRegex     = regexp.MustCompile(
 		`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`,
 	)
-	ApiKeyRegex = regexp.MustCompile(`^([a-fA-F0-9]{32}|[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$`)
+	ApiKeyRegex = regexp.MustCompile(
+		`^([a-fA-F0-9]{32}|[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$`,
+	)
 	Base64Regex = regexp.MustCompile(
 		`^(?:[A-Za-z0-9+/]{4})*` +
 			`(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`,
