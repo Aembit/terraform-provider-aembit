@@ -25,6 +25,7 @@ Manages a credential provider integration.
 Optional:
 
 - `aws_iam_role` (Attributes) AWS IAM Role type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--credential_provider_integrations--aws_iam_role))
+- `azure_entra_federation` (Attributes) Azure Entra Federation type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--credential_provider_integrations--azure_entra_federation))
 - `gitlab` (Attributes) GitLab Managed Account type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--credential_provider_integrations--gitlab))
 
 Read-Only:
@@ -42,6 +43,19 @@ Read-Only:
 - `oidc_issuer_url` (String) OIDC Issuer URL for AWS IAM Identity Provider configuration
 - `role_arn` (String) AWS IAM Role ARN.
 - `token_audience` (String) Token Audience for AWS IAM Identity Provider configuration
+
+
+<a id="nestedatt--credential_provider_integrations--azure_entra_federation"></a>
+### Nested Schema for `credential_provider_integrations.azure_entra_federation`
+
+Read-Only:
+
+- `audience` (String) The audience claim (aud) for the federated JWT token.
+- `azure_tenant` (String) The Azure AD tenant ID where the federation is configured.
+- `client_id` (String) The client ID of the application in Azure AD.
+- `key_vault_name` (String) The name of the Azure Key Vault to access.
+- `oidc_issuer_url` (String) OIDC Issuer URL for Azure Entra Federation configuration
+- `subject` (String) The subject claim (sub) for the federated JWT token.
 
 
 <a id="nestedatt--credential_provider_integrations--gitlab"></a>

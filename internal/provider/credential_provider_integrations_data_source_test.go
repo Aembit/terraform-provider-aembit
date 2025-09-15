@@ -12,6 +12,8 @@ import (
 const (
 	testCredentialProviderIntegrationsDataSource string = "data.aembit_credential_provider_integrations.test"
 	testCredentialProviderIntegrationResource    string = "aembit_credential_provider_integration.aws_sm_secret"
+	testAccAefCpiDataSource                      string = "data.aembit_credential_provider_integrations.aef_cpi_test"
+	testAccAefCpiResource                        string = "aembit_credential_provider_integration.azure_entra_federation_cpi"
 )
 
 func testFindCredentialProviderIntegration(resourceName string) resource.TestCheckFunc {
@@ -99,6 +101,43 @@ func TestAccAwsIamRoleCredentialProviderIntegrationsDataSource(t *testing.T) {
 					// Find newly created entry
 					testFindCredentialProviderIntegration(
 						testCredentialProviderIntegrationResource,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAzureEntraFederationCredentialProviderIntegrationsDataSource(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential_provider_integration/data/TestAccAzureEntraFederationCpiDataSource.tf",
+	)
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance Azure Entra Federation Credential Provider Integration",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify non-zero number of Integrations returned
+					resource.TestCheckResourceAttrSet(
+						testAccAefCpiDataSource,
+						"credential_provider_integrations.#",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						testAccAefCpiDataSource,
+						"credential_provider_integrations.0.id",
+					),
+					// Find newly created entry
+					testFindCredentialProviderIntegration(
+						testAccAefCpiResource,
 					),
 				),
 			},

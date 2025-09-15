@@ -22,6 +22,7 @@ const (
 	testCredentialProviderUserPass   = "aembit_credential_provider.userpass"
 	gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
 	awsSecretManagerResourcePath     = "aembit_credential_provider.aws_sm_value"
+	azureKeyVaultResourcePath        = "aembit_credential_provider.azure_key_vault_value_cp"
 )
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -852,6 +853,94 @@ func TestAccAwsSecretsManagerValueCP(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						awsSecretManagerResourcePath,
 						"aws_secrets_manager_value.private_network_access",
+						"true",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAzureKeyVaultValueCP(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/azure-key-vault/TestAzureKeyVaultValueResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/azure-key-vault/TestAzureKeyVaultValueResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"name",
+						"TF Acceptance Azure Key Vault Value CP",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"description",
+						"TF Acceptance Azure Key Vault Value CP Description",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.secret_name_1",
+						"secret1",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.secret_name_2",
+						"secret2",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.private_network_access",
+						"false",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(azureKeyVaultResourcePath, "id"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      azureKeyVaultResourcePath,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"name",
+						"TF Acceptance Azure Key Vault Value CP - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"description",
+						"TF Acceptance Azure Key Vault Value CP Description - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.secret_name_1",
+						"secret1-updated",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.secret_name_2",
+						"secret2-updated",
+					),
+					resource.TestCheckResourceAttr(
+						azureKeyVaultResourcePath,
+						"azure_key_vault_value.private_network_access",
 						"true",
 					),
 				),

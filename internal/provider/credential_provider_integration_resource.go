@@ -128,6 +128,42 @@ func (r *credentialProviderIntegrationResource) Schema(
 					},
 				},
 			},
+			"azure_entra_federation": schema.SingleNestedAttribute{
+				Description: "Configuration of Credential Provider Integration of type Azure Entra Federation",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"audience": schema.StringAttribute{
+						Description: "The audience claim (aud) for the federated JWT token.",
+						Required:    true,
+					},
+					"subject": schema.StringAttribute{
+						Description: "The subject claim (sub) for the federated JWT token.",
+						Required:    true,
+					},
+					"azure_tenant": schema.StringAttribute{
+						Description: "The Azure AD tenant ID that the application belongs to.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.UUIDRegexValidation(),
+						},
+					},
+					"client_id": schema.StringAttribute{
+						Description: "The client ID of the Azure AD application.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.UUIDRegexValidation(),
+						},
+					},
+					"key_vault_name": schema.StringAttribute{
+						Description: "The name of the Azure Key Vault.",
+						Required:    true,
+					},
+					"oidc_issuer_url": schema.StringAttribute{
+						Description: "OIDC Issuer URL for Azure Entra Federation configuration",
+						Computed:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -336,6 +372,15 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.RoleArn = model.AwsIamRole.RoleArn.ValueString()
 		credentialIntegration.LifetimeInSeconds = model.AwsIamRole.LifetimeInSeconds.ValueInt32()
 	}
+
+	if model.AzureEntraFederation != nil {
+		credentialIntegration.Type = "Aef"
+		credentialIntegration.Audience = model.AzureEntraFederation.Audience.ValueString()
+		credentialIntegration.Subject = model.AzureEntraFederation.Subject.ValueString()
+		credentialIntegration.AzureTenant = model.AzureEntraFederation.AzureTenant.ValueString()
+		credentialIntegration.ClientID = model.AzureEntraFederation.ClientID.ValueString()
+		credentialIntegration.KeyVaultName = model.AzureEntraFederation.KeyVaultName.ValueString()
+	}
 	return credentialIntegration
 }
 
@@ -368,6 +413,19 @@ func convertCredentialProviderIntegrationDTOToModel(
 			),
 			TokenAudience: types.StringValue("sts.amazonaws.com"),
 		}
+	case "Aef":
+		model.AzureEntraFederation = &models.CredentialProviderIntegrationAzureEntraFederationModel{
+			Audience:     types.StringValue(dto.Audience),
+			Subject:      types.StringValue(dto.Subject),
+			AzureTenant:  types.StringValue(dto.AzureTenant),
+			ClientID:     types.StringValue(dto.ClientID),
+			KeyVaultName: types.StringValue(dto.KeyVaultName),
+			OIDCIssuerUrl: types.StringValue(
+				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
+			),
+		}
+	default:
+		// This should never happen as the API restricts the type field to known values
 	}
 	return model
 }
