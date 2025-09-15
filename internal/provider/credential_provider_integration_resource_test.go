@@ -245,7 +245,7 @@ func TestAccAzureEntraFederationCPIResource(t *testing.T) {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(
 						testCredentialProviderIntegrationAzureEntraFederation,
-						"azure_entra_federation.oidc_issuer",
+						"azure_entra_federation.oidc_issuer_url",
 					),
 					resource.TestCheckResourceAttrSet(
 						testCredentialProviderIntegrationAzureEntraFederation,

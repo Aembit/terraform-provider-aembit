@@ -1209,6 +1209,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.ManagedGitlabAccount = nil
 	model.OidcIdToken = nil
 	model.AwsSecretsManagerValue = nil
+	model.AzureKeyVaultValue = nil
 	model.JwtSvidToken = nil
 
 	// Now fill in the objects based on the Credential Provider type

@@ -890,12 +890,12 @@ func TestAccAzureKeyVaultValueCP(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						azureKeyVaultResourcePath,
-						"azure_key_vault_value.secret_name-1",
+						"azure_key_vault_value.secret_name_1",
 						"secret1",
 					),
 					resource.TestCheckResourceAttr(
 						azureKeyVaultResourcePath,
-						"azure_key_vault_value.secret_name-2",
+						"azure_key_vault_value.secret_name_2",
 						"secret2",
 					),
 					resource.TestCheckResourceAttr(
