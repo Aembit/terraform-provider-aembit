@@ -12,8 +12,8 @@ import (
 const (
 	testCredentialProviderIntegrationsDataSource string = "data.aembit_credential_provider_integrations.test"
 	testCredentialProviderIntegrationResource    string = "aembit_credential_provider_integration.aws_sm_secret"
-	testAccAefCpiDataSource 					 string = "data.aembit_credential_provider_integrations.aef_cpi_test"
-	testAccAefCpiResource 					     string = "aembit_credential_provider_integration.azure_entra_federation_cpi"
+	testAccAefCpiDataSource                      string = "data.aembit_credential_provider_integrations.aef_cpi_test"
+	testAccAefCpiResource                        string = "aembit_credential_provider_integration.azure_entra_federation_cpi"
 )
 
 func testFindCredentialProviderIntegration(resourceName string) resource.TestCheckFunc {

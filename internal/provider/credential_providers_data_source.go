@@ -500,8 +500,8 @@ func (d *credentialProvidersDataSource) Schema(
 						},
 						"azure_key_vault_value": schema.SingleNestedAttribute{
 							Description: "Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext format.",
-							Optional: true,
-							Computed: true,
+							Optional:    true,
+							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"secret_name_1": schema.StringAttribute{
 									Description: "Name of the Azure Key Vault secret to be used by the Credential Provider.",

@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
-	testCredentialProviderResource    string = "aembit_credential_provider.oauth"
+	testCredentialProvidersDataSource  string = "data.aembit_credential_providers.test"
+	testCredentialProviderResource     string = "aembit_credential_provider.oauth"
 	testAzureKeyVaultValueCpDataSource string = "data.aembit_credential_providers.azure_key_vault_value_test"
 	testAzureKeyVaultValueCpResource   string = "aembit_credential_provider.azure_key_vault_value_cp"
 )
@@ -67,7 +67,11 @@ func TestAccAzureKeyVaultValueCredentialProvidersDataSource(t *testing.T) {
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/data/TestAccAzureKeyVaultCpDataSource.tf",
 	)
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Azure Key Vault Value")
+	createFileConfig, _, _ := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance Azure Key Vault Value",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
