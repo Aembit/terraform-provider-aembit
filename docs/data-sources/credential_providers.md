@@ -28,6 +28,7 @@ Optional:
 - `aws_secrets_manager_value` (Attributes) AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext or JSON formats. (see [below for nested schema](#nestedatt--credential_providers--aws_secrets_manager_value))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--aws_sts))
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--azure_entra_workload_identity))
+- `azure_key_vault_value` (Attributes) Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext format. (see [below for nested schema](#nestedatt--credential_providers--azure_key_vault_value))
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--snowflake_jwt))
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--username_password))
@@ -94,6 +95,17 @@ Read-Only:
 - `oidc_issuer` (String) OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `scope` (String) Scope for Azure Entra Workload Identity Federation configuration of the Credential Provider.
 - `subject` (String) Subject for JWT Token for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--azure_key_vault_value"></a>
+### Nested Schema for `credential_providers.azure_key_vault_value`
+
+Optional:
+
+- `credential_provider_integration_id` (String) The unique identifier of the Credential Provider Integration of type Azure Entra Federation.
+- `private_network_access` (Boolean) Indicates that the Azure Key Vault is accessible via a private network only.
+- `secret_name_1` (String) Name of the Azure Key Vault secret to be used by the Credential Provider.
+- `secret_name_2` (String) Similar to `secret_name_1` but used when you need a credential provider to work with 2 secret values. For example, a username / password pair.
 
 
 <a id="nestedatt--credential_providers--google_workload_identity"></a>

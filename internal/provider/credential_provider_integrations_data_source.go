@@ -107,6 +107,36 @@ func (d *credentialProviderIntegrationsDataSource) Schema(
 								},
 							},
 						},
+						"azure_entra_federation": schema.SingleNestedAttribute{
+							Description: "Azure Entra Federation type Credential Provider Integration configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"audience": schema.StringAttribute{
+									Description: "The audience claim (aud) for the federated JWT token.",
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "The subject claim (sub) for the federated JWT token.",
+									Computed:    true,
+								},
+								"azure_tenant": schema.StringAttribute{
+									Description: "The Azure AD tenant ID where the federation is configured.",
+									Computed:    true,
+								},
+								"client_id": schema.StringAttribute{
+									Description: "The client ID of the application in Azure AD.",
+									Computed:    true,
+								},
+								"key_vault_name": schema.StringAttribute{
+									Description: "The name of the Azure Key Vault to access.",
+									Computed:    true,
+								},
+								"oidc_issuer_url": schema.StringAttribute{
+									Description: "OIDC Issuer URL for Azure Entra Federation configuration",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},

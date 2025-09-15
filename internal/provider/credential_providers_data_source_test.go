@@ -12,6 +12,8 @@ import (
 const (
 	testCredentialProvidersDataSource string = "data.aembit_credential_providers.test"
 	testCredentialProviderResource    string = "aembit_credential_provider.oauth"
+	testAzureKeyVaultValueCpDataSource string = "data.aembit_credential_providers.azure_key_vault_value_test"
+	testAzureKeyVaultValueCpResource   string = "aembit_credential_provider.azure_key_vault_value_cp"
 )
 
 func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -55,6 +57,37 @@ func TestAccCredentialProvidersDataSource(t *testing.T) {
 					),
 					// Find newly created entry
 					testFindCredentialProvider(testCredentialProviderResource),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAzureKeyVaultValueCredentialProvidersDataSource(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/data/TestAccAzureKeyVaultCpDataSource.tf",
+	)
+	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Azure Key Vault Value")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify non-zero number of Credential Providers returned
+					resource.TestCheckResourceAttrSet(
+						testAzureKeyVaultValueCpDataSource,
+						"credential_providers.#",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						testAzureKeyVaultValueCpDataSource,
+						"credential_providers.0.id",
+					),
+					// Find newly created entry
+					testFindCredentialProvider(testAzureKeyVaultValueCpResource),
 				),
 			},
 		},

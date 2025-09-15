@@ -15,6 +15,8 @@ const testCredentialProviderIntegrationGitLab string = "aembit_credential_provid
 // resource id set in the test file.
 const testCredentialProviderIntegrationAwsIamRole string = "aembit_credential_provider_integration.awsiamrole_cpi"
 
+const testCredentialProviderIntegrationAzureEntraFederation string = "aembit_credential_provider_integration.azure_entra_federation_cpi"
+
 func testDeleteCredentialProviderIntegration(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		var rs *terraform.ResourceState
@@ -181,6 +183,131 @@ func TestAccAwsIamRoleCPIResource(t *testing.T) {
 						testCredentialProviderIntegrationAwsIamRole,
 						"aws_iam_role.lifetime_in_seconds",
 						"5000",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAzureEntraFederationCPIResource(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential_provider_integration/aef/TestAccAefCpiResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential_provider_integration/aef/TestAccAefCpiResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Integration Name
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"name",
+						"TF Acceptance Azure Entra Federation Credential Provider Integration",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"description",
+						"TF Acceptance Azure Entra Federation Credential Provider Integration Description",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.audience",
+						"api://AzureADTokenExchange",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.subject",
+						"subject",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.azure_tenant",
+						"00000000-0000-0000-0000-000000000000",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.client_id",
+						"00000000-0000-0000-0000-000000000000",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.key_vault_name",
+						"KeyVaultName",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.oidc_issuer",
+					),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"id",
+					),
+				),
+			},
+			// Test Aembit API Removal causes re-create with non-empty plan
+			{
+				Config: string(createFile),
+				Check: testDeleteCredentialProviderIntegration(
+					testCredentialProviderIntegrationAzureEntraFederation,
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			// Recreate the resource from the first test step
+			{Config: string(createFile)},
+			// ImportState testing
+			{
+				ResourceName:      testCredentialProviderIntegrationAzureEntraFederation,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"name",
+						"TF Acceptance Azure Entra Federation Credential Provider Integration - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"description",
+						"TF Acceptance Azure Entra Federation Credential Provider Integration Description - Updated",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.audience",
+						"api://AzureADTokenExchangeUpdated",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.subject",
+						"subjectUpdated",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.azure_tenant",
+						"11111111-1111-1111-1111-111111111111",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.client_id",
+						"11111111-1111-1111-1111-111111111111",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.key_vault_name",
+						"KeyVaultNameUpdated",
 					),
 				),
 			},

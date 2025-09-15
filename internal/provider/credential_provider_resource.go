@@ -724,6 +724,32 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"azure_key_vault_value": schema.SingleNestedAttribute{
+				Description: "Azure Key Vault Value type Credential Provider configuration. This type of credential provider" +
+					" supports secret values in plaintext formats.",
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"secret_name_1": schema.StringAttribute{
+						Description: "Name of the Azure Key Vault secret to be used by the Credential Provider.",
+						Required:    true,
+					},
+					"secret_name_2": schema.StringAttribute{
+						Description: "Similar to `secret_name_1` but used when you need a credential provider to work with 2 secret values." +
+							" For example, a username / password pair.",
+						Optional: true,
+					},
+					"private_network_access": schema.BoolAttribute{
+						Description: "Indicates that the Azure Key Vault is accessible via a private network only.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"credential_provider_integration_id": schema.StringAttribute{
+						Description: "The unique identifier of the Credential Provider Integration of type Azure Entra Federation.",
+						Required:    true,
+					},
+				},
+			},
 			"jwt_svid_token": schema.SingleNestedAttribute{
 				Description: "JWT-SVID Token type Credential Provider configuration.",
 				Optional:    true,
@@ -826,6 +852,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("managed_gitlab_account"),
 			path.MatchRoot("oidc_id_token"),
 			path.MatchRoot("aws_secrets_manager_value"),
+			path.MatchRoot("azure_key_vault_value"),
 			path.MatchRoot("jwt_svid_token"),
 		),
 	}
@@ -1149,6 +1176,11 @@ func convertCredentialProviderModelToV2DTO(
 		convertToAwsSecretsManagerValueDTO(&credential, model)
 	}
 
+	// Handle the Azure Key Vault use case
+	if model.AzureKeyVaultValue != nil {
+		convertToAzureKeyVaultValueDTO(&credential, model)
+	}
+
 	return credential
 }
 
@@ -1210,6 +1242,15 @@ func convertCredentialProviderV2DTOToModel(
 			SecretArn:            types.StringValue(dto.SecretArn),
 			SecretKey1:           types.StringValue(dto.SecretKey1),
 			SecretKey2:           types.StringValue(dto.SecretKey2),
+			PrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
+			CredentialProviderIntegrationExternalId: types.StringValue(
+				dto.CredentialProviderIntegrationExternalId,
+			),
+		}
+	case "azure-key-vault-value":
+		model.AzureKeyVaultValue = &models.CredentialProviderAzureKeyVaultValueModel{
+			SecretName1:          types.StringValue(dto.SecretName1),
+			SecretName2:          types.StringValue(dto.SecretName2),
 			PrivateNetworkAccess: types.BoolValue(dto.PrivateNetworkAccess),
 			CredentialProviderIntegrationExternalId: types.StringValue(
 				dto.CredentialProviderIntegrationExternalId,
@@ -1747,6 +1788,17 @@ func convertToAwsSecretsManagerValueDTO(
 	credential.SecretKey2 = model.AwsSecretsManagerValue.SecretKey2.ValueString()
 	credential.PrivateNetworkAccess = model.AwsSecretsManagerValue.PrivateNetworkAccess.ValueBool()
 	credential.CredentialProviderIntegrationExternalId = model.AwsSecretsManagerValue.CredentialProviderIntegrationExternalId.ValueString()
+}
+
+func convertToAzureKeyVaultValueDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "azure-key-vault-value"
+	credential.SecretName1 = model.AzureKeyVaultValue.SecretName1.ValueString()
+	credential.SecretName2 = model.AzureKeyVaultValue.SecretName2.ValueString()
+	credential.PrivateNetworkAccess = model.AzureKeyVaultValue.PrivateNetworkAccess.ValueBool()
+	credential.CredentialProviderIntegrationExternalId = model.AzureKeyVaultValue.CredentialProviderIntegrationExternalId.ValueString()
 }
 
 func convertSetToSlice(set []types.String) []string {

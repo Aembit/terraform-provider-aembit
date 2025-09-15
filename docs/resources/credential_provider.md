@@ -111,6 +111,36 @@ resource "aembit_credential_provider" "aws_sm_value" {
 }
 ```
 
+### Azure Key Vault Value Credential Provider
+This type of credential provider must reference an Azure Entra Federation Credential Provider Integration.
+
+```terraform
+resource "aembit_credential_provider_integration" "azure_entra_federation_cpi" {
+  name        = "Azure Entra Federation Credential Provider Integration"
+  description = "Detailed description of Azure Entra Federation Credential Provider Integration"
+  azure_entra_federation = {
+    audience       = "api://AzureADTokenExchange"
+    subject        = "subject"
+    azure_tenant   = "00000000-0000-0000-0000-000000000000"
+    client_id      = "00000000-0000-0000-0000-000000000000"
+    key_vault_name = "KeyVaultName"
+  }
+}
+```
+```terraform
+resource "aembit_credential_provider" "azure_key_vault_value_cp" {
+  name        = "Azure Key Vault Value Credential Provider"
+  description = "Detailed description of Azure Key Vault Value Credential Provider"
+  is_active   = true
+  azure_key_vault_value = {
+    secret_name_1                      = "secret1"
+    secret_name_2                      = "secret2"
+    private_network_access             = false
+    credential_provider_integration_id = aembit_credential_provider_integration.azure_entra_federation_cpi.id
+  }
+}
+```
+
 ## Changes for v1.25
 
 ### Managed GitLab Account
@@ -133,6 +163,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `aws_secrets_manager_value` (Attributes) AWS Secrets Manager Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext or JSON formats. Do not provide values in `secret_key_1` and `secret_key_2` fields for plaintext secrets. These fields are used to specify property names when a secret contains a JSON. (see [below for nested schema](#nestedatt--aws_secrets_manager_value))
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--aws_sts))
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--azure_entra_workload_identity))
+- `azure_key_vault_value` (Attributes) Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext formats. (see [below for nested schema](#nestedatt--azure_key_vault_value))
 - `description` (String) Description for the Credential Provider.
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
@@ -214,6 +245,20 @@ Required:
 Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.
+
+
+<a id="nestedatt--azure_key_vault_value"></a>
+### Nested Schema for `azure_key_vault_value`
+
+Required:
+
+- `credential_provider_integration_id` (String) The unique identifier of the Credential Provider Integration of type Azure Entra Federation.
+- `secret_name_1` (String) Name of the Azure Key Vault secret to be used by the Credential Provider.
+
+Optional:
+
+- `private_network_access` (Boolean) Indicates that the Azure Key Vault is accessible via a private network only.
+- `secret_name_2` (String) Similar to `secret_name_1` but used when you need a credential provider to work with 2 secret values. For example, a username / password pair.
 
 
 <a id="nestedatt--google_workload_identity"></a>

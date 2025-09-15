@@ -1,0 +1,14 @@
+provider "aembit" {
+}
+
+resource "aembit_credential_provider_integration" "azure_entra_federation_cpi" {
+    name                   = "TF Acceptance Azure Entra Federation Credential Provider Integration - Updated"
+    description            = "TF Acceptance Azure Entra Federation Credential Provider Integration Description - Updated"
+    azure_entra_federation = {
+        audience       = "api://AzureADTokenExchangeUpdated"
+        subject        = "subjectUpdated"
+        azure_tenant   = "11111111-1111-1111-1111-111111111111"
+        client_id      = "11111111-1111-1111-1111-111111111111"
+        key_vault_name = "KeyVaultNameUpdated"
+    }
+}

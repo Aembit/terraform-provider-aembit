@@ -498,6 +498,34 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"azure_key_vault_value": schema.SingleNestedAttribute{
+							Description: "Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext format.",
+							Optional: true,
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"secret_name_1": schema.StringAttribute{
+									Description: "Name of the Azure Key Vault secret to be used by the Credential Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"secret_name_2": schema.StringAttribute{
+									Description: "Similar to `secret_name_1` but used when you need a credential provider to work with 2 secret values." +
+										" For example, a username / password pair.",
+									Optional: true,
+									Computed: true,
+								},
+								"private_network_access": schema.BoolAttribute{
+									Description: "Indicates that the Azure Key Vault is accessible via a private network only.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"credential_provider_integration_id": schema.StringAttribute{
+									Description: "The unique identifier of the Credential Provider Integration of type Azure Entra Federation.",
+									Optional:    true,
+									Computed:    true,
+								},
+							},
+						},
 						"jwt_svid_token": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
