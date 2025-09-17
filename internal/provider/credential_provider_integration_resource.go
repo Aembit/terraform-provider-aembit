@@ -374,7 +374,7 @@ func convertCredentialProviderIntegrationModelToDTO(
 	}
 
 	if model.AzureEntraFederation != nil {
-		credentialIntegration.Type = "Aef"
+		credentialIntegration.Type = "AzureEntraFederation"
 		credentialIntegration.Audience = model.AzureEntraFederation.Audience.ValueString()
 		credentialIntegration.Subject = model.AzureEntraFederation.Subject.ValueString()
 		credentialIntegration.AzureTenant = model.AzureEntraFederation.AzureTenant.ValueString()
@@ -413,7 +413,7 @@ func convertCredentialProviderIntegrationDTOToModel(
 			),
 			TokenAudience: types.StringValue("sts.amazonaws.com"),
 		}
-	case "Aef":
+	case "AzureEntraFederation":
 		model.AzureEntraFederation = &models.CredentialProviderIntegrationAzureEntraFederationModel{
 			Audience:     types.StringValue(dto.Audience),
 			Subject:      types.StringValue(dto.Subject),
