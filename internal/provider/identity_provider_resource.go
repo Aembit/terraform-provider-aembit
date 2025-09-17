@@ -364,7 +364,9 @@ func convertIdentityProviderDTOToModel(
 	}
 
 	// Add a carriage return if the original plan had one, to avoid diffs on re-read
-	if planModel != nil && strings.HasSuffix(planModel.MetadataXml.ValueString(), "\n") && !strings.HasSuffix(dto.MetadataXml, "\n") {
+	if planModel != nil &&
+		strings.HasSuffix(planModel.MetadataXml.ValueString(), "\n") &&
+		!strings.HasSuffix(dto.MetadataXml, "\n") {
 		dto.MetadataXml += "\n"
 	}
 	model.MetadataXml = types.StringValue(dto.MetadataXml)
