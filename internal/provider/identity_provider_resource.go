@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"strings"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -131,6 +132,7 @@ func (r *identityProviderResource) Create(
 	// Retrieve values from plan
 	var plan models.IdentityProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
+
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -150,7 +152,7 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIdentityProviderDTOToModel(ctx, *idp)
+	plan = convertIdentityProviderDTOToModel(ctx, &plan, *idp)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -188,7 +190,7 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
-	state = convertIdentityProviderDTOToModel(ctx, idpDto)
+	state = convertIdentityProviderDTOToModel(ctx, &state, idpDto)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -237,7 +239,7 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIdentityProviderDTOToModel(ctx, *idpDto)
+	state = convertIdentityProviderDTOToModel(ctx, &plan, *idpDto)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -323,7 +325,7 @@ func convertIdentityProviderModelToDTO(
 
 	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
 	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
-		[]byte(model.MetadataXml.ValueString()),
+		[]byte(strings.TrimRight(model.MetadataXml.ValueString(), "\n\r")),
 	)
 
 	for _, mapping := range model.SamlStatementRoleMappings {
@@ -345,6 +347,7 @@ func convertIdentityProviderModelToDTO(
 
 func convertIdentityProviderDTOToModel(
 	ctx context.Context,
+	planModel *models.IdentityProviderResourceModel,
 	dto aembit.IdentityProviderDTO,
 ) models.IdentityProviderResourceModel {
 	var model models.IdentityProviderResourceModel
@@ -358,6 +361,11 @@ func convertIdentityProviderDTOToModel(
 		model.MetadataUrl = types.StringNull()
 	} else {
 		model.MetadataUrl = types.StringValue(dto.MetadataUrl)
+	}
+
+	// Add a carriage return if the original plan had one, to avoid diffs on re-read
+	if planModel != nil && strings.HasSuffix(planModel.MetadataXml.ValueString(), "\n") && !strings.HasSuffix(dto.MetadataXml, "\n") {
+		dto.MetadataXml += "\n"
 	}
 	model.MetadataXml = types.StringValue(dto.MetadataXml)
 

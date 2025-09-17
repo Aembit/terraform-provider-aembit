@@ -143,7 +143,7 @@ func (r *identityProviderDataSource) Read(
 	}
 
 	for _, idp := range idps {
-		idpState := convertIdentityProviderDTOToModel(ctx, idp)
+		idpState := convertIdentityProviderDTOToModel(ctx, nil, idp)
 
 		state.IdentityProviders = append(state.IdentityProviders, idpState)
 	}
