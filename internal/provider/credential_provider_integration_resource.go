@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -431,11 +431,11 @@ func convertCredentialProviderIntegrationDTOToModel(
 		}
 	case "AzureEntraFederation":
 		model.AzureEntraFederation = &models.CredentialProviderIntegrationAzureEntraFederationModel{
-			Audience:     types.StringValue(dto.Audience),
-			Subject:      types.StringValue(dto.Subject),
-			AzureTenant:  types.StringValue(dto.AzureTenant),
-			ClientID:     types.StringValue(dto.ClientID),
-			KeyVaultName: types.StringValue(dto.KeyVaultName),
+			Audience:         types.StringValue(dto.Audience),
+			Subject:          types.StringValue(dto.Subject),
+			AzureTenant:      types.StringValue(dto.AzureTenant),
+			ClientID:         types.StringValue(dto.ClientID),
+			KeyVaultName:     types.StringValue(dto.KeyVaultName),
 			FetchSecretNames: types.BoolValue(dto.FetchSecretNames),
 			OIDCIssuerUrl: types.StringValue(
 				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
