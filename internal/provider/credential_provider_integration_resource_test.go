@@ -136,6 +136,11 @@ func TestAccAwsIamRoleCPIResource(t *testing.T) {
 						"aws_iam_role.lifetime_in_seconds",
 						"3600",
 					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAwsIamRole,
+						"aws_iam_role.fetch_secret_arns",
+						"false",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(
 						testCredentialProviderIntegrationAwsIamRole,
@@ -183,6 +188,11 @@ func TestAccAwsIamRoleCPIResource(t *testing.T) {
 						testCredentialProviderIntegrationAwsIamRole,
 						"aws_iam_role.lifetime_in_seconds",
 						"5000",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAwsIamRole,
+						"aws_iam_role.fetch_secret_arns",
+						"true",
 					),
 				),
 			},
@@ -241,6 +251,11 @@ func TestAccAzureEntraFederationCPIResource(t *testing.T) {
 						testCredentialProviderIntegrationAzureEntraFederation,
 						"azure_entra_federation.key_vault_name",
 						"KeyVaultName",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.fetch_secret_names",
+						"false",
 					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(
@@ -308,6 +323,11 @@ func TestAccAzureEntraFederationCPIResource(t *testing.T) {
 						testCredentialProviderIntegrationAzureEntraFederation,
 						"azure_entra_federation.key_vault_name",
 						"KeyVaultNameUpdated",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderIntegrationAzureEntraFederation,
+						"azure_entra_federation.fetch_secret_names",
+						"true",
 					),
 				),
 			},

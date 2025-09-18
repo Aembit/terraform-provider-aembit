@@ -28,15 +28,17 @@ type CredentialProviderIntegrationGitlabModel struct {
 type CredentialProviderIntegrationAwsIamRoleModel struct {
 	RoleArn           types.String `tfsdk:"role_arn"`
 	LifetimeInSeconds types.Int32  `tfsdk:"lifetime_in_seconds"`
+	FetchSecretArns   types.Bool   `tfsdk:"fetch_secret_arns"`
 	OIDCIssuerUrl     types.String `tfsdk:"oidc_issuer_url"`
 	TokenAudience     types.String `tfsdk:"token_audience"`
 }
 
 type CredentialProviderIntegrationAzureEntraFederationModel struct {
-	Audience      types.String `tfsdk:"audience"`
-	Subject       types.String `tfsdk:"subject"`
-	AzureTenant   types.String `tfsdk:"azure_tenant"`
-	ClientID      types.String `tfsdk:"client_id"`
-	KeyVaultName  types.String `tfsdk:"key_vault_name"`
-	OIDCIssuerUrl types.String `tfsdk:"oidc_issuer_url"`
+	Audience         types.String `tfsdk:"audience"`
+	Subject          types.String `tfsdk:"subject"`
+	AzureTenant      types.String `tfsdk:"azure_tenant"`
+	ClientID         types.String `tfsdk:"client_id"`
+	KeyVaultName     types.String `tfsdk:"key_vault_name"`
+	FetchSecretNames types.Bool   `tfsdk:"fetch_secret_names"`
+	OIDCIssuerUrl    types.String `tfsdk:"oidc_issuer_url"`
 }
