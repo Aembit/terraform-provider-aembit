@@ -8,6 +8,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -101,6 +102,9 @@ func (r *identityProviderResource) Schema(
 			"saml_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"attribute_name": schema.StringAttribute{
@@ -372,6 +376,11 @@ func convertIdentityProviderDTOToModel(
 	model.MetadataXml = types.StringValue(dto.MetadataXml)
 
 	//convert the mapping array from flat to unflatten form
+	if len(dto.SamlStatementRoleMappings) == 0 {
+		model.SamlStatementRoleMappings = nil
+		return model
+	}
+
 	tempMap := make(map[string]models.SamlStatementRoleMappings)
 	for _, mapping := range dto.SamlStatementRoleMappings {
 		key := mapping.AttributeName + mapping.AttributeValue
