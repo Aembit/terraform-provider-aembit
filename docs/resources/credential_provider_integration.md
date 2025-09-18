@@ -80,6 +80,7 @@ Required:
 
 Optional:
 
+- `fetch_secret_arns` (Boolean) Whether to fetch secret ARNs from AWS Secret Manager in the Aembit UI.
 - `lifetime_in_seconds` (Number) Lifetime in seconds for the AWS IAM Role credentials.
 
 Read-Only:
@@ -98,6 +99,10 @@ Required:
 - `client_id` (String) The client ID of the Azure AD application.
 - `key_vault_name` (String) The name of the Azure Key Vault.
 - `subject` (String) The subject claim (sub) for the federated JWT token.
+
+Optional:
+
+- `fetch_secret_names` (Boolean) Whether to fetch secret names from Azure Key Vault in the Aembit UI.
 
 Read-Only:
 

@@ -39,6 +39,7 @@ Read-Only:
 
 Read-Only:
 
+- `fetch_secret_arns` (Boolean) Whether to fetch secret ARNs from AWS Secret Manager in the Aembit UI.
 - `lifetime_in_seconds` (Number) Lifetime in seconds for the requested AWS temporary credentials.
 - `oidc_issuer_url` (String) OIDC Issuer URL for AWS IAM Identity Provider configuration
 - `role_arn` (String) AWS IAM Role ARN.
@@ -53,6 +54,7 @@ Read-Only:
 - `audience` (String) The audience claim (aud) for the federated JWT token.
 - `azure_tenant` (String) The Azure AD tenant ID where the federation is configured.
 - `client_id` (String) The client ID of the application in Azure AD.
+- `fetch_secret_names` (Boolean) Whether to fetch secret names from the Azure Key Vault in the Aembit UI.
 - `key_vault_name` (String) The name of the Azure Key Vault to access.
 - `oidc_issuer_url` (String) OIDC Issuer URL for Azure Entra Federation configuration
 - `subject` (String) The subject claim (sub) for the federated JWT token.
