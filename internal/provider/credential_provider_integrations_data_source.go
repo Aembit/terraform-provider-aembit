@@ -97,6 +97,10 @@ func (d *credentialProviderIntegrationsDataSource) Schema(
 									Description: "Lifetime in seconds for the requested AWS temporary credentials.",
 									Computed:    true,
 								},
+								"fetch_secret_arns": schema.BoolAttribute{
+									Description: "Whether to fetch secret ARNs from AWS Secret Manager in the Aembit UI.",
+									Computed:    true,
+								},
 								"oidc_issuer_url": schema.StringAttribute{
 									Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
 									Computed:    true,
@@ -129,6 +133,10 @@ func (d *credentialProviderIntegrationsDataSource) Schema(
 								},
 								"key_vault_name": schema.StringAttribute{
 									Description: "The name of the Azure Key Vault to access.",
+									Computed:    true,
+								},
+								"fetch_secret_names": schema.BoolAttribute{
+									Description: "Whether to fetch secret names from the Azure Key Vault in the Aembit UI.",
 									Computed:    true,
 								},
 								"oidc_issuer_url": schema.StringAttribute{

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -118,6 +119,12 @@ func (r *credentialProviderIntegrationResource) Schema(
 							int32validator.Between(900, 43200), // 15 minutes to 12 hours
 						},
 					},
+					"fetch_secret_arns": schema.BoolAttribute{
+						Description: "Whether to fetch secret ARNs from AWS Secret Manager in the Aembit UI.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
 					"oidc_issuer_url": schema.StringAttribute{
 						Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
 						Computed:    true,
@@ -157,6 +164,12 @@ func (r *credentialProviderIntegrationResource) Schema(
 					"key_vault_name": schema.StringAttribute{
 						Description: "The name of the Azure Key Vault.",
 						Required:    true,
+					},
+					"fetch_secret_names": schema.BoolAttribute{
+						Description: "Whether to fetch secret names from Azure Key Vault in the Aembit UI.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"oidc_issuer_url": schema.StringAttribute{
 						Description: "OIDC Issuer URL for Azure Entra Federation configuration",
@@ -371,6 +384,7 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.Type = "AwsIamRole"
 		credentialIntegration.RoleArn = model.AwsIamRole.RoleArn.ValueString()
 		credentialIntegration.LifetimeInSeconds = model.AwsIamRole.LifetimeInSeconds.ValueInt32()
+		credentialIntegration.FetchSecretArns = model.AwsIamRole.FetchSecretArns.ValueBool()
 	}
 
 	if model.AzureEntraFederation != nil {
@@ -380,6 +394,7 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.AzureTenant = model.AzureEntraFederation.AzureTenant.ValueString()
 		credentialIntegration.ClientID = model.AzureEntraFederation.ClientID.ValueString()
 		credentialIntegration.KeyVaultName = model.AzureEntraFederation.KeyVaultName.ValueString()
+		credentialIntegration.FetchSecretNames = model.AzureEntraFederation.FetchSecretNames.ValueBool()
 	}
 	return credentialIntegration
 }
@@ -408,6 +423,7 @@ func convertCredentialProviderIntegrationDTOToModel(
 		model.AwsIamRole = &models.CredentialProviderIntegrationAwsIamRoleModel{
 			RoleArn:           types.StringValue(dto.RoleArn),
 			LifetimeInSeconds: types.Int32Value(dto.LifetimeInSeconds),
+			FetchSecretArns:   types.BoolValue(dto.FetchSecretArns),
 			OIDCIssuerUrl: types.StringValue(
 				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
 			),
@@ -415,11 +431,12 @@ func convertCredentialProviderIntegrationDTOToModel(
 		}
 	case "AzureEntraFederation":
 		model.AzureEntraFederation = &models.CredentialProviderIntegrationAzureEntraFederationModel{
-			Audience:     types.StringValue(dto.Audience),
-			Subject:      types.StringValue(dto.Subject),
-			AzureTenant:  types.StringValue(dto.AzureTenant),
-			ClientID:     types.StringValue(dto.ClientID),
-			KeyVaultName: types.StringValue(dto.KeyVaultName),
+			Audience:         types.StringValue(dto.Audience),
+			Subject:          types.StringValue(dto.Subject),
+			AzureTenant:      types.StringValue(dto.AzureTenant),
+			ClientID:         types.StringValue(dto.ClientID),
+			KeyVaultName:     types.StringValue(dto.KeyVaultName),
+			FetchSecretNames: types.BoolValue(dto.FetchSecretNames),
 			OIDCIssuerUrl: types.StringValue(
 				fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain),
 			),
