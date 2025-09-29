@@ -95,6 +95,7 @@ jobs:
       env:
         REGRESSION: ${{ inputs.regression }}
       run: |
+        echo "REGRESSION=$REGRESSION"
         if [[ $REGRESSION == 'true' ]]; then
           echo 'terraform=["latest"]' >> "$GITHUB_OUTPUT"
         elif
