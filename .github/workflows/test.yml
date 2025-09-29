@@ -92,13 +92,14 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v4
     - id: set-matrix
+      name: Set up Terraform version matrix
       env:
         REGRESSION: ${{ inputs.regression }}
       run: |
         echo "REGRESSION=$REGRESSION"
         if [[ $REGRESSION == 'true' ]]; then
           echo 'terraform=["latest"]' >> "$GITHUB_OUTPUT"
-        elif
+        else
           echo 'terraform=["latest", "1.10", "1.9"]' >> "$GITHUB_OUTPUT"
         fi
 
