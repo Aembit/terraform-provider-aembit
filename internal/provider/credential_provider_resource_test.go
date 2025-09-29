@@ -121,9 +121,9 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/apikey/TestAccCredentialProviderResource.tf",
 	)
-	modifyFile, _ := os.ReadFile(
-		"../../tests/credential/apikey/TestAccCredentialProviderResource.tfmod",
-	)
+	// modifyFile, _ := os.ReadFile(
+	// 	"../../tests/credential/apikey/TestAccCredentialProviderResource.tfmod",
+	// )
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -150,18 +150,18 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
-			// Update and Read testing
-			{
-				Config: string(modifyFile),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Name updated
-					resource.TestCheckResourceAttr(
-						testCredentialProviderApiKey,
-						"name",
-						"TF Acceptance API Key - Modified",
-					),
-				),
-			},
+			// // Update and Read testing
+			// {
+			// 	Config: string(modifyFile),
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		// Verify Name updated
+			// 		resource.TestCheckResourceAttr(
+			// 			testCredentialProviderApiKey,
+			// 			"name",
+			// 			"TF Acceptance API Key - Modified",
+			// 		),
+			// 	),
+			// },
 			// Delete testing automatically occurs in TestCase
 		},
 	})

@@ -25,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -106,8 +105,8 @@ func (r *credentialProviderResource) Schema(
 			},
 			"tags_all": schema.MapAttribute{
 				ElementType: types.StringType,
-				Optional:    true,
 				Computed:    true,
+				Optional:    true,
 			},
 			"aembit_access_token": schema.SingleNestedAttribute{
 				Description: "Aembit Access Token type Credential Provider configuration.",
@@ -898,21 +897,13 @@ func (r *credentialProviderResource) Create(
 
 	def_tags := r.client.DefaultTags //defaultTagsFromContext(ctx)
 	for k, v := range def_tags {
-		tflog.Error(ctx, fmt.Sprintf("Resource CREATE key: %s, value %s", k, v))
 		credential.Tags = append(credential.Tags, aembit.TagDTO{
 			Key:   k,
 			Value: v,
 		})
 	}
 
-	// add user tags
-	for k, v := range plan.Tags.Elements() {
-		tflog.Error(ctx, fmt.Sprintf("Resource UPDATE key: %s, value %s", k, v))
-		credential.Tags = append(credential.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v.String(),
-		})
-	}
+	userTags := plan.Tags
 
 	// Create new Credential Provider
 	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil)
@@ -932,6 +923,8 @@ func (r *credentialProviderResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	plan.Tags = userTags
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -981,8 +974,6 @@ func (r *credentialProviderResource) Read(
 		r.client.StackDomain,
 	)
 
-	state.Tags = newTagsModel(ctx, credentialProvider.Tags)
-
 	// all_tags := []aembit.TagDTO{}
 	// for _, tag := range credentialProvider.Tags {
 	// 	all_tags = append(all_tags, tag)
@@ -997,7 +988,38 @@ func (r *credentialProviderResource) Read(
 
 	// state.TagsAll = newTagsModel(ctx, all_tags)
 
-	state.TagsAll = newTagsModel(ctx, credentialProvider.Tags)
+	/*
+
+		def_tags := r.client.DefaultTags //defaultTagsFromContext(ctx)
+		for k, v := range def_tags {
+			tflog.Error(ctx, fmt.Sprintf("Resource CREATE key: %s, value %s", k, v))
+			credential.Tags = append(credential.Tags, aembit.TagDTO{
+				Key:   k,
+				Value: v,
+			})
+		}
+
+
+	*/
+
+	// all_tags := []aembit.TagDTO{}
+	// for k, v := range user_tags.Elements() {
+	// 	all_tags = append(all_tags, aembit.TagDTO{
+	// 		Key:   k,
+	// 		Value: v.String(),
+	// 	})
+	// }
+
+	// def_tags := r.client.DefaultTags
+	// for k, v := range def_tags {
+	// 	all_tags = append(all_tags, aembit.TagDTO{
+	// 		Key:   k,
+	// 		Value: v,
+	// 	})
+	// }
+
+	// // re create from tf file ?
+	// state.TagsAll = newTagsModel(ctx, all_tags)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1040,23 +1062,23 @@ func (r *credentialProviderResource) Update(
 		r.client.StackDomain,
 	)
 
-	def_tags := r.client.DefaultTags //defaultTagsFromContext(ctx)
-	for k, v := range def_tags {
-		tflog.Error(ctx, fmt.Sprintf("Resource UPDATE key: %s, value %s", k, v))
-		credential.Tags = append(credential.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
-	}
+	// def_tags := r.client.DefaultTags //defaultTagsFromContext(ctx)
+	// for k, v := range def_tags {
+	// 	tflog.Error(ctx, fmt.Sprintf("Resource UPDATE key: %s, value %s", k, v))
+	// 	credential.Tags = append(credential.Tags, aembit.TagDTO{
+	// 		Key:   k,
+	// 		Value: v,
+	// 	})
+	// }
 
-	// add user tags
-	for k, v := range plan.Tags.Elements() {
-		tflog.Error(ctx, fmt.Sprintf("Resource UPDATE key: %s, value %s", k, v))
-		credential.Tags = append(credential.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v.String(),
-		})
-	}
+	// // add user tags
+	// for k, v := range plan.Tags.Elements() {
+	// 	tflog.Error(ctx, fmt.Sprintf("Resource UPDATE key: %s, value %s", k, v))
+	// 	credential.Tags = append(credential.Tags, aembit.TagDTO{
+	// 		Key:   k,
+	// 		Value: v.String(),
+	// 	})
+	// }
 
 	// Update Credential Provider
 	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil)
@@ -1068,6 +1090,8 @@ func (r *credentialProviderResource) Update(
 		return
 	}
 
+	user_tags := state.Tags
+
 	// Map response body to schema and populate Computed attribute values
 	plan = convertCredentialProviderV2DTOToModel(
 		ctx,
@@ -1076,6 +1100,8 @@ func (r *credentialProviderResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	plan.Tags = user_tags
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -1263,7 +1289,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = types.MapNull(types.StringType) //newTagsModel(ctx, dto.Tags)
+	//model.Tags = newTagsModel(ctx, dto.Tags) //newTagsModel(ctx, dto.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	// Set the objects to null to begin with
