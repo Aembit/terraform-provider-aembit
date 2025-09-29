@@ -98,9 +98,9 @@ jobs:
       run: |
         echo "REGRESSION=$REGRESSION"
         if [[ $REGRESSION == 'true' ]]; then
-          echo 'terraform=["latest"]' >> "$GITHUB_OUTPUT"
+          echo '["latest"]' >> "$GITHUB_OUTPUT"
         else
-          echo 'terraform=["latest", "1.10", "1.9"]' >> "$GITHUB_OUTPUT"
+          echo '["latest", "1.10", "1.9"]' >> "$GITHUB_OUTPUT"
         fi
 
   # Run acceptance tests in a matrix with Terraform CLI versions
@@ -114,7 +114,8 @@ jobs:
       # It forces us to run the tests in sequence
       max-parallel: 1
       fail-fast: false
-      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+      matrix: 
+        terraform: ${{ fromJson(needs.matrix_prep.outputs) }}
     steps:
       - uses: actions/checkout@v4
         with:
