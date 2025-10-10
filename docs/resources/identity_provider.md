@@ -17,7 +17,7 @@ resource "aembit_identity_provider" "test_idp" {
   description  = "Identity provider description"
   is_active    = true
   metadata_xml = "<md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"https://sample.test/path\"></md:EntityDescriptor>"
-  saml_statement_role_mappings = [
+  sso_statement_role_mappings = [
     {
       attribute_name  = "test-attribute-name"
       attribute_value = "test-attribute-value"
@@ -38,17 +38,25 @@ resource "aembit_identity_provider" "test_idp" {
 
 - `description` (String) Description for the Identity Provider.
 - `is_active` (Boolean) Active status of the Identity Provider.
-- `metadata_url` (String) URL pointing to the metadata for the Identity Provider.
-- `metadata_xml` (String) XML containing the metadata for the Identity Provider.
-- `saml_statement_role_mappings` (Attributes Set) Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--saml_statement_role_mappings))
+- `saml` (Attributes) SAML type Identity Provider configuration. (see [below for nested schema](#nestedatt--saml))
+- `sso_statement_role_mappings` (Attributes Set) Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--sso_statement_role_mappings))
 - `tags` (Map of String) Tags are key-value pairs.
 
 ### Read-Only
 
 - `id` (String) Unique identifier of the Identity Provider.
 
-<a id="nestedatt--saml_statement_role_mappings"></a>
-### Nested Schema for `saml_statement_role_mappings`
+<a id="nestedatt--saml"></a>
+### Nested Schema for `saml`
+
+Optional:
+
+- `metadata_url` (String) URL pointing to the metadata for the Identity Provider.
+- `metadata_xml` (String) XML containing the metadata for the Identity Provider.
+
+
+<a id="nestedatt--sso_statement_role_mappings"></a>
+### Nested Schema for `sso_statement_role_mappings`
 
 Required:
 
