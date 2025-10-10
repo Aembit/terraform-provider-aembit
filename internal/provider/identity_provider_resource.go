@@ -89,17 +89,7 @@ func (r *identityProviderResource) Schema(
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"metadata_url": schema.StringAttribute{
-				Description: "URL pointing to the metadata for the Identity Provider.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"metadata_xml": schema.StringAttribute{
-				Description: "XML containing the metadata for the Identity Provider.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"saml_statement_role_mappings": schema.SetNestedAttribute{
+			"sso_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
 				Validators: []validator.Set{
@@ -120,6 +110,22 @@ func (r *identityProviderResource) Schema(
 							ElementType: types.StringType,
 							Required:    true,
 						},
+					},
+				},
+			},
+			"saml": schema.SingleNestedAttribute{
+				Description: "SAML type Identity Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"metadata_url": schema.StringAttribute{
+						Description: "URL pointing to the metadata for the Identity Provider.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"metadata_xml": schema.StringAttribute{
+						Description: "XML containing the metadata for the Identity Provider.",
+						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
@@ -327,20 +333,20 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.ExternalID = *externalID
 	}
 
-	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
+	identityProvider.MetadataUrl = model.Saml.MetadataUrl.ValueString()
 	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
-		[]byte(strings.TrimRight(model.MetadataXml.ValueString(), "\n\r")),
+		[]byte(strings.TrimRight(model.Saml.MetadataXml.ValueString(), "\n\r")),
 	)
 
-	for _, mapping := range model.SamlStatementRoleMappings {
-		mappingDto := aembit.SamlStatementRoleMappingDTO{
+	for _, mapping := range model.SsoStatementRoleMappings {
+		mappingDto := aembit.SsoStatementRoleMappingDTO{
 			AttributeName:  mapping.AttributeName.ValueString(),
 			AttributeValue: mapping.AttributeValue.ValueString(),
 		}
 		for _, roleId := range mapping.Roles {
 			mappingDto.RoleExternalId = roleId.ValueString()
-			identityProvider.SamlStatementRoleMappings = append(
-				identityProvider.SamlStatementRoleMappings,
+			identityProvider.SsoStatementRoleMappings = append(
+				identityProvider.SsoStatementRoleMappings,
 				mappingDto,
 			)
 		}
@@ -361,43 +367,45 @@ func convertIdentityProviderDTOToModel(
 	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Tags = newTagsModel(ctx, dto.Tags)
 
+	model.Saml = &models.IdentityProviderSamlModel{}
+
 	if dto.MetadataUrl == "" {
-		model.MetadataUrl = types.StringNull()
+		model.Saml.MetadataUrl = types.StringNull()
 	} else {
-		model.MetadataUrl = types.StringValue(dto.MetadataUrl)
+		model.Saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
 	}
 
 	// Add a carriage return if the original plan had one, to avoid diffs on re-read
-	if planModel != nil &&
-		strings.HasSuffix(planModel.MetadataXml.ValueString(), "\n") &&
+	if planModel != nil && planModel.Saml != nil &&
+		strings.HasSuffix(planModel.Saml.MetadataXml.ValueString(), "\n") &&
 		!strings.HasSuffix(dto.MetadataXml, "\n") {
 		dto.MetadataXml += "\n"
 	}
-	model.MetadataXml = types.StringValue(dto.MetadataXml)
+	model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
 
 	//convert the mapping array from flat to unflatten form
-	if len(dto.SamlStatementRoleMappings) == 0 {
-		model.SamlStatementRoleMappings = nil
+	if len(dto.SsoStatementRoleMappings) == 0 {
+		model.SsoStatementRoleMappings = nil
 		return model
 	}
 
-	tempMap := make(map[string]models.SamlStatementRoleMappings)
-	for _, mapping := range dto.SamlStatementRoleMappings {
+	tempMap := make(map[string]models.SsoStatementRoleMappings)
+	for _, mapping := range dto.SsoStatementRoleMappings {
 		key := mapping.AttributeName + mapping.AttributeValue
 		if newItem, exists := tempMap[key]; exists {
 			newItem.Roles = append(newItem.Roles, types.StringValue(mapping.RoleExternalId))
 			tempMap[key] = newItem
 		} else {
-			tempMap[key] = models.SamlStatementRoleMappings{
+			tempMap[key] = models.SsoStatementRoleMappings{
 				AttributeName:  types.StringValue(mapping.AttributeName),
 				AttributeValue: types.StringValue(mapping.AttributeValue),
 				Roles:          []types.String{types.StringValue(mapping.RoleExternalId)},
 			}
 		}
 	}
-	model.SamlStatementRoleMappings = make([]models.SamlStatementRoleMappings, 0, len(tempMap))
+	model.SsoStatementRoleMappings = make([]models.SsoStatementRoleMappings, 0, len(tempMap))
 	for _, item := range tempMap {
-		model.SamlStatementRoleMappings = append(model.SamlStatementRoleMappings, item)
+		model.SsoStatementRoleMappings = append(model.SsoStatementRoleMappings, item)
 	}
 
 	return model

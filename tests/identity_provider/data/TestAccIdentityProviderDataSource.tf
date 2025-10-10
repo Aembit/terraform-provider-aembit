@@ -11,7 +11,15 @@ resource "aembit_identity_provider" "test_idp" {
 	name = "Identity Provider for TF Acceptance Test"
 	description = "Description of Identity Provider for TF Acceptance Test"
 	is_active = true
-    metadata_xml = <<XML
+    sso_statement_role_mappings = [
+        {
+            attribute_name = "test-attribute-name"
+            attribute_value = "test-attribute-value"
+            roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
+        }
+    ]
+    saml = {
+        metadata_xml = <<XML
 <md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="https://aembit.test/saml" validUntil="2057-08-04T11:13:26.000Z">
     <md:IDPSSODescriptor WantAuthnRequestsSigned="false" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
         <md:KeyDescriptor use="signing">
@@ -48,14 +56,8 @@ resource "aembit_identity_provider" "test_idp" {
         <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://aembit.test/saml"/>
     </md:IDPSSODescriptor>
 </md:EntityDescriptor>
-XML
-    saml_statement_role_mappings = [
-        {
-            attribute_name = "test-attribute-name"
-            attribute_value = "test-attribute-value"
-            roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
-        }
-    ]
+XML        
+    }
 }
 
 data "aembit_identity_providers" "test_idps" {

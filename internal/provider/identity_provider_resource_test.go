@@ -41,22 +41,22 @@ func TestAccIdentityProviderResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "is_active", "true"),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.#",
+						"sso_statement_role_mappings.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.attribute_name",
+						"sso_statement_role_mappings.0.attribute_name",
 						"test-attribute-name",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.attribute_value",
+						"sso_statement_role_mappings.0.attribute_value",
 						"test-attribute-value",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.roles.#",
+						"sso_statement_role_mappings.0.roles.#",
 						"2",
 					),
 				),
@@ -83,22 +83,22 @@ func TestAccIdentityProviderResource(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "is_active", "true"),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.#",
+						"sso_statement_role_mappings.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.attribute_name",
+						"sso_statement_role_mappings.0.attribute_name",
 						"test-attribute-name-updated",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.attribute_value",
+						"sso_statement_role_mappings.0.attribute_value",
 						"test-attribute-value-updated",
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
-						"saml_statement_role_mappings.0.roles.#",
+						"sso_statement_role_mappings.0.roles.#",
 						"1",
 					),
 				),

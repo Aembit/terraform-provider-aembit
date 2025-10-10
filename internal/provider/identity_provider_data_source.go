@@ -85,17 +85,7 @@ func (r *identityProviderDataSource) Schema(
 							ElementType: types.StringType,
 							Optional:    true,
 						},
-						"metadata_url": schema.StringAttribute{
-							Description: "URL pointing to the metadata for the Identity Provider.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"metadata_xml": schema.StringAttribute{
-							Description: "XML containing the metadata for the Identity Provider.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"saml_statement_role_mappings": schema.SetNestedAttribute{
+						"sso_statement_role_mappings": schema.SetNestedAttribute{
 							Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 							Optional:    true,
 							NestedObject: schema.NestedAttributeObject{
@@ -113,6 +103,22 @@ func (r *identityProviderDataSource) Schema(
 										ElementType: types.StringType,
 										Required:    true,
 									},
+								},
+							},
+						},
+						"saml": schema.SingleNestedAttribute{
+							Description: "SAML type Identity Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"metadata_url": schema.StringAttribute{
+									Description: "URL pointing to the metadata for the Identity Provider.",
+									Optional:    true,
+									Computed:    true,
+								},
+								"metadata_xml": schema.StringAttribute{
+									Description: "XML containing the metadata for the Identity Provider.",
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},

@@ -5,17 +5,21 @@ import (
 )
 
 type IdentityProviderResourceModel struct {
-	ID                        types.String                `tfsdk:"id"`
-	Name                      types.String                `tfsdk:"name"`
-	Description               types.String                `tfsdk:"description"`
-	IsActive                  types.Bool                  `tfsdk:"is_active"`
-	Tags                      types.Map                   `tfsdk:"tags"`
-	MetadataUrl               types.String                `tfsdk:"metadata_url"`
-	MetadataXml               types.String                `tfsdk:"metadata_xml"`
-	SamlStatementRoleMappings []SamlStatementRoleMappings `tfsdk:"saml_statement_role_mappings"`
+	ID                       types.String               `tfsdk:"id"`
+	Name                     types.String               `tfsdk:"name"`
+	Description              types.String               `tfsdk:"description"`
+	IsActive                 types.Bool                 `tfsdk:"is_active"`
+	Tags                     types.Map                  `tfsdk:"tags"`
+	SsoStatementRoleMappings []SsoStatementRoleMappings `tfsdk:"sso_statement_role_mappings"`
+	Saml                     *IdentityProviderSamlModel `tfsdk:"saml"`
 }
 
-type SamlStatementRoleMappings struct {
+type IdentityProviderSamlModel struct {
+	MetadataUrl types.String `tfsdk:"metadata_url"`
+	MetadataXml types.String `tfsdk:"metadata_xml"`
+}
+
+type SsoStatementRoleMappings struct {
 	AttributeName  types.String   `tfsdk:"attribute_name"`
 	AttributeValue types.String   `tfsdk:"attribute_value"`
 	Roles          []types.String `tfsdk:"roles"`
