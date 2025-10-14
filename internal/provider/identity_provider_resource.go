@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"strings"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -10,9 +11,11 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -127,9 +130,80 @@ func (r *identityProviderResource) Schema(
 						Optional:    true,
 						Computed:    true,
 					},
+					"service_provider_entity_id": schema.StringAttribute{
+						Description: "The unique identifier (Entity ID) for the SAML Service Provider.",
+						Computed:    true,
+					},
+					"service_provider_sso_url": schema.StringAttribute{
+						Description: "The Single Sign-On (SSO) endpoint URL of the Service Provider.",
+						Computed:    true,
+					},
+				},
+			},
+			"oidc": schema.SingleNestedAttribute{
+				Description: "OIDC type Identity Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oidc_base_url": schema.StringAttribute{
+						Description: "The base URL of the OIDC Identity Provider.",
+						Required:    true,
+					},
+					"client_id": schema.StringAttribute{
+						Description: "The client identifier registered with the OIDC provider.",
+						Required:    true,
+					},
+					"scopes": schema.StringAttribute{
+						Description: "A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').",
+						Required:    true,
+					},
+					"client_secret": schema.StringAttribute{
+						Description: "The client secret associated with the OIDC client.",
+						Optional:    true,
+						Sensitive:   true,
+					},
+					"auth_type": schema.StringAttribute{
+						Description: "Authentication method. Possible values are: \n" +
+							"\t* `ClientSecret`\n" +
+							"\t* `KeyPair`\n",
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"ClientSecret",
+								"KeyPair",
+							}...),
+						},
+					},
+					"pcke_required": schema.BoolAttribute{
+						Description: "Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+					},
+					"aembit_redirect_url": schema.StringAttribute{
+						Description: "The redirect URI registered with the OIDC provider.",
+						Computed:    true,
+					},
+					"aembit_jwks_url": schema.StringAttribute{
+						Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
+						Computed:    true,
+					},
 				},
 			},
 		},
+	}
+}
+
+func ValidatePlan(
+	diagnostics *diag.Diagnostics,
+	plan *models.IdentityProviderResourceModel,
+) {
+	if plan.Oidc != nil && plan.Oidc.AuthType.ValueString() == "ClientSecret" &&
+		plan.Oidc.ClientSecret.IsNull() {
+
+		diagnostics.AddError(
+			"Error creating Identity Provider",
+			"When auth_type is 'ClientSecret', the 'ClientSecret' attribute must be set.",
+		)
 	}
 }
 
@@ -143,7 +217,9 @@ func (r *identityProviderResource) Create(
 	var plan models.IdentityProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 
+	ValidatePlan(&diags, &plan)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -162,7 +238,13 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIdentityProviderDTOToModel(ctx, &plan, *idp)
+	plan = convertIdentityProviderDTOToModel(
+		ctx,
+		&plan,
+		*idp,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -200,7 +282,13 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
-	state = convertIdentityProviderDTOToModel(ctx, &state, idpDto)
+	state = convertIdentityProviderDTOToModel(
+		ctx,
+		&state,
+		idpDto,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -219,7 +307,10 @@ func (r *identityProviderResource) Update(
 	// Get current state
 	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
+
+	ValidatePlan(&diags, &state)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -249,7 +340,13 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIdentityProviderDTOToModel(ctx, &plan, *idpDto)
+	state = convertIdentityProviderDTOToModel(
+		ctx,
+		&plan,
+		*idpDto,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -333,10 +430,23 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.ExternalID = *externalID
 	}
 
-	identityProvider.MetadataUrl = model.Saml.MetadataUrl.ValueString()
-	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
-		[]byte(strings.TrimRight(model.Saml.MetadataXml.ValueString(), "\n\r")),
-	)
+	if model.Saml != nil {
+		identityProvider.Type = "SAMLv2"
+		identityProvider.MetadataUrl = model.Saml.MetadataUrl.ValueString()
+		identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
+			[]byte(strings.TrimRight(model.Saml.MetadataXml.ValueString(), "\n\r")),
+		)
+	}
+
+	if model.Oidc != nil {
+		identityProvider.Type = "OIDCv1"
+		identityProvider.OidcBaseUrl = model.Oidc.OidcBaseUrl.ValueString()
+		identityProvider.ClientId = model.Oidc.ClientId.ValueString()
+		identityProvider.Scopes = model.Oidc.Scopes.ValueString()
+		identityProvider.ClientSecret = model.Oidc.ClientSecret.ValueString()
+		identityProvider.PkceRequired = model.Oidc.PkceRequired.ValueBool()
+		identityProvider.AuthType = model.Oidc.AuthType.ValueString()
+	}
 
 	for _, mapping := range model.SsoStatementRoleMappings {
 		mappingDto := aembit.SsoStatementRoleMappingDTO{
@@ -359,6 +469,8 @@ func convertIdentityProviderDTOToModel(
 	ctx context.Context,
 	planModel *models.IdentityProviderResourceModel,
 	dto aembit.IdentityProviderDTO,
+	tenantID string,
+	stackDomain string,
 ) models.IdentityProviderResourceModel {
 	var model models.IdentityProviderResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
@@ -367,21 +479,65 @@ func convertIdentityProviderDTOToModel(
 	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Tags = newTagsModel(ctx, dto.Tags)
 
-	model.Saml = &models.IdentityProviderSamlModel{}
+	// Set the objects to null to begin with
+	model.Saml = nil
+	model.Oidc = nil
 
-	if dto.MetadataUrl == "" {
-		model.Saml.MetadataUrl = types.StringNull()
-	} else {
-		model.Saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
+	baseDomain := stackDomain
+	splittedStackDomain := strings.Split(stackDomain, ".")
+	if len(splittedStackDomain) > 2 {
+		baseDomain = strings.Join(splittedStackDomain[1:], ".")
 	}
+	host := fmt.Sprintf("%s.%s", tenantID, baseDomain)
 
-	// Add a carriage return if the original plan had one, to avoid diffs on re-read
-	if planModel != nil && planModel.Saml != nil &&
-		strings.HasSuffix(planModel.Saml.MetadataXml.ValueString(), "\n") &&
-		!strings.HasSuffix(dto.MetadataXml, "\n") {
-		dto.MetadataXml += "\n"
+	// Now fill in the objects based on the Identity Provider type
+	switch dto.Type {
+	case "SAMLv2":
+		model.Saml = &models.IdentityProviderSamlModel{}
+
+		if dto.MetadataUrl == "" {
+			model.Saml.MetadataUrl = types.StringNull()
+		} else {
+			model.Saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
+		}
+
+		// Add a carriage return if the original plan had one, to avoid diffs on re-read
+		if planModel != nil && planModel.Saml != nil &&
+			strings.HasSuffix(planModel.Saml.MetadataXml.ValueString(), "\n") &&
+			!strings.HasSuffix(dto.MetadataXml, "\n") {
+			dto.MetadataXml += "\n"
+		}
+		model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
+
+		model.Saml.ServiceProviderEntityId = types.StringValue(
+			fmt.Sprintf("https://%s/", host),
+		)
+		model.Saml.ServiceProviderSsoUrl = types.StringValue(
+			fmt.Sprintf("https://%s/saml/%s/Acs", host, tenantID),
+		)
+	case "OIDCv1":
+		model.Oidc = &models.IdentityProviderOidcModel{}
+
+		model.Oidc.ClientId = types.StringValue(dto.ClientId)
+		model.Oidc.OidcBaseUrl = types.StringValue(dto.OidcBaseUrl)
+		model.Oidc.Scopes = types.StringValue(dto.Scopes)
+		model.Oidc.AuthType = types.StringValue(dto.AuthType)
+		model.Oidc.PkceRequired = types.BoolValue(dto.PkceRequired)
+
+		model.Oidc.AembitRedirectUrl = types.StringValue(
+			fmt.Sprintf("https://%s/api/sso/oidc/%s/callback", host, dto.ExternalID),
+		)
+
+		idpHost := fmt.Sprintf("%s.id.%s", tenantID, stackDomain)
+		model.Oidc.AembitJwksUrl = types.StringValue(
+			fmt.Sprintf("https://%s/.well-known/openid-configuration/jwks", idpHost),
+		)
+
+		model.Oidc.ClientSecret = types.StringNull()
+		if planModel.Oidc != nil {
+			model.Oidc.ClientSecret = planModel.Oidc.ClientSecret
+		}
 	}
-	model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
 
 	//convert the mapping array from flat to unflatten form
 	if len(dto.SsoStatementRoleMappings) == 0 {

@@ -12,11 +12,25 @@ type IdentityProviderResourceModel struct {
 	Tags                     types.Map                  `tfsdk:"tags"`
 	SsoStatementRoleMappings []SsoStatementRoleMappings `tfsdk:"sso_statement_role_mappings"`
 	Saml                     *IdentityProviderSamlModel `tfsdk:"saml"`
+	Oidc                     *IdentityProviderOidcModel `tfsdk:"oidc"`
 }
 
 type IdentityProviderSamlModel struct {
-	MetadataUrl types.String `tfsdk:"metadata_url"`
-	MetadataXml types.String `tfsdk:"metadata_xml"`
+	MetadataUrl             types.String `tfsdk:"metadata_url"`
+	MetadataXml             types.String `tfsdk:"metadata_xml"`
+	ServiceProviderEntityId types.String `tfsdk:"service_provider_entity_id"`
+	ServiceProviderSsoUrl   types.String `tfsdk:"service_provider_sso_url"`
+}
+
+type IdentityProviderOidcModel struct {
+	OidcBaseUrl       types.String `tfsdk:"oidc_base_url"`
+	ClientId          types.String `tfsdk:"client_id"`
+	Scopes            types.String `tfsdk:"scopes"`
+	ClientSecret      types.String `tfsdk:"client_secret"`
+	AuthType          types.String `tfsdk:"auth_type"`
+	PkceRequired      types.Bool   `tfsdk:"pcke_required"`
+	AembitRedirectUrl types.String `tfsdk:"aembit_redirect_url"`
+	AembitJwksUrl     types.String `tfsdk:"aembit_jwks_url"`
 }
 
 type SsoStatementRoleMappings struct {

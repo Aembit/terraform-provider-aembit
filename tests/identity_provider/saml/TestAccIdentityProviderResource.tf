@@ -7,15 +7,15 @@ locals {
   role_ids_by_name = { for role in data.aembit_roles.test.roles : role.name => role.id }
 }
 
-resource "aembit_identity_provider" "test_idp" {
-	name = "Identity Provider for TF Acceptance Test - Updated"
-	description = "Description of Identity Provider for TF Acceptance Test - Updated"
+resource "aembit_identity_provider" "test_idp_saml" {
+	name = "Identity Provider SAML for TF Acceptance Test"
+	description = "Description of Identity Provider for TF Acceptance Test"
 	is_active = true
     sso_statement_role_mappings = [
         {
-            attribute_name = "test-attribute-name-updated"
-            attribute_value = "test-attribute-value-updated"
-            roles = [local.role_ids_by_name["SuperAdmin"]]
+            attribute_name = "test-attribute-name"
+            attribute_value = "test-attribute-value"
+            roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
         }
     ]    
     saml = {
@@ -56,6 +56,6 @@ resource "aembit_identity_provider" "test_idp" {
         <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://aembit.test/saml"/>
     </md:IDPSSODescriptor>
 </md:EntityDescriptor>
-XML        
+XML
     }
 }
