@@ -30,19 +30,47 @@ Optional:
 
 - `description` (String) Description for the Identity Provider.
 - `is_active` (Boolean) Active status of the Identity Provider.
-- `metadata_url` (String) URL pointing to the metadata for the Identity Provider.
-- `metadata_xml` (String) XML containing the metadata for the Identity Provider.
-- `saml_statement_role_mappings` (Attributes Set) Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--identity_providers--saml_statement_role_mappings))
+- `oidc` (Attributes) OIDC type Identity Provider configuration. (see [below for nested schema](#nestedatt--identity_providers--oidc))
+- `saml` (Attributes) SAML type Identity Provider configuration. (see [below for nested schema](#nestedatt--identity_providers--saml))
+- `sso_statement_role_mappings` (Attributes Set) Mapping between attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--identity_providers--sso_statement_role_mappings))
 - `tags` (Map of String) Tags are key-value pairs.
 
 Read-Only:
 
 - `id` (String) Unique identifier of the Identity Provider.
 
-<a id="nestedatt--identity_providers--saml_statement_role_mappings"></a>
-### Nested Schema for `identity_providers.saml_statement_role_mappings`
+<a id="nestedatt--identity_providers--oidc"></a>
+### Nested Schema for `identity_providers.oidc`
 
-Required:
+Read-Only:
+
+- `aembit_jwks_url` (String) The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.
+- `aembit_redirect_url` (String) The redirect URI registered with the OIDC provider.
+- `auth_type` (String) Authentication method. Possible values are: 
+	* `ClientSecret`
+	* `KeyPair`
+- `client_id` (String) The client identifier registered with the OIDC provider.
+- `client_secret` (String, Sensitive) The client secret associated with the OIDC client.
+- `oidc_base_url` (String) The base URL of the OIDC Identity Provider.
+- `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
+- `scopes` (String) A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').
+
+
+<a id="nestedatt--identity_providers--saml"></a>
+### Nested Schema for `identity_providers.saml`
+
+Read-Only:
+
+- `metadata_url` (String) URL pointing to the metadata for the Identity Provider.
+- `metadata_xml` (String) XML containing the metadata for the Identity Provider.
+- `service_provider_entity_id` (String) The unique identifier (Entity ID) for the SAML Service Provider.
+- `service_provider_sso_url` (String) The Single Sign-On (SSO) endpoint URL of the Service Provider.
+
+
+<a id="nestedatt--identity_providers--sso_statement_role_mappings"></a>
+### Nested Schema for `identity_providers.sso_statement_role_mappings`
+
+Read-Only:
 
 - `attribute_name` (String) SAML attribute name.
 - `attribute_value` (String) SAML attribute value.
