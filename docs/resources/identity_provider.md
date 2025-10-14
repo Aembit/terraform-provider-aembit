@@ -38,6 +38,7 @@ resource "aembit_identity_provider" "test_idp" {
 
 - `description` (String) Description for the Identity Provider.
 - `is_active` (Boolean) Active status of the Identity Provider.
+- `oidc` (Attributes) OIDC type Identity Provider configuration. (see [below for nested schema](#nestedatt--oidc))
 - `saml` (Attributes) SAML type Identity Provider configuration. (see [below for nested schema](#nestedatt--saml))
 - `sso_statement_role_mappings` (Attributes Set) Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--sso_statement_role_mappings))
 - `tags` (Map of String) Tags are key-value pairs.
@@ -46,6 +47,29 @@ resource "aembit_identity_provider" "test_idp" {
 
 - `id` (String) Unique identifier of the Identity Provider.
 
+<a id="nestedatt--oidc"></a>
+### Nested Schema for `oidc`
+
+Required:
+
+- `auth_type` (String) Authentication method. Possible values are: 
+	* `ClientSecret`
+	* `KeyPair`
+- `client_id` (String) The client identifier registered with the OIDC provider.
+- `oidc_base_url` (String) The base URL of the OIDC Identity Provider.
+- `scopes` (String) A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').
+
+Optional:
+
+- `client_secret` (String, Sensitive) The client secret associated with the OIDC client.
+- `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
+
+Read-Only:
+
+- `aembit_jwks_url` (String) The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.
+- `aembit_redirect_url` (String) The redirect URI registered with the OIDC provider.
+
+
 <a id="nestedatt--saml"></a>
 ### Nested Schema for `saml`
 
@@ -53,6 +77,11 @@ Optional:
 
 - `metadata_url` (String) URL pointing to the metadata for the Identity Provider.
 - `metadata_xml` (String) XML containing the metadata for the Identity Provider.
+
+Read-Only:
+
+- `service_provider_entity_id` (String) The unique identifier (Entity ID) for the SAML Service Provider.
+- `service_provider_sso_url` (String) The Single Sign-On (SSO) endpoint URL of the Service Provider.
 
 
 <a id="nestedatt--sso_statement_role_mappings"></a>
