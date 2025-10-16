@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -238,13 +237,7 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIdentityProviderDTOToModel(
-		ctx,
-		&plan,
-		*idp,
-		r.client.Tenant,
-		r.client.StackDomain,
-	)
+	plan = convertIdentityProviderDTOToModel(ctx, &plan, *idp)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -282,13 +275,7 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
-	state = convertIdentityProviderDTOToModel(
-		ctx,
-		&state,
-		idpDto,
-		r.client.Tenant,
-		r.client.StackDomain,
-	)
+	state = convertIdentityProviderDTOToModel(ctx, &state, idpDto)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -340,13 +327,7 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIdentityProviderDTOToModel(
-		ctx,
-		&plan,
-		*idpDto,
-		r.client.Tenant,
-		r.client.StackDomain,
-	)
+	state = convertIdentityProviderDTOToModel(ctx, &plan, *idpDto)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -469,8 +450,6 @@ func convertIdentityProviderDTOToModel(
 	ctx context.Context,
 	planModel *models.IdentityProviderResourceModel,
 	dto aembit.IdentityProviderDTO,
-	tenantID string,
-	stackDomain string,
 ) models.IdentityProviderResourceModel {
 	var model models.IdentityProviderResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
@@ -482,13 +461,6 @@ func convertIdentityProviderDTOToModel(
 	// Set the objects to null to begin with
 	model.Saml = nil
 	model.Oidc = nil
-
-	baseDomain := stackDomain
-	splittedStackDomain := strings.Split(stackDomain, ".")
-	if len(splittedStackDomain) > 2 {
-		baseDomain = strings.Join(splittedStackDomain[1:], ".")
-	}
-	host := fmt.Sprintf("%s.%s", tenantID, baseDomain)
 
 	// Now fill in the objects based on the Identity Provider type
 	switch dto.Type {
@@ -508,13 +480,8 @@ func convertIdentityProviderDTOToModel(
 			dto.MetadataXml += "\n"
 		}
 		model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
-
-		model.Saml.ServiceProviderEntityId = types.StringValue(
-			fmt.Sprintf("https://%s/", host),
-		)
-		model.Saml.ServiceProviderSsoUrl = types.StringValue(
-			fmt.Sprintf("https://%s/saml/%s/Acs", host, tenantID),
-		)
+		model.Saml.ServiceProviderEntityId = types.StringValue(dto.ServiceProviderEntityId)
+		model.Saml.ServiceProviderSsoUrl = types.StringValue(dto.ServiceProviderSsoUrl)
 	case "OIDCv1":
 		model.Oidc = &models.IdentityProviderOidcModel{}
 
@@ -524,14 +491,8 @@ func convertIdentityProviderDTOToModel(
 		model.Oidc.AuthType = types.StringValue(dto.AuthType)
 		model.Oidc.PkceRequired = types.BoolValue(dto.PkceRequired)
 
-		model.Oidc.AembitRedirectUrl = types.StringValue(
-			fmt.Sprintf("https://%s/api/sso/oidc/%s/callback", host, dto.ExternalID),
-		)
-
-		idpHost := fmt.Sprintf("%s.id.%s", tenantID, stackDomain)
-		model.Oidc.AembitJwksUrl = types.StringValue(
-			fmt.Sprintf("https://%s/.well-known/openid-configuration/jwks", idpHost),
-		)
+		model.Oidc.AembitRedirectUrl = types.StringValue(dto.AembitRedirectUrl)
+		model.Oidc.AembitJwksUrl = types.StringValue(dto.AembitJwksUrl)
 
 		model.Oidc.ClientSecret = types.StringNull()
 		if planModel.Oidc != nil {
