@@ -111,6 +111,10 @@ func (r *identityProviderResource) Schema(
 							Description: "List of Aembit Role Identifiers to be assigned to a user.",
 							ElementType: types.StringType,
 							Required:    true,
+							Validators: []validator.Set{
+								setvalidator.SizeAtLeast(1),
+								setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+							},
 						},
 					},
 				},
