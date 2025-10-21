@@ -5,6 +5,8 @@ import (
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -23,6 +25,27 @@ var TagsAllMapAttribute = func() schema.MapAttribute {
 		Computed:    true,
 		Optional:    true,
 	}
+}
+
+func modifyPlanForTagsAll(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+	defaultTags map[string]string,
+) {
+	var planTags map[string]string
+	_ = req.Plan.GetAttribute(ctx, path.Root("tags"), &planTags)
+
+	merged := make(map[string]string)
+	for k, v := range defaultTags {
+		merged[k] = v
+	}
+	for k, v := range planTags {
+		merged[k] = v
+	}
+
+	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged)
+	resp.Diagnostics.Append(diags...)
 }
 
 func newTagsModel(ctx context.Context, tags []aembit.TagDTO) types.Map {

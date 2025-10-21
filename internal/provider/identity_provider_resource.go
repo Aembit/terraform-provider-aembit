@@ -199,28 +199,7 @@ func (r *identityProviderResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
-	var planTags map[string]string
-	_ = req.Plan.GetAttribute(
-		ctx,
-		path.Root("tags"),
-		&planTags,
-	)
-	def_tags := r.client.DefaultTags
-	merged_tags := make(map[string]string)
-
-	for k, v := range def_tags {
-		merged_tags[k] = v
-	}
-
-	for k, v := range planTags {
-		merged_tags[k] = v
-	}
-
-	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged_tags)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
 }
 
 func ValidatePlan(
