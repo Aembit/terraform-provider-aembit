@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -22,6 +23,7 @@ var (
 	_ resource.Resource                = &identityProviderResource{}
 	_ resource.ResourceWithConfigure   = &identityProviderResource{}
 	_ resource.ResourceWithImportState = &identityProviderResource{}
+	_ resource.ResourceWithModifyPlan  = &identityProviderResource{}
 )
 
 func NewIdentityProviderResource() resource.Resource {
@@ -89,6 +91,11 @@ func (r *identityProviderResource) Schema(
 				ElementType: types.StringType,
 				Optional:    true,
 			},
+			"tags_all": schema.MapAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Optional:    true,
+			},
 			"metadata_url": schema.StringAttribute{
 				Description: "URL pointing to the metadata for the Identity Provider.",
 				Optional:    true,
@@ -127,6 +134,73 @@ func (r *identityProviderResource) Schema(
 	}
 }
 
+func (r *identityProviderResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	var stateTags map[string]string
+	var stateTagsAll map[string]string
+
+	var planTags map[string]string
+	var planTagsAll map[string]string
+
+	_ = req.State.GetAttribute(
+		ctx,
+		path.Root("tags"),
+		&stateTags,
+	) // ignore error handling for brevity
+	_ = req.State.GetAttribute(ctx, path.Root("tags_all"), &stateTagsAll)
+
+	_ = req.Plan.GetAttribute(
+		ctx,
+		path.Root("tags"),
+		&planTags,
+	) // ignore error handling for brevity
+	_ = req.Plan.GetAttribute(ctx, path.Root("tags_all"), &planTagsAll)
+
+	tflog.Error(ctx, "stateTags", map[string]any{
+		"stateTags": stateTags,
+	})
+
+	tflog.Error(ctx, "stateTagsAll", map[string]any{
+		"stateTagsAll": stateTagsAll,
+	})
+
+	tflog.Error(ctx, "planTags", map[string]any{
+		"planTags": planTags,
+	})
+
+	tflog.Error(ctx, "planTagsAll", map[string]any{
+		"planTagsAll": planTagsAll,
+	})
+
+	def_tags := r.client.DefaultTags
+	merged_tags := make(map[string]string)
+
+	for k, v := range def_tags {
+		merged_tags[k] = v
+	}
+
+	for k, v := range planTags {
+		merged_tags[k] = v
+	}
+
+	tag_all := []aembit.TagDTO{}
+	for k, v := range merged_tags {
+		tag_all = append(tag_all, aembit.TagDTO{
+			Key:   k,
+			Value: v,
+		})
+	}
+
+	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged_tags)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *identityProviderResource) Create(
 	ctx context.Context,
@@ -144,6 +218,27 @@ func (r *identityProviderResource) Create(
 
 	// Generate API request body from plan
 	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil)
+
+	def_tags := r.client.DefaultTags
+	resource_tags := plan.Tags
+	merged_tags := make(map[string]string)
+
+	for k, v := range def_tags {
+		merged_tags[k] = v
+	}
+
+	resourceTagsMap := make(map[string]string)
+	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
+	for k, v := range resourceTagsMap {
+		merged_tags[k] = v
+	}
+
+	for k, v := range merged_tags {
+		dto.Tags = append(dto.Tags, aembit.TagDTO{
+			Key:   k,
+			Value: v,
+		})
+	}
 
 	// Create new identity provider
 	idp, err := r.client.CreateIdentityProvider(dto, nil)
@@ -180,6 +275,10 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
+	// tflog.Error(ctx, "TagsAll Before ", map[string]any{
+	// 	"tags_all_before": state.TagsAll.String(),
+	// })
+
 	idpDto, err, notFound := r.client.GetIdentityProvider(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -194,7 +293,34 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
+	// def_tags := r.client.DefaultTags
+	// resource_tags := state.Tags
+	// merged_tags := make(map[string]string)
+
+	// for k, v := range def_tags {
+	// 	merged_tags[k] = v
+	// }
+
+	// resourceTagsMap := make(map[string]string)
+	// _ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
+	// for k, v := range resourceTagsMap {
+	// 	merged_tags[k] = v
+	// }
+
+	// tag_all := []aembit.TagDTO{}
+	// for k, v := range merged_tags {
+	// 	tag_all = append(tag_all, aembit.TagDTO{
+	// 		Key:   k,
+	// 		Value: v,
+	// 	})
+	// }
+
 	state = convertIdentityProviderDTOToModel(ctx, &state, idpDto)
+	// state.TagsAll = newTagsModel(ctx, tag_all)
+
+	// tflog.Error(ctx, "TagsAll After ", map[string]any{
+	// 	"tags_all_after": state.TagsAll.String(),
+	// })
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -231,6 +357,27 @@ func (r *identityProviderResource) Update(
 
 	// Generate API request body from plan
 	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID)
+
+	def_tags := r.client.DefaultTags
+	resource_tags := plan.Tags
+	merged_tags := make(map[string]string)
+
+	for k, v := range def_tags {
+		merged_tags[k] = v
+	}
+
+	resourceTagsMap := make(map[string]string)
+	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
+	for k, v := range resourceTagsMap {
+		merged_tags[k] = v
+	}
+
+	for k, v := range merged_tags {
+		dto.Tags = append(dto.Tags, aembit.TagDTO{
+			Key:   k,
+			Value: v,
+		})
+	}
 
 	// Update Identity Provider
 	idpDto, err := r.client.UpdateIdentityProvider(dto, nil)
@@ -311,17 +458,6 @@ func convertIdentityProviderModelToDTO(
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			identityProvider.Tags = append(identityProvider.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
 
 	if externalID != nil {
 		identityProvider.ExternalID = *externalID
@@ -359,7 +495,24 @@ func convertIdentityProviderDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	model.Tags = types.MapNull(types.StringType)
+	if !planModel.Tags.IsNull() {
+		planTags := []aembit.TagDTO{}
+		tagsMap := make(map[string]string)
+		_ = planModel.Tags.ElementsAs(ctx, &tagsMap, true)
+
+		for key, value := range tagsMap {
+			planTags = append(planTags, aembit.TagDTO{
+				Key:   key,
+				Value: value,
+			})
+		}
+
+		model.Tags = newTagsModel(ctx, planTags)
+	}
+
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	if dto.MetadataUrl == "" {
 		model.MetadataUrl = types.StringNull()
