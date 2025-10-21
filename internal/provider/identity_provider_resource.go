@@ -10,9 +10,11 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -95,17 +97,7 @@ func (r *identityProviderResource) Schema(
 				Computed:    true,
 				Optional:    true,
 			},
-			"metadata_url": schema.StringAttribute{
-				Description: "URL pointing to the metadata for the Identity Provider.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"metadata_xml": schema.StringAttribute{
-				Description: "XML containing the metadata for the Identity Provider.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"saml_statement_role_mappings": schema.SetNestedAttribute{
+			"sso_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
 				Validators: []validator.Set{
@@ -125,7 +117,84 @@ func (r *identityProviderResource) Schema(
 							Description: "List of Aembit Role Identifiers to be assigned to a user.",
 							ElementType: types.StringType,
 							Required:    true,
+							Validators: []validator.Set{
+								setvalidator.SizeAtLeast(1),
+								setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+							},
 						},
+					},
+				},
+			},
+			"saml": schema.SingleNestedAttribute{
+				Description: "SAML type Identity Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"metadata_url": schema.StringAttribute{
+						Description: "URL pointing to the metadata for the Identity Provider.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"metadata_xml": schema.StringAttribute{
+						Description: "XML containing the metadata for the Identity Provider.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"service_provider_entity_id": schema.StringAttribute{
+						Description: "The unique identifier (Entity ID) for the SAML Service Provider.",
+						Computed:    true,
+					},
+					"service_provider_sso_url": schema.StringAttribute{
+						Description: "The Single Sign-On (SSO) endpoint URL of the Service Provider.",
+						Computed:    true,
+					},
+				},
+			},
+			"oidc": schema.SingleNestedAttribute{
+				Description: "OIDC type Identity Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"oidc_base_url": schema.StringAttribute{
+						Description: "The base URL of the OIDC Identity Provider.",
+						Required:    true,
+					},
+					"client_id": schema.StringAttribute{
+						Description: "The client identifier registered with the OIDC provider.",
+						Required:    true,
+					},
+					"scopes": schema.StringAttribute{
+						Description: "A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').",
+						Required:    true,
+					},
+					"client_secret": schema.StringAttribute{
+						Description: "The client secret associated with the OIDC client.",
+						Optional:    true,
+						Sensitive:   true,
+					},
+					"auth_type": schema.StringAttribute{
+						Description: "Authentication method. Possible values are: \n" +
+							"\t* `ClientSecret`\n" +
+							"\t* `KeyPair`\n",
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"ClientSecret",
+								"KeyPair",
+							}...),
+						},
+					},
+					"pcke_required": schema.BoolAttribute{
+						Description: "Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+					},
+					"aembit_redirect_url": schema.StringAttribute{
+						Description: "The redirect URI registered with the OIDC provider.",
+						Computed:    true,
+					},
+					"aembit_jwks_url": schema.StringAttribute{
+						Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
+						Computed:    true,
 					},
 				},
 			},
@@ -155,18 +224,17 @@ func (r *identityProviderResource) ModifyPlan(
 		merged_tags[k] = v
 	}
 
-	tag_all := []aembit.TagDTO{}
-	for k, v := range merged_tags {
-		tag_all = append(tag_all, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
-	}
+func ValidatePlan(
+	diagnostics *diag.Diagnostics,
+	plan *models.IdentityProviderResourceModel,
+) {
+	if plan.Oidc != nil && plan.Oidc.AuthType.ValueString() == "ClientSecret" &&
+		plan.Oidc.ClientSecret.IsNull() {
 
-	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged_tags)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
+		diagnostics.AddError(
+			"Error creating Identity Provider",
+			"When auth_type is 'ClientSecret', the 'ClientSecret' attribute must be set.",
+		)
 	}
 }
 
@@ -180,7 +248,9 @@ func (r *identityProviderResource) Create(
 	var plan models.IdentityProviderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 
+	ValidatePlan(&diags, &plan)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -256,7 +326,10 @@ func (r *identityProviderResource) Update(
 	// Get current state
 	var state models.IdentityProviderResourceModel
 	diags := req.State.Get(ctx, &state)
+
+	ValidatePlan(&diags, &state)
 	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -360,20 +433,33 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.ExternalID = *externalID
 	}
 
-	identityProvider.MetadataUrl = model.MetadataUrl.ValueString()
-	identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
-		[]byte(strings.TrimRight(model.MetadataXml.ValueString(), "\n\r")),
-	)
+	if model.Saml != nil {
+		identityProvider.Type = "SAMLv2"
+		identityProvider.MetadataUrl = model.Saml.MetadataUrl.ValueString()
+		identityProvider.MetadataXml = base64.StdEncoding.EncodeToString(
+			[]byte(strings.TrimRight(model.Saml.MetadataXml.ValueString(), "\n\r")),
+		)
+	}
 
-	for _, mapping := range model.SamlStatementRoleMappings {
-		mappingDto := aembit.SamlStatementRoleMappingDTO{
+	if model.Oidc != nil {
+		identityProvider.Type = "OIDCv1"
+		identityProvider.OidcBaseUrl = model.Oidc.OidcBaseUrl.ValueString()
+		identityProvider.ClientId = model.Oidc.ClientId.ValueString()
+		identityProvider.Scopes = model.Oidc.Scopes.ValueString()
+		identityProvider.ClientSecret = model.Oidc.ClientSecret.ValueString()
+		identityProvider.PkceRequired = model.Oidc.PkceRequired.ValueBool()
+		identityProvider.AuthType = model.Oidc.AuthType.ValueString()
+	}
+
+	for _, mapping := range model.SsoStatementRoleMappings {
+		mappingDto := aembit.SsoStatementRoleMappingDTO{
 			AttributeName:  mapping.AttributeName.ValueString(),
 			AttributeValue: mapping.AttributeValue.ValueString(),
 		}
 		for _, roleId := range mapping.Roles {
 			mappingDto.RoleExternalId = roleId.ValueString()
-			identityProvider.SamlStatementRoleMappings = append(
-				identityProvider.SamlStatementRoleMappings,
+			identityProvider.SsoStatementRoleMappings = append(
+				identityProvider.SsoStatementRoleMappings,
 				mappingDto,
 			)
 		}
@@ -432,43 +518,71 @@ func convertIdentityProviderDTOToModel(
 
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
-	if dto.MetadataUrl == "" {
-		model.MetadataUrl = types.StringNull()
-	} else {
-		model.MetadataUrl = types.StringValue(dto.MetadataUrl)
-	}
+	// Set the objects to null to begin with
+	model.Saml = nil
+	model.Oidc = nil
 
-	// Add a carriage return if the original plan had one, to avoid diffs on re-read
-	if planModel != nil &&
-		strings.HasSuffix(planModel.MetadataXml.ValueString(), "\n") &&
-		!strings.HasSuffix(dto.MetadataXml, "\n") {
-		dto.MetadataXml += "\n"
+	// Now fill in the objects based on the Identity Provider type
+	switch dto.Type {
+	case "SAMLv2":
+		model.Saml = &models.IdentityProviderSamlModel{}
+
+		if dto.MetadataUrl == "" {
+			model.Saml.MetadataUrl = types.StringNull()
+		} else {
+			model.Saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
+		}
+
+		// Add a carriage return if the original plan had one, to avoid diffs on re-read
+		if planModel != nil && planModel.Saml != nil &&
+			strings.HasSuffix(planModel.Saml.MetadataXml.ValueString(), "\n") &&
+			!strings.HasSuffix(dto.MetadataXml, "\n") {
+			dto.MetadataXml += "\n"
+		}
+		model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
+		model.Saml.ServiceProviderEntityId = types.StringValue(dto.ServiceProviderEntityId)
+		model.Saml.ServiceProviderSsoUrl = types.StringValue(dto.ServiceProviderSsoUrl)
+	case "OIDCv1":
+		model.Oidc = &models.IdentityProviderOidcModel{}
+
+		model.Oidc.ClientId = types.StringValue(dto.ClientId)
+		model.Oidc.OidcBaseUrl = types.StringValue(dto.OidcBaseUrl)
+		model.Oidc.Scopes = types.StringValue(dto.Scopes)
+		model.Oidc.AuthType = types.StringValue(dto.AuthType)
+		model.Oidc.PkceRequired = types.BoolValue(dto.PkceRequired)
+
+		model.Oidc.AembitRedirectUrl = types.StringValue(dto.AembitRedirectUrl)
+		model.Oidc.AembitJwksUrl = types.StringValue(dto.AembitJwksUrl)
+
+		model.Oidc.ClientSecret = types.StringNull()
+		if planModel.Oidc != nil {
+			model.Oidc.ClientSecret = planModel.Oidc.ClientSecret
+		}
 	}
-	model.MetadataXml = types.StringValue(dto.MetadataXml)
 
 	//convert the mapping array from flat to unflatten form
-	if len(dto.SamlStatementRoleMappings) == 0 {
-		model.SamlStatementRoleMappings = nil
+	if len(dto.SsoStatementRoleMappings) == 0 {
+		model.SsoStatementRoleMappings = nil
 		return model
 	}
 
-	tempMap := make(map[string]models.SamlStatementRoleMappings)
-	for _, mapping := range dto.SamlStatementRoleMappings {
+	tempMap := make(map[string]models.SsoStatementRoleMappings)
+	for _, mapping := range dto.SsoStatementRoleMappings {
 		key := mapping.AttributeName + mapping.AttributeValue
 		if newItem, exists := tempMap[key]; exists {
 			newItem.Roles = append(newItem.Roles, types.StringValue(mapping.RoleExternalId))
 			tempMap[key] = newItem
 		} else {
-			tempMap[key] = models.SamlStatementRoleMappings{
+			tempMap[key] = models.SsoStatementRoleMappings{
 				AttributeName:  types.StringValue(mapping.AttributeName),
 				AttributeValue: types.StringValue(mapping.AttributeValue),
 				Roles:          []types.String{types.StringValue(mapping.RoleExternalId)},
 			}
 		}
 	}
-	model.SamlStatementRoleMappings = make([]models.SamlStatementRoleMappings, 0, len(tempMap))
+	model.SsoStatementRoleMappings = make([]models.SsoStatementRoleMappings, 0, len(tempMap))
 	for _, item := range tempMap {
-		model.SamlStatementRoleMappings = append(model.SamlStatementRoleMappings, item)
+		model.SsoStatementRoleMappings = append(model.SsoStatementRoleMappings, item)
 	}
 
 	return model

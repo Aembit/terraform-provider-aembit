@@ -79,10 +79,34 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
 
+
+  # Generally test with the 3 most recent Terraform versions
+  # Limit to only the latest for regression tests
+  # References: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
+  #             https://stackoverflow.com/a/65434401
+  matrix_prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v4
+    - id: set-matrix
+      name: Set up Terraform version matrix
+      env:
+        REGRESSION: ${{ inputs.regression }}
+      run: |
+        echo "REGRESSION=$REGRESSION"
+        if [[ $REGRESSION == 'true' ]]; then
+          echo 'matrix=["latest"]' >> "$GITHUB_OUTPUT"
+        else
+          echo 'matrix=["latest", "1.10", "1.9"]' >> "$GITHUB_OUTPUT"
+        fi
+
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
     name: Terraform Provider Acceptance Tests
-    needs: build
+    needs: [build,matrix_prep]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -90,14 +114,8 @@ jobs:
       # It forces us to run the tests in sequence
       max-parallel: 1
       fail-fast: false
-      matrix:
-        # Generally test with the 3 most recent Terraform versions
-        # Limit to only the latest for regression tests
-        # Reference: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/running-variations-of-jobs-in-a-workflow#excluding-matrix-configurations
-        terraform: ['latest']
-        include:
-          - terraform: ${{ inputs.regression && '' || '1.10' }}
-          - terraform: ${{ inputs.regression && '' || '1.9' }}
+      matrix: 
+        terraform: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -120,7 +138,7 @@ jobs:
         run: |
           go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
           exit ${PIPESTATUS[0]}
-        timeout-minutes: 10        
+        timeout-minutes: 15        
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
         with:
@@ -146,7 +164,7 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

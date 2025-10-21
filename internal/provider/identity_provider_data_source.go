@@ -85,34 +85,87 @@ func (r *identityProviderDataSource) Schema(
 							ElementType: types.StringType,
 							Optional:    true,
 						},
-						"metadata_url": schema.StringAttribute{
-							Description: "URL pointing to the metadata for the Identity Provider.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"metadata_xml": schema.StringAttribute{
-							Description: "XML containing the metadata for the Identity Provider.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"saml_statement_role_mappings": schema.SetNestedAttribute{
-							Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
+						"sso_statement_role_mappings": schema.SetNestedAttribute{
+							Description: "Mapping between attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 							Optional:    true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"attribute_name": schema.StringAttribute{
 										Description: "SAML attribute name.",
-										Required:    true,
+										Computed:    true,
 									},
 									"attribute_value": schema.StringAttribute{
 										Description: "SAML attribute value.",
-										Required:    true,
+										Computed:    true,
 									},
 									"roles": schema.SetAttribute{
 										Description: "List of Aembit Role Identifiers to be assigned to a user.",
 										ElementType: types.StringType,
-										Required:    true,
+										Computed:    true,
 									},
+								},
+							},
+						},
+						"saml": schema.SingleNestedAttribute{
+							Description: "SAML type Identity Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"metadata_url": schema.StringAttribute{
+									Description: "URL pointing to the metadata for the Identity Provider.",
+									Computed:    true,
+								},
+								"metadata_xml": schema.StringAttribute{
+									Description: "XML containing the metadata for the Identity Provider.",
+									Computed:    true,
+								},
+								"service_provider_entity_id": schema.StringAttribute{
+									Description: "The unique identifier (Entity ID) for the SAML Service Provider.",
+									Computed:    true,
+								},
+								"service_provider_sso_url": schema.StringAttribute{
+									Description: "The Single Sign-On (SSO) endpoint URL of the Service Provider.",
+									Computed:    true,
+								},
+							},
+						},
+						"oidc": schema.SingleNestedAttribute{
+							Description: "OIDC type Identity Provider configuration.",
+							Optional:    true,
+							Attributes: map[string]schema.Attribute{
+								"oidc_base_url": schema.StringAttribute{
+									Description: "The base URL of the OIDC Identity Provider.",
+									Computed:    true,
+								},
+								"client_id": schema.StringAttribute{
+									Description: "The client identifier registered with the OIDC provider.",
+									Computed:    true,
+								},
+								"scopes": schema.StringAttribute{
+									Description: "A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').",
+									Computed:    true,
+								},
+								"client_secret": schema.StringAttribute{
+									Description: "The client secret associated with the OIDC client.",
+									Computed:    true,
+									Sensitive:   true,
+								},
+								"auth_type": schema.StringAttribute{
+									Description: "Authentication method. Possible values are: \n" +
+										"\t* `ClientSecret`\n" +
+										"\t* `KeyPair`\n",
+									Computed: true,
+								},
+								"pcke_required": schema.BoolAttribute{
+									Description: "Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.",
+									Computed:    true,
+								},
+								"aembit_redirect_url": schema.StringAttribute{
+									Description: "The redirect URI registered with the OIDC provider.",
+									Computed:    true,
+								},
+								"aembit_jwks_url": schema.StringAttribute{
+									Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
+									Computed:    true,
 								},
 							},
 						},

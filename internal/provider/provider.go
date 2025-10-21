@@ -740,7 +740,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 	jsonBody := make(map[string]interface{})
 	err = json.Unmarshal(body, &jsonBody)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse response body: %w", err)
+		return "", fmt.Errorf("failed to parse response body(%s): %w", body, err)
 	}
 
 	GITHUB_ID_TOKEN, ok := jsonBody["value"].(string)
