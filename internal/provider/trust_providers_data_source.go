@@ -76,10 +76,7 @@ func (d *trustProvidersDataSource) Schema(
 							Description: "Active/Inactive status of the trust provider.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"azure_metadata": schema.SingleNestedAttribute{
 							Description: "Azure Metadata type Trust Provider configuration.",
 							Computed:    true,

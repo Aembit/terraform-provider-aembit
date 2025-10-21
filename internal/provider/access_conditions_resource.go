@@ -88,11 +88,8 @@ func (r *accessConditionResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"integration_id": schema.StringAttribute{
 				Description: "Reference to the Integration used for this Access Condition.",
 				Required:    true,

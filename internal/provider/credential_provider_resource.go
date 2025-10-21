@@ -98,16 +98,8 @@ func (r *credentialProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
-			"tags_all": schema.MapAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"aembit_access_token": schema.SingleNestedAttribute{
 				Description: "Aembit Access Token type Credential Provider configuration.",
 				Optional:    true,

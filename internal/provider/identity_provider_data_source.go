@@ -80,11 +80,7 @@ func (r *identityProviderDataSource) Schema(
 							Optional:    true,
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Optional:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"sso_statement_role_mappings": schema.SetNestedAttribute{
 							Description: "Mapping between attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 							Optional:    true,

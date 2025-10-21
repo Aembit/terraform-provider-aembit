@@ -10,6 +10,7 @@ type ServerWorkloadResourceModel struct {
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
 	Tags            types.Map             `tfsdk:"tags"`
+	TagsAll         types.Map             `tfsdk:"tags_all"`
 	ServiceEndpoint *ServiceEndpointModel `tfsdk:"service_endpoint"`
 }
 

@@ -3,13 +3,13 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -85,11 +85,7 @@ func (d *integrationsDataSource) Schema(
 							Description: "Active/Inactive status of the integration.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"type": schema.StringAttribute{
 							Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
 							Computed:    true,

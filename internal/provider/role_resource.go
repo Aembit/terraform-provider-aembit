@@ -95,11 +95,8 @@ func (r *roleResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"resource_sets_assignments": schema.SetAttribute{
 				Description: "IDs of the ResourceSets associated with this Role.",
 				Optional:    true,

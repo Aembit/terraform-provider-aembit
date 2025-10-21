@@ -8,7 +8,6 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -76,11 +75,7 @@ func (d *accessConditionsDataSource) Schema(
 							Description: "Active/Inactive status of the accessCondition.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"integration_id": schema.StringAttribute{
 							Description: "ID of the Integration used by the Access Condition.",
 							Computed:    true,

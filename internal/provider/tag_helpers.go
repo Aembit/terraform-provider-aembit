@@ -10,6 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+var TagsComputedMapAttribute = func() schema.MapAttribute {
+	return schema.MapAttribute{
+		Description: "Tags are key-value pairs.",
+		ElementType: types.StringType,
+		Computed:    true,
+	}
+}
+
 var TagsMapAttribute = func() schema.MapAttribute {
 	return schema.MapAttribute{
 		Description: "Tags are key-value pairs.",

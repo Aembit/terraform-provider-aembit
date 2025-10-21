@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -75,10 +76,7 @@ func (d *rolesDataSource) Schema(
 							Description: "Active/Inactive status of the role.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"resource_sets_assignments": schema.SetAttribute{
 							Description: "IDs of the Resource Sets associated with this Role.",
 							Computed:    true,

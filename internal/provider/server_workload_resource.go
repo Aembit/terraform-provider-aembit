@@ -83,11 +83,8 @@ func (r *serverWorkloadResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"service_endpoint": schema.SingleNestedAttribute{
 				Description: "Service endpoint details.",
 				Required:    true,

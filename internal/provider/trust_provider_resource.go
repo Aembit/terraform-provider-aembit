@@ -94,11 +94,8 @@ func (r *trustProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"azure_metadata": schema.SingleNestedAttribute{
 				Description: "Azure Metadata type Trust Provider configuration.",
 				Optional:    true,

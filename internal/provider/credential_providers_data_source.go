@@ -78,11 +78,7 @@ func (d *credentialProvidersDataSource) Schema(
 							Description: "Active/Inactive status of the credential provider.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags": TagsComputedMapAttribute(),
 						"aembit_access_token": schema.SingleNestedAttribute{
 							Description: "Aembit Access Token type Credential Provider configuration.",
 							Optional:    true,
