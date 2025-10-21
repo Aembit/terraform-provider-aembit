@@ -224,6 +224,8 @@ func (r *identityProviderResource) ModifyPlan(
 		merged_tags[k] = v
 	}
 
+}
+
 func ValidatePlan(
 	diagnostics *diag.Diagnostics,
 	plan *models.IdentityProviderResourceModel,
