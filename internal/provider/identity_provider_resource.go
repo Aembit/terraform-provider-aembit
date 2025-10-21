@@ -224,6 +224,19 @@ func (r *identityProviderResource) ModifyPlan(
 		merged_tags[k] = v
 	}
 
+	tag_all := []aembit.TagDTO{}
+	for k, v := range merged_tags {
+		tag_all = append(tag_all, aembit.TagDTO{
+			Key:   k,
+			Value: v,
+		})
+	}
+
+	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged_tags)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 }
 
 func ValidatePlan(
