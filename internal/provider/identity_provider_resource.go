@@ -87,16 +87,8 @@ func (r *identityProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
-			"tags_all": schema.MapAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"sso_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
@@ -222,14 +214,6 @@ func (r *identityProviderResource) ModifyPlan(
 
 	for k, v := range planTags {
 		merged_tags[k] = v
-	}
-
-	tag_all := []aembit.TagDTO{}
-	for k, v := range merged_tags {
-		tag_all = append(tag_all, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
 	}
 
 	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged_tags)
@@ -480,27 +464,7 @@ func convertIdentityProviderModelToDTO(
 		}
 	}
 
-	// handle tags
-	resource_tags := model.Tags
-	merged_tags := make(map[string]string)
-
-	for k, v := range defaultTags {
-		merged_tags[k] = v
-	}
-
-	resourceTagsMap := make(map[string]string)
-	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
-	for k, v := range resourceTagsMap {
-		merged_tags[k] = v
-	}
-
-	for k, v := range merged_tags {
-		identityProvider.Tags = append(identityProvider.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
-	}
-
+	identityProvider.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return identityProvider
 }
 
@@ -515,22 +479,8 @@ func convertIdentityProviderDTOToModel(
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
 
-	model.Tags = types.MapNull(types.StringType)
-	if !planModel.Tags.IsNull() {
-		planTags := []aembit.TagDTO{}
-		tagsMap := make(map[string]string)
-		_ = planModel.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			planTags = append(planTags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-
-		model.Tags = newTagsModel(ctx, planTags)
-	}
-
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	// Set the objects to null to begin with
