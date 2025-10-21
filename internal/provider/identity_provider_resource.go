@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -139,42 +138,12 @@ func (r *identityProviderResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
-	var stateTags map[string]string
-	var stateTagsAll map[string]string
-
 	var planTags map[string]string
-	var planTagsAll map[string]string
-
-	_ = req.State.GetAttribute(
-		ctx,
-		path.Root("tags"),
-		&stateTags,
-	) // ignore error handling for brevity
-	_ = req.State.GetAttribute(ctx, path.Root("tags_all"), &stateTagsAll)
-
 	_ = req.Plan.GetAttribute(
 		ctx,
 		path.Root("tags"),
 		&planTags,
-	) // ignore error handling for brevity
-	_ = req.Plan.GetAttribute(ctx, path.Root("tags_all"), &planTagsAll)
-
-	tflog.Error(ctx, "stateTags", map[string]any{
-		"stateTags": stateTags,
-	})
-
-	tflog.Error(ctx, "stateTagsAll", map[string]any{
-		"stateTagsAll": stateTagsAll,
-	})
-
-	tflog.Error(ctx, "planTags", map[string]any{
-		"planTags": planTags,
-	})
-
-	tflog.Error(ctx, "planTagsAll", map[string]any{
-		"planTagsAll": planTagsAll,
-	})
-
+	)
 	def_tags := r.client.DefaultTags
 	merged_tags := make(map[string]string)
 
@@ -217,28 +186,7 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Generate API request body from plan
-	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil)
-
-	def_tags := r.client.DefaultTags
-	resource_tags := plan.Tags
-	merged_tags := make(map[string]string)
-
-	for k, v := range def_tags {
-		merged_tags[k] = v
-	}
-
-	resourceTagsMap := make(map[string]string)
-	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
-	for k, v := range resourceTagsMap {
-		merged_tags[k] = v
-	}
-
-	for k, v := range merged_tags {
-		dto.Tags = append(dto.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
-	}
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new identity provider
 	idp, err := r.client.CreateIdentityProvider(dto, nil)
@@ -275,10 +223,6 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
-	// tflog.Error(ctx, "TagsAll Before ", map[string]any{
-	// 	"tags_all_before": state.TagsAll.String(),
-	// })
-
 	idpDto, err, notFound := r.client.GetIdentityProvider(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -293,34 +237,7 @@ func (r *identityProviderResource) Read(
 		return
 	}
 
-	// def_tags := r.client.DefaultTags
-	// resource_tags := state.Tags
-	// merged_tags := make(map[string]string)
-
-	// for k, v := range def_tags {
-	// 	merged_tags[k] = v
-	// }
-
-	// resourceTagsMap := make(map[string]string)
-	// _ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
-	// for k, v := range resourceTagsMap {
-	// 	merged_tags[k] = v
-	// }
-
-	// tag_all := []aembit.TagDTO{}
-	// for k, v := range merged_tags {
-	// 	tag_all = append(tag_all, aembit.TagDTO{
-	// 		Key:   k,
-	// 		Value: v,
-	// 	})
-	// }
-
 	state = convertIdentityProviderDTOToModel(ctx, &state, idpDto)
-	// state.TagsAll = newTagsModel(ctx, tag_all)
-
-	// tflog.Error(ctx, "TagsAll After ", map[string]any{
-	// 	"tags_all_after": state.TagsAll.String(),
-	// })
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -356,28 +273,7 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Generate API request body from plan
-	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID)
-
-	def_tags := r.client.DefaultTags
-	resource_tags := plan.Tags
-	merged_tags := make(map[string]string)
-
-	for k, v := range def_tags {
-		merged_tags[k] = v
-	}
-
-	resourceTagsMap := make(map[string]string)
-	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
-	for k, v := range resourceTagsMap {
-		merged_tags[k] = v
-	}
-
-	for k, v := range merged_tags {
-		dto.Tags = append(dto.Tags, aembit.TagDTO{
-			Key:   k,
-			Value: v,
-		})
-	}
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Identity Provider
 	idpDto, err := r.client.UpdateIdentityProvider(dto, nil)
@@ -451,6 +347,7 @@ func convertIdentityProviderModelToDTO(
 	ctx context.Context,
 	model models.IdentityProviderResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.IdentityProviderDTO {
 	var identityProvider aembit.IdentityProviderDTO
 	identityProvider.EntityDTO = aembit.EntityDTO{
@@ -480,6 +377,27 @@ func convertIdentityProviderModelToDTO(
 				mappingDto,
 			)
 		}
+	}
+
+	// handle tags
+	resource_tags := model.Tags
+	merged_tags := make(map[string]string)
+
+	for k, v := range defaultTags {
+		merged_tags[k] = v
+	}
+
+	resourceTagsMap := make(map[string]string)
+	_ = resource_tags.ElementsAs(ctx, &resourceTagsMap, true)
+	for k, v := range resourceTagsMap {
+		merged_tags[k] = v
+	}
+
+	for k, v := range merged_tags {
+		identityProvider.Tags = append(identityProvider.Tags, aembit.TagDTO{
+			Key:   k,
+			Value: v,
+		})
 	}
 
 	return identityProvider
