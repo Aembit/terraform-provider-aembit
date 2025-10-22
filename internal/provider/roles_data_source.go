@@ -76,7 +76,8 @@ func (d *rolesDataSource) Schema(
 							Description: "Active/Inactive status of the role.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"resource_sets_assignments": schema.SetAttribute{
 							Description: "IDs of the Resource Sets associated with this Role.",
 							Computed:    true,
@@ -200,7 +201,8 @@ func (d *rolesDataSource) Read(
 
 	// Map response body to model
 	for _, role := range roles {
-		roleState := convertRoleDTOToModel(ctx, role)
+		roleState := convertRoleDTOToModel(ctx, role, &models.RoleResourceModel{})
+		roleState.Tags = newTagsModel(ctx, role.Tags)
 		state.Roles = append(state.Roles, roleState)
 	}
 

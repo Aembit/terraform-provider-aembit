@@ -76,7 +76,8 @@ func (d *serverWorkloadsDataSource) Schema(
 							Description: "Active/Inactive status of the server workload.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,
@@ -174,6 +175,7 @@ func (d *serverWorkloadsDataSource) Read(
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
 		serverWorkloadState := convertServerWorkloadDTOToModel(ctx, serverWorkload)
+		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}
 

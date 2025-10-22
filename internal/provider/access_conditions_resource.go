@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &accessConditionResource{}
 	_ resource.ResourceWithConfigure   = &accessConditionResource{}
 	_ resource.ResourceWithImportState = &accessConditionResource{}
+	_ resource.ResourceWithModifyPlan  = &accessConditionResource{}
 )
 
 // NewAccessConditionResource is a helper function to simplify the provider implementation.
@@ -206,6 +207,14 @@ func (r *accessConditionResource) Schema(
 			},
 		},
 	}
+}
+
+func (r *accessConditionResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
 }
 
 // Configure validators to ensure that only one Access Condition type is specified.
@@ -423,18 +432,6 @@ func convertAccessConditionModelToDTO(
 		accessCondition.ExternalID = *externalID
 	}
 
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			accessCondition.Tags = append(accessCondition.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
-
 	accessCondition.IntegrationID = model.IntegrationID.ValueString()
 
 	if model.Wiz != nil {
@@ -528,6 +525,8 @@ func convertAccessConditionModelToDTO(
 		}
 	}
 
+	accessCondition.Tags = collectAllTagsDto(ctx, client.DefaultTags, model.Tags)
+
 	return accessCondition, nil
 }
 
@@ -591,14 +590,17 @@ func FillSubdivisions(
 func convertAccessConditionDTOToModel(
 	ctx context.Context,
 	dto aembit.AccessConditionV2DTO,
-	_ models.AccessConditionResourceModel,
+	planModel models.AccessConditionResourceModel,
 ) models.AccessConditionResourceModel {
 	var model models.AccessConditionResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	if len(dto.IntegrationID) == 0 {
 		model.IntegrationID = types.StringValue(dto.Integration.ExternalID)

@@ -76,7 +76,8 @@ func (d *discoveryIntegrationsDataSource) Schema(
 							Optional:    true,
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"type": schema.StringAttribute{
 							Description: "Type of discovery integration. The only accepted value is `WizIntegrationApi`.",
 							Required:    true,
@@ -151,6 +152,7 @@ func (d *discoveryIntegrationsDataSource) Read(
 			discoveryIntegration,
 			models.DiscoveryIntegrationResourceModel{},
 		)
+		discoveryIntegtationState.Tags = newTagsModel(ctx, discoveryIntegration.Tags)
 		state.DiscoveryIntegrations = append(state.DiscoveryIntegrations, discoveryIntegtationState)
 	}
 

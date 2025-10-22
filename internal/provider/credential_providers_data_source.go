@@ -78,7 +78,8 @@ func (d *credentialProvidersDataSource) Schema(
 							Description: "Active/Inactive status of the credential provider.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"aembit_access_token": schema.SingleNestedAttribute{
 							Description: "Aembit Access Token type Credential Provider configuration.",
 							Optional:    true,
@@ -610,6 +611,7 @@ func (d *credentialProvidersDataSource) Read(
 			d.client.Tenant,
 			d.client.StackDomain,
 		)
+		credentialProviderState.Tags = newTagsModel(ctx, credentialProvider.Tags)
 		state.CredentialProviders = append(state.CredentialProviders, credentialProviderState)
 	}
 

@@ -71,7 +71,8 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 							Description: "User-provided description of the standalone certificate authority.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"leaf_lifetime": schema.Int32Attribute{
 							Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.",
 							Computed:    true,
@@ -124,6 +125,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Read(
 			ctx,
 			standaloneCertificate,
 		)
+		standaloneCertificateState.Tags = newTagsModel(ctx, standaloneCertificate.Tags)
 		state.StandaloneCertificates = append(
 			state.StandaloneCertificates,
 			standaloneCertificateState,

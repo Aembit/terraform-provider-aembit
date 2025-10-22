@@ -75,7 +75,8 @@ func (d *accessConditionsDataSource) Schema(
 							Description: "Active/Inactive status of the accessCondition.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"integration_id": schema.StringAttribute{
 							Description: "ID of the Integration used by the Access Condition.",
 							Computed:    true,
@@ -192,6 +193,7 @@ func (d *accessConditionsDataSource) Read(
 			accessCondition,
 			models.AccessConditionResourceModel{},
 		)
+		accessConditionState.Tags = newTagsModel(ctx, accessCondition.Tags)
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)
 	}
 

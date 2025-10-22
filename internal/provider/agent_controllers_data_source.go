@@ -75,7 +75,8 @@ func (d *agentControllersDataSource) Schema(
 							Description: "Active/Inactive status of the agent controller.",
 							Computed:    true,
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"trust_provider_id": schema.StringAttribute{
 							Description: "Trust Provider to use for authentication of the agent controller.",
 							Computed:    true,
@@ -111,6 +112,7 @@ func (d *agentControllersDataSource) Read(
 	// Map response body to model
 	for _, agentController := range agentControllers {
 		agentControllerState := convertAgentControllerDTOToModel(ctx, agentController)
+		agentControllerState.Tags = newTagsModel(ctx, agentController.Tags)
 		state.AgentControllers = append(state.AgentControllers, agentControllerState)
 	}
 

@@ -91,7 +91,8 @@ func (r *clientWorkloadsDataSource) Schema(
 								},
 							},
 						},
-						"tags": TagsComputedMapAttribute(),
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"standalone_certificate_authority": schema.StringAttribute{
 							Description: "Standalone Certificate Authority ID configured for this client workload.",
 							Optional:    true,
@@ -124,6 +125,7 @@ func (d *clientWorkloadsDataSource) Read(
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
 		clientWorkloadState := convertClientWorkloadDTOToModel(ctx, clientWorkload)
+		clientWorkloadState.Tags = newTagsModel(ctx, clientWorkload.Tags)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}
 

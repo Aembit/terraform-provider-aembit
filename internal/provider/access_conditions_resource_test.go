@@ -177,6 +177,11 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						testAccessConditionResourceGeoIp,
+						tagsAllCount,
+						"4",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
 						tagsColor,
 						"blue",
 					),
@@ -184,6 +189,16 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 						testAccessConditionResourceGeoIp,
 						tagsDay,
 						"Sunday",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testAccessConditionResourceGeoIp,
+						tagsAllOwner,
+						"Aembit",
 					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceGeoIp, "id"),

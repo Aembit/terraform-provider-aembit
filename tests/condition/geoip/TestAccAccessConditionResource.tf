@@ -1,4 +1,10 @@
 provider "aembit" {
+	default_tags {
+		tags = {
+			Name           = "Terraform"
+			Owner          = "Aembit"    
+		}
+  	}
 }
 
 data "aembit_integrations" "filtered" {
