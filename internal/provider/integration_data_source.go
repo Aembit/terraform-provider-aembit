@@ -3,13 +3,14 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -116,7 +117,16 @@ func (d *integrationsDataSource) Schema(
 									Computed:  true,
 									Sensitive: true,
 								},
-								"audience": schema.StringAttribute{Optional: true},
+								"wiz_integration": schema.SingleNestedAttribute{
+									Description: "Wiz integration configuration.",
+									Computed:    true,
+									Attributes: map[string]schema.Attribute{
+										"audience": schema.StringAttribute{
+											Description: "Audience for the Wiz Integration.",
+											Computed:    true,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -136,7 +146,7 @@ func (d *integrationsDataSource) Read(
 
 	req.Config.Get(ctx, &state)
 
-	integrations, err := d.client.GetIntegrations(nil)
+	integrations, err := d.client.GetIntegrationsV2(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",

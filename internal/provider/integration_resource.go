@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -10,8 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -128,9 +129,15 @@ func (r *integrationResource) Schema(
 						Required:    true,
 						Sensitive:   true,
 					},
-					"audience": schema.StringAttribute{
-						Description: "Audience for the OAuth Endpoint of the Integration.",
+					"wiz_integration": schema.SingleNestedAttribute{
+						Description: "Wiz integration configuration.",
 						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"audience": schema.StringAttribute{
+								Description: "Audience for the Wiz Integration.",
+								Optional:    true,
+							},
+						},
 					},
 				},
 			},
@@ -156,7 +163,7 @@ func (r *integrationResource) Create(
 	dto := convertIntegrationModelToDTO(ctx, plan, nil)
 
 	// Create new Integration
-	integration, err := r.client.CreateIntegration(dto, nil)
+	integration, err := r.client.CreateIntegrationV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -191,7 +198,7 @@ func (r *integrationResource) Read(
 	}
 
 	// Get refreshed trust value from Aembit
-	integration, err, notFound := r.client.GetIntegration(state.ID.ValueString(), nil)
+	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
@@ -244,7 +251,7 @@ func (r *integrationResource) Update(
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegration(dto, nil)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -280,7 +287,7 @@ func (r *integrationResource) Delete(
 
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableIntegration(state.ID.ValueString(), nil)
+		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -291,7 +298,7 @@ func (r *integrationResource) Delete(
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegration(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
@@ -315,8 +322,8 @@ func convertIntegrationModelToDTO(
 	ctx context.Context,
 	model models.IntegrationResourceModel,
 	externalID *string,
-) aembit.IntegrationDTO {
-	var integration aembit.IntegrationDTO
+) aembit.IntegrationV2DTO {
+	var integration aembit.IntegrationV2DTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
@@ -340,12 +347,18 @@ func convertIntegrationModelToDTO(
 
 	integration.Endpoint = model.Endpoint.ValueString()
 	integration.Type = model.Type.ValueString()
+	integration.IntegrationType = model.Type.ValueString()
 	integration.SyncFrequencySeconds = model.SyncFrequency.ValueInt64()
-	integration.IntegrationJSON = aembit.IntegrationJSONDTO{
-		TokenURL:     model.OAuthClientCredentials.TokenURL.ValueString(),
-		ClientID:     model.OAuthClientCredentials.ClientID.ValueString(),
-		ClientSecret: model.OAuthClientCredentials.ClientSecret.ValueString(),
-		Audience:     model.OAuthClientCredentials.Audience.ValueString(),
+	integration.TokenURL = model.OAuthClientCredentials.TokenURL.ValueString()
+	integration.ClientID = model.OAuthClientCredentials.ClientID.ValueString()
+	integration.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
+
+	if model.Type.ValueString() == "WizIntegrationApi" {
+		if model.OAuthClientCredentials.WizIntegration != nil {
+			if !model.OAuthClientCredentials.WizIntegration.Audience.IsNull() {
+				integration.Audience = model.OAuthClientCredentials.WizIntegration.Audience.ValueString()
+			}
+		}
 	}
 
 	return integration
@@ -353,7 +366,7 @@ func convertIntegrationModelToDTO(
 
 func convertIntegrationDTOToModel(
 	ctx context.Context,
-	dto aembit.IntegrationDTO,
+	dto aembit.IntegrationV2DTO,
 	state models.IntegrationResourceModel,
 ) models.IntegrationResourceModel {
 	var model models.IntegrationResourceModel
@@ -366,14 +379,24 @@ func convertIntegrationDTOToModel(
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)
 	model.SyncFrequency = types.Int64Value(dto.SyncFrequencySeconds)
-	model.OAuthClientCredentials = &models.IntegrationOAuthClientCredentialsModel{
-		TokenURL:     types.StringValue(dto.IntegrationJSON.TokenURL),
-		ClientID:     types.StringValue(dto.IntegrationJSON.ClientID),
-		ClientSecret: types.StringValue(dto.IntegrationJSON.ClientSecret),
-		Audience:     types.StringValue(dto.IntegrationJSON.Audience),
+
+	oauthModel := &models.IntegrationOAuthClientCredentialsModel{
+		TokenURL:       types.StringValue(dto.TokenURL),
+		ClientID:       types.StringValue(dto.ClientID),
+		ClientSecret:   types.StringNull(),
+		WizIntegration: nil,
 	}
-	if len(dto.IntegrationJSON.ClientSecret) == 0 && state.OAuthClientCredentials != nil {
-		model.OAuthClientCredentials.ClientSecret = state.OAuthClientCredentials.ClientSecret
+
+	if state.OAuthClientCredentials != nil && !state.OAuthClientCredentials.ClientSecret.IsNull() {
+		oauthModel.ClientSecret = state.OAuthClientCredentials.ClientSecret
+	}
+
+	model.OAuthClientCredentials = oauthModel
+
+	if dto.Type == "WizIntegrationApi" && dto.Audience != "" {
+		model.OAuthClientCredentials.WizIntegration = &models.WizIntegrationModel{
+			Audience: types.StringValue(dto.Audience),
+		}
 	}
 
 	return model

@@ -46,10 +46,14 @@ Required:
 - `client_id` (String)
 - `token_url` (String)
 
-Optional:
-
-- `audience` (String)
-
 Read-Only:
 
 - `client_secret` (String, Sensitive)
+- `wiz_integration` (Attributes) Wiz integration configuration. (see [below for nested schema](#nestedatt--integrations--oauth_client_credentials--wiz_integration))
+
+<a id="nestedatt--integrations--oauth_client_credentials--wiz_integration"></a>
+### Nested Schema for `integrations.oauth_client_credentials.wiz_integration`
+
+Read-Only:
+
+- `audience` (String) Audience for the Wiz Integration.
