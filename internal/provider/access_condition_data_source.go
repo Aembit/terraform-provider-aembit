@@ -191,7 +191,7 @@ func (d *accessConditionsDataSource) Read(
 		accessConditionState := convertAccessConditionDTOToModel(
 			ctx,
 			accessCondition,
-			models.AccessConditionResourceModel{},
+			&models.AccessConditionResourceModel{},
 		)
 		accessConditionState.Tags = newTagsModel(ctx, accessCondition.Tags)
 		state.AccessConditions = append(state.AccessConditions, accessConditionState)

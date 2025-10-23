@@ -264,7 +264,7 @@ func (r *accessConditionResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, plan)
+	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -303,7 +303,7 @@ func (r *accessConditionResource) Read(
 		return
 	}
 
-	state = convertAccessConditionDTOToModel(ctx, accessCondition, state)
+	state = convertAccessConditionDTOToModel(ctx, accessCondition, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -359,7 +359,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessConditionDTOToModel(ctx, *accessCondition, state)
+	state = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -590,7 +590,7 @@ func FillSubdivisions(
 func convertAccessConditionDTOToModel(
 	ctx context.Context,
 	dto aembit.AccessConditionV2DTO,
-	planModel models.AccessConditionResourceModel,
+	planModel *models.AccessConditionResourceModel,
 ) models.AccessConditionResourceModel {
 	var model models.AccessConditionResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
