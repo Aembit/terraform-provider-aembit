@@ -19,9 +19,9 @@ type IntegrationResourceModel struct {
 }
 
 type IntegrationOAuthClientCredentialsModel struct {
-	TokenURL       types.String        `tfsdk:"token_url"`
-	ClientID       types.String        `tfsdk:"client_id"`
-	ClientSecret   types.String        `tfsdk:"client_secret"`
+	TokenURL       types.String         `tfsdk:"token_url"`
+	ClientID       types.String         `tfsdk:"client_id"`
+	ClientSecret   types.String         `tfsdk:"client_secret"`
 	WizIntegration *WizIntegrationModel `tfsdk:"wiz_integration"`
 }
 
