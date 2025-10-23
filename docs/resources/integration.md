@@ -72,6 +72,14 @@ Required:
 
 Optional:
 
-- `audience` (String) Audience for the OAuth Endpoint of the Integration.
+- `wiz_integration` (Attributes) Wiz integration configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials--wiz_integration))
+
+<a id="nestedatt--oauth_client_credentials--wiz_integration"></a>
+### Nested Schema for `oauth_client_credentials.wiz_integration`
+
+Optional:
+
+- `audience` (String) Audience for the Wiz Integration.
+
 
 
