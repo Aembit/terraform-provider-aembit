@@ -30,6 +30,7 @@ var (
 	_ resource.Resource                = &trustProviderResource{}
 	_ resource.ResourceWithConfigure   = &trustProviderResource{}
 	_ resource.ResourceWithImportState = &trustProviderResource{}
+	_ resource.ResourceWithModifyPlan  = &trustProviderResource{}
 )
 
 // NewTrustProviderResource is a helper function to simplify the provider implementation.
@@ -746,6 +747,14 @@ func (r *trustProviderResource) Schema(
 	}
 }
 
+func (r *trustProviderResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Configure validators to ensure that only one Trust Provider type is specified.
 func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
@@ -925,7 +934,7 @@ func (r *trustProviderResource) Create(
 	}
 
 	// Generate API request body from plan
-	trust, err := convertTrustProviderModelToDTO(ctx, plan, nil)
+	trust, err := convertTrustProviderModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Trust Provider",
@@ -948,7 +957,7 @@ func (r *trustProviderResource) Create(
 	plan = convertTrustProviderDTOToModel(
 		ctx,
 		*trustProvider,
-		plan,
+		&plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -993,7 +1002,7 @@ func (r *trustProviderResource) Read(
 	state = convertTrustProviderDTOToModel(
 		ctx,
 		trustProvider,
-		state,
+		&state,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -1032,7 +1041,7 @@ func (r *trustProviderResource) Update(
 	}
 
 	// Generate API request body from plan
-	trust, err := convertTrustProviderModelToDTO(ctx, plan, &externalID)
+	trust, err := convertTrustProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Trust Provider",
@@ -1055,7 +1064,7 @@ func (r *trustProviderResource) Update(
 	state = convertTrustProviderDTOToModel(
 		ctx,
 		*trustProvider,
-		plan,
+		&plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -1120,6 +1129,7 @@ func convertTrustProviderModelToDTO(
 	ctx context.Context,
 	model models.TrustProviderResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) (aembit.TrustProviderDTO, error) {
 	var trust aembit.TrustProviderDTO
 	trust.EntityDTO = aembit.EntityDTO{
@@ -1127,17 +1137,7 @@ func convertTrustProviderModelToDTO(
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
 
-		for key, value := range tagsMap {
-			trust.Tags = append(trust.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
 	if externalID != nil {
 		trust.ExternalID = *externalID
 	}
@@ -1175,6 +1175,7 @@ func convertTrustProviderModelToDTO(
 		err = convertOidcIdTokenTpModelToDTO(model, &trust)
 	}
 
+	trust.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return trust, err
 }
 
@@ -1711,7 +1712,7 @@ func convertTerraformModelToDTO(
 func convertTrustProviderDTOToModel(
 	ctx context.Context,
 	dto aembit.TrustProviderDTO,
-	state models.TrustProviderResourceModel,
+	planModel *models.TrustProviderResourceModel,
 	tenant, stackDomain string,
 ) models.TrustProviderResourceModel {
 	var model models.TrustProviderResourceModel
@@ -1719,7 +1720,10 @@ func convertTrustProviderDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	switch dto.Provider {
 	case "AWSRole":
@@ -1737,9 +1741,9 @@ func convertTrustProviderDTOToModel(
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
-		model.KubernetesService = convertKubernetesDTOToModel(dto, state)
+		model.KubernetesService = convertKubernetesDTOToModel(dto, *planModel)
 	case "OidcIdToken":
-		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto, state)
+		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto, *planModel)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	}

@@ -111,7 +111,11 @@ func (d *agentControllersDataSource) Read(
 
 	// Map response body to model
 	for _, agentController := range agentControllers {
-		agentControllerState := convertAgentControllerDTOToModel(ctx, agentController)
+		agentControllerState := convertAgentControllerDTOToModel(
+			ctx,
+			agentController,
+			&models.AgentControllerResourceModel{},
+		)
 		agentControllerState.Tags = newTagsModel(ctx, agentController.Tags)
 		state.AgentControllers = append(state.AgentControllers, agentControllerState)
 	}

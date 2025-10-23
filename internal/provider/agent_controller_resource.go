@@ -19,6 +19,7 @@ var (
 	_ resource.Resource                = &agentControllerResource{}
 	_ resource.ResourceWithConfigure   = &agentControllerResource{}
 	_ resource.ResourceWithImportState = &agentControllerResource{}
+	_ resource.ResourceWithModifyPlan  = &agentControllerResource{}
 )
 
 // NewAgentControllerResource is a helper function to simplify the provider implementation.
@@ -100,6 +101,14 @@ func (r *agentControllerResource) Schema(
 	}
 }
 
+func (r *agentControllerResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *agentControllerResource) Create(
 	ctx context.Context,
@@ -115,7 +124,7 @@ func (r *agentControllerResource) Create(
 	}
 
 	// Generate API request body from plan
-	controller := convertAgentControllerModelToDTO(ctx, plan, nil)
+	controller := convertAgentControllerModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Agent Controller
 	agentController, err := r.client.CreateAgentController(controller, nil)
@@ -128,7 +137,7 @@ func (r *agentControllerResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAgentControllerDTOToModel(ctx, *agentController)
+	plan = convertAgentControllerDTOToModel(ctx, *agentController, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -167,7 +176,7 @@ func (r *agentControllerResource) Read(
 		return
 	}
 
-	state = convertAgentControllerDTOToModel(ctx, agentController)
+	state = convertAgentControllerDTOToModel(ctx, agentController, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -203,7 +212,7 @@ func (r *agentControllerResource) Update(
 	}
 
 	// Generate API request body from plan
-	controller := convertAgentControllerModelToDTO(ctx, plan, &externalID)
+	controller := convertAgentControllerModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Agent Controller
 	agentController, err := r.client.UpdateAgentController(controller, nil)
@@ -216,7 +225,7 @@ func (r *agentControllerResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAgentControllerDTOToModel(ctx, *agentController)
+	state = convertAgentControllerDTOToModel(ctx, *agentController, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -277,6 +286,7 @@ func convertAgentControllerModelToDTO(
 	ctx context.Context,
 	model models.AgentControllerResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.AgentControllerDTO {
 	var controller aembit.AgentControllerDTO
 	controller.EntityDTO = aembit.EntityDTO{
@@ -301,25 +311,30 @@ func convertAgentControllerModelToDTO(
 	controller.TrustProviderID = model.TrustProviderID.ValueString()
 	controller.AllowedTLSHostname = model.AllowedTLSHostname.ValueString()
 
+	controller.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return controller
 }
 
 func convertAgentControllerDTOToModel(
 	ctx context.Context,
 	dto aembit.AgentControllerDTO,
+	planModel *models.AgentControllerResourceModel,
 ) models.AgentControllerResourceModel {
 	var model models.AgentControllerResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
+
 	if len(dto.TrustProviderID) > 0 {
 		model.TrustProviderID = types.StringValue(dto.TrustProviderID)
 	} else {
 		model.TrustProviderID = types.StringNull()
 	}
 	model.AllowedTLSHostname = types.StringValue(dto.AllowedTLSHostname)
-	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	return model
 }

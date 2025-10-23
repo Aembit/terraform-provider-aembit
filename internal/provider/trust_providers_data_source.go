@@ -632,7 +632,7 @@ func (d *trustProvidersDataSource) Read(
 		trustProviderState := convertTrustProviderDTOToModel(
 			ctx,
 			trustProvider,
-			models.TrustProviderResourceModel{},
+			&models.TrustProviderResourceModel{},
 			d.client.Tenant,
 			d.client.StackDomain,
 		)
