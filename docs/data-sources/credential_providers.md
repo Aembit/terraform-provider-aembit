@@ -31,6 +31,7 @@ Optional:
 - `azure_key_vault_value` (Attributes) Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext format. (see [below for nested schema](#nestedatt--credential_providers--azure_key_vault_value))
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--google_workload_identity))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--snowflake_jwt))
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--username_password))
 
 Read-Only:

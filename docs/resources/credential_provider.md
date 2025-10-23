@@ -175,6 +175,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `oidc_id_token` (Attributes) OIDC ID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--oidc_id_token))
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
 - `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--username_password))
 - `vault_client_token` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--vault_client_token))
 

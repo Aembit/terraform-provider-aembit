@@ -25,7 +25,7 @@ Manages client workloads.
 Optional:
 
 - `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this client workload.
-- `tags` (Map of String)
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 
 Read-Only:
 
@@ -34,6 +34,7 @@ Read-Only:
 - `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--client_workloads--identities))
 - `is_active` (Boolean) Active/Inactive status of the client workload.
 - `name` (String) User-provided name of the client workload.
+- `tags` (Map of String) Tags are key-value pairs.
 
 <a id="nestedatt--client_workloads--identities"></a>
 ### Nested Schema for `client_workloads.identities`
