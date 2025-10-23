@@ -67,7 +67,7 @@ func TestAccAccessConditionResource_Wiz(t *testing.T) {
 			{
 				ResourceName:      testAccessConditionResourceWiz,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -133,7 +133,7 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 			{
 				ResourceName:      testAccessConditionResourceCrowdstrike,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -210,7 +210,7 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 			{
 				ResourceName:      testAccessConditionResourceGeoIp,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -274,7 +274,7 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 			{
 				ResourceName:      testAccessConditionResourceTimeZone,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{

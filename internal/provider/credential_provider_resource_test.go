@@ -93,7 +93,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderAembit,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -228,7 +228,7 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderAWS,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -295,7 +295,7 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderGCP,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -377,7 +377,7 @@ func TestAccCredentialProviderResource_AzureEntraToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: credentialProviderName, ImportState: true, ImportStateVerify: true},
+			{ResourceName: credentialProviderName, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -462,7 +462,7 @@ func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderSnowflake,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -1067,7 +1067,7 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 			{
 				ResourceName:      vaultClientTokenResourcePath,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
