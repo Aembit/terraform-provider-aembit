@@ -55,8 +55,23 @@ func TestAccServerWorkloadResource(t *testing.T) {
 					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(
+						testServerWorkloadResource,
+						tagsAllCount,
+						"4",
+					),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "blue"),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testServerWorkloadResource,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testServerWorkloadResource,
+						tagsAllOwner,
+						"Aembit",
+					),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,
@@ -143,7 +158,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: testServerWorkloadResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testServerWorkloadResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

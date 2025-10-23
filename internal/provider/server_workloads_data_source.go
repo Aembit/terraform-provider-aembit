@@ -174,7 +174,11 @@ func (d *serverWorkloadsDataSource) Read(
 
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
-		serverWorkloadState := convertServerWorkloadDTOToModel(ctx, serverWorkload)
+		serverWorkloadState := convertServerWorkloadDTOToModel(
+			ctx,
+			serverWorkload,
+			&models.ServerWorkloadResourceModel{},
+		)
 		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}

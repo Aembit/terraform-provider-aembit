@@ -121,9 +121,9 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/apikey/TestAccCredentialProviderResource.tf",
 	)
-	// modifyFile, _ := os.ReadFile(
-	// 	"../../tests/credential/apikey/TestAccCredentialProviderResource.tfmod",
-	// )
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/apikey/TestAccCredentialProviderResource.tfmod",
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -142,6 +142,25 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testCredentialProviderApiKey, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testCredentialProviderApiKey, "id"),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(testCredentialProviderApiKey, tagsCount, "2"),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderApiKey,
+						tagsAllCount,
+						"4",
+					),
+					resource.TestCheckResourceAttr(testCredentialProviderApiKey, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(testCredentialProviderApiKey, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderApiKey,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderApiKey,
+						tagsAllOwner,
+						"Aembit",
+					),
 				),
 			},
 			// ImportState testing
@@ -150,18 +169,18 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
-			// // Update and Read testing
-			// {
-			// 	Config: string(modifyFile),
-			// 	Check: resource.ComposeAggregateTestCheckFunc(
-			// 		// Verify Name updated
-			// 		resource.TestCheckResourceAttr(
-			// 			testCredentialProviderApiKey,
-			// 			"name",
-			// 			"TF Acceptance API Key - Modified",
-			// 		),
-			// 	),
-			// },
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderApiKey,
+						"name",
+						"TF Acceptance API Key - Modified",
+					),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

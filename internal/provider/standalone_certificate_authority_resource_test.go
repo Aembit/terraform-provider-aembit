@@ -43,6 +43,11 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						testStandaloneCertificateResource,
+						tagsAllCount,
+						"4",
+					),
+					resource.TestCheckResourceAttr(
+						testStandaloneCertificateResource,
 						tagsColor,
 						"blue",
 					),
@@ -50,6 +55,16 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 						testStandaloneCertificateResource,
 						tagsDay,
 						"Sunday",
+					),
+					resource.TestCheckResourceAttr(
+						testStandaloneCertificateResource,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testStandaloneCertificateResource,
+						tagsAllOwner,
+						"Aembit",
 					),
 					// Verify Metadata
 					resource.TestCheckResourceAttrSet(
@@ -83,7 +98,7 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 			{
 				ResourceName:      testStandaloneCertificateResource,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{

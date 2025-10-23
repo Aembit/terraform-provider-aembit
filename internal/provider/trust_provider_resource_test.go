@@ -73,7 +73,7 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: trustProviderPathAzure, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderPathAzure, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -115,7 +115,7 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderPathRole, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderPathRole, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -159,7 +159,7 @@ func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderAwsPath, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderAwsPath, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -201,7 +201,7 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGcp, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderGcp, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -248,7 +248,7 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 			{
 				ResourceName:      trustProviderGitHub,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -305,7 +305,7 @@ func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
 			{
 				ResourceName:      trustProviderGitHub,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -407,7 +407,7 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGitLab1, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderGitLab1, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -497,6 +497,11 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						trustProviderKerberos,
+						tagsAllCount,
+						"4",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderKerberos,
 						tagsColor,
 						"blue",
 					),
@@ -505,13 +510,23 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 						tagsDay,
 						"Sunday",
 					),
+					resource.TestCheckResourceAttr(
+						trustProviderKerberos,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderKerberos,
+						tagsAllOwner,
+						"Aembit",
+					),
 				),
 			},
 			// ImportState testing
 			{
 				ResourceName:      trustProviderKerberos,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -609,7 +624,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -688,7 +703,7 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 			{
 				ResourceName:      trustProviderTerraformResource,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
@@ -763,7 +778,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

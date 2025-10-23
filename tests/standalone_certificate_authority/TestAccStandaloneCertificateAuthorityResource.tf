@@ -1,4 +1,10 @@
 provider "aembit" {
+	default_tags {
+		tags = {
+			Name           = "Terraform"
+			Owner          = "Aembit"    
+		}	
+	}
 }
 
 resource "aembit_standalone_certificate_authority" "test" {

@@ -607,7 +607,7 @@ func (d *credentialProvidersDataSource) Read(
 		credentialProviderState := convertCredentialProviderV2DTOToModel(
 			ctx,
 			credentialProvider,
-			models.CredentialProviderResourceModel{},
+			&models.CredentialProviderResourceModel{},
 			d.client.Tenant,
 			d.client.StackDomain,
 		)
