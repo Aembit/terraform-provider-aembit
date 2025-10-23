@@ -359,7 +359,6 @@ func convertIntegrationDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)

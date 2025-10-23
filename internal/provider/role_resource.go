@@ -23,7 +23,6 @@ var (
 	_ resource.Resource                = &roleResource{}
 	_ resource.ResourceWithConfigure   = &roleResource{}
 	_ resource.ResourceWithImportState = &roleResource{}
-	_ resource.ResourceWithModifyPlan  = &roleResource{}
 )
 
 const (
@@ -96,8 +95,6 @@ func (r *roleResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags":     TagsMapAttribute(),
-			"tags_all": TagsAllMapAttribute(),
 			"resource_sets_assignments": schema.SetAttribute{
 				Description: "IDs of the ResourceSets associated with this Role.",
 				Optional:    true,
@@ -232,14 +229,6 @@ func definePermissionReadOnlyAttribute(name string, computed bool) schema.Single
 	}
 }
 
-func (r *roleResource) ModifyPlan(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-) {
-	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
-}
-
 // Create creates the resource and sets the initial Terraform state.
 func (r *roleResource) Create(
 	ctx context.Context,
@@ -255,7 +244,7 @@ func (r *roleResource) Create(
 	}
 
 	// Generate API request body from plan
-	trust := convertRoleModelToDTO(ctx, plan, nil, r.client.DefaultTags)
+	trust := convertRoleModelToDTO(plan, nil)
 
 	// Create new Role
 	role, err := r.client.CreateRole(trust, nil)
@@ -268,7 +257,7 @@ func (r *roleResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertRoleDTOToModel(ctx, *role, &plan)
+	plan = convertRoleDTOToModel(*role)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -307,7 +296,7 @@ func (r *roleResource) Read(
 		return
 	}
 
-	state = convertRoleDTOToModel(ctx, role, &state)
+	state = convertRoleDTOToModel(role)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -343,7 +332,7 @@ func (r *roleResource) Update(
 	}
 
 	// Generate API request body from plan
-	trust := convertRoleModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
+	trust := convertRoleModelToDTO(plan, &externalID)
 
 	// Update Role
 	role, err := r.client.UpdateRole(trust, nil)
@@ -356,7 +345,7 @@ func (r *roleResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertRoleDTOToModel(ctx, *role, &plan)
+	state = convertRoleDTOToModel(*role)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -415,28 +404,14 @@ func (r *roleResource) ImportState(
 
 // Model to DTO conversion methods.
 func convertRoleModelToDTO(
-	ctx context.Context,
 	model models.RoleResourceModel,
 	externalID *string,
-	defaultTags map[string]string,
 ) aembit.RoleDTO {
 	var dto aembit.RoleDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
-	}
-
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			dto.Tags = append(dto.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
 	}
 
 	if externalID != nil {
@@ -545,7 +520,6 @@ func convertRoleModelToDTO(
 		model.IdentityProviders,
 	)
 
-	dto.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return dto
 }
 
@@ -580,18 +554,13 @@ func appendReadOnlyPermissionToDTO(
 
 // DTO to Model conversion methods.
 func convertRoleDTOToModel(
-	ctx context.Context,
 	dto aembit.RoleDTO,
-	planModel *models.RoleResourceModel,
 ) models.RoleResourceModel {
 	var model models.RoleResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	// handle tags
-	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
-	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	for _, resourceSet := range dto.ResourceSets {
 		model.ResourceSetsAssignments = append(

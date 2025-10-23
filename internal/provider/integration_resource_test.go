@@ -49,8 +49,24 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testIntegrationWiz, "id"),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testIntegrationWiz, tagsCount, "2"),
+
+					resource.TestCheckResourceAttr(
+						testIntegrationWiz,
+						tagsAllCount,
+						"4",
+					),
 					resource.TestCheckResourceAttr(testIntegrationWiz, tagsColor, "blue"),
 					resource.TestCheckResourceAttr(testIntegrationWiz, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testIntegrationWiz,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testIntegrationWiz,
+						tagsAllOwner,
+						"Aembit",
+					),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
