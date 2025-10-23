@@ -34,6 +34,41 @@ func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationResourceWiz, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationResourceWiz, "id"),
+
+					// Verify Tags.
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsCount,
+						"2",
+					),
+
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsAllCount,
+						"4",
+					),
+
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsColor,
+						"blue",
+					),
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsDay,
+						"Sunday",
+					),
+
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testDiscoveryIntegrationResourceWiz,
+						tagsAllOwner,
+						"Aembit",
+					),
 				),
 			},
 			// ImportState testing

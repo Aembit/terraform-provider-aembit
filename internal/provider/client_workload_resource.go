@@ -22,6 +22,7 @@ var (
 	_ resource.Resource                = &clientWorkloadResource{}
 	_ resource.ResourceWithConfigure   = &clientWorkloadResource{}
 	_ resource.ResourceWithImportState = &clientWorkloadResource{}
+	_ resource.ResourceWithModifyPlan  = &clientWorkloadResource{}
 )
 
 // NewClientWorkloadResource is a helper function to simplify the provider implementation.
@@ -183,6 +184,14 @@ func (r *clientWorkloadResource) Schema(
 	}
 }
 
+func (r *clientWorkloadResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *clientWorkloadResource) Create(
 	ctx context.Context,
@@ -198,7 +207,7 @@ func (r *clientWorkloadResource) Create(
 	}
 
 	// Generate API request body from plan
-	workload := convertClientWorkloadModelToDTO(ctx, plan, nil)
+	workload := convertClientWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Client Workload
 	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
@@ -211,7 +220,7 @@ func (r *clientWorkloadResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
+	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -251,7 +260,7 @@ func (r *clientWorkloadResource) Read(
 	}
 
 	// Overwrite items with refreshed state
-	state = convertClientWorkloadDTOToModel(ctx, clientWorkload)
+	state = convertClientWorkloadDTOToModel(ctx, clientWorkload, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -287,7 +296,7 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Generate API request body from plan
-	workload := convertClientWorkloadModelToDTO(ctx, plan, &externalID)
+	workload := convertClientWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Client Workload
 	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
@@ -300,7 +309,7 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload)
+	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -361,6 +370,7 @@ func convertClientWorkloadModelToDTO(
 	ctx context.Context,
 	model models.ClientWorkloadResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.ClientWorkloadExternalDTO {
 	var workload aembit.ClientWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
@@ -382,23 +392,13 @@ func convertClientWorkloadModelToDTO(
 
 	}
 
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			workload.Tags = append(workload.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
-
 	if externalID != nil {
 		workload.ExternalID = *externalID
 	}
 
 	workload.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
+
+	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 
 	return workload
 }
@@ -406,6 +406,7 @@ func convertClientWorkloadModelToDTO(
 func convertClientWorkloadDTOToModel(
 	ctx context.Context,
 	dto aembit.ClientWorkloadExternalDTO,
+	planModel *models.ClientWorkloadResourceModel,
 ) models.ClientWorkloadResourceModel {
 	var model models.ClientWorkloadResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
@@ -413,7 +414,10 @@ func convertClientWorkloadDTOToModel(
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
+
 	if dto.StandaloneCertificateAuthority == "" {
 		model.StandaloneCertificateAuthority = types.StringNull()
 	} else {

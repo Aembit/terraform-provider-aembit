@@ -150,7 +150,7 @@ func (d *discoveryIntegrationsDataSource) Read(
 		discoveryIntegtationState := convertDiscoveryIntegrationDTOToModel(
 			ctx,
 			discoveryIntegration,
-			models.DiscoveryIntegrationResourceModel{},
+			&models.DiscoveryIntegrationResourceModel{},
 		)
 		discoveryIntegtationState.Tags = newTagsModel(ctx, discoveryIntegration.Tags)
 		state.DiscoveryIntegrations = append(state.DiscoveryIntegrations, discoveryIntegtationState)

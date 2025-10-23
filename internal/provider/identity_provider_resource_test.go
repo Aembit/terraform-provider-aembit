@@ -60,6 +60,25 @@ func TestAccIdentityProviderResource_Saml(t *testing.T) {
 						"sso_statement_role_mappings.0.roles.#",
 						"2",
 					),
+					// Verify Tags.
+					resource.TestCheckResourceAttr(resourceName, tagsCount, "2"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						tagsAllCount,
+						"4",
+					),
+					resource.TestCheckResourceAttr(resourceName, tagsColor, "blue"),
+					resource.TestCheckResourceAttr(resourceName, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						tagsAllOwner,
+						"Aembit",
+					),
 				),
 			},
 			{

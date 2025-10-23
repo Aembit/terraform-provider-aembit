@@ -124,6 +124,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Read(
 		standaloneCertificateState := convertStandaloneCertificateDTOToModel(
 			ctx,
 			standaloneCertificate,
+			&models.StandaloneCertificateAuthorityResourceModel{},
 		)
 		standaloneCertificateState.Tags = newTagsModel(ctx, standaloneCertificate.Tags)
 		state.StandaloneCertificates = append(

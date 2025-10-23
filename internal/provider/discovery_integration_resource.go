@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &discoveryIntegrationResource{}
 	_ resource.ResourceWithConfigure   = &discoveryIntegrationResource{}
 	_ resource.ResourceWithImportState = &discoveryIntegrationResource{}
+	_ resource.ResourceWithModifyPlan  = &discoveryIntegrationResource{}
 )
 
 // NewDiscoveryIntegrationResource is a helper function to simplify the provider implementation.
@@ -146,6 +147,14 @@ func (r *discoveryIntegrationResource) Schema(
 	}
 }
 
+func (r *discoveryIntegrationResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *discoveryIntegrationResource) Create(
 	ctx context.Context,
@@ -161,7 +170,12 @@ func (r *discoveryIntegrationResource) Create(
 	}
 
 	// Generate API request body from plan
-	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(ctx, plan, nil)
+	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(
+		ctx,
+		plan,
+		nil,
+		r.client.DefaultTags,
+	)
 
 	// Create new Discovery Integration
 	discoveryIntegrationResponse, err := r.client.CreateDiscoveryIntegration(
@@ -177,7 +191,7 @@ func (r *discoveryIntegrationResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertDiscoveryIntegrationDTOToModel(ctx, *discoveryIntegrationResponse, plan)
+	plan = convertDiscoveryIntegrationDTOToModel(ctx, *discoveryIntegrationResponse, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -224,7 +238,7 @@ func (r *discoveryIntegrationResource) Read(
 	}
 
 	// Overwrite items with refreshed state
-	state = convertDiscoveryIntegrationDTOToModel(ctx, discoveryIntegration, state)
+	state = convertDiscoveryIntegrationDTOToModel(ctx, discoveryIntegration, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -260,7 +274,12 @@ func (r *discoveryIntegrationResource) Update(
 	}
 
 	// Generate API request body from plan
-	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(ctx, plan, &externalID)
+	discoveryIntegration := convertDiscoveryIntegrationModelToDTO(
+		ctx,
+		plan,
+		&externalID,
+		r.client.DefaultTags,
+	)
 
 	// Update Discovery Integration
 	serverWorkload, err := r.client.UpdateDiscoveryIntegration(discoveryIntegration, nil)
@@ -273,7 +292,7 @@ func (r *discoveryIntegrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertDiscoveryIntegrationDTOToModel(ctx, *serverWorkload, plan)
+	state = convertDiscoveryIntegrationDTOToModel(ctx, *serverWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -334,6 +353,7 @@ func convertDiscoveryIntegrationModelToDTO(
 	ctx context.Context,
 	model models.DiscoveryIntegrationResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.DiscoveryIntegrationDTO {
 	var discoveryIntegration aembit.DiscoveryIntegrationDTO
 	discoveryIntegration.EntityDTO = aembit.EntityDTO{
@@ -349,18 +369,6 @@ func convertDiscoveryIntegrationModelToDTO(
 		discoveryIntegration.ExternalID = *externalID
 	}
 
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			discoveryIntegration.Tags = append(discoveryIntegration.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
-
 	if model.Wiz != nil {
 		jsonDto := aembit.DiscoveryIntegrationJSONDTO{
 			TokenUrl:     model.Wiz.TokenUrl.ValueString(),
@@ -373,25 +381,28 @@ func convertDiscoveryIntegrationModelToDTO(
 		discoveryIntegration.DiscoveryIntegrationJSON = string(jsonBytes)
 	}
 
+	discoveryIntegration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return discoveryIntegration
 }
 
 func convertDiscoveryIntegrationDTOToModel(
 	ctx context.Context,
 	dto aembit.DiscoveryIntegrationDTO,
-	state models.DiscoveryIntegrationResourceModel,
+	planModel *models.DiscoveryIntegrationResourceModel,
 ) models.DiscoveryIntegrationResourceModel {
 	var model models.DiscoveryIntegrationResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
 	model.Type = types.StringValue(dto.Type)
 	model.SyncFrequencySeconds = types.Int64Value(dto.SyncFrequencySeconds)
 	model.LastSync = types.StringValue(dto.LastSync)
 	model.LastSyncStatus = types.StringValue(dto.LastSyncStatus)
 	model.Endpoint = types.StringValue(dto.Endpoint)
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	switch dto.Type {
 	case "WizIntegrationApi":
@@ -408,8 +419,8 @@ func convertDiscoveryIntegrationDTOToModel(
 			Audience:     types.StringValue(wizDto.Audience),
 		}
 
-		if state.Wiz != nil {
-			model.Wiz.ClientSecret = state.Wiz.ClientSecret
+		if planModel.Wiz != nil {
+			model.Wiz.ClientSecret = planModel.Wiz.ClientSecret
 		}
 	}
 

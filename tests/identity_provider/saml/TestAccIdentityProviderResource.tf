@@ -1,5 +1,12 @@
 provider "aembit" {
+	default_tags {
+		tags = {
+			Name           = "Terraform"
+			Owner          = "Aembit"    
+		}	
+	}
 }
+
 
 data "aembit_roles" "test" {}
 
@@ -11,6 +18,10 @@ resource "aembit_identity_provider" "test_idp_saml" {
 	name = "Identity Provider SAML for TF Acceptance Test"
 	description = "Description of Identity Provider for TF Acceptance Test"
 	is_active = true
+    tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
     sso_statement_role_mappings = [
         {
             attribute_name = "test-attribute-name"

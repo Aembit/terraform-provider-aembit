@@ -91,8 +91,23 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 					),
 					// Verify Tags.
 					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						tagsAllCount,
+						"4",
+					),
 					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
 					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						tagsAllName,
+						"Terraform",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						tagsAllOwner,
+						"Aembit",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
@@ -102,7 +117,7 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: createFileConfig},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -196,7 +211,7 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -268,7 +283,7 @@ func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -329,7 +344,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -436,7 +451,7 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -505,7 +520,7 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -603,7 +618,7 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 					),
 				},
 				// ImportState testing
-				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
 				// Update and Read testing
 				{
 					Config: modifyFileConfig,

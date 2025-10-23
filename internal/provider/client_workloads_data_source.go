@@ -124,7 +124,11 @@ func (d *clientWorkloadsDataSource) Read(
 
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
-		clientWorkloadState := convertClientWorkloadDTOToModel(ctx, clientWorkload)
+		clientWorkloadState := convertClientWorkloadDTOToModel(
+			ctx,
+			clientWorkload,
+			&models.ClientWorkloadResourceModel{},
+		)
 		clientWorkloadState.Tags = newTagsModel(ctx, clientWorkload.Tags)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}

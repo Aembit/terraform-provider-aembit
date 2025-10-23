@@ -1,3 +1,12 @@
+provider "aembit" {
+	default_tags {
+		tags = {
+			Name           = "Terraform"
+			Owner          = "Aembit"    
+		}	
+	}
+}
+
 resource "aembit_client_workload" "test" {
     name = "Unit Test 1"
     description = "Acceptance Test client workload"
