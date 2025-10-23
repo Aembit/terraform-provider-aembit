@@ -46,7 +46,7 @@ func modifyPlanForTagsAll(
 	resp *resource.ModifyPlanResponse,
 	defaultTags map[string]string,
 ) {
-	// --- Exit if the plan or state is null (destroy scenario) ---
+	// Exit if the plan or state is null (destroy scenario)
 	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
 		return
 	}
@@ -54,15 +54,15 @@ func modifyPlanForTagsAll(
 	var planTags map[string]string
 	_ = req.Plan.GetAttribute(ctx, path.Root("tags"), &planTags)
 
-	merged := make(map[string]string)
+	mergedTags := make(map[string]string)
 	for k, v := range defaultTags {
-		merged[k] = v
+		mergedTags[k] = v
 	}
 	for k, v := range planTags {
-		merged[k] = v
+		mergedTags[k] = v
 	}
 
-	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), merged)
+	diags := resp.Plan.SetAttribute(ctx, path.Root("tags_all"), mergedTags)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -80,7 +80,7 @@ func newTagsModel(ctx context.Context, tags []aembit.TagDTO) types.Map {
 	return types.MapValueMust(
 		types.StringType,
 		map[string]attr.Value{},
-	) // types.MapNull(types.StringType)
+	)
 }
 
 func newTagsModelFromPlan(ctx context.Context, tags types.Map) types.Map {
@@ -107,19 +107,19 @@ func collectAllTagsDto(
 	defaultTags map[string]string,
 	resourceTags types.Map,
 ) []aembit.TagDTO {
-	merged_tags := make(map[string]string)
+	mergedTags := make(map[string]string)
 
 	for k, v := range defaultTags {
-		merged_tags[k] = v
+		mergedTags[k] = v
 	}
 	resourceTagsMap := make(map[string]string)
 	_ = resourceTags.ElementsAs(ctx, &resourceTagsMap, true)
 	for k, v := range resourceTagsMap {
-		merged_tags[k] = v
+		mergedTags[k] = v
 	}
 
 	dtoTags := []aembit.TagDTO{}
-	for k, v := range merged_tags {
+	for k, v := range mergedTags {
 		dtoTags = append(dtoTags, aembit.TagDTO{
 			Key:   k,
 			Value: v,
