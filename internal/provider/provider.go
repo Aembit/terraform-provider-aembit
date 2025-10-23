@@ -306,12 +306,6 @@ func (p *aembitProvider) Configure(
 		config.DefaultTags.Tags.ElementsAs(ctx, &tagsMap, true)
 	}
 
-	ctx = context.WithValue(ctx, "default_tags", tagsMap)
-
-	// for k, v := range tagsMap {
-	// 	tflog.Error(ctx, fmt.Sprintf("Provider key: %s, value %s", k, v))
-	// }
-
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
