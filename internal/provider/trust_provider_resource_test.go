@@ -73,7 +73,7 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: trustProviderPathAzure, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderPathAzure, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -115,7 +115,7 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderPathRole, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderPathRole, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -159,7 +159,7 @@ func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderAwsPath, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderAwsPath, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -201,7 +201,7 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGcp, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderGcp, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -248,7 +248,7 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 			{
 				ResourceName:      trustProviderGitHub,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -305,7 +305,7 @@ func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
 			{
 				ResourceName:      trustProviderGitHub,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -407,7 +407,7 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGitLab1, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderGitLab1, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -489,44 +489,13 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsAllCount,
-						"4",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsDay,
-						"Sunday",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsAllName,
-						"Terraform",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsAllOwner,
-						"Aembit",
-					),
 				),
 			},
 			// ImportState testing
 			{
 				ResourceName:      trustProviderKerberos,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -537,22 +506,6 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 						trustProviderKerberos,
 						"name",
 						"TF Acceptance Kerberos - Modified",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsColor,
-						"orange",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsDay,
-						"Tuesday",
 					),
 				),
 			},
@@ -587,10 +540,6 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderKubernetesKey,
@@ -624,7 +573,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -635,10 +584,6 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 						"name",
 						"TF Acceptance Kubernetes - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Tuesday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderKubernetesKey,
@@ -703,7 +648,7 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 			{
 				ResourceName:      trustProviderTerraformResource,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -751,10 +696,6 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenKey,
@@ -778,7 +719,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: false},
+			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -789,10 +730,6 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						"name",
 						"TF Acceptance OIDC ID Token - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenKey,

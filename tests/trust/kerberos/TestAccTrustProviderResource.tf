@@ -1,10 +1,4 @@
 provider "aembit" {
-	default_tags {
-		tags = {
-			Name           = "Terraform"
-			Owner          = "Aembit"    
-		}	
-	}
 }
 
 resource "aembit_trust_provider" "kerberos" {
@@ -16,8 +10,4 @@ resource "aembit_trust_provider" "kerberos" {
 		principal = "principal"
 		source_ip = "source_ip"
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

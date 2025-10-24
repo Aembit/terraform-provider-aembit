@@ -58,7 +58,7 @@ func TestAccRoleResource(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: createFileConfig},
 			// ImportState testing
-			{ResourceName: resourceID, ImportState: true, ImportStateVerify: false},
+			{ResourceName: resourceID, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,

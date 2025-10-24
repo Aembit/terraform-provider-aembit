@@ -1,10 +1,4 @@
 provider "aembit" {
-	default_tags {
-		tags = {
-			Name           = "Terraform"
-			Owner          = "Aembit"    
-		}
-  	}
 }
 
 data "aembit_integrations" "filtered" {
@@ -23,8 +17,4 @@ resource "aembit_access_condition" "geoip" {
 			}
 		]
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

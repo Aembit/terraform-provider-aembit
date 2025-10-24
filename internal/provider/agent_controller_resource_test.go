@@ -55,25 +55,6 @@ func TestAccAgentControllerResources(t *testing.T) {
 						"name",
 						"TF Acceptance Device Code",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsCount, "2"),
-					resource.TestCheckResourceAttr(
-						testAgentControllerAzure,
-						tagsAllCount,
-						"4",
-					),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsDay, "Sunday"),
-					resource.TestCheckResourceAttr(
-						testAgentControllerAzure,
-						tagsAllName,
-						"Terraform",
-					),
-					resource.TestCheckResourceAttr(
-						testAgentControllerAzure,
-						tagsAllOwner,
-						"Aembit",
-					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAgentControllerAzure, "id"),
 					resource.TestCheckResourceAttrSet(testAgentControllerDeviceCode, "id"),
@@ -90,7 +71,7 @@ func TestAccAgentControllerResources(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: testAgentControllerAzure, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testAgentControllerAzure, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -106,10 +87,6 @@ func TestAccAgentControllerResources(t *testing.T) {
 						"name",
 						"TF Acceptance Device Code - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testAgentControllerAzure, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

@@ -81,7 +81,7 @@ func TestAccGitLabCPIResource(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderIntegrationGitLab,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -162,7 +162,7 @@ func TestAccAwsIamRoleCPIResource(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderIntegrationAwsIamRole,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -282,7 +282,7 @@ func TestAccAzureEntraFederationCPIResource(t *testing.T) {
 			{
 				ResourceName:      testCredentialProviderIntegrationAzureEntraFederation,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{

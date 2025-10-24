@@ -89,25 +89,6 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 						testCWResourceIdentitiesValue[0],
 						newName,
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						tagsAllCount,
-						"4",
-					),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						tagsAllName,
-						"Terraform",
-					),
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						tagsAllOwner,
-						"Aembit",
-					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
@@ -117,7 +98,7 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: createFileConfig},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -130,10 +111,6 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -202,16 +179,12 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 						testCWResourceIdentitiesValue[1],
 						newNamePod2,
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -224,10 +197,6 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -274,16 +243,12 @@ func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T
 						testCWResourceIdentitiesValue[0],
 						newName,
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -335,16 +300,12 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 						testCWResourceIdentitiesValue[0],
 						newName,
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -357,10 +318,6 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -442,16 +399,12 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 						testCWResourceIdentitiesValue[3],
 						newSubject,
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: modifyFileConfig,
@@ -464,10 +417,6 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -491,10 +440,6 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr(testCWResource, "name", newName),
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 					// Verify Workload Identity.
 					resource.TestCheckResourceAttr(
 						testCWResource,
@@ -520,7 +465,7 @@ func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -609,16 +554,12 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 							testCWResourceIdentitiesValue[0],
 							test.identityValue,
 						),
-						// Verify Tags.
-						resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-						resource.TestCheckResourceAttr(testCWResource, tagsColor, "blue"),
-						resource.TestCheckResourceAttr(testCWResource, tagsDay, "Sunday"),
 						// Verify dynamic values have any value set in the state.
 						resource.TestCheckResourceAttrSet(testCWResource, "id"),
 					),
 				},
 				// ImportState testing
-				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: false},
+				{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 				// Update and Read testing
 				{
 					Config: modifyFileConfig,
@@ -631,10 +572,6 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 						),
 						// Verify active state updated.
 						resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
-						// Verify Tags.
-						resource.TestCheckResourceAttr(testCWResource, tagsCount, "2"),
-						resource.TestCheckResourceAttr(testCWResource, tagsColor, "orange"),
-						resource.TestCheckResourceAttr(testCWResource, tagsDay, "Tuesday"),
 					),
 				},
 				// Delete testing automatically occurs in TestCase

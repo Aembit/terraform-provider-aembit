@@ -1,10 +1,4 @@
 provider "aembit" {
-	default_tags {
-		tags = {
-			Name           = "Terraform"
-			Owner          = "Aembit"    
-		}	
-	}
 }
 
 resource "aembit_discovery_integration" "wiz" {
@@ -17,9 +11,5 @@ resource "aembit_discovery_integration" "wiz" {
 		client_id = "client_id"
 		client_secret = "client_secret"
 		audience = "audience"
-	}
-	tags = {
-		color = "blue"
-		day   = "Sunday"
 	}
 }

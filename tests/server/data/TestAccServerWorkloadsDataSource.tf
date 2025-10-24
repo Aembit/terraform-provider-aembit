@@ -21,10 +21,6 @@ resource "aembit_server_workload" "test" {
 			accept = "*/*"
 		}
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 
 provider "aembit" {

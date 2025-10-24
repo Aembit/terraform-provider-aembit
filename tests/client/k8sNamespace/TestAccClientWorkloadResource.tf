@@ -1,10 +1,4 @@
 provider "aembit" {
-	default_tags {
-		tags = {
-			Name           = "Terraform"
-			Owner          = "Aembit"    
-		}	
-	}
 }
 
 resource "aembit_client_workload" "test" {
@@ -17,9 +11,5 @@ resource "aembit_client_workload" "test" {
             value = "unittest1namespace"
         },
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 

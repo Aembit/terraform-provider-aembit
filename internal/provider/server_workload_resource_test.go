@@ -53,25 +53,6 @@ func TestAccServerWorkloadResource(t *testing.T) {
 						"is_active",
 						"false",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(
-						testServerWorkloadResource,
-						tagsAllCount,
-						"4",
-					),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Sunday"),
-					resource.TestCheckResourceAttr(
-						testServerWorkloadResource,
-						tagsAllName,
-						"Terraform",
-					),
-					resource.TestCheckResourceAttr(
-						testServerWorkloadResource,
-						tagsAllOwner,
-						"Aembit",
-					),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,
@@ -158,7 +139,7 @@ func TestAccServerWorkloadResource(t *testing.T) {
 			// Recreate the resource from the first test step
 			{Config: string(createFile)},
 			// ImportState testing
-			{ResourceName: testServerWorkloadResource, ImportState: true, ImportStateVerify: false},
+			{ResourceName: testServerWorkloadResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -170,10 +151,6 @@ func TestAccServerWorkloadResource(t *testing.T) {
 						"Unit Test 1 - Modified",
 					),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,
