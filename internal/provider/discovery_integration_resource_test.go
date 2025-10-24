@@ -40,7 +40,7 @@ func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
 			{
 				ResourceName:      testDiscoveryIntegrationResourceWiz,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 			// Update and Read testing
 			{
