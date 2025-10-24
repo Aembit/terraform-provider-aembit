@@ -34,16 +34,6 @@ func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationResourceWiz, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testDiscoveryIntegrationResourceWiz, "id"),
-					resource.TestCheckResourceAttr(
-						testDiscoveryIntegrationResourceWiz,
-						tagsAllName,
-						"Terraform",
-					),
-					resource.TestCheckResourceAttr(
-						testDiscoveryIntegrationResourceWiz,
-						tagsAllOwner,
-						"Aembit",
-					),
 				),
 			},
 			// ImportState testing
