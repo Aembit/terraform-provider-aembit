@@ -11,9 +11,5 @@ resource "aembit_client_workload" "test" {
             value = "arn:aws:lambda:us-east-1:880961858887:function:helloworld"
         },
     ]
-    tags = {
-        color = "orange"
-        day   = "Tuesday"
-    }
 }
 

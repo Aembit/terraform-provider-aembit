@@ -81,6 +81,7 @@ resource "aembit_access_condition" "wiz" {
 - `geoip_conditions` (Attributes) (see [below for nested schema](#nestedatt--geoip_conditions))
 - `is_active` (Boolean) Active status of the Access Condition.
 - `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `time_conditions` (Attributes) Defines the conditions for scheduling based on time, including specific time slots and timezone settings for the Access Condition. (see [below for nested schema](#nestedatt--time_conditions))
 - `wiz_conditions` (Attributes) Wiz Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--wiz_conditions))
 

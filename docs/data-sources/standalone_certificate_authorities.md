@@ -26,7 +26,7 @@ Optional:
 
 - `client_workload_count` (Number) Client workloads associated with the standalone certificate authority.
 - `resource_set_count` (Number) Resource sets associated with the standalone certificate authority.
-- `tags` (Map of String)
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 
 Read-Only:
 
@@ -36,3 +36,4 @@ Read-Only:
 - `name` (String) User-provided name of the standalone certificate authority.
 - `not_after` (String) ISO 8601 formatted not after date of the standalone certificate authority.
 - `not_before` (String) ISO 8601 formatted not before date of the standalone certificate authority.
+- `tags` (Map of String) Tags are key-value pairs.

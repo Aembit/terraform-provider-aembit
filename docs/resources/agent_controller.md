@@ -41,6 +41,7 @@ resource "aembit_trust_provider" "azure" {
 - `description` (String) Description for the Agent Controller.
 - `is_active` (Boolean) Active status of the Agent Controller.
 - `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `trust_provider_id` (String) Unique Trust Provider to use for authentication of the Agent Controller.
 
 ### Read-Only

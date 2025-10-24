@@ -20,6 +20,7 @@ var (
 	_ resource.Resource                = &serverWorkloadResource{}
 	_ resource.ResourceWithConfigure   = &serverWorkloadResource{}
 	_ resource.ResourceWithImportState = &serverWorkloadResource{}
+	_ resource.ResourceWithModifyPlan  = &serverWorkloadResource{}
 )
 
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
@@ -83,11 +84,8 @@ func (r *serverWorkloadResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"service_endpoint": schema.SingleNestedAttribute{
 				Description: "Service endpoint details.",
 				Required:    true,
@@ -238,6 +236,14 @@ func (r *serverWorkloadResource) Schema(
 	}
 }
 
+func (r *serverWorkloadResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *serverWorkloadResource) Create(
 	ctx context.Context,
@@ -253,7 +259,7 @@ func (r *serverWorkloadResource) Create(
 	}
 
 	// Generate API request body from plan
-	workload := convertServerWorkloadModelToDTO(ctx, plan, nil)
+	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
@@ -266,7 +272,7 @@ func (r *serverWorkloadResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
+	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -306,7 +312,7 @@ func (r *serverWorkloadResource) Read(
 	}
 
 	// Overwrite items with refreshed state
-	state = convertServerWorkloadDTOToModel(ctx, serverWorkload)
+	state = convertServerWorkloadDTOToModel(ctx, serverWorkload, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -342,7 +348,7 @@ func (r *serverWorkloadResource) Update(
 	}
 
 	// Generate API request body from plan
-	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID)
+	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Server Workload
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
@@ -355,7 +361,7 @@ func (r *serverWorkloadResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload)
+	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -416,23 +422,13 @@ func convertServerWorkloadModelToDTO(
 	ctx context.Context,
 	model models.ServerWorkloadResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.ServerWorkloadExternalDTO {
 	var workload aembit.ServerWorkloadExternalDTO
 	workload.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
-	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			workload.Tags = append(workload.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
 	}
 
 	workload.ServiceEndpoint = aembit.WorkloadServiceEndpointDTO{
@@ -474,19 +470,24 @@ func convertServerWorkloadModelToDTO(
 		workload.ExternalID = *externalID
 	}
 
+	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return workload
 }
 
 func convertServerWorkloadDTOToModel(
 	ctx context.Context,
 	dto aembit.ServerWorkloadExternalDTO,
+	planModel *models.ServerWorkloadResourceModel,
 ) models.ServerWorkloadResourceModel {
 	var model models.ServerWorkloadResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	model.ServiceEndpoint = &models.ServiceEndpointModel{
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),

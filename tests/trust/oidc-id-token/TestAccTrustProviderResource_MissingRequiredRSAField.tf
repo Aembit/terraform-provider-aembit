@@ -22,8 +22,4 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
 }		
 EOT		
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

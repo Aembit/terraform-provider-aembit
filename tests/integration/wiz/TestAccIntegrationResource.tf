@@ -13,8 +13,4 @@ resource "aembit_integration" "wiz" {
 		client_secret = "client_secret"
 		audience = "audience"
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

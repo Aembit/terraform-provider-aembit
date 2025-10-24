@@ -10,6 +10,7 @@ type IdentityProviderResourceModel struct {
 	Description              types.String               `tfsdk:"description"`
 	IsActive                 types.Bool                 `tfsdk:"is_active"`
 	Tags                     types.Map                  `tfsdk:"tags"`
+	TagsAll                  types.Map                  `tfsdk:"tags_all"`
 	SsoStatementRoleMappings []SsoStatementRoleMappings `tfsdk:"sso_statement_role_mappings"`
 	Saml                     *IdentityProviderSamlModel `tfsdk:"saml"`
 	Oidc                     *IdentityProviderOidcModel `tfsdk:"oidc"`

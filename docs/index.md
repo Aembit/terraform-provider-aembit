@@ -108,7 +108,16 @@ $ terraform plan
 ### Optional
 
 - `client_id` (String) The Aembit Trust Provider Client ID to use for authentication to the Aembit Cloud Tenant instance (recommended).
+- `default_tags` (Block, Optional) (see [below for nested schema](#nestedblock--default_tags))
 - `resource_set_id` (String) The Aembit Resource Set to use for resources associated with this Terraform Provider.
 - `tenant` (String) Tenant ID of the specific Aembit Cloud instance.
 - `token` (String, Sensitive) Access Token to use for authentication to the Aembit Cloud Tenant instance.
+
+<a id="nestedblock--default_tags"></a>
+### Nested Schema for `default_tags`
+
+Optional:
+
+- `tags` (Map of String) Default tags to apply to resources
+
 

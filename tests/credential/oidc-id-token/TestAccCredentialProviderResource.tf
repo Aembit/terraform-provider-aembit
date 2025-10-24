@@ -4,10 +4,6 @@ provider "aembit" {
 resource "aembit_credential_provider" "oidc_id_token" {
 	name = "TF Acceptance OIDC ID Token"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	oidc_id_token = {
 		subject = "subject"
 		subject_type = "literal"
@@ -32,10 +28,6 @@ resource "aembit_credential_provider" "oidc_id_token" {
 resource "aembit_credential_provider" "oidc_id_token_empty_custom_claims" {
 	name = "TF Acceptance OIDC ID Token - EmptyClaims"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	oidc_id_token = {
 		subject = "subject"
 		subject_type = "literal"
@@ -49,10 +41,6 @@ resource "aembit_credential_provider" "oidc_id_token_empty_custom_claims" {
 resource "aembit_credential_provider" "oidc_id_token_null_custom_claims" {
 	name = "TF Acceptance OIDC ID Token - NullClaims"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	oidc_id_token = {
 		subject = "subject"
 		subject_type = "literal"

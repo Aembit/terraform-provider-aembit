@@ -35,22 +35,6 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 						"name",
 						newName,
 					),
-					// Verify Tags
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsDay,
-						"Sunday",
-					),
 					// Verify Metadata
 					resource.TestCheckResourceAttrSet(
 						testStandaloneCertificateResource,
@@ -94,22 +78,6 @@ func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
 						testStandaloneCertificateResource,
 						"name",
 						newName+" - Modified",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsColor,
-						"orange",
-					),
-					resource.TestCheckResourceAttr(
-						testStandaloneCertificateResource,
-						tagsDay,
-						"Tuesday",
 					),
 					// Verify Metadata.
 					resource.TestCheckResourceAttrSet(

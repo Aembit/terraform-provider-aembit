@@ -12,6 +12,7 @@ type AccessConditionResourceModel struct {
 	Description   types.String                              `tfsdk:"description"`
 	IsActive      types.Bool                                `tfsdk:"is_active"`
 	Tags          types.Map                                 `tfsdk:"tags"`
+	TagsAll       types.Map                                 `tfsdk:"tags_all"`
 	IntegrationID types.String                              `tfsdk:"integration_id"`
 	Wiz           *AccessConditionWizConditionModel         `tfsdk:"wiz_conditions"`
 	CrowdStrike   *AccessConditionCrowdstrikeConditionModel `tfsdk:"crowdstrike_conditions"`

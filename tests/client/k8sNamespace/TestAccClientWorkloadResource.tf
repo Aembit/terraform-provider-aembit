@@ -1,3 +1,6 @@
+provider "aembit" {
+}
+
 resource "aembit_client_workload" "test" {
     name = "Unit Test 1"
     description = "Acceptance Test client workload"
@@ -8,9 +11,5 @@ resource "aembit_client_workload" "test" {
             value = "unittest1namespace"
         },
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 

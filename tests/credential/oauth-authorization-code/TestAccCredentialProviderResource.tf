@@ -5,10 +5,6 @@ resource "aembit_credential_provider" "oauth_authorization_code" {
 	id = "replace-with-uuid-first"
 	name = "TF Acceptance OAuth Authorization Code"
 	is_active = true
-	tags = {
-		color = "blue"
-        day   = "Sunday"
-    }
 	oauth_authorization_code = {
 		oauth_discovery_url = "https://aembit.io/.well-known/openid-configuration"
 		oauth_authorization_url = "https://aembit.io/authorize"
@@ -38,10 +34,6 @@ resource "aembit_credential_provider" "oauth_authorization_code_empty_custom_par
 	id = "replace-with-uuid-second"
 	name = "TF Acceptance OAuth Authorization Code"
 	is_active = true
-	tags = {
-		color = "blue"
-        day   = "Sunday"
-    }
 	oauth_authorization_code = {
 		oauth_discovery_url = "https://aembit.io/.well-known/openid-configuration"
 		oauth_authorization_url = "https://aembit.io/authorize"

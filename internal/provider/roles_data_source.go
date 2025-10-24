@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -73,10 +74,6 @@ func (d *rolesDataSource) Schema(
 						},
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the role.",
-							Computed:    true,
-						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
 							Computed:    true,
 						},
 						"resource_sets_assignments": schema.SetAttribute{
@@ -202,7 +199,7 @@ func (d *rolesDataSource) Read(
 
 	// Map response body to model
 	for _, role := range roles {
-		roleState := convertRoleDTOToModel(ctx, role)
+		roleState := convertRoleDTOToModel(role)
 		state.Roles = append(state.Roles, roleState)
 	}
 

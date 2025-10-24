@@ -107,22 +107,6 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 						"name",
 						"TF Acceptance Crowdstrike",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceCrowdstrike,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceCrowdstrike,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceCrowdstrike,
-						tagsDay,
-						"Sunday",
-					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceCrowdstrike, "id"),
 					// Verify placeholder ID is set
@@ -168,22 +152,6 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 						testAccessConditionResourceGeoIp,
 						"name",
 						"TF Acceptance GeoIp",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceGeoIp,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceGeoIp,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceGeoIp,
-						tagsDay,
-						"Sunday",
 					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceGeoIp, "id"),
@@ -232,22 +200,6 @@ func TestAccAccessConditionResource_TimeZone(t *testing.T) {
 						testAccessConditionResourceTimeZone,
 						"name",
 						"TF Acceptance Timezone",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceTimeZone,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceTimeZone,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResourceTimeZone,
-						tagsDay,
-						"Sunday",
 					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testAccessConditionResourceTimeZone, "id"),

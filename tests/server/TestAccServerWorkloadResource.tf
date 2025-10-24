@@ -24,10 +24,6 @@ resource "aembit_server_workload" "test" {
 			accept = "*/*"
 		}
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 
 resource "aembit_server_workload" "test_wildcard" {
@@ -48,8 +44,4 @@ resource "aembit_server_workload" "test_wildcard" {
 			"scheme" = "Bearer"
 		}
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

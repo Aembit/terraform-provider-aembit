@@ -10,8 +10,4 @@ resource "aembit_trust_provider" "kerberos" {
 		principals = ["principal","principal2"]
 		source_ips = ["source_ip","source_ip2"]
 	}
-    tags = {
-        color = "orange"
-        day   = "Tuesday"
-    }
 }

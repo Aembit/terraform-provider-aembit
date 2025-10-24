@@ -12,10 +12,6 @@ resource "aembit_trust_provider" "kubernetes" {
 		subject = "subject"
 		oidc_endpoint = "https://3a3b5d.id.devbroadangle.aembit-eng.com/"
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 
 resource "aembit_trust_provider" "kubernetes_key" {
@@ -34,10 +30,6 @@ nA0hgCm9JFKC1tq1S73cQ9naClNXsMqY7pwPt1bSY8jYRqHHbdoUvwIDAQAB
 -----END PUBLIC KEY-----
 EOT
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 
 data "aembit_trust_providers" "test" {

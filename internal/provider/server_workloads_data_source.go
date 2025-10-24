@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -75,11 +76,8 @@ func (d *serverWorkloadsDataSource) Schema(
 							Description: "Active/Inactive status of the server workload.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
-							Optional:    true,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"service_endpoint": schema.SingleNestedAttribute{
 							Description: "Service endpoint details.",
 							Computed:    true,
@@ -176,7 +174,12 @@ func (d *serverWorkloadsDataSource) Read(
 
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
-		serverWorkloadState := convertServerWorkloadDTOToModel(ctx, serverWorkload)
+		serverWorkloadState := convertServerWorkloadDTOToModel(
+			ctx,
+			serverWorkload,
+			&models.ServerWorkloadResourceModel{},
+		)
+		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)
 	}
 

@@ -3,11 +3,11 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -75,11 +75,8 @@ func (d *agentControllersDataSource) Schema(
 							Description: "Active/Inactive status of the agent controller.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"trust_provider_id": schema.StringAttribute{
 							Description: "Trust Provider to use for authentication of the agent controller.",
 							Computed:    true,
@@ -114,7 +111,12 @@ func (d *agentControllersDataSource) Read(
 
 	// Map response body to model
 	for _, agentController := range agentControllers {
-		agentControllerState := convertAgentControllerDTOToModel(ctx, agentController)
+		agentControllerState := convertAgentControllerDTOToModel(
+			ctx,
+			agentController,
+			&models.AgentControllerResourceModel{},
+		)
+		agentControllerState.Tags = newTagsModel(ctx, agentController.Tags)
 		state.AgentControllers = append(state.AgentControllers, agentControllerState)
 	}
 

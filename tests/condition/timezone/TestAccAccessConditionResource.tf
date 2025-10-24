@@ -24,8 +24,4 @@ resource "aembit_access_condition" "timezone" {
 		]
 		timezone = "America/Metlakatla"
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

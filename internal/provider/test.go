@@ -13,9 +13,12 @@ import (
 var maxRand = big.NewInt(10000000)
 
 const (
-	tagsCount = "tags.%"
-	tagsColor = "tags.color"
-	tagsDay   = "tags.day"
+	tagsCount    = "tags.%"
+	tagsAllCount = "tags_all.%"
+	tagsColor    = "tags.color"
+	tagsDay      = "tags.day"
+	tagsAllName  = "tags_all.Name"
+	tagsAllOwner = "tags_all.Owner"
 )
 
 func randomizeFileConfigs(newConfig, modifyConfig, startValue string) (string, string, string) {

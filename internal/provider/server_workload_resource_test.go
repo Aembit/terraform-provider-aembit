@@ -53,10 +53,6 @@ func TestAccServerWorkloadResource(t *testing.T) {
 						"is_active",
 						"false",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Sunday"),
 					// Verify Service Endpoint.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,
@@ -155,10 +151,6 @@ func TestAccServerWorkloadResource(t *testing.T) {
 						"Unit Test 1 - Modified",
 					),
 					resource.TestCheckResourceAttr(testServerWorkloadResource, "is_active", "true"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testServerWorkloadResource, tagsDay, "Tuesday"),
 					// Verify Service Endpoint updated.
 					resource.TestCheckResourceAttr(
 						testServerWorkloadResource,

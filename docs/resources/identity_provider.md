@@ -42,6 +42,7 @@ resource "aembit_identity_provider" "test_idp" {
 - `saml` (Attributes) SAML type Identity Provider configuration. (see [below for nested schema](#nestedatt--saml))
 - `sso_statement_role_mappings` (Attributes Set) Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow. (see [below for nested schema](#nestedatt--sso_statement_role_mappings))
 - `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 
 ### Read-Only
 

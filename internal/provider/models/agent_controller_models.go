@@ -12,6 +12,7 @@ type AgentControllerResourceModel struct {
 	Description        types.String `tfsdk:"description"`
 	IsActive           types.Bool   `tfsdk:"is_active"`
 	Tags               types.Map    `tfsdk:"tags"`
+	TagsAll            types.Map    `tfsdk:"tags_all"`
 	TrustProviderID    types.String `tfsdk:"trust_provider_id"`
 	AllowedTLSHostname types.String `tfsdk:"allowed_tls_hostname"`
 }

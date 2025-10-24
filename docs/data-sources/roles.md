@@ -55,7 +55,6 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the role.
 - `name` (String) User-provided name of the role.
 - `resource_sets_assignments` (Set of String) IDs of the Resource Sets associated with this Role.
-- `tags` (Map of String)
 
 <a id="nestedatt--roles--access_authorization_events"></a>
 ### Nested Schema for `roles.access_authorization_events`

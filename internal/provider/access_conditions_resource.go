@@ -25,6 +25,7 @@ var (
 	_ resource.Resource                = &accessConditionResource{}
 	_ resource.ResourceWithConfigure   = &accessConditionResource{}
 	_ resource.ResourceWithImportState = &accessConditionResource{}
+	_ resource.ResourceWithModifyPlan  = &accessConditionResource{}
 )
 
 // NewAccessConditionResource is a helper function to simplify the provider implementation.
@@ -88,11 +89,8 @@ func (r *accessConditionResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"integration_id": schema.StringAttribute{
 				Description: "Reference to the Integration used for this Access Condition.",
 				Required:    true,
@@ -211,6 +209,14 @@ func (r *accessConditionResource) Schema(
 	}
 }
 
+func (r *accessConditionResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Configure validators to ensure that only one Access Condition type is specified.
 func (r *accessConditionResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
@@ -258,7 +264,7 @@ func (r *accessConditionResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, plan)
+	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -297,7 +303,7 @@ func (r *accessConditionResource) Read(
 		return
 	}
 
-	state = convertAccessConditionDTOToModel(ctx, accessCondition, state)
+	state = convertAccessConditionDTOToModel(ctx, accessCondition, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -353,7 +359,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertAccessConditionDTOToModel(ctx, *accessCondition, state)
+	state = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -424,18 +430,6 @@ func convertAccessConditionModelToDTO(
 	}
 	if externalID != nil {
 		accessCondition.ExternalID = *externalID
-	}
-
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			accessCondition.Tags = append(accessCondition.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
 	}
 
 	accessCondition.IntegrationID = model.IntegrationID.ValueString()
@@ -531,6 +525,8 @@ func convertAccessConditionModelToDTO(
 		}
 	}
 
+	accessCondition.Tags = collectAllTagsDto(ctx, client.DefaultTags, model.Tags)
+
 	return accessCondition, nil
 }
 
@@ -594,14 +590,17 @@ func FillSubdivisions(
 func convertAccessConditionDTOToModel(
 	ctx context.Context,
 	dto aembit.AccessConditionV2DTO,
-	_ models.AccessConditionResourceModel,
+	planModel *models.AccessConditionResourceModel,
 ) models.AccessConditionResourceModel {
 	var model models.AccessConditionResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	if len(dto.IntegrationID) == 0 {
 		model.IntegrationID = types.StringValue(dto.Integration.ExternalID)

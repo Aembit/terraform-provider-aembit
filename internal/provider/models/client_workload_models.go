@@ -14,6 +14,7 @@ type ClientWorkloadResourceModel struct {
 	IsActive                       types.Bool   `tfsdk:"is_active"`
 	Identities                     types.Set    `tfsdk:"identities"`
 	Tags                           types.Map    `tfsdk:"tags"`
+	TagsAll                        types.Map    `tfsdk:"tags_all"`
 	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`
 }
 

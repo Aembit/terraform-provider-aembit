@@ -13,6 +13,7 @@ type CredentialProviderResourceModel struct {
 	Description            types.String                                   `tfsdk:"description"`
 	IsActive               types.Bool                                     `tfsdk:"is_active"`
 	Tags                   types.Map                                      `tfsdk:"tags"`
+	TagsAll                types.Map                                      `tfsdk:"tags_all"`
 	AembitToken            *CredentialProviderAembitTokenModel            `tfsdk:"aembit_access_token"`
 	APIKey                 *CredentialProviderAPIKeyModel                 `tfsdk:"api_key"`
 	AwsSTS                 *CredentialProviderAwsSTSModel                 `tfsdk:"aws_sts"`

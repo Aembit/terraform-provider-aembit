@@ -11,9 +11,5 @@ resource "aembit_client_workload" "test" {
             value = "custom-resource-set"
         },
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 

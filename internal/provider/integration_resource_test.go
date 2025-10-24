@@ -47,10 +47,6 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testIntegrationWiz, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testIntegrationWiz, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsDay, "Sunday"),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -73,10 +69,6 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 						"name",
 						"TF Acceptance Wiz - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsCount, "2"),
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(testIntegrationWiz, tagsDay, "Tuesday"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

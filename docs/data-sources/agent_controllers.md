@@ -22,6 +22,10 @@ Manages an agent controller.
 <a id="nestedatt--agent_controllers"></a>
 ### Nested Schema for `agent_controllers`
 
+Optional:
+
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
+
 Read-Only:
 
 - `allowed_tls_hostname` (String) Allowed TLS Hostname for Aembit Managed TLS.
