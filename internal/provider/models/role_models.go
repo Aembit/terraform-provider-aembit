@@ -11,7 +11,6 @@ type RoleResourceModel struct {
 	Name                    types.String    `tfsdk:"name"`
 	Description             types.String    `tfsdk:"description"`
 	IsActive                types.Bool      `tfsdk:"is_active"`
-	Tags                    types.Map       `tfsdk:"tags"`
 	ResourceSetsAssignments []types.String  `tfsdk:"resource_sets_assignments"`
 	AccessPolicies          *RolePermission `tfsdk:"access_policies"`
 	Routing                 *RolePermission `tfsdk:"routing"`

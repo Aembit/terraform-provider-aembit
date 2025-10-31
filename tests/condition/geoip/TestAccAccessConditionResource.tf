@@ -17,8 +17,4 @@ resource "aembit_access_condition" "geoip" {
 			}
 		]
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }

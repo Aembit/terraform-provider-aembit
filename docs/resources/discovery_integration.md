@@ -26,7 +26,8 @@ description: |-
 - `description` (String) User-defined description of the discovery integration.
 - `is_active` (Boolean) Active status of the discovery integration.
 - `sync_frequency_seconds` (Number) Frequency (in seconds) for synchronizing the discovery integration. Accepted range: 300-3600 seconds
-- `tags` (Map of String) Key-value pairs for tagging the discovery integration. (e.g., "environment" = "production").
+- `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `wiz_integration` (Attributes) Wiz-specific properties for the discovery integration. (see [below for nested schema](#nestedatt--wiz_integration))
 
 ### Read-Only

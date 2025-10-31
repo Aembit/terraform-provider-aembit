@@ -22,6 +22,10 @@ Manages an accessCondition.
 <a id="nestedatt--access_conditions"></a>
 ### Nested Schema for `access_conditions`
 
+Optional:
+
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
+
 Read-Only:
 
 - `crowdstrike_conditions` (Attributes) CrowdStrike Specific rules for the Access Condition. (see [below for nested schema](#nestedatt--access_conditions--crowdstrike_conditions))

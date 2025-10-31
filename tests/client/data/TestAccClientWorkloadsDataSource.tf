@@ -16,10 +16,6 @@ resource "aembit_client_workload" "test" {
             value = "unittest1namespace"
         },
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
     standalone_certificate_authority = aembit_standalone_certificate_authority.first_ca.id
 }
 

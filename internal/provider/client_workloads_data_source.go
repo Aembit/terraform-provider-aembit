@@ -3,11 +3,11 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -91,11 +91,8 @@ func (r *clientWorkloadsDataSource) Schema(
 								},
 							},
 						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
-							Optional:    true,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"standalone_certificate_authority": schema.StringAttribute{
 							Description: "Standalone Certificate Authority ID configured for this client workload.",
 							Optional:    true,
@@ -127,7 +124,12 @@ func (d *clientWorkloadsDataSource) Read(
 
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
-		clientWorkloadState := convertClientWorkloadDTOToModel(ctx, clientWorkload)
+		clientWorkloadState := convertClientWorkloadDTOToModel(
+			ctx,
+			clientWorkload,
+			&models.ClientWorkloadResourceModel{},
+		)
+		clientWorkloadState.Tags = newTagsModel(ctx, clientWorkload.Tags)
 		state.ClientWorkloads = append(state.ClientWorkloads, clientWorkloadState)
 	}
 

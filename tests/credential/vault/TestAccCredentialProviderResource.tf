@@ -4,10 +4,6 @@ provider "aembit" {
 resource "aembit_credential_provider" "vault" {
 	name = "TF Acceptance Vault"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	vault_client_token = {
 		subject = "subject"
 		subject_type = "literal"
@@ -36,10 +32,6 @@ resource "aembit_credential_provider" "vault" {
 resource "aembit_credential_provider" "vault_empty_custom_claims" {
 	name = "TF Acceptance Vault - EmptyClaims"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	vault_client_token = {
 		subject = "subject"
 		subject_type = "literal"
@@ -57,10 +49,6 @@ resource "aembit_credential_provider" "vault_empty_custom_claims" {
 resource "aembit_credential_provider" "vault_null_custom_claims" {
 	name = "TF Acceptance Vault - NullClaims"
 	is_active = true
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 	vault_client_token = {
 		subject = "subject"
 		subject_type = "literal"

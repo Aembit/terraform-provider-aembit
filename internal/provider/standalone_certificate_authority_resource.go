@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -11,8 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -20,6 +21,7 @@ var (
 	_ resource.Resource                = &standaloneCertificateAuthorityResource{}
 	_ resource.ResourceWithConfigure   = &standaloneCertificateAuthorityResource{}
 	_ resource.ResourceWithImportState = &standaloneCertificateAuthorityResource{}
+	_ resource.ResourceWithModifyPlan  = &standaloneCertificateAuthorityResource{}
 )
 
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
@@ -78,11 +80,8 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"leaf_lifetime": schema.Int32Attribute{
 				Description: "Leaf certificate lifetime(in minutes) of the standalone certificate authority. Valid options; 60, 1440, 10080.",
 				Required:    true,
@@ -110,6 +109,14 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 	}
 }
 
+func (r *standaloneCertificateAuthorityResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *standaloneCertificateAuthorityResource) Create(
 	ctx context.Context,
@@ -125,7 +132,12 @@ func (r *standaloneCertificateAuthorityResource) Create(
 	}
 
 	// Generate API request body from plan
-	standaloneCertificate := convertStandaloneCertificateModelToDTO(ctx, plan, nil)
+	standaloneCertificate := convertStandaloneCertificateModelToDTO(
+		ctx,
+		plan,
+		nil,
+		r.client.DefaultTags,
+	)
 
 	// Create new Standalone Certificate Authority
 	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(
@@ -141,7 +153,7 @@ func (r *standaloneCertificateAuthorityResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificateResponse)
+	plan = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificateResponse, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -188,7 +200,7 @@ func (r *standaloneCertificateAuthorityResource) Read(
 	}
 
 	// Overwrite items with refreshed state
-	state = convertStandaloneCertificateDTOToModel(ctx, standaloneCertificate)
+	state = convertStandaloneCertificateDTOToModel(ctx, standaloneCertificate, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -224,7 +236,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	}
 
 	// Generate API request body from plan
-	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID)
+	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Standalone Certificate Authority
 	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil)
@@ -237,7 +249,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertStandaloneCertificateDTOToModel(ctx, *serverWorkload)
+	state = convertStandaloneCertificateDTOToModel(ctx, *serverWorkload, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -286,23 +298,14 @@ func convertStandaloneCertificateModelToDTO(
 	ctx context.Context,
 	model models.StandaloneCertificateAuthorityResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.StandaloneCertificateDTO {
 	var standaloneCertificate aembit.StandaloneCertificateDTO
 	standaloneCertificate.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
 
-		for key, value := range tagsMap {
-			standaloneCertificate.Tags = append(standaloneCertificate.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
 	standaloneCertificate.LeafLifetime = model.LeafLifetime.ValueInt32()
 	standaloneCertificate.NotBefore = model.NotBefore.ValueString()
 	standaloneCertificate.NotAfter = model.NotAfter.ValueString()
@@ -311,23 +314,27 @@ func convertStandaloneCertificateModelToDTO(
 		standaloneCertificate.ExternalID = *externalID
 	}
 
+	standaloneCertificate.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return standaloneCertificate
 }
 
 func convertStandaloneCertificateDTOToModel(
 	ctx context.Context,
 	dto aembit.StandaloneCertificateDTO,
+	planModel *models.StandaloneCertificateAuthorityResourceModel,
 ) models.StandaloneCertificateAuthorityResourceModel {
 	var model models.StandaloneCertificateAuthorityResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
-	model.Tags = newTagsModel(ctx, dto.Tags)
 	model.LeafLifetime = types.Int32Value(dto.LeafLifetime)
 	model.NotBefore = types.StringValue(dto.NotBefore)
 	model.NotAfter = types.StringValue(dto.NotAfter)
 	model.ClientWorkloadCount = types.Int32Value(dto.ClientWorkloadCount)
 	model.ResourceSetCount = types.Int32Value(dto.ResourceSetCount)
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	return model
 }
