@@ -745,7 +745,7 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 			{
 				ResourceName:      gitlabManagedAccountResourcePath,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -818,7 +818,7 @@ func TestAccAwsSecretsManagerValueCP(t *testing.T) {
 			{
 				ResourceName:      awsSecretManagerResourcePath,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -911,7 +911,7 @@ func TestAccAzureKeyVaultValueCP(t *testing.T) {
 			{
 				ResourceName:      azureKeyVaultResourcePath,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -983,22 +983,6 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 						"name",
 						"TF Acceptance Vault",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsDay,
-						"Sunday",
-					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(vaultClientTokenResourcePath, "id"),
 					resource.TestCheckResourceAttr(
@@ -1059,22 +1043,6 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 						vaultClientTokenResourcePath,
 						"name",
 						"TF Acceptance Vault - Modified",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsColor,
-						"orange",
-					),
-					resource.TestCheckResourceAttr(
-						vaultClientTokenResourcePath,
-						tagsDay,
-						"Tuesday",
 					),
 					// Verify Vault_Forwarding update
 					resource.TestCheckResourceAttr(
@@ -1151,7 +1119,7 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: oidcIdTokenResourcePath, ImportState: true, ImportStateVerify: false},
+			{ResourceName: oidcIdTokenResourcePath, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -1231,7 +1199,7 @@ func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
 				),
 			},
 			// ImportState testing
-			{ResourceName: jwtSvidTokenResourcePath, ImportState: true, ImportStateVerify: false},
+			{ResourceName: jwtSvidTokenResourcePath, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),

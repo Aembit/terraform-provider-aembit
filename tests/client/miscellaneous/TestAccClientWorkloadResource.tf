@@ -15,9 +15,5 @@ resource "aembit_client_workload" "test" {
             value = "unittest1podname1"
         }
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 

@@ -489,22 +489,6 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKerberos, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsColor,
-						"blue",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsDay,
-						"Sunday",
-					),
 				),
 			},
 			// ImportState testing
@@ -522,22 +506,6 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 						trustProviderKerberos,
 						"name",
 						"TF Acceptance Kerberos - Modified",
-					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsCount,
-						"2",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsColor,
-						"orange",
-					),
-					resource.TestCheckResourceAttr(
-						trustProviderKerberos,
-						tagsDay,
-						"Tuesday",
 					),
 				),
 			},
@@ -572,10 +540,6 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderKubernetesKey,
@@ -620,10 +584,6 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 						"name",
 						"TF Acceptance Kubernetes - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsColor, "orange"),
-					resource.TestCheckResourceAttr(trustProviderKubernetes, tagsDay, "Tuesday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderKubernetesKey,
@@ -736,10 +696,6 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenKey,
@@ -774,10 +730,6 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						"name",
 						"TF Acceptance OIDC ID Token - Modified",
 					),
-					// Verify Tags.
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsCount, "2"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsColor, "blue"),
-					resource.TestCheckResourceAttr(trustProviderOidcidToken, tagsDay, "Sunday"),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenKey,

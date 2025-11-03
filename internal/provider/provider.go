@@ -42,12 +42,16 @@ func New(version string) func() provider.Provider {
 	}
 }
 
-// aembitProviderModel maps provider schema data to a Go type.
 type aembitProviderModel struct {
-	Tenant      types.String `tfsdk:"tenant"`
-	Token       types.String `tfsdk:"token"`
-	ClientID    types.String `tfsdk:"client_id"`
-	ResourceSet types.String `tfsdk:"resource_set_id"`
+	Tenant      types.String       `tfsdk:"tenant"`
+	Token       types.String       `tfsdk:"token"`
+	ClientID    types.String       `tfsdk:"client_id"`
+	ResourceSet types.String       `tfsdk:"resource_set_id"`
+	DefaultTags *DefaultTagsConfig `tfsdk:"default_tags"`
+}
+
+type DefaultTagsConfig struct {
+	Tags types.Map `tfsdk:"tags"`
 }
 
 // AembitProvider defines the provider implementation.
@@ -144,6 +148,17 @@ func (p *aembitProvider) Schema(
 			"resource_set_id": schema.StringAttribute{
 				Description: "The Aembit Resource Set to use for resources associated with this Terraform Provider.",
 				Optional:    true,
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"default_tags": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"tags": schema.MapAttribute{
+						ElementType: types.StringType,
+						Optional:    true,
+						Description: "Default tags to apply to resources",
+					},
+				},
 			},
 		},
 	}
@@ -286,6 +301,11 @@ func (p *aembitProvider) Configure(
 	ctx = tflog.SetField(ctx, "aembit_token", token)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "aembit_token")
 
+	tagsMap := make(map[string]string)
+	if config.DefaultTags != nil {
+		config.DefaultTags.Tags.ElementsAs(ctx, &tagsMap, true)
+	}
+
 	tflog.Debug(ctx, "Creating Aembit client")
 
 	// Create a new Aembit client using the configuration values
@@ -301,6 +321,7 @@ func (p *aembitProvider) Configure(
 	}
 	client.Tenant = tenant
 	client.StackDomain = stackDomain
+	client.DefaultTags = tagsMap
 
 	// Make the Aembit client available during DataSource and Resource
 	// type Configure methods.

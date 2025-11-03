@@ -26,6 +26,10 @@ Manages an integration.
 <a id="nestedatt--integrations"></a>
 ### Nested Schema for `integrations`
 
+Optional:
+
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
+
 Read-Only:
 
 - `description` (String) User-provided description of the integration.

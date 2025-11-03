@@ -24,6 +24,7 @@ var (
 	_ resource.Resource                = &identityProviderResource{}
 	_ resource.ResourceWithConfigure   = &identityProviderResource{}
 	_ resource.ResourceWithImportState = &identityProviderResource{}
+	_ resource.ResourceWithModifyPlan  = &identityProviderResource{}
 )
 
 func NewIdentityProviderResource() resource.Resource {
@@ -86,11 +87,8 @@ func (r *identityProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"sso_statement_role_mappings": schema.SetNestedAttribute{
 				Description: "Mapping between SAML attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 				Optional:    true,
@@ -196,6 +194,14 @@ func (r *identityProviderResource) Schema(
 	}
 }
 
+func (r *identityProviderResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 func ValidatePlan(
 	diagnostics *diag.Diagnostics,
 	plan *models.IdentityProviderResourceModel,
@@ -228,7 +234,7 @@ func (r *identityProviderResource) Create(
 	}
 
 	// Generate API request body from plan
-	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil)
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new identity provider
 	idp, err := r.client.CreateIdentityProvider(dto, nil)
@@ -318,7 +324,7 @@ func (r *identityProviderResource) Update(
 	}
 
 	// Generate API request body from plan
-	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID)
+	var dto = convertIdentityProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Identity Provider
 	idpDto, err := r.client.UpdateIdentityProvider(dto, nil)
@@ -392,23 +398,13 @@ func convertIdentityProviderModelToDTO(
 	ctx context.Context,
 	model models.IdentityProviderResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.IdentityProviderDTO {
 	var identityProvider aembit.IdentityProviderDTO
 	identityProvider.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
-	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			identityProvider.Tags = append(identityProvider.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
 	}
 
 	if externalID != nil {
@@ -447,6 +443,7 @@ func convertIdentityProviderModelToDTO(
 		}
 	}
 
+	identityProvider.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return identityProvider
 }
 
@@ -460,7 +457,10 @@ func convertIdentityProviderDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	// Set the objects to null to begin with
 	model.Saml = nil

@@ -56,6 +56,7 @@ resource "aembit_integration" "wiz" {
 - `description` (String) Description for the Integration.
 - `is_active` (Boolean) Active status of the Integration.
 - `tags` (Map of String) Tags are key-value pairs.
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 
 ### Read-Only
 

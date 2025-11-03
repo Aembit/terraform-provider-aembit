@@ -22,6 +22,10 @@ Manages an trust provider.
 <a id="nestedatt--trust_providers"></a>
 ### Nested Schema for `trust_providers`
 
+Optional:
+
+- `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
+
 Read-Only:
 
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
@@ -37,7 +41,7 @@ Read-Only:
 - `kubernetes_service_account` (Attributes) Kubernetes Service Account type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--kubernetes_service_account))
 - `name` (String) User-provided name of the trust provider.
 - `oidc_id_token` (Attributes) OIDC ID Token type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--oidc_id_token))
-- `tags` (Map of String)
+- `tags` (Map of String) Tags are key-value pairs.
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>

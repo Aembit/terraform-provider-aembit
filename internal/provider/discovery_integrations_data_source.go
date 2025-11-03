@@ -3,11 +3,11 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -76,12 +76,8 @@ func (d *discoveryIntegrationsDataSource) Schema(
 							Optional:    true,
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Key-value pairs for tagging the discovery integration. (e.g., \"environment\" = \"production\").",
-							ElementType: types.StringType,
-							Optional:    true,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"type": schema.StringAttribute{
 							Description: "Type of discovery integration. The only accepted value is `WizIntegrationApi`.",
 							Required:    true,
@@ -154,8 +150,9 @@ func (d *discoveryIntegrationsDataSource) Read(
 		discoveryIntegtationState := convertDiscoveryIntegrationDTOToModel(
 			ctx,
 			discoveryIntegration,
-			models.DiscoveryIntegrationResourceModel{},
+			&models.DiscoveryIntegrationResourceModel{},
 		)
+		discoveryIntegtationState.Tags = newTagsModel(ctx, discoveryIntegration.Tags)
 		state.DiscoveryIntegrations = append(state.DiscoveryIntegrations, discoveryIntegtationState)
 	}
 

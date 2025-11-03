@@ -23,9 +23,5 @@ resource "aembit_client_workload" "test" {
             value = "subject"
         },
     ]
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 

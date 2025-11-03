@@ -20,6 +20,7 @@ var (
 	_ resource.Resource                = &integrationResource{}
 	_ resource.ResourceWithConfigure   = &integrationResource{}
 	_ resource.ResourceWithImportState = &integrationResource{}
+	_ resource.ResourceWithModifyPlan  = &integrationResource{}
 )
 
 // NewIntegrationResource is a helper function to simplify the provider implementation.
@@ -83,11 +84,8 @@ func (r *integrationResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"type": schema.StringAttribute{
 				Description: "Type of Aembit Integration. Possible values are: `WizIntegrationApi` or `CrowdStrike`.",
 				Required:    true,
@@ -145,6 +143,14 @@ func (r *integrationResource) Schema(
 	}
 }
 
+func (r *integrationResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *integrationResource) Create(
 	ctx context.Context,
@@ -160,7 +166,7 @@ func (r *integrationResource) Create(
 	}
 
 	// Generate API request body from plan
-	dto := convertIntegrationModelToDTO(ctx, plan, nil)
+	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegrationV2(dto, nil)
@@ -173,7 +179,7 @@ func (r *integrationResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertIntegrationDTOToModel(ctx, *integration, plan)
+	plan = convertIntegrationDTOToModel(ctx, *integration, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -212,7 +218,7 @@ func (r *integrationResource) Read(
 		return
 	}
 
-	state = convertIntegrationDTOToModel(ctx, integration, state)
+	state = convertIntegrationDTOToModel(ctx, integration, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -248,7 +254,7 @@ func (r *integrationResource) Update(
 	}
 
 	// Generate API request body from plan
-	dto := convertIntegrationModelToDTO(ctx, plan, &externalID)
+	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
 	integration, err := r.client.UpdateIntegrationV2(dto, nil)
@@ -261,7 +267,7 @@ func (r *integrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIntegrationDTOToModel(ctx, *integration, plan)
+	state = convertIntegrationDTOToModel(ctx, *integration, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -329,17 +335,6 @@ func convertIntegrationModelToDTO(
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
-
-		for key, value := range tagsMap {
-			integration.Tags = append(integration.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
 
 	if externalID != nil {
 		integration.ExternalID = *externalID
@@ -361,6 +356,7 @@ func convertIntegrationModelToDTO(
 		}
 	}
 
+	integration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return integration
 }
 
@@ -374,7 +370,6 @@ func convertIntegrationDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
 
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)
@@ -399,5 +394,8 @@ func convertIntegrationDTOToModel(
 		}
 	}
 
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 	return model
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -86,11 +85,8 @@ func (d *integrationsDataSource) Schema(
 							Description: "Active/Inactive status of the integration.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"type": schema.StringAttribute{
 							Description: "Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).",
 							Computed:    true,
@@ -167,8 +163,9 @@ func (d *integrationsDataSource) Read(
 		integrationState := convertIntegrationDTOToModel(
 			ctx,
 			integration,
-			models.IntegrationResourceModel{},
+			&models.IntegrationResourceModel{},
 		)
+		integrationState.Tags = newTagsModel(ctx, integration.Tags)
 		state.Integrations = append(state.Integrations, integrationState)
 	}
 

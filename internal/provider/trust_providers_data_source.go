@@ -76,10 +76,8 @@ func (d *trustProvidersDataSource) Schema(
 							Description: "Active/Inactive status of the trust provider.",
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"azure_metadata": schema.SingleNestedAttribute{
 							Description: "Azure Metadata type Trust Provider configuration.",
 							Computed:    true,
@@ -634,10 +632,11 @@ func (d *trustProvidersDataSource) Read(
 		trustProviderState := convertTrustProviderDTOToModel(
 			ctx,
 			trustProvider,
-			models.TrustProviderResourceModel{},
+			&models.TrustProviderResourceModel{},
 			d.client.Tenant,
 			d.client.StackDomain,
 		)
+		trustProviderState.Tags = newTagsModel(ctx, trustProvider.Tags)
 		state.TrustProviders = append(state.TrustProviders, trustProviderState)
 	}
 

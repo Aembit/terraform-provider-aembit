@@ -32,6 +32,7 @@ var (
 	_ resource.Resource                = &credentialProviderResource{}
 	_ resource.ResourceWithConfigure   = &credentialProviderResource{}
 	_ resource.ResourceWithImportState = &credentialProviderResource{}
+	_ resource.ResourceWithModifyPlan  = &credentialProviderResource{}
 )
 
 const oidcIssuerTemplate string = "https://%s.id.%s"
@@ -98,11 +99,8 @@ func (r *credentialProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
-			"tags": schema.MapAttribute{
-				Description: "Tags are key-value pairs.",
-				ElementType: types.StringType,
-				Optional:    true,
-			},
+			"tags":     TagsMapAttribute(),
+			"tags_all": TagsAllMapAttribute(),
 			"aembit_access_token": schema.SingleNestedAttribute{
 				Description: "Aembit Access Token type Credential Provider configuration.",
 				Optional:    true,
@@ -858,6 +856,14 @@ func (r *credentialProviderResource) ConfigValidators(
 	}
 }
 
+func (r *credentialProviderResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *credentialProviderResource) Create(
 	ctx context.Context,
@@ -879,6 +885,7 @@ func (r *credentialProviderResource) Create(
 		nil,
 		r.client.Tenant,
 		r.client.StackDomain,
+		r.client.DefaultTags,
 	)
 
 	// Create new Credential Provider
@@ -895,7 +902,7 @@ func (r *credentialProviderResource) Create(
 	plan = convertCredentialProviderV2DTOToModel(
 		ctx,
 		*credentialProvider,
-		plan,
+		&plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -943,7 +950,7 @@ func (r *credentialProviderResource) Read(
 	state = convertCredentialProviderV2DTOToModel(
 		ctx,
 		credentialProvider,
-		state,
+		&state,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
@@ -988,6 +995,7 @@ func (r *credentialProviderResource) Update(
 		&externalID,
 		r.client.Tenant,
 		r.client.StackDomain,
+		r.client.DefaultTags,
 	)
 
 	// Update Credential Provider
@@ -1004,11 +1012,10 @@ func (r *credentialProviderResource) Update(
 	plan = convertCredentialProviderV2DTOToModel(
 		ctx,
 		*credentialProvider,
-		plan,
+		&plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -1070,6 +1077,7 @@ func convertCredentialProviderModelToV2DTO(
 	externalID *string,
 	tenantID string,
 	stackDomain string,
+	defaultTags map[string]string,
 ) aembit.CredentialProviderV2DTO {
 	var credential aembit.CredentialProviderV2DTO
 	credential.EntityDTO = aembit.EntityDTO{
@@ -1077,17 +1085,7 @@ func convertCredentialProviderModelToV2DTO(
 		Description: model.Description.ValueString(),
 		IsActive:    model.IsActive.ValueBool(),
 	}
-	if len(model.Tags.Elements()) > 0 {
-		tagsMap := make(map[string]string)
-		_ = model.Tags.ElementsAs(ctx, &tagsMap, true)
 
-		for key, value := range tagsMap {
-			credential.Tags = append(credential.Tags, aembit.TagDTO{
-				Key:   key,
-				Value: value,
-			})
-		}
-	}
 	if externalID != nil {
 		credential.ExternalID = *externalID
 	}
@@ -1181,13 +1179,14 @@ func convertCredentialProviderModelToV2DTO(
 		convertToAzureKeyVaultValueDTO(&credential, model)
 	}
 
+	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return credential
 }
 
 func convertCredentialProviderV2DTOToModel(
 	ctx context.Context,
 	dto aembit.CredentialProviderV2DTO,
-	state models.CredentialProviderResourceModel,
+	planModel *models.CredentialProviderResourceModel,
 	tenant, stackDomain string,
 ) models.CredentialProviderResourceModel {
 	var model models.CredentialProviderResourceModel
@@ -1195,7 +1194,9 @@ func convertCredentialProviderV2DTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
-	model.Tags = newTagsModel(ctx, dto.Tags)
+	// handle tags
+	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
+	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	// Set the objects to null to begin with
 	model.AembitToken = nil
@@ -1217,7 +1218,7 @@ func convertCredentialProviderV2DTOToModel(
 	case "aembit-access-token":
 		model.AembitToken = convertAembitTokenV2DTOToModel(dto)
 	case "apikey":
-		model.APIKey = convertAPIKeyV2DTOToModel(dto, state)
+		model.APIKey = convertAPIKeyV2DTOToModel(dto, *planModel)
 	case "aws-sts-oidc":
 		model.AwsSTS = convertAwsSTSV2DTOToModel(dto, tenant, stackDomain)
 	case "gcp-identity-federation":
@@ -1227,17 +1228,17 @@ func convertCredentialProviderV2DTOToModel(
 	case "signed-jwt":
 		model.SnowflakeToken = convertSnowflakeTokenV2DTOToModel(dto)
 	case "oauth-client-credential":
-		model.OAuthClientCredentials = convertOAuthClientCredentialV2DTOToModel(dto, state)
+		model.OAuthClientCredentials = convertOAuthClientCredentialV2DTOToModel(dto, *planModel)
 	case "oauth-authorization-code":
-		model.OAuthAuthorizationCode = convertOAuthAuthorizationCodeV2DTOToModel(dto, state)
+		model.OAuthAuthorizationCode = convertOAuthAuthorizationCodeV2DTOToModel(dto, *planModel)
 	case "username-password":
-		model.UsernamePassword = convertUserPassV2DTOToModel(dto, state)
+		model.UsernamePassword = convertUserPassV2DTOToModel(dto, *planModel)
 	case "vaultClientToken":
-		model.VaultClientToken = convertVaultClientTokenV2DTOToModel(dto, state)
+		model.VaultClientToken = convertVaultClientTokenV2DTOToModel(dto, *planModel)
 	case "gitlab-managed-account":
-		model.ManagedGitlabAccount = convertManagedGitlabAccountDTOToModel(dto, state)
+		model.ManagedGitlabAccount = convertManagedGitlabAccountDTOToModel(dto, *planModel)
 	case "oidc-id-token":
-		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, state)
+		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, *planModel)
 	case "aws-secret-manager-value":
 		model.AwsSecretsManagerValue = &models.CredentialProviderAwsSecretsManagerValueModel{
 			SecretArn:            types.StringValue(dto.SecretArn),
@@ -1258,7 +1259,7 @@ func convertCredentialProviderV2DTOToModel(
 			),
 		}
 	case "jwt-svid-token":
-		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto, state)
+		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto, *planModel)
 	}
 	return model
 }

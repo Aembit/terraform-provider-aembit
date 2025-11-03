@@ -80,11 +80,8 @@ func (r *identityProviderDataSource) Schema(
 							Optional:    true,
 							Computed:    true,
 						},
-						"tags": schema.MapAttribute{
-							Description: "Tags are key-value pairs.",
-							ElementType: types.StringType,
-							Optional:    true,
-						},
+						"tags":     TagsComputedMapAttribute(),
+						"tags_all": TagsAllMapAttribute(),
 						"sso_statement_role_mappings": schema.SetNestedAttribute{
 							Description: "Mapping between attributes for the Identity Provider and Aembit user roles. This set of attributes is used to assign Aembit Roles to users during automatic user creation during the SSO flow.",
 							Optional:    true,
@@ -196,8 +193,13 @@ func (r *identityProviderDataSource) Read(
 	}
 
 	for _, idp := range idps {
-		idpState := convertIdentityProviderDTOToModel(ctx, nil, idp)
+		idpState := convertIdentityProviderDTOToModel(
+			ctx,
+			&models.IdentityProviderResourceModel{},
+			idp,
+		)
 
+		idpState.Tags = newTagsModel(ctx, idp.Tags)
 		state.IdentityProviders = append(state.IdentityProviders, idpState)
 	}
 

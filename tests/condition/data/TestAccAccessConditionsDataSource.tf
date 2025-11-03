@@ -27,10 +27,6 @@ resource "aembit_access_condition" "crowdstrike" {
 		match_mac_address = true
 		match_local_ip = true
 	}
-    tags = {
-        color = "blue"
-        day   = "Sunday"
-    }
 }
 
 data "aembit_access_conditions" "test" {
