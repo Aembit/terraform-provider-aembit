@@ -328,6 +328,7 @@ func convertIntegrationModelToDTO(
 	ctx context.Context,
 	model models.IntegrationResourceModel,
 	externalID *string,
+	defaultTags map[string]string,
 ) aembit.IntegrationV2DTO {
 	var integration aembit.IntegrationV2DTO
 	integration.EntityDTO = aembit.EntityDTO{
@@ -363,7 +364,7 @@ func convertIntegrationModelToDTO(
 func convertIntegrationDTOToModel(
 	ctx context.Context,
 	dto aembit.IntegrationV2DTO,
-	state models.IntegrationResourceModel,
+	planModel *models.IntegrationResourceModel,
 ) models.IntegrationResourceModel {
 	var model models.IntegrationResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
@@ -382,8 +383,8 @@ func convertIntegrationDTOToModel(
 		WizIntegration: nil,
 	}
 
-	if state.OAuthClientCredentials != nil && !state.OAuthClientCredentials.ClientSecret.IsNull() {
-		oauthModel.ClientSecret = state.OAuthClientCredentials.ClientSecret
+	if planModel.OAuthClientCredentials != nil && !planModel.OAuthClientCredentials.ClientSecret.IsNull() {
+		oauthModel.ClientSecret = planModel.OAuthClientCredentials.ClientSecret
 	}
 
 	model.OAuthClientCredentials = oauthModel
