@@ -383,7 +383,8 @@ func convertIntegrationDTOToModel(
 		WizIntegration: nil,
 	}
 
-	if planModel.OAuthClientCredentials != nil && !planModel.OAuthClientCredentials.ClientSecret.IsNull() {
+	if planModel.OAuthClientCredentials != nil &&
+		!planModel.OAuthClientCredentials.ClientSecret.IsNull() {
 		oauthModel.ClientSecret = planModel.OAuthClientCredentials.ClientSecret
 	}
 
