@@ -127,15 +127,9 @@ func (r *integrationResource) Schema(
 						Required:    true,
 						Sensitive:   true,
 					},
-					"wiz_integration": schema.SingleNestedAttribute{
-						Description: "Wiz integration configuration.",
+					"audience": schema.StringAttribute{
+						Description: "Audience for the OAuth Endpoint of the Integration.",
 						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"audience": schema.StringAttribute{
-								Description: "Audience for the Wiz Integration.",
-								Optional:    true,
-							},
-						},
 					},
 				},
 			},
@@ -350,11 +344,7 @@ func convertIntegrationModelToDTO(
 	integration.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
 
 	if model.Type.ValueString() == "WizIntegrationApi" {
-		if model.OAuthClientCredentials.WizIntegration != nil {
-			if !model.OAuthClientCredentials.WizIntegration.Audience.IsNull() {
-				integration.Audience = model.OAuthClientCredentials.WizIntegration.Audience.ValueString()
-			}
-		}
+		integration.Audience = model.OAuthClientCredentials.Audience.ValueString()
 	}
 
 	integration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
@@ -377,10 +367,9 @@ func convertIntegrationDTOToModel(
 	model.SyncFrequency = types.Int64Value(dto.SyncFrequencySeconds)
 
 	oauthModel := &models.IntegrationOAuthClientCredentialsModel{
-		TokenURL:       types.StringValue(dto.TokenURL),
-		ClientID:       types.StringValue(dto.ClientID),
-		ClientSecret:   types.StringNull(),
-		WizIntegration: nil,
+		TokenURL:     types.StringValue(dto.TokenURL),
+		ClientID:     types.StringValue(dto.ClientID),
+		ClientSecret: types.StringNull(),
 	}
 
 	if planModel.OAuthClientCredentials != nil &&
@@ -390,10 +379,9 @@ func convertIntegrationDTOToModel(
 
 	model.OAuthClientCredentials = oauthModel
 
-	if dto.Type == "WizIntegrationApi" && dto.Audience != "" {
-		model.OAuthClientCredentials.WizIntegration = &models.WizIntegrationModel{
-			Audience: types.StringValue(dto.Audience),
-		}
+	if dto.Type == "WizIntegrationApi" && dto.Audience != "" &&
+		model.OAuthClientCredentials != nil {
+		model.OAuthClientCredentials.Audience = types.StringValue(dto.Audience)
 	}
 
 	// handle tags

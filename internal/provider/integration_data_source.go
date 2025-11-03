@@ -113,16 +113,7 @@ func (d *integrationsDataSource) Schema(
 									Computed:  true,
 									Sensitive: true,
 								},
-								"wiz_integration": schema.SingleNestedAttribute{
-									Description: "Wiz integration configuration.",
-									Computed:    true,
-									Attributes: map[string]schema.Attribute{
-										"audience": schema.StringAttribute{
-											Description: "Audience for the Wiz Integration.",
-											Computed:    true,
-										},
-									},
-								},
+								"audience": schema.StringAttribute{Optional: true},
 							},
 						},
 					},
