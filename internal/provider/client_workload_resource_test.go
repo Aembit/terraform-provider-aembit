@@ -581,7 +581,8 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_ProcessPath(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/client/processPath/TestAccClientWorkloadResource.tf")
+	createFile, _ := os.ReadFile(
+		"../../tests/client/processPath/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/processPath/TestAccClientWorkloadResource.tfmod",
 	)
@@ -652,7 +653,8 @@ func TestAccClientWorkloadResource_ProcessPath(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_ProcessCommandLine(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/client/processCommandLine/TestAccClientWorkloadResource.tf")
+	createFile, _ := os.ReadFile(
+		"../../tests/client/processCommandLine/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/processCommandLine/TestAccClientWorkloadResource.tfmod",
 	)
