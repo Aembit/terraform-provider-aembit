@@ -11,7 +11,6 @@ resource "aembit_integration" "crowdstrike" {
 		token_url = "https://api.crowdstrike.com/oauth2/token"
 		client_id = "client_id"
 		client_secret = "client_secret"
-		audience = "audience"
 	}
 }
 
