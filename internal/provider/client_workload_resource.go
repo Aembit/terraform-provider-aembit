@@ -120,6 +120,8 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `oidcIdTokenSubject`\n" +
 								"\t* `processName`\n" +
 								"\t* `processUserName`\n" +
+								"\t* `processPath`\n" +
+								"\t* `processCommandLine`\n" +
 								"\t* `sourceIPAddress`\n" +
 								"\t* `terraformIdTokenOrganizationId`\n" +
 								"\t* `terraformIdTokenProjectId`\n" +
@@ -154,6 +156,8 @@ func (r *clientWorkloadResource) Schema(
 									"oidcIdTokenSubject",
 									"processName",
 									"processUserName",
+									"processPath",
+									"processCommandLine",
 									"sourceIPAddress",
 									"terraformIdTokenOrganizationId",
 									"terraformIdTokenProjectId",
