@@ -133,7 +133,7 @@ func (d *integrationsDataSource) Read(
 
 	req.Config.Get(ctx, &state)
 
-	integrations, err := d.client.GetIntegrations(nil)
+	integrations, err := d.client.GetIntegrationsV2(nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",

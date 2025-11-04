@@ -163,7 +163,7 @@ func (r *integrationResource) Create(
 	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Integration
-	integration, err := r.client.CreateIntegration(dto, nil)
+	integration, err := r.client.CreateIntegrationV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -198,7 +198,7 @@ func (r *integrationResource) Read(
 	}
 
 	// Get refreshed trust value from Aembit
-	integration, err, notFound := r.client.GetIntegration(state.ID.ValueString(), nil)
+	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
@@ -251,7 +251,7 @@ func (r *integrationResource) Update(
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegration(dto, nil)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -287,7 +287,7 @@ func (r *integrationResource) Delete(
 
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableIntegration(state.ID.ValueString(), nil)
+		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -298,7 +298,7 @@ func (r *integrationResource) Delete(
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegration(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
@@ -323,8 +323,8 @@ func convertIntegrationModelToDTO(
 	model models.IntegrationResourceModel,
 	externalID *string,
 	defaultTags map[string]string,
-) aembit.IntegrationDTO {
-	var integration aembit.IntegrationDTO
+) aembit.IntegrationV2DTO {
+	var integration aembit.IntegrationV2DTO
 	integration.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
@@ -337,12 +337,14 @@ func convertIntegrationModelToDTO(
 
 	integration.Endpoint = model.Endpoint.ValueString()
 	integration.Type = model.Type.ValueString()
+	integration.IntegrationType = model.Type.ValueString()
 	integration.SyncFrequencySeconds = model.SyncFrequency.ValueInt64()
-	integration.IntegrationJSON = aembit.IntegrationJSONDTO{
-		TokenURL:     model.OAuthClientCredentials.TokenURL.ValueString(),
-		ClientID:     model.OAuthClientCredentials.ClientID.ValueString(),
-		ClientSecret: model.OAuthClientCredentials.ClientSecret.ValueString(),
-		Audience:     model.OAuthClientCredentials.Audience.ValueString(),
+	integration.TokenURL = model.OAuthClientCredentials.TokenURL.ValueString()
+	integration.ClientID = model.OAuthClientCredentials.ClientID.ValueString()
+	integration.ClientSecret = model.OAuthClientCredentials.ClientSecret.ValueString()
+
+	if model.Type.ValueString() == "WizIntegrationApi" {
+		integration.Audience = model.OAuthClientCredentials.Audience.ValueString()
 	}
 
 	integration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
@@ -351,7 +353,7 @@ func convertIntegrationModelToDTO(
 
 func convertIntegrationDTOToModel(
 	ctx context.Context,
-	dto aembit.IntegrationDTO,
+	dto aembit.IntegrationV2DTO,
 	planModel *models.IntegrationResourceModel,
 ) models.IntegrationResourceModel {
 	var model models.IntegrationResourceModel
@@ -363,14 +365,23 @@ func convertIntegrationDTOToModel(
 	model.Type = types.StringValue(dto.Type)
 	model.Endpoint = types.StringValue(dto.Endpoint)
 	model.SyncFrequency = types.Int64Value(dto.SyncFrequencySeconds)
-	model.OAuthClientCredentials = &models.IntegrationOAuthClientCredentialsModel{
-		TokenURL:     types.StringValue(dto.IntegrationJSON.TokenURL),
-		ClientID:     types.StringValue(dto.IntegrationJSON.ClientID),
-		ClientSecret: types.StringValue(dto.IntegrationJSON.ClientSecret),
-		Audience:     types.StringValue(dto.IntegrationJSON.Audience),
+
+	oauthModel := &models.IntegrationOAuthClientCredentialsModel{
+		TokenURL:     types.StringValue(dto.TokenURL),
+		ClientID:     types.StringValue(dto.ClientID),
+		ClientSecret: types.StringNull(),
 	}
-	if len(dto.IntegrationJSON.ClientSecret) == 0 && planModel.OAuthClientCredentials != nil {
-		model.OAuthClientCredentials.ClientSecret = planModel.OAuthClientCredentials.ClientSecret
+
+	if planModel.OAuthClientCredentials != nil &&
+		!planModel.OAuthClientCredentials.ClientSecret.IsNull() {
+		oauthModel.ClientSecret = planModel.OAuthClientCredentials.ClientSecret
+	}
+
+	model.OAuthClientCredentials = oauthModel
+
+	if dto.Type == "WizIntegrationApi" && dto.Audience != "" &&
+		model.OAuthClientCredentials != nil {
+		model.OAuthClientCredentials.Audience = types.StringValue(dto.Audience)
 	}
 
 	// handle tags
