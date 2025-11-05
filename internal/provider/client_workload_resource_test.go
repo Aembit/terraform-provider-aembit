@@ -579,3 +579,147 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 		})
 	}
 }
+
+func TestAccClientWorkloadResource_ProcessPath(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/client/processPath/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/processPath/TestAccClientWorkloadResource.tfmod",
+	)
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"/process/path",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance ProcessPath",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"processPath",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						newName,
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance ProcessPath - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_ProcessCommandLine(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/client/processCommandLine/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/processCommandLine/TestAccClientWorkloadResource.tfmod",
+	)
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"*process command line*",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance ProcessCommandLine",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"processCommandLine",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						newName,
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance ProcessCommandLine - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

@@ -77,6 +77,8 @@ Required:
 	* `oidcIdTokenSubject`
 	* `processName`
 	* `processUserName`
+	* `processPath`
+	* `processCommandLine`
 	* `sourceIPAddress`
 	* `terraformIdTokenOrganizationId`
 	* `terraformIdTokenProjectId`
