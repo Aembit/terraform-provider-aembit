@@ -128,6 +128,7 @@ func (r *serverWorkloadResource) Schema(
 								"Amazon Redshift",
 								"HTTP",
 								"MySQL",
+								"OAuth",
 								"PostgreSQL",
 								"Redis",
 								"Snowflake",
@@ -170,6 +171,12 @@ func (r *serverWorkloadResource) Schema(
 						Optional:    true,
 						Computed:    true,
 					},
+					"url_path": schema.StringAttribute{
+						Description: "URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.",
+						Required:    false,
+						Optional:    true,
+						Computed:    true,
+					},
 					"http_headers": schema.MapAttribute{
 						Description: "HTTP Headers are key-value pairs.",
 						ElementType: types.StringType,
@@ -184,6 +191,7 @@ func (r *serverWorkloadResource) Schema(
 									"\t* `API Key`\n" +
 									"\t* `HTTP Authentication`\n" +
 									"\t* `JWT Token Authentication`\n" +
+									"\t* `OAuth Client Authentication`\n" +
 									"\t* `Password Authentication`\n",
 								Required: true,
 								Validators: []validator.String{
@@ -191,6 +199,7 @@ func (r *serverWorkloadResource) Schema(
 										"API Key",
 										"HTTP Authentication",
 										"JWT Token Authentication",
+										"OAuth Client Authentication",
 										"Password Authentication",
 									}...),
 								},
@@ -207,6 +216,8 @@ func (r *serverWorkloadResource) Schema(
 									"\t\t* `AWS Signature v4`\n" +
 									"\t* For Authentation Method `JWT Token Authentication`:\n" +
 									"\t\t* `Snowflake JWT`\n" +
+									"\t* For Authentation Method `OAuth Client Authentication`:\n" +
+									"\t\t* `POST Body`\n" +
 									"\t* For Authentation Method `Password Authentication`:\n" +
 									"\t\t* `Password`\n",
 								Required: true,
@@ -220,6 +231,7 @@ func (r *serverWorkloadResource) Schema(
 										"AWS Signature v4",
 										"Snowflake JWT",
 										"Password",
+										"POST Body",
 									}...),
 								},
 							},
@@ -441,6 +453,7 @@ func convertServerWorkloadModelToDTO(
 		RequestedTLS:      model.ServiceEndpoint.RequestedTLS.ValueBool(),
 		TLS:               model.ServiceEndpoint.TLS.ValueBool(),
 		TLSVerification:   model.ServiceEndpoint.TLSVerification.ValueString(),
+		URLPath:           model.ServiceEndpoint.URLPath.ValueString(),
 	}
 
 	if model.ServiceEndpoint.WorkloadServiceAuthentication != nil {
@@ -499,6 +512,7 @@ func convertServerWorkloadDTOToModel(
 		RequestedTLS:      types.BoolValue(dto.ServiceEndpoint.RequestedTLS),
 		TLS:               types.BoolValue(dto.ServiceEndpoint.TLS),
 		TLSVerification:   types.StringValue(dto.ServiceEndpoint.TLSVerification),
+		URLPath:           types.StringValue(dto.ServiceEndpoint.URLPath),
 	}
 	model.ServiceEndpoint.HTTPHeaders = newHTTPHeadersModel(ctx, dto.ServiceEndpoint.HTTPHeaders)
 

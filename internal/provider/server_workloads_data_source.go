@@ -122,6 +122,10 @@ func (d *serverWorkloadsDataSource) Schema(
 									Description: "tls of the service endpoint.",
 									Computed:    true,
 								},
+								"url_path": schema.StringAttribute{
+									Description: "URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.",
+									Computed:    true,
+								},
 								"http_headers": schema.MapAttribute{
 									Description: "HTTP Headers are key-value pairs.",
 									ElementType: types.StringType,
