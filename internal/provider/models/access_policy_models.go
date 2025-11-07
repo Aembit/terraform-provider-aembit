@@ -27,6 +27,7 @@ type PolicyCredentialMappingModel struct {
 	CredentialProviderId types.String `tfsdk:"credential_provider_id"`
 	MappingType          types.String `tfsdk:"mapping_type"`
 	AccountName          types.String `tfsdk:"account_name"`
+	AccessKeyId          types.String `tfsdk:"access_key_id"`
 	HeaderName           types.String `tfsdk:"header_name"`
 	HeaderValue          types.String `tfsdk:"header_value"`
 	HttpbodyFieldPath    types.String `tfsdk:"httpbody_field_path"`

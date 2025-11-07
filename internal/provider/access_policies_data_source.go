@@ -129,6 +129,11 @@ func (d *accessPoliciesDataSource) Schema(
 										Optional:    true,
 										Computed:    true,
 									},
+									"access_key_id": schema.StringAttribute{
+										Description: "Name of the AWS Access Key Id for the credential provider.",
+										Optional:    true,
+										Computed:    true,
+									},
 								},
 							},
 						},

@@ -148,6 +148,7 @@ func (r *accessPolicyResource) Schema(
 						"httpbody_field_path":    types.StringType,
 						"httpbody_field_value":   types.StringType,
 						"account_name":           types.StringType,
+						"access_key_id":          types.StringType,
 					}}),
 				),
 				NestedObject: schema.NestedAttributeObject{
@@ -185,6 +186,11 @@ func (r *accessPolicyResource) Schema(
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
+							Optional:    true,
+							Computed:    true,
+						},
+						"access_key_id": schema.StringAttribute{
+							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
 							Computed:    true,
 						},
@@ -475,6 +481,7 @@ func convertAccessPolicyModelToPolicyDTO(
 			CredentialProviderId: model.CredentialProvider.ValueString(),
 			MappingType:          "None",
 			AccountName:          "",
+			AccessKeyId:          "",
 			HeaderName:           "",
 			HeaderValue:          "",
 			HttpbodyFieldPath:    "",
@@ -489,6 +496,7 @@ func convertAccessPolicyModelToPolicyDTO(
 					CredentialProviderId: credentialProvider.CredentialProviderId.ValueString(),
 					MappingType:          credentialProvider.MappingType.ValueString(),
 					AccountName:          credentialProvider.AccountName.ValueString(),
+					AccessKeyId:          credentialProvider.AccessKeyId.ValueString(),
 					HeaderName:           credentialProvider.HeaderName.ValueString(),
 					HeaderValue:          credentialProvider.HeaderValue.ValueString(),
 					HttpbodyFieldPath:    credentialProvider.HttpbodyFieldPath.ValueString(),
@@ -531,6 +539,7 @@ func convertAccessPolicyDTOToModel(
 					),
 					MappingType:        types.StringValue(credentialProvider.MappingType),
 					AccountName:        types.StringValue(""),
+					AccessKeyId:        types.StringValue(""),
 					HeaderName:         types.StringValue(""),
 					HeaderValue:        types.StringValue(""),
 					HttpbodyFieldPath:  types.StringValue(""),
@@ -539,6 +548,9 @@ func convertAccessPolicyDTOToModel(
 
 				model.CredentialProviders[i].AccountName = types.StringValue(
 					credentialProvider.AccountName,
+				)
+				model.CredentialProviders[i].AccessKeyId = types.StringValue(
+					credentialProvider.AccessKeyId,
 				)
 				model.CredentialProviders[i].HeaderName = types.StringValue(
 					credentialProvider.HeaderName,
@@ -616,6 +628,7 @@ func convertAccessPolicyExternalDTOToModel(
 					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
 					MappingType:          types.StringValue(relatedMapping.MappingType),
 					AccountName:          types.StringValue(relatedMapping.AccountName),
+					AccessKeyId:          types.StringValue(relatedMapping.AccessKeyId),
 					HeaderName:           types.StringValue(relatedMapping.HeaderName),
 					HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
 					HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
