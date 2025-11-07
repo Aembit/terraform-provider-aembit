@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	AccessPolicyPathFirst         string = "aembit_access_policy.first_policy"
-	AccessPolicyPathSecond        string = "aembit_access_policy.second_policy"
-	AccessPolicyPathMultiCPFirst  string = "aembit_access_policy.multi_cp_first_policy"
-	AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
-	AccessPolicyPathMultiStsCPFirst  string = "aembit_access_policy.multi_sts_cp_first_policy"
-	CredentialProvidersCount      string = "credential_providers.#"
+	AccessPolicyPathFirst           string = "aembit_access_policy.first_policy"
+	AccessPolicyPathSecond          string = "aembit_access_policy.second_policy"
+	AccessPolicyPathMultiCPFirst    string = "aembit_access_policy.multi_cp_first_policy"
+	AccessPolicyPathMultiCPSecond   string = "aembit_access_policy.multi_cp_second_policy"
+	AccessPolicyPathMultiStsCPFirst string = "aembit_access_policy.multi_sts_cp_first_policy"
+	CredentialProvidersCount        string = "credential_providers.#"
 )
 
 var accessPolicyChecks = []resource.TestCheckFunc{
