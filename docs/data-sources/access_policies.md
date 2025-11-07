@@ -47,6 +47,7 @@ Required:
 
 Optional:
 
+- `access_key_id` (String) Name of the AWS Access Key Id for the credential provider.
 - `account_name` (String) Name of the Snowflake account for the credential provider.
 - `header_name` (String) Name of the header for the credential provider.
 - `header_value` (String) Value of the header for the credential provider.
