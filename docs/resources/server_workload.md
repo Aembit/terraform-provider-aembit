@@ -78,6 +78,7 @@ Optional:
 - `http_headers` (Map of String) HTTP Headers are key-value pairs.
 - `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
 - `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
+- `url_path` (String) URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.
 
 Read-Only:
 
@@ -93,6 +94,7 @@ Required:
 	* `API Key`
 	* `HTTP Authentication`
 	* `JWT Token Authentication`
+	* `OAuth Client Authentication`
 	* `Password Authentication`
 - `scheme` (String) Server Workload Service authentication scheme. Possible values are: 
 	* For Authentation Method `API Key`:
@@ -105,6 +107,8 @@ Required:
 		* `AWS Signature v4`
 	* For Authentation Method `JWT Token Authentication`:
 		* `Snowflake JWT`
+	* For Authentation Method `OAuth Client Authentication`:
+		* `POST Body`
 	* For Authentation Method `Password Authentication`:
 		* `Password`
 
