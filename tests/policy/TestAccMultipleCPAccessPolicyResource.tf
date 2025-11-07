@@ -18,6 +18,22 @@ resource "aembit_server_workload" "first_server" {
     }
 }
 
+resource "aembit_server_workload" "second_server" {
+    name = "first terraform server workload"
+    description = "new server workload for policy multiple cp integration"
+    is_active = false
+    service_endpoint = {
+        host = "myhost.unittest1.com"
+        port = 443
+        app_protocol = "HTTP"
+		transport_protocol = "TCP"
+        requested_port = 80
+        tls_verification = "full"
+	    requested_tls = true
+	    tls = true
+    }
+}
+
 resource "aembit_server_workload" "snowflake_server" {
     name = "snowflake terraform server workload"
     description = "new snowflake server workload for policy integration"
@@ -58,7 +74,6 @@ resource "aembit_client_workload" "second_client" {
     ]
 }
 
-
 resource "aembit_credential_provider" "snowflake1" {
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
@@ -86,6 +101,24 @@ resource "aembit_credential_provider" "snowflake3" {
 	}
 }
 
+resource "aembit_credential_provider" "sts1" {
+	name = "TF Acceptance AWS STS Token 1"
+	is_active = true
+	aws_sts = {
+		role_arn = "role:arn:1"
+		service_account = "username@email.com"
+	}
+}
+
+resource "aembit_credential_provider" "sts2" {
+	name = "TF Acceptance AWS STS Token 2"
+	is_active = true
+	aws_sts = {
+		role_arn = "role:arn:2"
+		service_account = "username@email.com"
+	}
+}
+
 resource "aembit_access_policy" "multi_cp_first_policy" {
     is_active = false
     name = "TF Multi CP First Policy"
@@ -102,6 +135,22 @@ resource "aembit_access_policy" "multi_cp_first_policy" {
         httpbody_field_value = "test_field_value"
 	}]
     server_workload = aembit_server_workload.first_server.id
+}
+
+resource "aembit_access_policy" "multi_sts_cp_first_policy" {
+    is_active = false
+    name = "TF Multi STS CP First Policy"
+    client_workload = aembit_client_workload.first_client.id
+    credential_providers = [{
+		credential_provider_id = aembit_credential_provider.sts1.id,
+		mapping_type = "AccessKeyId",
+        access_key_id = "keyid1",
+	}, {
+		credential_provider_id = aembit_credential_provider.sts2.id,
+        mapping_type = "AccessKeyId",
+        access_key_id = "keyid2",
+	}]
+    server_workload = aembit_server_workload.second_server.id
 }
 
 resource "aembit_access_policy" "multi_cp_second_policy" {

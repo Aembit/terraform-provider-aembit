@@ -13,6 +13,7 @@ const (
 	AccessPolicyPathSecond        string = "aembit_access_policy.second_policy"
 	AccessPolicyPathMultiCPFirst  string = "aembit_access_policy.multi_cp_first_policy"
 	AccessPolicyPathMultiCPSecond string = "aembit_access_policy.multi_cp_second_policy"
+	AccessPolicyPathMultiStsCPFirst  string = "aembit_access_policy.multi_sts_cp_first_policy"
 	CredentialProvidersCount      string = "credential_providers.#"
 )
 
@@ -233,6 +234,66 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *test
 					`duplicate credential provider mapping already exists`,
 				),
 			},
+		},
+	})
+}
+
+func TestAccMultipleSTSCredentialProviders_AccessPolicyResource(t *testing.T) {
+	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
+	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
+	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"clientworkloadNamespace",
+	)
+	createFileConfig, modifyFileConfig, _ = randomizeFileConfigs(
+		createFileConfig,
+		modifyFileConfig,
+		"secondClientWorkloadNamespace",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiStsCPFirst,
+						"name",
+						"TF Multi STS CP First Policy",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiStsCPFirst,
+						CredentialProvidersCount,
+						"2",
+					),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      AccessPolicyPathMultiCPFirst,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiStsCPFirst,
+						"name",
+						"TF Multi STS CP First Policy Updated",
+					),
+					resource.TestCheckResourceAttr(
+						AccessPolicyPathMultiStsCPFirst,
+						CredentialProvidersCount,
+						"2",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

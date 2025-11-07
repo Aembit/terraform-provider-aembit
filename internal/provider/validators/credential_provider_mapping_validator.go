@@ -37,7 +37,7 @@ func (v CredentialProviderMappingValidator) ValidateSet(
 
 	uniqueMap := make(map[string]bool)
 	for _, cp := range credentialProviders {
-		mapValue := cp.AccountName.ValueString() + cp.HeaderName.ValueString() + cp.HeaderValue.ValueString() + cp.HttpbodyFieldPath.ValueString() + cp.HttpbodyFieldValue.ValueString()
+		mapValue := cp.AccountName.ValueString() + cp.HeaderName.ValueString() + cp.HeaderValue.ValueString() + cp.HttpbodyFieldPath.ValueString() + cp.HttpbodyFieldValue.ValueString() + cp.AccessKeyId.ValueString()
 		_, found := uniqueMap[mapValue]
 
 		if found {
