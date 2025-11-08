@@ -15,8 +15,8 @@ resource "aembit_server_workload" "test" {
         requested_tls = true
 		tls_verification = "full"
 		authentication_config = {
-			"method" = "HTTP Authentication"
-			"scheme" = "Bearer"
+			method = "HTTP Authentication"
+			scheme = "Bearer"
 		}
 		http_headers = {
 			host = "graph.microsoft.com"
@@ -40,8 +40,29 @@ resource "aembit_server_workload" "test_wildcard" {
         requested_tls = true
 		tls_verification = "full"
 		authentication_config = {
-			"method" = "HTTP Authentication"
-			"scheme" = "Bearer"
+			method = "HTTP Authentication"
+			scheme = "Bearer"
+		}
+	}
+}
+
+resource "aembit_server_workload" "test_oauth" {
+	name = "Unit Test 1 OAuth"
+    description = "Description"
+    is_active = false
+	service_endpoint = {
+		host = "oauth.testhost.com"
+		port = 443
+        tls = true
+		app_protocol = "OAuth"
+		url_path = "/token"
+		transport_protocol = "TCP"
+		requested_port = 443
+        requested_tls = true
+		tls_verification = "full"
+		authentication_config = {
+			method = "OAuth Client Authentication"
+			scheme = "POST Body"
 		}
 	}
 }

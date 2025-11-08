@@ -30,6 +30,7 @@ type ServiceEndpointModel struct {
 	RequestedTLS      types.Bool   `tfsdk:"requested_tls"`
 	Port              types.Int64  `tfsdk:"port"`
 	TLS               types.Bool   `tfsdk:"tls"`
+	URLPath           types.String `tfsdk:"url_path"`
 
 	WorkloadServiceAuthentication *WorkloadServiceAuthenticationModel `tfsdk:"authentication_config"`
 	TLSVerification               types.String                        `tfsdk:"tls_verification"`
