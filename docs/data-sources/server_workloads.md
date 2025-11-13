@@ -45,6 +45,7 @@ Optional:
 
 Read-Only:
 
+- `aembit_mcp_authorization_server_url` (String) Aembit MCP Authorization Server URL
 - `app_protocol` (String) protocol of the service endpoint.
 - `external_id` (String) Unique identifier of the service endpoint.
 - `host` (String) hostname of the service endpoint.
