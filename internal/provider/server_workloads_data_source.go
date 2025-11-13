@@ -94,6 +94,10 @@ func (d *serverWorkloadsDataSource) Schema(
 									Description: "hostname of the service endpoint.",
 									Computed:    true,
 								},
+								"aembit_mcp_authorization_server_url": schema.StringAttribute{
+									Description: "Aembit MCP Authorization Server URL",
+									Computed:    true,
+								},
 								"port": schema.Int64Attribute{
 									Description: "port of the service endpoint.",
 									Computed:    true,
@@ -182,6 +186,8 @@ func (d *serverWorkloadsDataSource) Read(
 			ctx,
 			serverWorkload,
 			&models.ServerWorkloadResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
 		)
 		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)

@@ -115,6 +115,8 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `k8sPodNamePrefix`\n" +
 								"\t* `k8sServiceAccountName`\n" +
 								"\t* `k8sServiceAccountUID`\n" +
+								"\t* `oauthRedirectUri`\n" +
+								"\t* `oauthScope`\n" +
 								"\t* `oidcIdTokenAudience`\n" +
 								"\t* `oidcIdTokenIssuer`\n" +
 								"\t* `oidcIdTokenSubject`\n" +
@@ -151,6 +153,8 @@ func (r *clientWorkloadResource) Schema(
 									"k8sPodNamePrefix",
 									"k8sServiceAccountName",
 									"k8sServiceAccountUID",
+									"oauthRedirectUri",
+									"oauthScope",
 									"oidcIdTokenAudience",
 									"oidcIdTokenIssuer",
 									"oidcIdTokenSubject",

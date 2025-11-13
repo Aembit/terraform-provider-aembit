@@ -1,0 +1,28 @@
+provider "aembit" {
+    alias = "rs_loader"
+}
+
+data "aembit_resource_sets" "all" {
+    provider = aembit.rs_loader
+}
+
+// Create a Provider and Resource in the second Resource Set
+provider "aembit" {
+    alias = "rs_manager"
+    resource_set_id = data.aembit_resource_sets.all.resource_sets[1].id
+}
+
+resource "aembit_client_workload" "test" {
+    provider = aembit.rs_manager
+
+    name = "TF Acceptance - Oauth Scope"
+    description = "Acceptance Test Client Workload"
+    is_active = false
+    identities = [
+        {
+            type = "oauthScope"
+            value = "*oauth scope*"
+        }
+    ]
+}
+

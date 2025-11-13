@@ -60,6 +60,7 @@ Required:
 - `app_protocol` (String) Application Protocol of the Server Workload service endpoint. Possible values are: 
 	* `Amazon Redshift`
 	* `HTTP`
+	* `MCP`
 	* `MySQL`
 	* `PostgreSQL`
 	* `Redis`
@@ -82,6 +83,7 @@ Optional:
 
 Read-Only:
 
+- `aembit_mcp_authorization_server_url` (String) Aembit MCP Authorization Server URL
 - `external_id` (String) Unique identifier of the service endpoint.
 - `id` (Number) Number identifier of the service endpoint.
 

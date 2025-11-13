@@ -21,16 +21,17 @@ type ServerWorkloadsDataSourceModel struct {
 
 // ServiceEndpointModel maps service endpoint data.
 type ServiceEndpointModel struct {
-	ExternalID        types.String `tfsdk:"external_id"`
-	ID                types.Int64  `tfsdk:"id"`
-	Host              types.String `tfsdk:"host"`
-	AppProtocol       types.String `tfsdk:"app_protocol"`
-	TransportProtocol types.String `tfsdk:"transport_protocol"`
-	RequestedPort     types.Int64  `tfsdk:"requested_port"`
-	RequestedTLS      types.Bool   `tfsdk:"requested_tls"`
-	Port              types.Int64  `tfsdk:"port"`
-	TLS               types.Bool   `tfsdk:"tls"`
-	URLPath           types.String `tfsdk:"url_path"`
+	ExternalID                types.String `tfsdk:"external_id"`
+	ID                        types.Int64  `tfsdk:"id"`
+	Host                      types.String `tfsdk:"host"`
+	AppProtocol               types.String `tfsdk:"app_protocol"`
+	TransportProtocol         types.String `tfsdk:"transport_protocol"`
+	RequestedPort             types.Int64  `tfsdk:"requested_port"`
+	RequestedTLS              types.Bool   `tfsdk:"requested_tls"`
+	Port                      types.Int64  `tfsdk:"port"`
+	TLS                       types.Bool   `tfsdk:"tls"`
+	URLPath                   types.String `tfsdk:"url_path"`
+	MCPAuthorizationServerURL types.String `tfsdk:"aembit_mcp_authorization_server_url"`
 
 	WorkloadServiceAuthentication *WorkloadServiceAuthenticationModel `tfsdk:"authentication_config"`
 	TLSVerification               types.String                        `tfsdk:"tls_verification"`
