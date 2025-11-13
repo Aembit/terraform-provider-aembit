@@ -723,3 +723,141 @@ func TestAccClientWorkloadResource_ProcessCommandLine(t *testing.T) {
 		},
 	})
 }
+
+func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/client/oauthRedirectUri/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/oauthRedirectUri/TestAccClientWorkloadResource.tfmod",
+	)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oauth Redirect URI",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"oauthRedirectUri",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						"https://test.aembit.local:12345",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oauth Redirect URI - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_OauthScope(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/client/oauthScope/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/oauthScope/TestAccClientWorkloadResource.tfmod",
+	)
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"*oauth scope*",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oauth Scope",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"oauthScope",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						newName,
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oauth Scope - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

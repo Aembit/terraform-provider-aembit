@@ -72,6 +72,8 @@ Required:
 	* `k8sPodNamePrefix`
 	* `k8sServiceAccountName`
 	* `k8sServiceAccountUID`
+	* `oauthRedirectUri`
+	* `oauthScope`
 	* `oidcIdTokenAudience`
 	* `oidcIdTokenIssuer`
 	* `oidcIdTokenSubject`

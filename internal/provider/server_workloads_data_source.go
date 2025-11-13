@@ -182,6 +182,8 @@ func (d *serverWorkloadsDataSource) Read(
 			ctx,
 			serverWorkload,
 			&models.ServerWorkloadResourceModel{},
+			d.client.Tenant,
+			d.client.StackDomain,
 		)
 		serverWorkloadState.Tags = newTagsModel(ctx, serverWorkload.Tags)
 		state.ServerWorkloads = append(state.ServerWorkloads, serverWorkloadState)

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -22,6 +23,8 @@ var (
 	_ resource.ResourceWithImportState = &serverWorkloadResource{}
 	_ resource.ResourceWithModifyPlan  = &serverWorkloadResource{}
 )
+
+const mcpAuthServerTemplate string = "https://%s.mcp.%s/auth"
 
 // NewServerWorkloadResource is a helper function to simplify the provider implementation.
 func NewServerWorkloadResource() resource.Resource {
@@ -107,6 +110,10 @@ func (r *serverWorkloadResource) Schema(
 							validators.SafeWildcardHostNameValidation(),
 						},
 					},
+					"aembit_mcp_authorization_server_url": schema.StringAttribute{
+						Description: "Aembit MCP Authorization Server URL",
+						Computed:    true,
+					},
 					"port": schema.Int64Attribute{
 						Description: "Port of the Server Workload service endpoint.",
 						Required:    true,
@@ -118,6 +125,7 @@ func (r *serverWorkloadResource) Schema(
 						Description: "Application Protocol of the Server Workload service endpoint. Possible values are: \n" +
 							"\t* `Amazon Redshift`\n" +
 							"\t* `HTTP`\n" +
+							"\t* `MCP`\n" +
 							"\t* `MySQL`\n" +
 							"\t* `PostgreSQL`\n" +
 							"\t* `Redis`\n" +
@@ -127,6 +135,7 @@ func (r *serverWorkloadResource) Schema(
 							stringvalidator.OneOf([]string{
 								"Amazon Redshift",
 								"HTTP",
+								"MCP",
 								"MySQL",
 								"OAuth",
 								"PostgreSQL",
@@ -284,7 +293,9 @@ func (r *serverWorkloadResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan)
+	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
+		r.client.Tenant,
+		r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -324,7 +335,9 @@ func (r *serverWorkloadResource) Read(
 	}
 
 	// Overwrite items with refreshed state
-	state = convertServerWorkloadDTOToModel(ctx, serverWorkload, &state)
+	state = convertServerWorkloadDTOToModel(ctx, serverWorkload, &state,
+		r.client.Tenant,
+		r.client.StackDomain)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -373,7 +386,9 @@ func (r *serverWorkloadResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan)
+	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
+		r.client.Tenant,
+		r.client.StackDomain)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -491,6 +506,8 @@ func convertServerWorkloadDTOToModel(
 	ctx context.Context,
 	dto aembit.ServerWorkloadExternalDTO,
 	planModel *models.ServerWorkloadResourceModel,
+	tenant string,
+	stackDomain string,
 ) models.ServerWorkloadResourceModel {
 	var model models.ServerWorkloadResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
@@ -513,6 +530,9 @@ func convertServerWorkloadDTOToModel(
 		TLS:               types.BoolValue(dto.ServiceEndpoint.TLS),
 		TLSVerification:   types.StringValue(dto.ServiceEndpoint.TLSVerification),
 		URLPath:           types.StringValue(dto.ServiceEndpoint.URLPath),
+		MCPAuthorizationServerURL: types.StringValue(
+			fmt.Sprintf(mcpAuthServerTemplate, tenant, stackDomain),
+		),
 	}
 	model.ServiceEndpoint.HTTPHeaders = newHTTPHeadersModel(ctx, dto.ServiceEndpoint.HTTPHeaders)
 
