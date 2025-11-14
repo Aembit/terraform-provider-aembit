@@ -62,3 +62,42 @@ resource "aembit_credential_provider" "vault_null_custom_claims" {
 	}
 }
 
+resource "aembit_credential_provider" "vault_dynamic_subject_process_hash" {
+	name = "TF Acceptance Vault - DynamicSubjectProcessHash"
+	is_active = true
+	vault_client_token = {
+		subject = "spiffe://test.com/{client.executable.hash.sha256}"
+		subject_type = "dynamic"
+		lifetime = 60
+		vault_host = "vault.aembit.io"
+		vault_port = 8200
+		vault_tls = true
+		vault_namespace = "vault_namespace"
+		vault_path = "vault_path"
+		vault_role = "vault_role"
+		custom_claims = []
+	}
+}
+
+resource "aembit_credential_provider" "vault_dynamic_claim_process_hash" {
+	name = "TF Acceptance Vault - DynamicClaimProcessHash"
+	is_active = true
+	vault_client_token = {
+		subject = "subject"
+		subject_type = "literal"
+		lifetime = 60
+		vault_host = "vault.aembit.io"
+		vault_port = 8200
+		vault_tls = true
+		vault_namespace = "vault_namespace"
+		vault_path = "vault_path"
+		vault_role = "vault_role"
+		custom_claims = [
+			{
+				key = "key"
+				value = "spiffe://test.com/{client.executable.hash.sha256}"
+				value_type = "dynamic"
+			}
+		]		
+	}
+}

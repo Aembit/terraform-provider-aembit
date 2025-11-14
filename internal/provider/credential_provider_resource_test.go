@@ -951,15 +951,21 @@ func TestAccAzureKeyVaultValueCP(t *testing.T) {
 }
 
 const (
-	vaultClientTokenResourcePath                   = "aembit_credential_provider.vault"
-	vaultClientTokenResourcePath_emptyCustomClaims = "aembit_credential_provider.vault_empty_custom_claims"
-	vaultClientTokenResourcePath_nullCustomClaims  = "aembit_credential_provider.vault_null_custom_claims"
-	oidcIdTokenResourcePath                        = "aembit_credential_provider.oidc_id_token"
-	oidcIdTokenResourcePath_emptyCustomClaims      = "aembit_credential_provider.oidc_id_token_empty_custom_claims"
-	oidcIdTokenResourcePath_nullCustomClaims       = "aembit_credential_provider.oidc_id_token_null_custom_claims"
-	jwtSvidTokenResourcePath                       = "aembit_credential_provider.jwt_svid_token"
-	jwtSvidTokenResourcePath_emptyCustomClaims     = "aembit_credential_provider.jwt_svid_token_empty_custom_claims"
-	jwtSvidTokenResourcePath_nullCustomClaims      = "aembit_credential_provider.jwt_svid_token_null_custom_claims"
+	vaultClientTokenResourcePath                           = "aembit_credential_provider.vault"
+	vaultClientTokenResourcePath_emptyCustomClaims         = "aembit_credential_provider.vault_empty_custom_claims"
+	vaultClientTokenResourcePath_nullCustomClaims          = "aembit_credential_provider.vault_null_custom_claims"
+	vaultClientTokenResourcePath_dynamicSubjectProcessHash = "aembit_credential_provider.vault_dynamic_subject_process_hash"
+	vaultClientTokenResourcePath_dynamicClaimProcessHash   = "aembit_credential_provider.vault_dynamic_claim_process_hash"
+	oidcIdTokenResourcePath                                = "aembit_credential_provider.oidc_id_token"
+	oidcIdTokenResourcePath_emptyCustomClaims              = "aembit_credential_provider.oidc_id_token_empty_custom_claims"
+	oidcIdTokenResourcePath_nullCustomClaims               = "aembit_credential_provider.oidc_id_token_null_custom_claims"
+	oidcIdTokenResourcePath_dynamicSubjectProcessHash      = "aembit_credential_provider.oidc_id_token_dynamic_subject_process_hash"
+	oidcIdTokenResourcePath_dynamicClaimProcessHash        = "aembit_credential_provider.oidc_id_token_dynamic_claim_process_hash"
+	jwtSvidTokenResourcePath                               = "aembit_credential_provider.jwt_svid_token"
+	jwtSvidTokenResourcePath_emptyCustomClaims             = "aembit_credential_provider.jwt_svid_token_empty_custom_claims"
+	jwtSvidTokenResourcePath_nullCustomClaims              = "aembit_credential_provider.jwt_svid_token_null_custom_claims"
+	jwtSvidTokenResourcePath_dynamicSubjectProcessHash     = "aembit_credential_provider.jwt_svid_token_dynamic_subject_process_hash"
+	jwtSvidTokenResourcePath_dynamicClaimProcessHash       = "aembit_credential_provider.jwt_svid_token_dynamic_claim_process_hash"
 )
 
 func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
@@ -1024,6 +1030,40 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(
 						vaultClientTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath_dynamicSubjectProcessHash,
+						"name",
+						"TF Acceptance Vault - DynamicSubjectProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						vaultClientTokenResourcePath_dynamicClaimProcessHash,
+						"name",
+						"TF Acceptance Vault - DynamicClaimProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_dynamicClaimProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						vaultClientTokenResourcePath_dynamicClaimProcessHash,
 						"id",
 					),
 				),
@@ -1116,6 +1156,40 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 						oidcIdTokenResourcePath_nullCustomClaims,
 						"id",
 					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						oidcIdTokenResourcePath_dynamicSubjectProcessHash,
+						"name",
+						"TF Acceptance OIDC ID Token - DynamicSubjectProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						oidcIdTokenResourcePath_dynamicClaimProcessHash,
+						"name",
+						"TF Acceptance OIDC ID Token - DynamicClaimProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicClaimProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicClaimProcessHash,
+						"id",
+					),
 				),
 			},
 			// ImportState testing
@@ -1194,6 +1268,40 @@ func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(
 						jwtSvidTokenResourcePath_nullCustomClaims,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath_dynamicSubjectProcessHash,
+						"name",
+						"TF Acceptance JWT-SVID Token - DynamicSubjectProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						jwtSvidTokenResourcePath_dynamicClaimProcessHash,
+						"name",
+						"TF Acceptance JWT-SVID Token - DynamicClaimProcessHash",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_dynamicClaimProcessHash,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						jwtSvidTokenResourcePath_dynamicClaimProcessHash,
 						"id",
 					),
 				),
