@@ -24,6 +24,7 @@ Manages an trust provider.
 
 Optional:
 
+- `certificate_signed_attestation` (Attributes) Certificate Signed Attestation type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--certificate_signed_attestation))
 - `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 
 Read-Only:
@@ -43,6 +44,10 @@ Read-Only:
 - `oidc_id_token` (Attributes) OIDC ID Token type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--oidc_id_token))
 - `tags` (Map of String) Tags are key-value pairs.
 - `terraform_workspace` (Attributes) Terraform Workspace type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--terraform_workspace))
+
+<a id="nestedatt--trust_providers--certificate_signed_attestation"></a>
+### Nested Schema for `trust_providers.certificate_signed_attestation`
+
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
 ### Nested Schema for `trust_providers.aws_metadata`
