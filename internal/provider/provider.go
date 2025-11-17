@@ -354,6 +354,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 		// NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
 		NewGlobalPolicyComplianceResource,
 		NewIdentityProviderResource,
+		NewTrustProviderSecretResource,
 	}
 }
 
