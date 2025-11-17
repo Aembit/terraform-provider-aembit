@@ -66,7 +66,7 @@ resource "aembit_credential_provider" "vault_dynamic_subject_process_hash" {
 	name = "TF Acceptance Vault - DynamicSubjectProcessHash"
 	is_active = true
 	vault_client_token = {
-		subject = "spiffe://test.com/${client.executable.hash.sha256}"
+		subject = "spiffe://test.com/$${client.executable.hash.sha256}"
 		subject_type = "dynamic"
 		lifetime = 60
 		vault_host = "vault.aembit.io"
@@ -95,7 +95,7 @@ resource "aembit_credential_provider" "vault_dynamic_claim_process_hash" {
 		custom_claims = [
 			{
 				key = "key"
-				value = "spiffe://test.com/${client.executable.hash.sha256}"
+				value = "spiffe://test.com/$${client.executable.hash.sha256}"
 				value_type = "dynamic"
 			}
 		]		

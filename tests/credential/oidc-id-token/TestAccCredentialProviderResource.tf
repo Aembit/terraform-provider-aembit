@@ -54,7 +54,7 @@ resource "aembit_credential_provider" "oidc_id_token_dynamic_subject_process_has
 	name = "TF Acceptance OIDC ID Token - DynamicSubjectProcessHash"
 	is_active = true
 	oidc_id_token = {
-		subject = "spiffe://test.com/${client.executable.hash.sha256}"
+		subject = "spiffe://test.com/$${client.executable.hash.sha256}"
 		subject_type = "dynamic"
 		lifetime_in_minutes = 60
 		audience = "test.aembit.io"
@@ -75,7 +75,7 @@ resource "aembit_credential_provider" "oidc_id_token_dynamic_claim_process_hash"
 		custom_claims = [
 			{
 				key = "key"
-				value = "spiffe://test.com/${client.executable.hash.sha256}"
+				value = "spiffe://test.com/$${client.executable.hash.sha256}"
 				value_type = "dynamic"
 			}
 		]		
