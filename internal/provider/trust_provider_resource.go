@@ -743,6 +743,10 @@ func (r *trustProviderResource) Schema(
 					},
 				},
 			},
+			"certificate_signed_attestation": schema.SingleNestedAttribute{
+				Description: "Certificate Signed Attestation type Trust Provider configuration.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -769,6 +773,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
 			path.MatchRoot("oidc_id_token"),
+			path.MatchRoot("certificate_signed_attestation"),
 		),
 		// Ensure we don't have conflicting single and multiple match rule configurations (Azure Metadata)
 		resourcevalidator.Conflicting(
@@ -1173,6 +1178,9 @@ func convertTrustProviderModelToDTO(
 	}
 	if model.OidcIdToken != nil {
 		err = convertOidcIdTokenTpModelToDTO(model, &trust)
+	}
+	if model.CertificateSignedAttestation != nil {
+		trust.Provider = "CertificateSignedAttestation"
 	}
 
 	trust.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
@@ -1746,6 +1754,8 @@ func convertTrustProviderDTOToModel(
 		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto, *planModel)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
+	case "CertificateSignedAttestation":
+		model.CertificateSignedAttestation = &models.TrustProviderCertificateSignedAttestationModel{}
 	}
 
 	return model

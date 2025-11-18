@@ -549,59 +549,11 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token Token.",
 									Computed:    true,
 								},
-								// "jwks": schema.SingleNestedAttribute{
-								// 	Computed:    true,
-								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
-								// 	Attributes: map[string]schema.Attribute{
-								// 		"keys": schema.ListNestedAttribute{
-								// 			Computed:    true,
-								// 			Description: "A list of JSON Web Keys used to validate signed tokens.",
-								// 			NestedObject: schema.NestedAttributeObject{
-								// 				Attributes: map[string]schema.Attribute{
-								// 					"kid": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
-								// 					},
-								// 					"kty": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "Key type (kty). Possible values: RSA, EC.",
-								// 					},
-								// 					"use": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "Public key use — typically 'sig' for signature.",
-								// 					},
-								// 					"alg": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
-								// 					},
-								// 					// RSA fields
-								// 					"e": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
-								// 					},
-								// 					"n": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
-								// 					},
-								// 					// EC fields
-								// 					"x": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
-								// 					},
-								// 					"y": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
-								// 					},
-								// 					"crv": schema.StringAttribute{
-								// 						Computed:    true,
-								// 						Description: "Elliptic curve used with the key. Only Possible value: P-256",
-								// 					},
-								// 				},
-								// 			},
-								// 		},
-								// 	},
-								// },
 							},
+						},
+						"certificate_signed_attestation": schema.SingleNestedAttribute{
+							Description: "Certificate Signed Attestation type Trust Provider configuration.",
+							Optional:    true,
 						},
 					},
 				},

@@ -8,22 +8,23 @@ import (
 // TrustProviderResourceModel maps the resource schema.
 type TrustProviderResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID                 types.String                     `tfsdk:"id"`
-	Name               types.String                     `tfsdk:"name"`
-	Description        types.String                     `tfsdk:"description"`
-	IsActive           types.Bool                       `tfsdk:"is_active"`
-	Tags               types.Map                        `tfsdk:"tags"`
-	TagsAll            types.Map                        `tfsdk:"tags_all"`
-	AzureMetadata      *TrustProviderAzureMetadataModel `tfsdk:"azure_metadata"`
-	AwsRole            *TrustProviderAwsRoleModel       `tfsdk:"aws_role"`
-	AwsMetadata        *TrustProviderAwsMetadataModel   `tfsdk:"aws_metadata"`
-	GcpIdentity        *TrustProviderGcpIdentityModel   `tfsdk:"gcp_identity"`
-	GitHubAction       *TrustProviderGitHubActionModel  `tfsdk:"github_action"`
-	GitLabJob          *TrustProviderGitLabJobModel     `tfsdk:"gitlab_job"`
-	Kerberos           *TrustProviderKerberosModel      `tfsdk:"kerberos"`
-	KubernetesService  *TrustProviderKubernetesModel    `tfsdk:"kubernetes_service_account"`
-	OidcIdToken        *TrustProviderOidcIdTokenModel   `tfsdk:"oidc_id_token"`
-	TerraformWorkspace *TrustProviderTerraformModel     `tfsdk:"terraform_workspace"`
+	ID                           types.String                                    `tfsdk:"id"`
+	Name                         types.String                                    `tfsdk:"name"`
+	Description                  types.String                                    `tfsdk:"description"`
+	IsActive                     types.Bool                                      `tfsdk:"is_active"`
+	Tags                         types.Map                                       `tfsdk:"tags"`
+	TagsAll                      types.Map                                       `tfsdk:"tags_all"`
+	AzureMetadata                *TrustProviderAzureMetadataModel                `tfsdk:"azure_metadata"`
+	AwsRole                      *TrustProviderAwsRoleModel                      `tfsdk:"aws_role"`
+	AwsMetadata                  *TrustProviderAwsMetadataModel                  `tfsdk:"aws_metadata"`
+	GcpIdentity                  *TrustProviderGcpIdentityModel                  `tfsdk:"gcp_identity"`
+	GitHubAction                 *TrustProviderGitHubActionModel                 `tfsdk:"github_action"`
+	GitLabJob                    *TrustProviderGitLabJobModel                    `tfsdk:"gitlab_job"`
+	Kerberos                     *TrustProviderKerberosModel                     `tfsdk:"kerberos"`
+	KubernetesService            *TrustProviderKubernetesModel                   `tfsdk:"kubernetes_service_account"`
+	OidcIdToken                  *TrustProviderOidcIdTokenModel                  `tfsdk:"oidc_id_token"`
+	TerraformWorkspace           *TrustProviderTerraformModel                    `tfsdk:"terraform_workspace"`
+	CertificateSignedAttestation *TrustProviderCertificateSignedAttestationModel `tfsdk:"certificate_signed_attestation"`
 }
 
 // trustProviderDataSourceModel maps the datasource schema.
@@ -152,4 +153,7 @@ type TrustProviderTerraformModel struct {
 	ProjectIDs      []types.String `tfsdk:"project_ids"`
 	WorkspaceID     types.String   `tfsdk:"workspace_id"`
 	WorkspaceIDs    []types.String `tfsdk:"workspace_ids"`
+}
+
+type TrustProviderCertificateSignedAttestationModel struct {
 }

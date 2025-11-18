@@ -97,6 +97,7 @@ Please make sure to update your configuration accordingly.
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_metadata))
 - `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
+- `certificate_signed_attestation` (Attributes) Certificate Signed Attestation type Trust Provider configuration. (see [below for nested schema](#nestedatt--certificate_signed_attestation))
 - `description` (String) Description for the Trust Provider.
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--gcp_identity))
 - `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--github_action))
@@ -166,6 +167,10 @@ Optional:
 - `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs which are hosting the Client Workloads. Used only for cases where multiple Azure Subscription IDs can be matched.
 - `vm_id` (String) Unique identifier for the Virtual Machine.
 - `vm_ids` (Set of String) The set of accepted Azure VM IDs which are hosting the Client Workloads. Used only for cases where multiple Azure VM IDs can be matched.
+
+
+<a id="nestedatt--certificate_signed_attestation"></a>
+### Nested Schema for `certificate_signed_attestation`
 
 
 <a id="nestedatt--gcp_identity"></a>
