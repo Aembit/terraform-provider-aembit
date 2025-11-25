@@ -127,6 +127,7 @@ func (r *serverWorkloadResource) Schema(
 							"\t* `HTTP`\n" +
 							"\t* `MCP`\n" +
 							"\t* `MySQL`\n" +
+							"\t* `Oracle Database`\n" +
 							"\t* `PostgreSQL`\n" +
 							"\t* `Redis`\n" +
 							"\t* `Snowflake`\n",
@@ -138,6 +139,7 @@ func (r *serverWorkloadResource) Schema(
 								"MCP",
 								"MySQL",
 								"OAuth",
+								"Oracle Database",
 								"PostgreSQL",
 								"Redis",
 								"Snowflake",
