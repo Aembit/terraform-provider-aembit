@@ -62,6 +62,7 @@ Required:
 	* `HTTP`
 	* `MCP`
 	* `MySQL`
+	* `Oracle Database`
 	* `PostgreSQL`
 	* `Redis`
 	* `Snowflake`

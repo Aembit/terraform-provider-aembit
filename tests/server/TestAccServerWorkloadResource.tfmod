@@ -101,3 +101,23 @@ resource "aembit_server_workload" "test_mcp_with_url_path" {
 		}
 	}
 }
+
+resource "aembit_server_workload" "test_oracle_database" {
+	name = "Unit Test 1 Oracle Database - Modified"
+    description = "Description"
+    is_active = false
+	service_endpoint = {
+		host = "oracleDatabase.testhost.com"
+		port = 443
+        tls = true
+		app_protocol = "Oracle Database"
+		transport_protocol = "TCP"
+		requested_port = 1521
+        requested_tls = true
+		tls_verification = "full"
+		authentication_config = {
+			method = "Password Authentication"
+			scheme = "Password"
+		}
+	}
+}
