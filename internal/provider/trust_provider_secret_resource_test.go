@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"log"
 	"math/big"
 	"os"
 	"strings"
@@ -27,12 +26,15 @@ func TestAccTrustProviderSecretResource(t *testing.T) {
 	modifyFile, _ := os.ReadFile(
 		"../../tests/trust_provider_secret/TestAccTrustProviderSecretResource.tfmod",
 	)
+	// Generate random PEM certificates for creation and update
 	pemCertificate := generateRandomPEMCertificate(t, "Aembit Unit Test")
 	updatedPemCertificate := generateRandomPEMCertificate(t, "Updated Aembit Unit Test")
 
 	// Replace placeholder with generated certificate
-	createFileString := strings.Replace(string(createFile), "PEM_CERTIFICATE", pemCertificate, -1)
-	modifyFileString := strings.Replace(string(modifyFile), "PEM_CERTIFICATE", updatedPemCertificate, -1)
+	createFileString := strings.ReplaceAll(string(createFile), "PEM_CERTIFICATE", pemCertificate)
+	modifyFileString := strings.ReplaceAll(string(modifyFile), "PEM_CERTIFICATE",
+		updatedPemCertificate,
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -76,15 +78,18 @@ func generateRandomPEMCertificate(t *testing.T, commonName string) string {
 	var priv *rsa.PrivateKey
 	var err error
 	priv, err = rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Errorf("Failed to generate private key: %v", err)
+	}
 
 	keyUsage := x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign
-	var notBefore time.Time = time.Now()
+	var notBefore = time.Now()
 	notAfter := notBefore.Add(time.Hour)
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("Failed to generate serial number: %v", err)
+		t.Errorf("Failed to generate serial number: %v", err)
 	}
 
 	template := x509.Certificate{
@@ -100,18 +105,14 @@ func generateRandomPEMCertificate(t *testing.T, commonName string) string {
 		BasicConstraintsValid: true,
 		IsCA:                  true,
 	}
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template,
+		&priv.PublicKey, priv)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %v", err)
-	}
-
-	block := &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: derBytes,
+		t.Errorf("Failed to create certificate: %v", err)
 	}
 
 	// Encode the pem.Block to a byte slice
-	pemBytes := pem.EncodeToMemory(block)
+	pemBytes := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 
 	return string(pemBytes)
 }
