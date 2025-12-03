@@ -73,6 +73,7 @@ resource "aembit_server_workload" "test_mcp_empty_url_path" {
     is_active = false
 	service_endpoint = {
 		host = "mcp.testhost.com"
+		requested_port = 443
 		port = 443
         tls = true
 		app_protocol = "MCP"
@@ -92,6 +93,7 @@ resource "aembit_server_workload" "test_mcp_with_url_path" {
     is_active = false
 	service_endpoint = {
 		host = "mcp.testhost.com"
+		requested_port = 443
 		port = 443
         tls = true
 		app_protocol = "MCP"
