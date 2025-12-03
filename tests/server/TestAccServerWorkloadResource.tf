@@ -78,7 +78,6 @@ resource "aembit_server_workload" "test_mcp_empty_url_path" {
         tls = true
 		app_protocol = "MCP"
 		transport_protocol = "TCP"
-		requested_port = 1
 		tls_verification = "full"
 		authentication_config = {
 			method = "HTTP Authentication"
@@ -99,7 +98,6 @@ resource "aembit_server_workload" "test_mcp_with_url_path" {
 		app_protocol = "MCP"
 		url_path = "/token"
 		transport_protocol = "TCP"
-		requested_port = 1
 		tls_verification = "full"
 		authentication_config = {
 			method = "HTTP Authentication"
