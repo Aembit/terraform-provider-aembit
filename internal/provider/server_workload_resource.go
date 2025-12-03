@@ -464,11 +464,16 @@ func convertServerWorkloadModelToDTO(
 		Port:              int(model.ServiceEndpoint.Port.ValueInt64()),
 		AppProtocol:       model.ServiceEndpoint.AppProtocol.ValueString(),
 		TransportProtocol: model.ServiceEndpoint.TransportProtocol.ValueString(),
-		RequestedPort:     int(model.ServiceEndpoint.RequestedPort.ValueInt64()),
-		RequestedTLS:      model.ServiceEndpoint.RequestedTLS.ValueBool(),
-		TLS:               model.ServiceEndpoint.TLS.ValueBool(),
-		TLSVerification:   model.ServiceEndpoint.TLSVerification.ValueString(),
-		URLPath:           model.ServiceEndpoint.URLPath.ValueString(),
+		RequestedPort: func() int {
+			if model.ServiceEndpoint.AppProtocol.ValueString() == "MCP" {
+				return int(model.ServiceEndpoint.Port.ValueInt64())
+			}
+			return int(model.ServiceEndpoint.RequestedPort.ValueInt64())
+		}(),
+		RequestedTLS:    model.ServiceEndpoint.RequestedTLS.ValueBool(),
+		TLS:             model.ServiceEndpoint.TLS.ValueBool(),
+		TLSVerification: model.ServiceEndpoint.TLSVerification.ValueString(),
+		URLPath:         model.ServiceEndpoint.URLPath.ValueString(),
 	}
 
 	if model.ServiceEndpoint.WorkloadServiceAuthentication != nil {
