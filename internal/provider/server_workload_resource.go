@@ -147,6 +147,7 @@ func (r *serverWorkloadResource) Schema(
 					"requested_port": schema.Int64Attribute{
 						Description: "Requested port of the Server Workload service endpoint.",
 						Optional:    true,
+						Computed:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(1, 65535),
 						},
