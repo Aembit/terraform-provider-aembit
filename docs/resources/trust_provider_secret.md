@@ -17,13 +17,18 @@ description: |-
 
 ### Required
 
-- `secret` (String, Sensitive) PEM Certificate to be used for Signature verification.
+- `secret` (String, Sensitive) PEM Certificate or Symmetric Key to be used for Signature verification.
 - `trust_provider_id` (String) Unique identifier of the Trust Provider.
+
+### Optional
+
+- `type` (String) Type of the Secret. Possible values are: 
+	* `Certificate (Default)`
+	* `SymmetricKey`
 
 ### Read-Only
 
 - `expires_at` (String) Expiration date of the certificate.
 - `id` (String) Unique identifier of the Trust Provider Secret.
-- `name` (String) Thumbprint of the certificate.
+- `name` (String) Thumbprint of the secret.
 - `subject` (String) Subject of the Certificate.
-- `type` (String) Type of the Certificate.

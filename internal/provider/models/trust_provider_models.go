@@ -99,7 +99,6 @@ type TrustProviderKubernetesModel struct {
 	OIDCEndpoint        types.String         `tfsdk:"oidc_endpoint"`
 	PublicKey           types.String         `tfsdk:"public_key"`
 	Jwks                jsontypes.Normalized `tfsdk:"jwks"`
-	SymmetricKey        types.String         `tfsdk:"symmetric_key"`
 }
 
 type TrustProviderOidcIdTokenModel struct {
@@ -112,7 +111,6 @@ type TrustProviderOidcIdTokenModel struct {
 	OIDCEndpoint types.String         `tfsdk:"oidc_endpoint"`
 	PublicKey    types.String         `tfsdk:"public_key"`
 	Jwks         jsontypes.Normalized `tfsdk:"jwks"`
-	SymmetricKey types.String         `tfsdk:"symmetric_key"`
 }
 
 type TrustProviderGcpIdentityModel struct {

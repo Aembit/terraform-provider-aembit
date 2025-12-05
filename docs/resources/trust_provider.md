@@ -257,7 +257,6 @@ Optional:
 - `service_account_names` (Set of String) The set of accepted Service Account Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Service Account Names can be matched.
 - `subject` (String) The Subject (`sub` claim) of the Kubernetes Service Account Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated Kubernetes Service Account Token. Used only for cases where multiple Subjects can be matched.
-- `symmetric_key` (String, Sensitive) The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.
 
 
 <a id="nestedatt--oidc_id_token"></a>
@@ -274,7 +273,6 @@ Optional:
 - `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token.
 - `subject` (String) The Subject (`sub` claim) of the OIDC ID Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.
-- `symmetric_key` (String, Sensitive) The Symmetric Key that can be used to verify the signature of the OIDC ID Token.
 
 
 <a id="nestedatt--terraform_workspace"></a>
