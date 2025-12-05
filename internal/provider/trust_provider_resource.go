@@ -618,14 +618,6 @@ func (r *trustProviderResource) Schema(
 						Optional:    true,
 						Computed:    true,
 					},
-					"symmetric_key": schema.StringAttribute{
-						Description: "The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.",
-						Optional:    true,
-						Sensitive:   true,
-						Validators: []validator.String{
-							validators.Base64Validation(),
-						},
-					},
 				},
 			},
 			"terraform_workspace": schema.SingleNestedAttribute{
@@ -732,14 +724,6 @@ func (r *trustProviderResource) Schema(
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
-					},
-					"symmetric_key": schema.StringAttribute{
-						Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token.",
-						Optional:    true,
-						Sensitive:   true,
-						Validators: []validator.String{
-							validators.Base64Validation(),
-						},
 					},
 				},
 			},
@@ -1923,7 +1907,6 @@ func convertKubernetesDTOToModel(
 		PublicKey:          types.StringNull(),
 		OIDCEndpoint:       types.StringNull(),
 		Jwks:               jsontypes.NewNormalizedNull(),
-		SymmetricKey:       types.StringNull(),
 	}
 
 	if len(dto.Certificate) > 0 {
@@ -1932,8 +1915,6 @@ func convertKubernetesDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
-	} else if state.KubernetesService != nil {
-		model.SymmetricKey = state.KubernetesService.SymmetricKey
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
@@ -1976,7 +1957,6 @@ func convertOidcIdTokenTpDTOToModel(
 		PublicKey:    types.StringNull(),
 		OIDCEndpoint: types.StringNull(),
 		Jwks:         jsontypes.NewNormalizedNull(),
-		SymmetricKey: types.StringNull(),
 	}
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
@@ -1984,8 +1964,6 @@ func convertOidcIdTokenTpDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
-	} else if state.OidcIdToken != nil {
-		model.SymmetricKey = state.OidcIdToken.SymmetricKey
 	}
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {

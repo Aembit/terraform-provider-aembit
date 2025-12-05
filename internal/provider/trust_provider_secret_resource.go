@@ -8,9 +8,11 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -74,17 +76,29 @@ func (r *trustProviderSecretResource) Schema(
 				},
 			},
 			"secret": schema.StringAttribute{
-				Description: "PEM Certificate to be used for Signature verification.",
+				Description: "PEM Certificate or Symmetric Key to be used for Signature verification.",
 				Required:    true,
 				Sensitive:   true,
 			},
 			"name": schema.StringAttribute{
-				Description: "Thumbprint of the certificate.",
+				Description: "Thumbprint of the secret.",
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of the Certificate.",
-				Computed:    true,
+				Description: "Type of the Secret. Possible values are: \n" +
+					"\t* `Certificate`\n" +
+					"\t* `SymmetricKey`\n",
+				Optional: true,
+				Computed: true,
+				Default: stringdefault.StaticString(
+					"Certificate",
+				),
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{
+						"Certificate",
+						"SymmetricKey",
+					}...),
+				},
 			},
 			"subject": schema.StringAttribute{
 				Description: "Subject of the Certificate.",
