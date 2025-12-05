@@ -1733,9 +1733,9 @@ func convertTrustProviderDTOToModel(
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
-		model.KubernetesService = convertKubernetesDTOToModel(dto, *planModel)
+		model.KubernetesService = convertKubernetesDTOToModel(dto)
 	case "OidcIdToken":
-		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto, *planModel)
+		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	case "CertificateSignedAttestation":
@@ -1894,7 +1894,6 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvide
 
 func convertKubernetesDTOToModel(
 	dto aembit.TrustProviderDTO,
-	state models.TrustProviderResourceModel,
 ) *models.TrustProviderKubernetesModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
@@ -1946,7 +1945,6 @@ func convertKubernetesDTOToModel(
 
 func convertOidcIdTokenTpDTOToModel(
 	dto aembit.TrustProviderDTO,
-	state models.TrustProviderResourceModel,
 ) *models.TrustProviderOidcIdTokenModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
