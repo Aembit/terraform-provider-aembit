@@ -86,7 +86,7 @@ func (r *trustProviderSecretResource) Schema(
 			},
 			"type": schema.StringAttribute{
 				Description: "Type of the Secret. Possible values are: \n" +
-					"\t* `Certificate`\n" +
+					"\t* `Certificate (Default)`\n" +
 					"\t* `SymmetricKey`\n",
 				Optional: true,
 				Computed: true,
