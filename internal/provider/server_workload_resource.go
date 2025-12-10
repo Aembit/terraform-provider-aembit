@@ -471,7 +471,12 @@ func convertServerWorkloadModelToDTO(
 			}
 			return int(model.ServiceEndpoint.RequestedPort.ValueInt64())
 		}(),
-		RequestedTLS:    model.ServiceEndpoint.RequestedTLS.ValueBool(),
+		RequestedTLS: func() bool {
+			if model.ServiceEndpoint.AppProtocol.ValueString() == "MCP" {
+				return model.ServiceEndpoint.TLS.ValueBool()
+			}
+			return model.ServiceEndpoint.RequestedTLS.ValueBool()
+		}(),
 		TLS:             model.ServiceEndpoint.TLS.ValueBool(),
 		TLSVerification: model.ServiceEndpoint.TLSVerification.ValueString(),
 		URLPath:         model.ServiceEndpoint.URLPath.ValueString(),
