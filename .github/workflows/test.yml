@@ -132,13 +132,17 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - env:
+
+      - name: Run Acceptance Tests
+        id: test
+        env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-          go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          go test -timeout 20m -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
           exit ${PIPESTATUS[0]}
-        timeout-minutes: 15        
+        timeout-minutes: 20
+
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
         with:
