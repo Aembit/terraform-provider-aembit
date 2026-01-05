@@ -23,9 +23,16 @@ jobs:
     name: GoReleaser Build for QA
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5
         with:
@@ -47,9 +54,16 @@ jobs:
     name: Generate Docs
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-go@v5 # v5.x
@@ -72,9 +86,16 @@ jobs:
     name: Validate Build/Merge
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
 
       # These Job Steps verify that the Aembit submodules are up to date with main
