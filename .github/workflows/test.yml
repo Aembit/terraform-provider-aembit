@@ -40,10 +40,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
         env:
@@ -62,10 +68,16 @@ jobs:
     runs-on: ubuntu-latest
     if: always() && !inputs.regression
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-go@v5 # v5.x
@@ -117,10 +129,16 @@ jobs:
       matrix: 
         terraform: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
         env:
@@ -157,10 +175,16 @@ jobs:
     if: always() && !inputs.regression
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
-          repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
           fetch-depth: 0
 
