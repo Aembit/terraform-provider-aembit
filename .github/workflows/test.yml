@@ -77,6 +77,7 @@ jobs:
           owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
@@ -138,6 +139,7 @@ jobs:
           owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
@@ -184,6 +186,7 @@ jobs:
           owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
           fetch-depth: 0
