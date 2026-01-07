@@ -49,6 +49,7 @@ jobs:
           owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
+          repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
@@ -102,8 +103,6 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
     - id: set-matrix
       name: Set up Terraform version matrix
       env:
