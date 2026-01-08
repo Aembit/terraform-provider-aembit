@@ -338,6 +338,8 @@ func (r *credentialProviderResource) Schema(
 					"oauth_introspection_url": schema.StringAttribute{
 						Description: "Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens",
 						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"user_authorization_url": schema.StringAttribute{
 						Description: "3rd Party Authorization URL for User Consent for the OAuth Credential Provider.",
