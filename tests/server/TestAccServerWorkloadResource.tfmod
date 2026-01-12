@@ -108,11 +108,11 @@ resource "aembit_server_workload" "test_oracle_database" {
     is_active = false
 	service_endpoint = {
 		host = "oracleDatabase.testhost.com"
-		port = 443
+		port = 2484
         tls = true
 		app_protocol = "Oracle Database"
 		transport_protocol = "TCP"
-		requested_port = 1521
+		requested_port = 2484
         requested_tls = true
 		tls_verification = "full"
 		authentication_config = {
