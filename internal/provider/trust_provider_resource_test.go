@@ -657,6 +657,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 	const trustProviderOidcidToken = "aembit_trust_provider.oidcidtoken"
 	const trustProviderOidcidTokenKey = "aembit_trust_provider.oidcidtoken_key"
 	const trustProviderOidcidTokenJWKS = "aembit_trust_provider.oidcidtoken_jwks"
+	const trustProviderOidcidTokenAembitTenantOidcToken = "aembit_trust_provider.oidcidtoken_aembittenantoidctoken"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -695,6 +696,23 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"name",
+						"TF Acceptance OIDC ID Token AembitTenantOidcToken",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"id",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"oidc_id_token.is_aembit_tenant_oidc_token",
+						"true",
+					),
 				),
 			},
 			// ImportState testing
@@ -729,6 +747,18 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"name",
+						"TF Acceptance OIDC ID Token AembitTenantOidcToken - Modified",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"id",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
