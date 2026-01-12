@@ -166,6 +166,7 @@ Read-Only:
 
 Read-Only:
 
+- `is_aembit_tenant_oidc_token` (Boolean) Indicates if the OIDC attestation is performed against the current Aembit tenant.
 - `issuer` (String) The Issuer (`iss` claim) of the Kubernetes Service Account Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the Kubernetes Service Account Token.
 - `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.
@@ -188,6 +189,7 @@ Read-Only:
 
 - `audience` (String) The Audience (`aud` claim) of the OIDC ID Token Token.
 - `audiences` (Set of String) The set of accepted Audience values of the OIDC ID Token Token.
+- `is_aembit_tenant_oidc_token` (Boolean) Indicates if the OIDC attestation is performed against the current Aembit tenant.
 - `issuer` (String) The Issuer (`iss` claim) of the OIDC ID Token Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the OIDC ID Token Token.
 - `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.

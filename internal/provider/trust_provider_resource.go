@@ -620,7 +620,7 @@ func (r *trustProviderResource) Schema(
 						Computed:    true,
 					},
 					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
-						Description: "Indicates if the oidc attesstation is performed against current Aembit tenant.",
+						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
@@ -733,7 +733,7 @@ func (r *trustProviderResource) Schema(
 						Computed:    true,
 					},
 					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
-						Description: "Indicates if the oidc attesstation is performed against current Aembit tenant.",
+						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
