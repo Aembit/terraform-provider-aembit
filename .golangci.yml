@@ -10,7 +10,6 @@ formatters:
   # Default: [] (uses standard Go formatting)
   enable:
     - gofmt
-    - golines
 
 linters:
   default: none

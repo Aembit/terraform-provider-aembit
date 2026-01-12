@@ -40,10 +40,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
           repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
         env:
@@ -62,10 +69,17 @@ jobs:
     runs-on: ubuntu-latest
     if: always() && !inputs.regression
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
           repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-go@v5 # v5.x
@@ -89,8 +103,6 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
     - id: set-matrix
       name: Set up Terraform version matrix
       env:
@@ -117,10 +129,17 @@ jobs:
       matrix: 
         terraform: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
           repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
       - uses: actions/setup-go@v5 # v5.x
         env:
@@ -132,13 +151,17 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: go mod download
-      - env:
+
+      - name: Run Acceptance Tests
+        id: test
+        env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-          go test -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          go test -timeout 20m -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
           exit ${PIPESTATUS[0]}
-        timeout-minutes: 15        
+        timeout-minutes: 20
+
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@v4
         with:
@@ -153,10 +176,17 @@ jobs:
     if: always() && !inputs.regression
     runs-on: ubuntu-latest
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
+          private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
       - uses: actions/checkout@v4
         with:
           repository: Aembit/terraform-provider-aembit
-          token: ${{ secrets.SUBMODULE_CHECKOUT_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
           fetch-depth: 0
 

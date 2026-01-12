@@ -70,7 +70,6 @@ Required:
 Wildcard hostnames are supported, for example `*.amazonaws.com`, `*.azure.com`, or `*.googleapis.com`.
 Note: Wildcards are not supported in the top or second-level domain, such as `*.com`.
 - `port` (Number) Port of the Server Workload service endpoint.
-- `requested_port` (Number) Requested port of the Server Workload service endpoint.
 - `tls_verification` (String) TLS verification configuration of the Server Workload service endpoint. Possible values are `full` (default) or `none`.
 - `transport_protocol` (String) Transport protocol of the Server Workload service endpoint. This value must be set to the default `TCP`.
 
@@ -78,6 +77,7 @@ Optional:
 
 - `authentication_config` (Attributes) Service authentication details. (see [below for nested schema](#nestedatt--service_endpoint--authentication_config))
 - `http_headers` (Map of String) HTTP Headers are key-value pairs.
+- `requested_port` (Number) Requested port of the Server Workload service endpoint.
 - `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
 - `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
 - `url_path` (String) URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.

@@ -9,7 +9,6 @@ resource "aembit_credential_provider" "oauth_authorization_code" {
 		oauth_discovery_url = "https://aembit.io/.well-known/openid-configuration"
 		oauth_authorization_url = "https://aembit.io/authorize"
 		oauth_token_url = "https://aembit.io/token"
-		oauth_introspection_url = "https://aembit.io/introspect"
 		client_id = "test_client_id"
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"

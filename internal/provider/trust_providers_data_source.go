@@ -399,74 +399,6 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 									Computed:    true,
 								},
-								"symmetric_key": schema.StringAttribute{
-									Description: "The Symmetric Key that can be used to verify the signature of the Kubernetes Service Account Token.",
-									Computed:    true,
-								},
-								// "jwks": schema.SingleNestedAttribute{
-								// 	Computed:    true,
-								// 	Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
-								// 	Attributes: map[string]schema.Attribute{
-								// 		"keys": schema.ListNestedAttribute{
-								// 			Required:    true,
-								// 			Description: "A list of JSON Web Keys used to validate signed tokens.",
-								// 			NestedObject: schema.NestedAttributeObject{
-								// 				Attributes: map[string]schema.Attribute{
-								// 					"kid": schema.StringAttribute{
-								// 						Required:    true,
-								// 						Description: "Key ID (kid) used to match a specific key when multiple keys are available.",
-								// 					},
-								// 					"kty": schema.StringAttribute{
-								// 						Required:    true,
-								// 						Description: "Key type (kty). Possible values: RSA, EC.",
-								// 						Validators: []validator.String{
-								// 							stringvalidator.OneOf([]string{
-								// 								"RSA",
-								// 								"EC",
-								// 							}...),
-								// 						},
-								// 					},
-								// 					"use": schema.StringAttribute{
-								// 						Required:    true,
-								// 						Description: "Public key use — typically 'sig' for signature.",
-								// 					},
-								// 					"alg": schema.StringAttribute{
-								// 						Required:    true,
-								// 						Description: "Algorithm intended for use with the key. Possible values: RS256 or ES256.",
-								// 						Validators: []validator.String{
-								// 							stringvalidator.OneOf([]string{
-								// 								"RS256",
-								// 								"ES256",
-								// 							}...),
-								// 						},
-								// 					},
-								// 					// RSA fields
-								// 					"e": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "RSA public exponent (base64url-encoded). Required if kty is RSA.",
-								// 					},
-								// 					"n": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "RSA modulus (base64url-encoded). Required if kty is RSA.",
-								// 					},
-								// 					// EC fields
-								// 					"x": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "X coordinate for the elliptic curve point. Required if kty is EC.",
-								// 					},
-								// 					"y": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "Y coordinate for the elliptic curve point. Required if kty is EC.",
-								// 					},
-								// 					"crv": schema.StringAttribute{
-								// 						Optional:    true,
-								// 						Description: "Elliptic curve used with the key. Only Possible value: P-256",
-								// 					},
-								// 				},
-								// 			},
-								// 		},
-								// 	},
-								// },
 							},
 						},
 						"terraform_workspace": schema.SingleNestedAttribute{
@@ -543,10 +475,6 @@ func (d *trustProvidersDataSource) Schema(
 								},
 								"jwks": schema.StringAttribute{
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
-									Computed:    true,
-								},
-								"symmetric_key": schema.StringAttribute{
-									Description: "The Symmetric Key that can be used to verify the signature of the OIDC ID Token Token.",
 									Computed:    true,
 								},
 							},
