@@ -10,6 +10,7 @@ import (
 const testIdpDataSource = "data.aembit_identity_providers.test_idps"
 
 func TestAccIdentityProviderDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, err := os.ReadFile(
 		"../../tests/identity_provider/data/TestAccIdentityProviderDataSource.tf",
 	)

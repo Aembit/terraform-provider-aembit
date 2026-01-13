@@ -33,6 +33,7 @@ func testFindCredentialProviderIntegration(resourceName string) resource.TestChe
 }
 
 func TestAccGitLabCredentialProviderIntegrationsDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource.tf",
 	)
@@ -109,6 +110,7 @@ func TestAccAwsIamRoleCredentialProviderIntegrationsDataSource(t *testing.T) {
 }
 
 func TestAccAzureEntraFederationCredentialProviderIntegrationsDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential_provider_integration/data/TestAccAzureEntraFederationCpiDataSource.tf",
 	)

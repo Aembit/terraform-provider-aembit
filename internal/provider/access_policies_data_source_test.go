@@ -13,6 +13,7 @@ import (
 const testAccessPoliciesDataSource string = "data.aembit_access_policies.test"
 
 func TestAccAccessPoliciesDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource.tf")
 
 	randID := rand.Intn(10000000)

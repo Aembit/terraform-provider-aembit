@@ -33,6 +33,7 @@ func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccCredentialProvidersDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/data/TestAccCredentialProvidersDataSource.tf",
 	)
@@ -64,6 +65,7 @@ func TestAccCredentialProvidersDataSource(t *testing.T) {
 }
 
 func TestAccAzureKeyVaultValueCredentialProvidersDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/data/TestAccAzureKeyVaultCpDataSource.tf",
 	)

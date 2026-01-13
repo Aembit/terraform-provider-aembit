@@ -14,6 +14,7 @@ const (
 )
 
 func TestAccDefaultResourceSet(t *testing.T) {
+	t.Parallel()
 	readFile, _ := os.ReadFile("../../tests/resource_set/TestAccDefaultResourceSet.tf")
 
 	resource.Test(t, resource.TestCase{

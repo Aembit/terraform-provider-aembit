@@ -49,6 +49,7 @@ func TestAccSigninPolicy(t *testing.T) {
 }
 
 func TestAccSigninPolicy_MissingRequiredAttributes(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -66,6 +67,7 @@ resource "aembit_signin_policy" "test" {
 }
 
 func TestAccSigninPolicy_InvalidAttributes(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

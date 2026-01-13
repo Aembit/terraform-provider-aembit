@@ -10,6 +10,7 @@ import (
 const testStandaloneCertificateResource string = "aembit_standalone_certificate_authority.test"
 
 func TestAccStandaloneCertificateAuthorityResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/standalone_certificate_authority/TestAccStandaloneCertificateAuthorityResource.tf",
 	)

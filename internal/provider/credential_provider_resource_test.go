@@ -41,6 +41,7 @@ func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/aembit/TestAccCredentialProviderResource.tf",
 	)
@@ -118,6 +119,7 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/apikey/TestAccCredentialProviderResource.tf",
 	)
@@ -168,6 +170,7 @@ func TestAccCredentialProviderResource_ApiKey(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/credential/aws/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/credential/aws/TestAccCredentialProviderResource.tfmod",
@@ -239,6 +242,7 @@ func TestAccCredentialProviderResource_AwsSTS(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/credential/gcp/TestAccCredentialProviderResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/credential/gcp/TestAccCredentialProviderResource.tfmod",
@@ -302,6 +306,7 @@ func TestAccCredentialProviderResource_GoogleWorkload(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_AzureEntraToken(t *testing.T) {
+	t.Parallel()
 	const credentialProviderName string = "aembit_credential_provider.ae"
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/azure-entra/TestAccCredentialProviderResource.tf",
@@ -409,6 +414,7 @@ func TestAccCredentialProviderResource_AzureEntraToken(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_SnowflakeToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/snowflake/TestAccCredentialProviderResource.tf",
 	)
@@ -474,6 +480,7 @@ const (
 )
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf",
 	)
@@ -524,6 +531,7 @@ func TestAccCredentialProviderResource_OAuthClientCredentialsAuthHeader(t *testi
 }
 
 func TestAccCredentialProviderResource_OAuthClientCredentialsPostBody(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/oauth-client-credentials/TestAccCredentialProviderResource.tf",
 	)
@@ -580,6 +588,7 @@ const (
 )
 
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/oauth-authorization-code/TestAccCredentialProviderResource.tf",
 	)
@@ -658,6 +667,7 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/userpass/TestAccCredentialProviderResource.tf",
 	)
@@ -765,6 +775,7 @@ func TestAccCredentialProviderResource_ManagedGitlabAccount(t *testing.T) {
 }
 
 func TestAccAwsSecretsManagerValueCP(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/aws-secrets-manager/TestAwsSecretsManagerValueResource.tf",
 	)
@@ -863,6 +874,7 @@ func TestAccAwsSecretsManagerValueCP(t *testing.T) {
 }
 
 func TestAccAzureKeyVaultValueCP(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/azure-key-vault/TestAzureKeyVaultValueResource.tf",
 	)
@@ -969,6 +981,7 @@ const (
 )
 
 func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/vault/TestAccCredentialProviderResource.tf",
 	)
@@ -1098,6 +1111,7 @@ func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/oidc-id-token/TestAccCredentialProviderResource.tf",
 	)
@@ -1212,6 +1226,7 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/jwt-svid-token/TestAccCredentialProviderResource.tf",
 	)
@@ -1326,6 +1341,7 @@ func TestAccCredentialProviderResource_JwtSvidToken(t *testing.T) {
 }
 
 func TestAccCredentialProviderResource_JwtSvidToken_InvalidSubject(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential/jwt-svid-token/TestAccCredentialProviderResource_InvalidSubject.tf",
 	)

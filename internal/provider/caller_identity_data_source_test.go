@@ -13,6 +13,7 @@ const (
 )
 
 func TestAccCallerIdentityDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/caller_identity/data/TestAccCallerIdentityDataSource.tf",
 	)
@@ -34,6 +35,7 @@ func TestAccCallerIdentityDataSource(t *testing.T) {
 }
 
 func TestAccCallerIdentityDataSource_SecondaryProvider(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/caller_identity/data/TestAccCallerIdentityDataSourceSecondaryProvider.tf",
 	)

@@ -31,6 +31,7 @@ func testDeleteIntegration(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccIntegrationResource_Wiz(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/integration/wiz/TestAccIntegrationResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/integration/wiz/TestAccIntegrationResource.tfmod")
 
@@ -77,6 +78,7 @@ func TestAccIntegrationResource_Wiz(t *testing.T) {
 }
 
 func TestAccIntegrationResource_Crowdstrike(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/integration/crowdstrike/TestAccIntegrationResource.tf",
 	)

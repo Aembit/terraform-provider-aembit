@@ -31,6 +31,7 @@ func testFindLogStream(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccLogStreamsDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/log_stream/data/TestAccLogStreamsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(
 		string(createFile),

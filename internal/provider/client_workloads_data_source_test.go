@@ -34,6 +34,7 @@ func testFindClientWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccClientWorkloadsDataSource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/data/TestAccClientWorkloadsDataSource.tf")
 
 	randID := rand.Intn(10000000)
