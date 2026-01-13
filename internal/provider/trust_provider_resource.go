@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -618,6 +619,12 @@ func (r *trustProviderResource) Schema(
 						Optional:    true,
 						Computed:    true,
 					},
+					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
+						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
 				},
 			},
 			"terraform_workspace": schema.SingleNestedAttribute{
@@ -724,6 +731,12 @@ func (r *trustProviderResource) Schema(
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
+					},
+					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
+						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -1510,6 +1523,7 @@ func convertKubernetesModelToDTO(
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
+	dto.IsAembitTenantOidcToken = model.KubernetesService.IsAembitTenantOidcToken.ValueBool()
 
 	err := convertJWKSModelToDto(model.KubernetesService.Jwks.ValueString(), dto)
 	if err != nil {
@@ -1583,6 +1597,8 @@ func convertOidcIdTokenTpModelToDTO(
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
+	dto.IsAembitTenantOidcToken = model.OidcIdToken.IsAembitTenantOidcToken.ValueBool()
+
 	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.ValueString(), dto)
 	if err != nil {
 		return err
@@ -1898,14 +1914,15 @@ func convertKubernetesDTOToModel(
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &models.TrustProviderKubernetesModel{
-		Issuer:             types.StringNull(),
-		Namespace:          types.StringNull(),
-		PodName:            types.StringNull(),
-		ServiceAccountName: types.StringNull(),
-		Subject:            types.StringNull(),
-		PublicKey:          types.StringNull(),
-		OIDCEndpoint:       types.StringNull(),
-		Jwks:               jsontypes.NewNormalizedNull(),
+		Issuer:                  types.StringNull(),
+		Namespace:               types.StringNull(),
+		PodName:                 types.StringNull(),
+		ServiceAccountName:      types.StringNull(),
+		Subject:                 types.StringNull(),
+		PublicKey:               types.StringNull(),
+		OIDCEndpoint:            types.StringNull(),
+		Jwks:                    jsontypes.NewNormalizedNull(),
+		IsAembitTenantOidcToken: types.BoolValue(false),
 	}
 
 	if len(dto.Certificate) > 0 {
@@ -1915,6 +1932,8 @@ func convertKubernetesDTOToModel(
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
 	}
+
+	model.IsAembitTenantOidcToken = types.BoolValue(dto.IsAembitTenantOidcToken)
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("KubernetesIss")) {
 		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "KubernetesIss")
@@ -1949,13 +1968,15 @@ func convertOidcIdTokenTpDTOToModel(
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
 
 	model := &models.TrustProviderOidcIdTokenModel{
-		Issuer:       types.StringNull(),
-		Subject:      types.StringNull(),
-		Audience:     types.StringNull(),
-		PublicKey:    types.StringNull(),
-		OIDCEndpoint: types.StringNull(),
-		Jwks:         jsontypes.NewNormalizedNull(),
+		Issuer:                  types.StringNull(),
+		Subject:                 types.StringNull(),
+		Audience:                types.StringNull(),
+		PublicKey:               types.StringNull(),
+		OIDCEndpoint:            types.StringNull(),
+		Jwks:                    jsontypes.NewNormalizedNull(),
+		IsAembitTenantOidcToken: types.BoolValue(false),
 	}
+
 	if len(dto.Certificate) > 0 {
 		model.PublicKey = types.StringValue(string(decodedKey))
 	} else if len(dto.OidcUrl) > 0 {
@@ -1963,6 +1984,8 @@ func convertOidcIdTokenTpDTOToModel(
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
 	}
+
+	model.IsAembitTenantOidcToken = types.BoolValue(dto.IsAembitTenantOidcToken)
 
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcIssuer")) {
 		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "OidcIssuer")

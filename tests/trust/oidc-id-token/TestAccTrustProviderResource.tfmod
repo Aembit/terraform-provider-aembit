@@ -51,3 +51,14 @@ resource "aembit_trust_provider" "oidcidtoken_jwks" {
 EOT		
 	}
 }
+
+resource "aembit_trust_provider" "oidcidtoken_aembittenantoidctoken" {
+	name = "TF Acceptance OIDC ID Token AembitTenantOidcToken - Modified"
+	is_active = true
+	oidc_id_token = {
+		issuer = "issuer"
+		subject = "subject"
+		audience = "audience"
+		is_aembit_tenant_oidc_token = true
+	}
+}

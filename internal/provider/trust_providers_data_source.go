@@ -399,6 +399,10 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
 									Computed:    true,
 								},
+								"is_aembit_tenant_oidc_token": schema.BoolAttribute{
+									Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
+									Computed:    true,
+								},
 							},
 						},
 						"terraform_workspace": schema.SingleNestedAttribute{
@@ -475,6 +479,10 @@ func (d *trustProvidersDataSource) Schema(
 								},
 								"jwks": schema.StringAttribute{
 									Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.",
+									Computed:    true,
+								},
+								"is_aembit_tenant_oidc_token": schema.BoolAttribute{
+									Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
 									Computed:    true,
 								},
 							},
