@@ -280,6 +280,16 @@ func (r *serverWorkloadResource) Create(
 		return
 	}
 
+	// Validation: requested_port must equal port when app_protocol is MCP
+	if plan.ServiceEndpoint.AppProtocol.ValueString() == "MCP" &&
+		plan.ServiceEndpoint.RequestedPort.ValueInt64() != plan.ServiceEndpoint.Port.ValueInt64() {
+		resp.Diagnostics.AddError(
+			"Invalid requested_port for MCP protocol",
+			"When app_protocol is 'MCP', requested_port must be equal to port.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
@@ -371,6 +381,16 @@ func (r *serverWorkloadResource) Update(
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// Validation: requested_port must equal port when app_protocol is MCP
+	if plan.ServiceEndpoint.AppProtocol.ValueString() == "MCP" &&
+		plan.ServiceEndpoint.RequestedPort.ValueInt64() != plan.ServiceEndpoint.Port.ValueInt64() {
+		resp.Diagnostics.AddError(
+			"Invalid requested_port for MCP protocol",
+			"When app_protocol is 'MCP', requested_port must be equal to port.",
+		)
+		return	
 	}
 
 	// Generate API request body from plan
