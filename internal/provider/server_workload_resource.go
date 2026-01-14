@@ -390,7 +390,7 @@ func (r *serverWorkloadResource) Update(
 			"Invalid requested_port for MCP protocol",
 			"When app_protocol is 'MCP', requested_port must be equal to port.",
 		)
-		return	
+		return
 	}
 
 	// Generate API request body from plan
