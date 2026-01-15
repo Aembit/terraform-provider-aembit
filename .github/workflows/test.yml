@@ -158,7 +158,13 @@ jobs:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
-          go test -timeout 20m -parallel 4 -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          CPU_COUNT=$(nproc)
+          echo "Detected CPU cores: $CPU_COUNT"
+
+          PARALLEL=$((CPU_COUNT / 2))
+          echo "Parallel Run count: $PARALLEL"
+
+          go test -timeout 20m -parallel "$PARALLEL" -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
           exit ${PIPESTATUS[0]}
         timeout-minutes: 20
 
