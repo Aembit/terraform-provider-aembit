@@ -31,7 +31,6 @@ func testFindAccessCondition(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAccessConditionsDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(
 		string(createFile),

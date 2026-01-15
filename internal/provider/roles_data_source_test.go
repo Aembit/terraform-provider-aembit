@@ -33,7 +33,6 @@ func testFindRole(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccRolesDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/roles/data/TestAccRolesDataSource.tf")
 	randID := rand.Intn(10000000)
 	createFileConfig := strings.ReplaceAll(

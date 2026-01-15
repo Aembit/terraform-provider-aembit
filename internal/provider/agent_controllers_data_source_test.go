@@ -31,7 +31,6 @@ func testFindAgentController(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAgentControllersDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/agent_controllers/data/TestAccAgentControllersDataSource.tf",
 	)

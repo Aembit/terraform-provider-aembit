@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testLogStreamsDataSource string = "data.aembit_log_streams.test"
+	testLogStreamsDataSource string = "data.aembit_log_streams.log_stream_data_source"
 	testLogStreamResource    string = "aembit_log_stream.aws_s3_bucket"
 )
 
@@ -31,7 +31,6 @@ func testFindLogStream(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccLogStreamsDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/log_stream/data/TestAccLogStreamsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(
 		string(createFile),

@@ -31,7 +31,6 @@ func testFindTrustProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccTrustProvidersDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(
 		string(createFile),

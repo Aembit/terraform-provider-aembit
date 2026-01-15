@@ -31,7 +31,6 @@ func testFindDiscoveryIntegration(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccDiscoveryIntegrationsDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/discovery_integration/data/TestAccDiscoveryIntegrationsDataSource.tf",
 	)

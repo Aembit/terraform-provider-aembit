@@ -28,7 +28,6 @@ func testFindStandaloneCertificate(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccStandaloneCertificatesDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource.tf",
 	)

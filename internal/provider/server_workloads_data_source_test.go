@@ -28,7 +28,6 @@ func testFindServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadsDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
 

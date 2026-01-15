@@ -31,7 +31,6 @@ func testFindIntegration(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccIntegrationsDataSource(t *testing.T) {
-	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/integration/data/TestAccIntegrationsDataSource.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Wiz")
 
