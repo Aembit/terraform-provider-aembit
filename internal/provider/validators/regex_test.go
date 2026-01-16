@@ -5,6 +5,7 @@ import (
 )
 
 func TestRegex_UUID_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"550e8400-e29b-41d4-a716-446655440000",
 		"{550e8400-e29b-41d4-a716-446655440000}",
@@ -13,6 +14,7 @@ func TestRegex_UUID_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !UUIDRegex.MatchString(input) {
 				t.Errorf("Expected valid UUID, but got invalid: %s", input)
 			}
@@ -21,6 +23,7 @@ func TestRegex_UUID_Valid(t *testing.T) {
 }
 
 func TestRegex_UUID_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"550e8400e29b41d4a716446655440000",      // Missing dashes
 		"550e8400-e29b-41d4-a716-44665544",      // Too short
@@ -30,6 +33,7 @@ func TestRegex_UUID_Invalid(t *testing.T) {
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if UUIDRegex.MatchString(input) {
 				t.Errorf("Expected invalid UUID, but got valid: %s", input)
 			}
@@ -38,6 +42,7 @@ func TestRegex_UUID_Invalid(t *testing.T) {
 }
 
 func TestRegex_Email_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"test@example.com",
 		"user.name+tag+sorting@example.com",
@@ -46,6 +51,7 @@ func TestRegex_Email_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !EmailRegex.MatchString(input) {
 				t.Errorf("Expected valid email, but got invalid: %s", input)
 			}
@@ -54,6 +60,7 @@ func TestRegex_Email_Valid(t *testing.T) {
 }
 
 func TestRegex_Email_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"plainaddress",
 		"@missinguser.com",
@@ -62,6 +69,7 @@ func TestRegex_Email_Invalid(t *testing.T) {
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if EmailRegex.MatchString(input) {
 				t.Errorf("Expected invalid email, but got valid: %s", input)
 			}
@@ -70,6 +78,7 @@ func TestRegex_Email_Invalid(t *testing.T) {
 }
 
 func TestRegex_SnowflakeAccount_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"test-user",
 		"Testuser",
@@ -79,6 +88,7 @@ func TestRegex_SnowflakeAccount_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !SnowflakeAccountRegex.MatchString(input) {
 				t.Errorf("Expected valid snowflake account, but got invalid: %s", input)
 			}
@@ -87,6 +97,7 @@ func TestRegex_SnowflakeAccount_Valid(t *testing.T) {
 }
 
 func TestRegex_SnowflakeAccount_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"test user",
 		"Testuser?",
@@ -94,6 +105,7 @@ func TestRegex_SnowflakeAccount_Invalid(t *testing.T) {
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if SnowflakeAccountRegex.MatchString(input) {
 				t.Errorf("Expected invalid snowflake account, but got valid: %s", input)
 			}
@@ -102,6 +114,7 @@ func TestRegex_SnowflakeAccount_Invalid(t *testing.T) {
 }
 
 func TestRegex_SnowflakeUserName_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"test_user",
 		"Testuser",
@@ -111,6 +124,7 @@ func TestRegex_SnowflakeUserName_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !SnowflakeUserNameRegex.MatchString(input) {
 				t.Errorf("Expected valid snowflake username, but got invalid: %s", input)
 			}
@@ -119,6 +133,7 @@ func TestRegex_SnowflakeUserName_Valid(t *testing.T) {
 }
 
 func TestRegex_SnowflakeUserName_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"test user",
 		"Testuser?",
@@ -127,6 +142,7 @@ func TestRegex_SnowflakeUserName_Invalid(t *testing.T) {
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if SnowflakeUserNameRegex.MatchString(input) {
 				t.Errorf("Expected invalid snowflake username, but got valid: %s", input)
 			}
@@ -135,6 +151,7 @@ func TestRegex_SnowflakeUserName_Invalid(t *testing.T) {
 }
 
 func TestRegex_URLScheme_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"http://test.com",
 		"https://test.com",
@@ -142,6 +159,7 @@ func TestRegex_URLScheme_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !UrlSchemeRegex.MatchString(input) {
 				t.Errorf("Expected valid url scheme, but got invalid: %s", input)
 			}
@@ -150,6 +168,7 @@ func TestRegex_URLScheme_Valid(t *testing.T) {
 }
 
 func TestRegex_URLScheme_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"htttp://test.com",
 		"https//test.com",
@@ -157,6 +176,7 @@ func TestRegex_URLScheme_Invalid(t *testing.T) {
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if UrlSchemeRegex.MatchString(input) {
 				t.Errorf("Expected invalid url scheme, but got valid: %s", input)
 			}
@@ -165,11 +185,13 @@ func TestRegex_URLScheme_Invalid(t *testing.T) {
 }
 
 func TestRegex_SecureURL_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"https://test.com",
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !SecureURLRegex.MatchString(input) {
 				t.Errorf("Expected a valid secure url, but got invalid: %s", input)
 			}
@@ -178,12 +200,14 @@ func TestRegex_SecureURL_Valid(t *testing.T) {
 }
 
 func TestRegex_SecureURL_Invalid(t *testing.T) {
+	t.Parallel()
 	invalidInputs := []string{
 		"http://test.com",
 		"http://localhost",
 	}
 	for _, input := range invalidInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if SecureURLRegex.MatchString(input) {
 				t.Errorf("Expected invalid secure url, but got valid: %s", input)
 			}
@@ -192,6 +216,7 @@ func TestRegex_SecureURL_Invalid(t *testing.T) {
 }
 
 func TestRegex_Hostname_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"example.com",
 		"sub.domain.com",
@@ -201,6 +226,7 @@ func TestRegex_Hostname_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !HostNameRegex.MatchString(input) {
 				t.Errorf("Expected valid hostname, but got invalid: %s", input)
 			}
@@ -209,6 +235,7 @@ func TestRegex_Hostname_Valid(t *testing.T) {
 }
 
 func TestRegex_Hostname_Invalid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"-invalid.com",
 		"example..com",
@@ -218,6 +245,7 @@ func TestRegex_Hostname_Invalid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if HostNameRegex.MatchString(input) {
 				t.Errorf("Expected invalid hostname, but got valid: %s", input)
 			}
@@ -226,6 +254,7 @@ func TestRegex_Hostname_Invalid(t *testing.T) {
 }
 
 func TestRegex_SafeWildcardHostname_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"example.com",
 		"sub.domain.com",
@@ -242,6 +271,7 @@ func TestRegex_SafeWildcardHostname_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !StructuralHostRegex.MatchString(input) {
 				t.Errorf("Expected valid structural hostname, but got invalid: %s", input)
 			}
@@ -250,6 +280,7 @@ func TestRegex_SafeWildcardHostname_Valid(t *testing.T) {
 }
 
 func TestRegex_SafeWildcardHostname_Invalid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"-invalid.com",
 		"example..com",
@@ -264,6 +295,7 @@ func TestRegex_SafeWildcardHostname_Invalid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if StructuralHostRegex.MatchString(input) {
 				t.Errorf("Expected invalid structural hostname, but got valid: %s", input)
 			}
@@ -272,6 +304,7 @@ func TestRegex_SafeWildcardHostname_Invalid(t *testing.T) {
 }
 
 func TestRegex_IPHost_Valid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"192.168.1.1", // NOSONAR
 		"10.0.0.1",    // NOSONAR
@@ -279,6 +312,7 @@ func TestRegex_IPHost_Valid(t *testing.T) {
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if !HostIPRegex.MatchString(input) {
 				t.Errorf("Expected valid IP host, but got invalid: %s", input)
 			}
@@ -287,12 +321,14 @@ func TestRegex_IPHost_Valid(t *testing.T) {
 }
 
 func TestRegex_IPHost_Invalid(t *testing.T) {
+	t.Parallel()
 	validInputs := []string{
 		"192.*.86.1", // IP with wildcard
 		"",           // Empty string
 	}
 	for _, input := range validInputs {
 		t.Run(input, func(t *testing.T) {
+			t.Parallel()
 			if HostIPRegex.MatchString(input) {
 				t.Errorf("Expected invalid IP host, but got valid: %s", input)
 			}
@@ -301,6 +337,7 @@ func TestRegex_IPHost_Invalid(t *testing.T) {
 }
 
 func TestAwsIamRoleArnRegex(t *testing.T) {
+	t.Parallel()
 	valid := "arn:aws:iam::123456789012:role/MyRole"
 	invalid := "arn:aws:iam::123456789012:role/"
 
@@ -313,6 +350,7 @@ func TestAwsIamRoleArnRegex(t *testing.T) {
 }
 
 func TestAwsSecretArnRegex(t *testing.T) {
+	t.Parallel()
 	valid := "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret-ABC123"
 	invalid := "arn:aws:secretsmanager:us-west-2:123456789012:secret:mysecret"
 

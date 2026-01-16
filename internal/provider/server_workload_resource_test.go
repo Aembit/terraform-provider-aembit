@@ -32,6 +32,7 @@ func testDeleteServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tfmod")
 

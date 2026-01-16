@@ -101,6 +101,7 @@ func TestAccGitLabCPIResource(t *testing.T) {
 }
 
 func TestAccAwsIamRoleCPIResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential_provider_integration/awsiamrole/TestAccAwsIamRoleCpiResource.tf",
 	)
@@ -202,6 +203,7 @@ func TestAccAwsIamRoleCPIResource(t *testing.T) {
 }
 
 func TestAccAzureEntraFederationCPIResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/credential_provider_integration/aef/TestAccAefCpiResource.tf",
 	)
