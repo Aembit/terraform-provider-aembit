@@ -159,12 +159,9 @@ jobs:
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
         run: |
           CPU_COUNT=$(nproc)
-          echo "Detected CPU cores: $CPU_COUNT"
+          echo "Detected $CPU_COUNT CPU cores for parallelization"
 
-          PARALLEL=$((CPU_COUNT / 2))
-          echo "Parallel Run count: $PARALLEL"
-
-          go test -timeout 20m -parallel "$PARALLEL" -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
+          go test -timeout 20m -parallel "$CPU_COUNT" -json -v -coverprofile coverage.out ./internal/provider/ | tee results.json | jq 'select(.Output != null) | .Output' | sed s/\"//g          
           exit ${PIPESTATUS[0]}
         timeout-minutes: 20
 
