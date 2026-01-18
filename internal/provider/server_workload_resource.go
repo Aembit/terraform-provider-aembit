@@ -281,7 +281,6 @@ func (r *serverWorkloadResource) Create(
 		return
 	}
 
-
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
