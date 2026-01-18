@@ -6,10 +6,11 @@ import (
 	"reflect"
 	"testing"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 func TestAcc_GPC_CreateImportUpdate(t *testing.T) {
@@ -135,6 +136,7 @@ func Test_GPC_convertGlobalPolicyComplianceDTOToModel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			if got := convertGlobalPolicyComplianceDTOToModel(tt.args.gpcSettings, "testId"); !reflect.DeepEqual(
 				got,
 				tt.want,
@@ -192,6 +194,7 @@ func Test_GPC_convertGlobalPolicyComplianceModelToDTO(t *testing.T) {
 }
 
 func Test_GPC_updateComplianceSettings_API_Errors(t *testing.T) {
+
 	type args struct {
 		currentModel  *models.GlobalPolicyComplianceModel
 		previousModel *models.GlobalPolicyComplianceModel
@@ -262,6 +265,7 @@ func Test_GPC_updateComplianceSettings_API_Errors(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			server := httptest.NewServer(
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusBadRequest)

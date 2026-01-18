@@ -28,6 +28,7 @@ func testDeleteRole(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccRoleResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/roles/TestAccRoleResource.tfmod")
 	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(

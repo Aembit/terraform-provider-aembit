@@ -33,6 +33,7 @@ func testDeleteAccessCondition(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAccessConditionResource_Wiz(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/condition/wiz/TestAccAccessConditionResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/condition/wiz/TestAccAccessConditionResource.tfmod")
 
@@ -87,6 +88,7 @@ func TestAccAccessConditionResource_Wiz(t *testing.T) {
 }
 
 func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/condition/crowdstrike/TestAccAccessConditionResource.tf",
 	)
@@ -137,6 +139,7 @@ func TestAccAccessConditionResource_Crowdstrike(t *testing.T) {
 }
 
 func TestAccAccessConditionResource_GeoIp(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/condition/geoip/TestAccAccessConditionResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/condition/geoip/TestAccAccessConditionResource.tfmod")
 
@@ -183,6 +186,7 @@ func TestAccAccessConditionResource_GeoIp(t *testing.T) {
 }
 
 func TestAccAccessConditionResource_TimeZone(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/condition/timezone/TestAccAccessConditionResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/condition/timezone/TestAccAccessConditionResource.tfmod",

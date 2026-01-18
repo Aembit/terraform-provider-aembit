@@ -26,12 +26,12 @@ install:
 .PHONY: testacc unittest test_coverage
 testacc: .check-env-vars install
 	cd internal/provider
-	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage_at.out
+	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 10m -parallel 4 -coverprofile coverage_at.out
 	printf 'REMINDER: To run specific tests, use \e[36mTESTARGS="-run REGEX"\e[0m\n'
 
 unittest: .check-env-vars install
 	cd internal/provider
-	go test ./... -v $(TESTARGS) -timeout 10m -coverprofile coverage_ut.out
+	go test ./... -v $(TESTARGS) -timeout 10m -parallel 4 -coverprofile coverage_ut.out
 	printf 'REMINDER: To run specific tests, use \e[36mTESTARGS="-run REGEX"\e[0m\n'
 
 test_coverage: testacc unittest

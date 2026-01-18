@@ -15,6 +15,7 @@ const (
 )
 
 func TestAccTrustProviderSecretResource_Certificate(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/trust_provider_secret/certificate/TestAccTrustProviderSecretResource.tf",
 	)
@@ -84,6 +85,7 @@ func TestAccTrustProviderSecretResource_Certificate(t *testing.T) {
 }
 
 func TestAccTrustProviderSecretResource_SymmetricKey(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/trust_provider_secret/symmetric_key/TestAccTrustProviderSecretResource.tf",
 	)
