@@ -588,7 +588,7 @@ func (d *credentialProvidersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *credentialProvidersDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.CredentialProvidersDataSourceModel
