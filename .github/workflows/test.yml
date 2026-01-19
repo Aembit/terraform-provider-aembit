@@ -33,10 +33,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    # Testing only needs permissions to read the repository contents.
-    permissions:
-      contents: read
-      id-token: write       # To get the GitHub Action ID JWT Token
     timeout-minutes: 5
     steps:
       - name: Generate a token
@@ -119,6 +115,9 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs: [build,matrix_prep]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write       # To get the GitHub Action ID JWT Token
     timeout-minutes: 15
     strategy:
       # TF Provider works with entities which have a single copy per tenant (ex: global policy compliance, sign-in policy)
