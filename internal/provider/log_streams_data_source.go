@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -180,7 +181,7 @@ func (d *logStreamsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *logStreamsDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.LogStreamsDataSourceModel

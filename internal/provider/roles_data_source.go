@@ -183,7 +183,7 @@ func (d *rolesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *rolesDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.RolesDataSourceModel

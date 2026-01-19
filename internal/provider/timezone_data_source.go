@@ -79,7 +79,7 @@ func (d *timezonesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *timezonesDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	state := GetTimezones(d.client)

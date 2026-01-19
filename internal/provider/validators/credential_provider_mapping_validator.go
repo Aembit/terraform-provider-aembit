@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"terraform-provider-aembit/internal/provider/models"
+
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 type CredentialProviderMappingValidator struct{}
 
-func (v CredentialProviderMappingValidator) Description(ctx context.Context) string {
+func (v CredentialProviderMappingValidator) Description(_ context.Context) string {
 	return "Ensure there are no duplicate mapping values"
 }
 

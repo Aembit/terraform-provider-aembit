@@ -33,6 +33,9 @@ import (
 // Ensure AembitProvider satisfies various provider interfaces.
 var _ provider.Provider = &aembitProvider{}
 
+// Constant strings.
+const FMT_READ_RESPONSE_ERROR = "failed to read response body: %w"
+
 // New is a helper function to simplify provider server and testing implementation.
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
@@ -335,7 +338,7 @@ func (p *aembitProvider) Configure(
 	)
 }
 
-func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *aembitProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServerWorkloadResource,
 		NewCredentialProviderResource,
@@ -358,7 +361,7 @@ func (p *aembitProvider) Resources(ctx context.Context) []func() resource.Resour
 	}
 }
 
-func (p *aembitProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *aembitProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewServerWorkloadsDataSource,
 		NewCredentialProvidersDataSource,
@@ -428,8 +431,8 @@ type tokenAuth struct {
 }
 
 func (t tokenAuth) GetRequestMetadata(
-	ctx context.Context,
-	in ...string,
+	_ context.Context,
+	_ ...string,
 ) (map[string]string, error) {
 	return map[string]string{
 		"authorization": "Bearer " + t.token,
@@ -640,7 +643,7 @@ func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version strin
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", fmt.Errorf(FMT_READ_RESPONSE_ERROR, err)
 	}
 
 	var tokenResponse struct {
@@ -693,7 +696,7 @@ func getGcpIdentityToken(clientId, stackDomain string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", fmt.Errorf(FMT_READ_RESPONSE_ERROR, err)
 	}
 
 	GCP_ID_TOKEN = string(body)
@@ -729,7 +732,7 @@ func getGitHubIdentityToken(clientId, stackDomain string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return "", fmt.Errorf(FMT_READ_RESPONSE_ERROR, err)
 	}
 
 	jsonBody := make(map[string]interface{})
@@ -751,7 +754,7 @@ func getTerraformIdentityToken() (string, error) {
 		return TERRAFORM_ID_TOKEN, nil
 	}
 
-	TERRAFORM_ID_TOKEN := os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
+	TERRAFORM_ID_TOKEN = os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
 	return TERRAFORM_ID_TOKEN, nil
 }
 
@@ -789,7 +792,7 @@ func isTokenValid(jwtToken string) bool {
 	}
 
 	var claims map[string]interface{}
-	if err := json.Unmarshal(payload, &claims); err != nil {
+	if json.Unmarshal(payload, &claims) != nil {
 		return false
 	}
 

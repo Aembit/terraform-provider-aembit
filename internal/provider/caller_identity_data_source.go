@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -64,7 +65,7 @@ func (d *callerIdentityDataSource) Schema(
 // Read retrieves the tenant ID from the client and sets it in state.
 func (d *callerIdentityDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	if d.client == nil {
