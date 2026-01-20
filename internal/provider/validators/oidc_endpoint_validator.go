@@ -15,7 +15,7 @@ func OidcEndpointValidation() validator.String {
 	return oidcEndpointValidator{}
 }
 
-func (v oidcEndpointValidator) Description(ctx context.Context) string {
+func (v oidcEndpointValidator) Description(_ context.Context) string {
 	return "OIDC Endpoint must not include well-known endpoint."
 }
 
@@ -24,7 +24,7 @@ func (v oidcEndpointValidator) MarkdownDescription(ctx context.Context) string {
 }
 
 func (v oidcEndpointValidator) ValidateString(
-	ctx context.Context,
+	_ context.Context,
 	req validator.StringRequest,
 	resp *validator.StringResponse,
 ) {

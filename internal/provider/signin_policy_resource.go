@@ -3,12 +3,13 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -99,7 +100,7 @@ func (r *SignInPolicyResource) Read(
 
 func (r *SignInPolicyResource) ImportState(
 	ctx context.Context,
-	req resource.ImportStateRequest,
+	_ resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
 	// Get refreshed signInPolicy value from Aembit

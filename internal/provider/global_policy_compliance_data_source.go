@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 var (
@@ -46,7 +47,7 @@ func (g *globalPolicyComplianceDataSource) Metadata(
 // Read implements datasource.DataSource.
 func (g *globalPolicyComplianceDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.GlobalPolicyComplianceModel
@@ -67,7 +68,7 @@ func (g *globalPolicyComplianceDataSource) Read(
 // Schema implements datasource.DataSource.
 func (g *globalPolicyComplianceDataSource) Schema(
 	_ context.Context,
-	req datasource.SchemaRequest,
+	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{

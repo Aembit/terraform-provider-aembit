@@ -95,7 +95,7 @@ func (d *agentControllersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *agentControllersDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.AgentControllersDataSourceModel
