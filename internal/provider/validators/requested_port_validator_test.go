@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -56,6 +57,14 @@ func TestRequestedPortEqualsPortForMCPValidator(t *testing.T) {
 			v := requestedPortEqualsPortForMCPValidator{}
 			ctx := context.Background()
 
+			schema := schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"app_protocol": schema.StringAttribute{},
+					"port":         schema.Int64Attribute{},
+					"requested_port": schema.Int64Attribute{},
+				},
+			}
+
 			// Create a mock config with the schema structure
 			configValue := tftypes.NewValue(tftypes.Object{
 				AttributeTypes: map[string]tftypes.Type{
@@ -71,6 +80,7 @@ func TestRequestedPortEqualsPortForMCPValidator(t *testing.T) {
 
 			config := tfsdk.Config{
 				Raw: configValue,
+				Schema: schema,
 			}
 
 			req := validator.Int64Request{
