@@ -104,3 +104,26 @@ func TestRequestedPortEqualsPortForMCPValidator(t *testing.T) {
 		})
 	}
 }
+
+func TestRequestedPortEqualsPortForMCPValidation(t *testing.T) {
+	v := RequestedPortEqualsPortForMCPValidation()
+	require.NotNil(t, v, "validator should not be nil")
+}
+
+func TestRequestedPortEqualsPortForMCPValidator_Description(t *testing.T) {
+	v := requestedPortEqualsPortForMCPValidator{}
+	ctx := context.Background()
+
+	desc := v.Description(ctx)
+	require.NotEmpty(t, desc, "description should not be empty")
+	require.Equal(t, "Ensures requested_port equals port when app_protocol is MCP", desc)
+}
+
+func TestRequestedPortEqualsPortForMCPValidator_MarkdownDescription(t *testing.T) {
+	v := requestedPortEqualsPortForMCPValidator{}
+	ctx := context.Background()
+
+	mdDesc := v.MarkdownDescription(ctx)
+	require.NotEmpty(t, mdDesc, "markdown description should not be empty")
+	require.Equal(t, v.Description(ctx), mdDesc, "markdown description should match description")
+}
