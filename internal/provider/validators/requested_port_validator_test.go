@@ -59,8 +59,8 @@ func TestRequestedPortEqualsPortForMCPValidator(t *testing.T) {
 
 			schema := schema.Schema{
 				Attributes: map[string]schema.Attribute{
-					"app_protocol": schema.StringAttribute{},
-					"port":         schema.Int64Attribute{},
+					"app_protocol":   schema.StringAttribute{},
+					"port":           schema.Int64Attribute{},
 					"requested_port": schema.Int64Attribute{},
 				},
 			}
@@ -79,7 +79,7 @@ func TestRequestedPortEqualsPortForMCPValidator(t *testing.T) {
 			})
 
 			config := tfsdk.Config{
-				Raw: configValue,
+				Raw:    configValue,
 				Schema: schema,
 			}
 
