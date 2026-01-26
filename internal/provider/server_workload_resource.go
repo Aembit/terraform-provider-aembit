@@ -150,6 +150,7 @@ func (r *serverWorkloadResource) Schema(
 						Computed:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(1, 65535),
+							validators.RequestedPortEqualsPortForMCPValidation(),
 						},
 					},
 					"tls_verification": schema.StringAttribute{
