@@ -316,9 +316,6 @@ func (d *credentialProvidersDataSource) Schema(
 								"oauth_introspection_url": schema.StringAttribute{
 									Computed: true,
 								},
-								"user_authorization_url": schema.StringAttribute{
-									Computed: true,
-								},
 								"client_id": schema.StringAttribute{
 									Computed: true,
 								},
