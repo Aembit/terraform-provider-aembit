@@ -301,6 +301,69 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"mcp_user_based_access_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"mcp_server_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_authorization_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_introspection_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"user_authorization_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_id": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_secret": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+								"scopes": schema.StringAttribute{
+									Computed: true,
+								},
+								"is_pkce_required": schema.BoolAttribute{
+									Computed: true,
+								},
+								"callback_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"state": schema.StringAttribute{
+									Computed: true,
+								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
+									Required:    true,
+								},
+								"lifetime_expiration": schema.StringAttribute{
+									Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
+									Computed:    true,
+								},
+								"custom_parameters": schema.SetNestedAttribute{
+									Computed: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
 						"username_password": schema.SingleNestedAttribute{
 							Description: "Username/Password type Credential Provider configuration.",
 							Optional:    true,
