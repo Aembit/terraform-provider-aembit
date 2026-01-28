@@ -90,7 +90,6 @@ type OAuthCodeModel struct {
 	OAuthAuthorizationUrl types.String                                          `tfsdk:"oauth_authorization_url"`
 	OAuthTokenUrl         types.String                                          `tfsdk:"oauth_token_url"`
 	OAuthIntrospectionUrl types.String                                          `tfsdk:"oauth_introspection_url"`
-	UserAuthorizationUrl  types.String                                          `tfsdk:"user_authorization_url"`
 	ClientID              types.String                                          `tfsdk:"client_id"`
 	ClientSecret          types.String                                          `tfsdk:"client_secret"`
 	Scopes                types.String                                          `tfsdk:"scopes"`
@@ -104,7 +103,8 @@ type OAuthCodeModel struct {
 
 // CredentialProviderOAuthAuthorizationCodeModel maps OAuth Authorization Code Flow configuration.
 type CredentialProviderOAuthAuthorizationCodeModel struct {
-	OAuthDiscoveryUrl types.String `tfsdk:"oauth_discovery_url"`
+	OAuthDiscoveryUrl    types.String `tfsdk:"oauth_discovery_url"`
+	UserAuthorizationUrl types.String `tfsdk:"user_authorization_url"`
 	OAuthCodeModel
 }
 

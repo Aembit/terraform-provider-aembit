@@ -1343,9 +1343,22 @@ func convertCredentialProviderV2DTOToModel(
 	case "oauth-client-credential":
 		model.OAuthClientCredentials = convertOAuthClientCredentialV2DTOToModel(dto, *planModel)
 	case "oauth-authorization-code":
-		model.OAuthAuthorizationCode = convertOAuthAuthorizationCodeV2DTOToModel(dto, *planModel)
+		value := models.CredentialProviderOAuthAuthorizationCodeModel{}
+		value.OAuthDiscoveryUrl = types.StringValue(dto.OAuthUrl)
+		value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
+		value.OAuthCodeModel = *convertOAuthCodeDTOToModel(dto)
+		if planModel.OAuthAuthorizationCode != nil {
+			value.ClientSecret = planModel.OAuthAuthorizationCode.ClientSecret
+		}
+		model.OAuthAuthorizationCode = &value
 	case "mcp-user-based-access-token":
-		model.McpUserBasedAccessToken = convertMcpUserBasedAccessTokenDTOToModel(dto, *planModel)
+		value := models.CredentialProviderMcpUserBasedAccessTokenModel{}
+		value.McpServerUrl = types.StringValue(dto.McpServerUrl)
+		value.OAuthCodeModel = *convertOAuthCodeDTOToModel(dto)
+		if planModel.McpUserBasedAccessToken != nil {
+			value.ClientSecret = planModel.McpUserBasedAccessToken.ClientSecret
+		}
+		model.McpUserBasedAccessToken = &value
 	case "username-password":
 		model.UsernamePassword = convertUserPassV2DTOToModel(dto, *planModel)
 	case "vaultClientToken":
@@ -1499,76 +1512,19 @@ func convertOAuthClientCredentialV2DTOToModel(
 	return &value
 }
 
-// convertOAuthAuthorizationCodeV2DTOToModel converts the OAuth Authorization Code state object into a model ready for terraform processing.
-// Note: Since Aembit vaults the Client Secret and does not return it in the API, the DTO will never contain the stored value.
-func convertOAuthAuthorizationCodeV2DTOToModel(
+func convertOAuthCodeDTOToModel(
 	dto aembit.CredentialProviderV2DTO,
-	state models.CredentialProviderResourceModel,
-) *models.CredentialProviderOAuthAuthorizationCodeModel {
-	value := models.CredentialProviderOAuthAuthorizationCodeModel{}
+) *models.OAuthCodeModel {
+	value := models.OAuthCodeModel{}
 	value.ClientSecret = types.StringNull()
-	value.OAuthDiscoveryUrl = types.StringValue(dto.OAuthUrl)
 	value.OAuthAuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
 	value.OAuthTokenUrl = types.StringValue(dto.TokenUrl)
-	value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
 	value.OAuthIntrospectionUrl = types.StringValue(dto.IntrospectionUrl)
 	value.ClientID = types.StringValue(dto.ClientID)
 	value.Scopes = types.StringValue(dto.Scope)
 	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
 	value.CallBackUrl = types.StringValue(dto.CallBackUrl)
 	value.State = types.StringValue(dto.State)
-	if state.OAuthAuthorizationCode != nil {
-		value.ClientSecret = state.OAuthAuthorizationCode.ClientSecret
-	}
-
-	// Get the custom parameters to be injected into the model
-	parameters := make(
-		[]*models.CredentialProviderOAuthClientCustomParametersModel,
-		len(dto.CustomParameters),
-	)
-	for i, parameter := range dto.CustomParameters {
-		parameters[i] = &models.CredentialProviderOAuthClientCustomParametersModel{
-			Key:       parameter.Key,
-			Value:     parameter.Value,
-			ValueType: parameter.ValueType,
-		}
-	}
-	value.CustomParameters = parameters
-
-	value.Lifetime = dto.LifetimeTimeSpanSeconds
-
-	if dto.LifetimeExpiration != nil {
-		// Add Z to indicate that Date string is in UTC format, API returns it without region info
-		timeParsed, err := time.Parse(time.RFC3339, *dto.LifetimeExpiration+"Z")
-		if err != nil {
-			fmt.Println("Error parsing LifetimeExpiration:", err)
-		}
-
-		value.LifetimeExpiration = types.StringValue(timeParsed.Local().Format(time.RFC3339))
-	}
-
-	return &value
-}
-
-func convertMcpUserBasedAccessTokenDTOToModel(
-	dto aembit.CredentialProviderV2DTO,
-	state models.CredentialProviderResourceModel,
-) *models.CredentialProviderMcpUserBasedAccessTokenModel {
-	value := models.CredentialProviderMcpUserBasedAccessTokenModel{}
-	value.ClientSecret = types.StringNull()
-	value.McpServerUrl = types.StringValue(dto.McpServerUrl)
-	value.OAuthAuthorizationUrl = types.StringValue(dto.AuthorizationUrl)
-	value.OAuthTokenUrl = types.StringValue(dto.TokenUrl)
-	value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
-	value.OAuthIntrospectionUrl = types.StringValue(dto.IntrospectionUrl)
-	value.ClientID = types.StringValue(dto.ClientID)
-	value.Scopes = types.StringValue(dto.Scope)
-	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
-	value.CallBackUrl = types.StringValue(dto.CallBackUrl)
-	value.State = types.StringValue(dto.State)
-	if state.McpUserBasedAccessToken != nil {
-		value.ClientSecret = state.McpUserBasedAccessToken.ClientSecret
-	}
 
 	// Get the custom parameters to be injected into the model
 	parameters := make(
@@ -1880,16 +1836,14 @@ func convertToMcpUserBasedAccessTokenDTO(
 	credential.ClientSecret = model.McpUserBasedAccessToken.ClientSecret.ValueString()
 	credential.Scope = model.McpUserBasedAccessToken.Scopes.ValueString()
 	credential.CustomParameters = convertCredentialMcpUserBasedAccessTokenCustomParameters(model)
-
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-		McpServerUrl:         model.McpUserBasedAccessToken.McpServerUrl.ValueString(),
-		AuthorizationUrl:     model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString(),
-		IntrospectionUrl:     model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString(),
-		TokenUrl:             model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString(),
-		UserAuthorizationUrl: model.McpUserBasedAccessToken.UserAuthorizationUrl.ValueString(),
-		IsPkceRequired:       model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
-		CallBackUrl:          model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
-		State:                model.McpUserBasedAccessToken.State.ValueString(),
+		McpServerUrl:     model.McpUserBasedAccessToken.McpServerUrl.ValueString(),
+		AuthorizationUrl: model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString(),
+		IntrospectionUrl: model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString(),
+		TokenUrl:         model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString(),
+		IsPkceRequired:   model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
+		CallBackUrl:      model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
+		State:            model.McpUserBasedAccessToken.State.ValueString(),
 	}
 
 	if len(model.ID.ValueString()) > 0 {
