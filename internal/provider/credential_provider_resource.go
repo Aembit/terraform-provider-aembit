@@ -425,11 +425,11 @@ func (r *credentialProviderResource) Schema(
 				},
 			},
 			"mcp_user_based_access_token": schema.SingleNestedAttribute{
-				Description: "OAuth Authorization Code Flow type for MCP servers Credential Provider configuration.",
+				Description: "MCP User Based Access Token Credential Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"mcp_server_url": schema.StringAttribute{
-						Description: "OAuth URL for the MCP Server Credential Provider.",
+						Description: "MCP Server Url.",
 						Required:    true,
 						Validators: []validator.String{
 							validators.SecureURLValidation(),

@@ -170,7 +170,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `is_active` (Boolean) Active status of the Credential Provider.
 - `jwt_svid_token` (Attributes) JWT-SVID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) Managed GitLab Account type Credential Provider configuration. (see [below for nested schema](#nestedatt--managed_gitlab_account))
-- `mcp_user_based_access_token` (Attributes) OAuth Authorization Code Flow type for MCP servers Credential Provider configuration. (see [below for nested schema](#nestedatt--mcp_user_based_access_token))
+- `mcp_user_based_access_token` (Attributes) MCP User Based Access Token Credential Provider configuration. (see [below for nested schema](#nestedatt--mcp_user_based_access_token))
 - `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
 - `oidc_id_token` (Attributes) OIDC ID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--oidc_id_token))
@@ -334,7 +334,7 @@ Required:
 
 - `client_id` (String) Client ID for the MCP User Based Access Token Credential Provider.
 - `client_secret` (String, Sensitive) Client Secret for the MCP User Based Access Token Credential Provider.
-- `mcp_server_url` (String) OAuth URL for the MCP Server Credential Provider.
+- `mcp_server_url` (String) MCP Server Url.
 - `oauth_authorization_url` (String) Authorization URL for the MCP User Based Access Token Credential Provider.
 - `oauth_token_url` (String) Token URL for the MCP User Based Access Token Credential Provider.
 - `scopes` (String) Scopes for the MCP User Based Access Token Credential Provider.
