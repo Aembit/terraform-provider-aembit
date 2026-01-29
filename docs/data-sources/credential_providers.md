@@ -42,6 +42,7 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `jwt_svid_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
+- `mcp_user_based_access_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--mcp_user_based_access_token))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
@@ -186,6 +187,39 @@ Read-Only:
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 - `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--mcp_user_based_access_token"></a>
+### Nested Schema for `credential_providers.mcp_user_based_access_token`
+
+Required:
+
+- `lifetime` (Number) Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.
+
+Read-Only:
+
+- `callback_url` (String)
+- `client_id` (String)
+- `client_secret` (String, Sensitive)
+- `custom_parameters` (Attributes Set) (see [below for nested schema](#nestedatt--credential_providers--mcp_user_based_access_token--custom_parameters))
+- `is_pkce_required` (Boolean)
+- `lifetime_expiration` (String) ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.
+- `mcp_server_url` (String)
+- `oauth_authorization_url` (String)
+- `oauth_introspection_url` (String)
+- `oauth_token_url` (String)
+- `scopes` (String)
+- `state` (String)
+
+<a id="nestedatt--credential_providers--mcp_user_based_access_token--custom_parameters"></a>
+### Nested Schema for `credential_providers.mcp_user_based_access_token.custom_parameters`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+- `value_type` (String)
+
 
 
 <a id="nestedatt--credential_providers--oauth_authorization_code"></a>

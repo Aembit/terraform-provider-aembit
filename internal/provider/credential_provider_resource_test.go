@@ -666,6 +666,85 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 	})
 }
 
+const (
+	testMcpUserBasedAccessTokenResource              = "aembit_credential_provider.mcp_user_based_access_token"
+	testMcpUserBasedAccessTokenEmptyCustomParameters = "aembit_credential_provider.mcp_user_based_access_token_empty_custom_parameters"
+)
+
+func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/mcp-user-based-access-token/TestAccCredentialProviderResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/mcp-user-based-access-token/TestAccCredentialProviderResource.tfmod",
+	)
+
+	firstID := uuid.New().String()
+	secondID := uuid.New().String()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: strings.ReplaceAll(
+					strings.ReplaceAll(string(createFile), "replace-with-uuid-first", firstID),
+					"replace-with-uuid-second",
+					secondID,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testMcpUserBasedAccessTokenResource, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(testMcpUserBasedAccessTokenResource, "id"),
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenEmptyCustomParameters,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						testMcpUserBasedAccessTokenEmptyCustomParameters,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						testMcpUserBasedAccessTokenEmptyCustomParameters,
+						"id",
+					),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      testMcpUserBasedAccessTokenResource,
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken - Modified",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccCredentialProviderResource_UsernamePassword(t *testing.T) {
 	t.Parallel()
 	createFile, _ := os.ReadFile(
