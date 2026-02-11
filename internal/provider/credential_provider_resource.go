@@ -510,11 +510,11 @@ func (r *credentialProviderResource) Schema(
 						Computed: true,
 					},
 					"state": schema.StringAttribute{
-						Description: "State for the OAuth Credential Provider.",
+						Description: "State for the MCP User Based Access Token Credential Provider.",
 						Computed:    true,
 					},
 					"lifetime": schema.Int64Attribute{
-						Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
+						Description: "Lifetime (in seconds) of the MCP User Based Access Token Credential Provider.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(31536000),
@@ -523,7 +523,7 @@ func (r *credentialProviderResource) Schema(
 						},
 					},
 					"lifetime_expiration": schema.StringAttribute{
-						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
+						Description: "ISO 8601 formatted Lifetime Expiration of the MCP User Based Access Token Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
 						Computed:    true,
 					},
 				},
