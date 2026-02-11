@@ -96,15 +96,15 @@ type OAuthCodeModel struct {
 	CustomParameters      []*CredentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
 	IsPkceRequired        types.Bool                                            `tfsdk:"is_pkce_required"`
 	CallBackUrl           types.String                                          `tfsdk:"callback_url"`
-	State                 types.String                                          `tfsdk:"state"`
-	Lifetime              int64                                                 `tfsdk:"lifetime"`
-	LifetimeExpiration    types.String                                          `tfsdk:"lifetime_expiration"`
 }
 
 // CredentialProviderOAuthAuthorizationCodeModel maps OAuth Authorization Code Flow configuration.
 type CredentialProviderOAuthAuthorizationCodeModel struct {
 	OAuthDiscoveryUrl    types.String `tfsdk:"oauth_discovery_url"`
 	UserAuthorizationUrl types.String `tfsdk:"user_authorization_url"`
+	State                types.String `tfsdk:"state"`
+	Lifetime             int64        `tfsdk:"lifetime"`
+	LifetimeExpiration   types.String `tfsdk:"lifetime_expiration"`
 	OAuthCodeModel
 }
 

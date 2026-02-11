@@ -332,17 +332,6 @@ func (d *credentialProvidersDataSource) Schema(
 								"callback_url": schema.StringAttribute{
 									Computed: true,
 								},
-								"state": schema.StringAttribute{
-									Computed: true,
-								},
-								"lifetime": schema.Int64Attribute{
-									Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
-									Required:    true,
-								},
-								"lifetime_expiration": schema.StringAttribute{
-									Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
-									Computed:    true,
-								},
 								"custom_parameters": schema.SetNestedAttribute{
 									Computed: true,
 									NestedObject: schema.NestedAttributeObject{

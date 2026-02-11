@@ -13,7 +13,6 @@ resource "aembit_credential_provider" "mcp_user_based_access_token" {
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		is_pkce_required = true
-		lifetime = 31536000
 		custom_parameters = [
 			{
 				key = "key"
@@ -42,7 +41,6 @@ resource "aembit_credential_provider" "mcp_user_based_access_token_empty_custom_
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		is_pkce_required = true
-		lifetime = 31536000
 	}
 }
 
