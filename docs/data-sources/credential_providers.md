@@ -203,6 +203,7 @@ Read-Only:
 - `oauth_authorization_url` (String)
 - `oauth_introspection_url` (String)
 - `oauth_token_url` (String)
+- `resource` (String)
 - `scopes` (String)
 
 <a id="nestedatt--credential_providers--mcp_user_based_access_token--custom_parameters"></a>
