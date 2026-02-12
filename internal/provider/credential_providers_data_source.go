@@ -326,6 +326,9 @@ func (d *credentialProvidersDataSource) Schema(
 								"scopes": schema.StringAttribute{
 									Computed: true,
 								},
+								"resource": schema.StringAttribute{
+									Computed: true,
+								},
 								"is_pkce_required": schema.BoolAttribute{
 									Computed: true,
 								},
