@@ -40,6 +40,7 @@ resource "aembit_credential_provider" "mcp_user_based_access_token_empty_custom_
 		client_id = "test_client_id"
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
+		resource = "resourceid"
 		is_pkce_required = true
 	}
 }

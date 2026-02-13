@@ -344,6 +344,7 @@ Optional:
 - `custom_parameters` (Attributes Set) Set Custom Parameters for the MCP User Based Access Token Credential Provider. (see [below for nested schema](#nestedatt--mcp_user_based_access_token--custom_parameters))
 - `is_pkce_required` (Boolean) PKCE required flag for the MCP User Based Access Token Credential Provider.
 - `oauth_introspection_url` (String) Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens
+- `resource` (String) Resource for the MCP User Based Access Token Credential Provider.
 
 Read-Only:
 

@@ -110,6 +110,7 @@ type CredentialProviderOAuthAuthorizationCodeModel struct {
 
 type CredentialProviderMcpUserBasedAccessTokenModel struct {
 	McpServerUrl types.String `tfsdk:"mcp_server_url"`
+	Resource     types.String `tfsdk:"resource"`
 	OAuthCodeModel
 }
 

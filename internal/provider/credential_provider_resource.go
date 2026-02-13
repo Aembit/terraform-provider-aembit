@@ -462,6 +462,11 @@ func (r *credentialProviderResource) Schema(
 						Description: "Scopes for the MCP User Based Access Token Credential Provider.",
 						Required:    true,
 					},
+					"resource": schema.StringAttribute{
+						Description: "Resource for the MCP User Based Access Token Credential Provider.",
+						Optional:    true,
+						Computed:    true,
+					},
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the MCP User Based Access Token Credential Provider.",
 						Optional:    true,
@@ -1349,6 +1354,7 @@ func convertCredentialProviderV2DTOToModel(
 	case "mcp-user-based-access-token":
 		value := models.CredentialProviderMcpUserBasedAccessTokenModel{}
 		value.McpServerUrl = types.StringValue(dto.McpServerUrl)
+		value.Resource = types.StringValue(dto.Resource)
 		value.OAuthCodeModel = *convertOAuthCodeDTOToModel(dto)
 		if planModel.McpUserBasedAccessToken != nil {
 			value.ClientSecret = planModel.McpUserBasedAccessToken.ClientSecret
@@ -1825,6 +1831,7 @@ func convertToMcpUserBasedAccessTokenDTO(
 		TokenUrl:         model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString(),
 		IsPkceRequired:   model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
 		CallBackUrl:      model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
+		Resource:         model.McpUserBasedAccessToken.Resource.ValueString(),
 	}
 
 	if len(model.ID.ValueString()) > 0 {
