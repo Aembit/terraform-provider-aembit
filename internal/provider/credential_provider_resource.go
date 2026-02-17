@@ -455,12 +455,12 @@ func (r *credentialProviderResource) Schema(
 					},
 					"client_secret": schema.StringAttribute{
 						Description: "Client Secret for the MCP User Based Access Token Credential Provider.",
-						Required:    true,
+						Optional:    true,
 						Sensitive:   true,
 					},
 					"scopes": schema.StringAttribute{
 						Description: "Scopes for the MCP User Based Access Token Credential Provider.",
-						Required:    true,
+						Optional:    true,
 					},
 					"resource": schema.StringAttribute{
 						Description: "Resource for the MCP User Based Access Token Credential Provider.",
