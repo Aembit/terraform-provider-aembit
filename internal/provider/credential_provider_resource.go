@@ -438,10 +438,16 @@ func (r *credentialProviderResource) Schema(
 					"oauth_authorization_url": schema.StringAttribute{
 						Description: "Authorization URL for the MCP User Based Access Token Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
 					},
 					"oauth_token_url": schema.StringAttribute{
 						Description: "Token URL for the MCP User Based Access Token Credential Provider.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
 					},
 					"oauth_introspection_url": schema.StringAttribute{
 						Description: "Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens",
