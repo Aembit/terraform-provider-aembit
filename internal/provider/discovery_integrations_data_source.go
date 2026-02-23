@@ -131,7 +131,7 @@ func (d *discoveryIntegrationsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *discoveryIntegrationsDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.DiscoveryIntegrationsDataSourceModel

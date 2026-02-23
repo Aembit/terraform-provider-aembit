@@ -12,6 +12,7 @@ const (
 )
 
 func TestAccTagsCreateBothTagsUpdateNoTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/tags/create_both_tags_update_no_tags/TestAccTags.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/tags/create_both_tags_update_no_tags/TestAccTags.tfmod",
@@ -69,6 +70,7 @@ func TestAccTagsCreateBothTagsUpdateNoTags(t *testing.T) {
 }
 
 func TestAccTagsCreateDefaultTagsUpdateNoTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/tags/create_defaulttags_update_no_tags/TestAccTags.tf",
 	)
@@ -126,6 +128,7 @@ func TestAccTagsCreateDefaultTagsUpdateNoTags(t *testing.T) {
 }
 
 func TestAccTagsCreateNoTagsUpdateBothTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/tags/create_no_tags_update_both_tags/TestAccTags.tf",
 	)
@@ -185,6 +188,7 @@ func TestAccTagsCreateNoTagsUpdateBothTags(t *testing.T) {
 }
 
 func TestAccTagsCreateNoTagsUpdateDefaultTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/tags/create_no_tags_update_defaulttags/TestAccTags.tf",
 	)
@@ -242,6 +246,7 @@ func TestAccTagsCreateNoTagsUpdateDefaultTags(t *testing.T) {
 }
 
 func TestAccTagsCreateNoTagsUpdateResourceTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/tags/create_no_tags_update_resourcetags/TestAccTags.tf",
 	)
@@ -291,6 +296,7 @@ func TestAccTagsCreateNoTagsUpdateResourceTags(t *testing.T) {
 }
 
 func TestAccTagsCreateResourceTagsUpdateNoTags(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/tags/create_resourcetags_update_no_tags/TestAccTags.tf",
 	)

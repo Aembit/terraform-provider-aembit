@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"terraform-provider-aembit/internal/provider/models"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
 )
 
 const (
@@ -37,7 +38,7 @@ func NewGlobalPolicyComplianceResource() resource.Resource {
 // ImportState implements resource.ResourceWithImportState.
 func (gpcResource *GlobalPolicyComplianceResource) ImportState(
 	ctx context.Context,
-	req resource.ImportStateRequest,
+	_ resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
 	gpcSettings, err := gpcResource.client.GetGlobalPolicyComplianceSettings(nil)

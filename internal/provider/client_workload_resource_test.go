@@ -48,6 +48,7 @@ func testDeleteClientWorkload() resource.TestCheckFunc {
 }
 
 func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/k8sNamespace/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/k8sNamespace/TestAccClientWorkloadResource.tfmod",
@@ -119,6 +120,7 @@ func TestAccClientWorkloadResource_k8sNamespace(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/k8sPodName/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/k8sPodName/TestAccClientWorkloadResource.tfmod",
@@ -255,6 +257,7 @@ func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T
 }
 
 func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tfmod",
@@ -326,6 +329,7 @@ func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/gitLabJob/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/client/gitLabJob/TestAccClientWorkloadResource.tfmod")
 	createFileConfig, modifyFileConfig, newSubject := randomizeFileConfigs(
@@ -425,6 +429,7 @@ func TestAccClientWorkloadResource_GitLabJob(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_StandaloneCA(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/client/standalone-certificate-authority/TestAccClientWorkloadStandaloneCertificateAuthority.tf",
 	)
@@ -483,6 +488,7 @@ var clientWorkloadIdentifierTests = []struct {
 }
 
 func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
+	t.Parallel()
 	createFileConfigWithPlaceholders, _ := os.ReadFile(
 		"../../tests/client/miscellaneous/TestAccClientWorkloadResource.tf",
 	)
@@ -581,6 +587,7 @@ func TestAccClientWorkloadResource_Miscellaneous(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_ProcessPath(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/client/processPath/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
@@ -653,6 +660,7 @@ func TestAccClientWorkloadResource_ProcessPath(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_ProcessCommandLine(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/client/processCommandLine/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
@@ -725,6 +733,7 @@ func TestAccClientWorkloadResource_ProcessCommandLine(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/client/oauthRedirectUri/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(
@@ -791,6 +800,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 }
 
 func TestAccClientWorkloadResource_OauthScope(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/client/oauthScope/TestAccClientWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile(

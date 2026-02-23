@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -32,6 +33,7 @@ func testDeleteServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadResource.tfmod")
 
@@ -186,6 +188,21 @@ func TestAccServerWorkloadResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccServerWorkloadInvalidResource(t *testing.T) {
+	t.Parallel()
+	mcpInvalidFile, _ := os.ReadFile("../../tests/server/TestAccServerWorkloadInvalidResource.tf")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(mcpInvalidFile),
+				ExpectError: regexp.MustCompile("Invalid requested_port for MCP protocol"),
+			},
 		},
 	})
 }

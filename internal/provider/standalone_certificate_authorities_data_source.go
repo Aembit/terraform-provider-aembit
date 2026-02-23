@@ -105,7 +105,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *standaloneCertificateAuthoritiesDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.StandaloneCertificateAuthoritiesDataSourceModel

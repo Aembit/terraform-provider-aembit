@@ -14,6 +14,6 @@ resource "aembit_log_stream" "aws_s3_bucket" {
 	}
 }
 
-data "aembit_log_streams" "test" {
+data "aembit_log_streams" "log_stream_data_source" {
     depends_on = [ aembit_log_stream.aws_s3_bucket ]
 }

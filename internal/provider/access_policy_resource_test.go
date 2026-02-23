@@ -26,6 +26,7 @@ var accessPolicyChecks = []resource.TestCheckFunc{
 }
 
 func TestAccAccessPolicyResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyResource.tfmod")
 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
@@ -74,6 +75,7 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 }
 
 func TestAccBasicAccessPolicyResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccBasicAccessPolicyResource.tfmod")
 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
@@ -136,6 +138,7 @@ func TestAccBasicAccessPolicyResource(t *testing.T) {
 }
 
 func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
@@ -218,6 +221,7 @@ func TestAccMultipleCredentialProviders_AccessPolicyResource(t *testing.T) {
 }
 
 func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccAccessPolicyDuplicateMappings.tf")
 	createFileConfig, _, _ := randomizeFileConfigs(
 		string(createFile),
@@ -239,6 +243,7 @@ func TestAccMultipleCPAccessPolicyResource_ErrorDuplicateMappings_Create(t *test
 }
 
 func TestAccMultipleSTSCredentialProviders_AccessPolicyResource(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/policy/TestAccMultipleCPAccessPolicyResource.tfmod")
 	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(

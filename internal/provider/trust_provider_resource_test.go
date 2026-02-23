@@ -42,6 +42,7 @@ func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/azure/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/azure/TestAccTrustProviderResource.tfmod")
 
@@ -92,6 +93,7 @@ func TestAccTrustProviderResource_AzureMetadata(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_AwsRole(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/aws_role/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/aws_role/TestAccTrustProviderResource.tfmod")
 
@@ -136,6 +138,7 @@ func TestAccTrustProviderResource_AwsRole(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/aws/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/aws/TestAccTrustProviderResource.tfmod")
 
@@ -178,6 +181,7 @@ func TestAccTrustProviderResource_AwsMetadata(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/gcp/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/gcp/TestAccTrustProviderResource.tfmod")
 
@@ -222,6 +226,7 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/github/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/github/TestAccTrustProviderResource.tfmod")
 
@@ -270,6 +275,7 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/trust/github/oidc_endpoint/TestAccTrustProviderResource.tf",
 	)
@@ -332,6 +338,7 @@ func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
 
@@ -428,6 +435,7 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
+	t.Parallel()
 	invalidNameFile, _ := os.ReadFile(
 		"../../tests/trust/gitlab/TestAccTrustProviderResource.tfinvalid",
 	)
@@ -469,6 +477,7 @@ func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_Kerberos(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/kerberos/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/kerberos/TestAccTrustProviderResource.tfmod")
 
@@ -515,6 +524,7 @@ func TestAccTrustProviderResource_Kerberos(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/kubernetes/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/kubernetes/TestAccTrustProviderResource.tfmod")
 
@@ -601,6 +611,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/terraform/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/terraform/TestAccTrustProviderResource.tfmod")
 
@@ -649,6 +660,7 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/trust/oidc-id-token/TestAccTrustProviderResource.tfmod",
@@ -657,6 +669,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 	const trustProviderOidcidToken = "aembit_trust_provider.oidcidtoken"
 	const trustProviderOidcidTokenKey = "aembit_trust_provider.oidcidtoken_key"
 	const trustProviderOidcidTokenJWKS = "aembit_trust_provider.oidcidtoken_jwks"
+	const trustProviderOidcidTokenAembitTenantOidcToken = "aembit_trust_provider.oidcidtoken_aembittenantoidctoken"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -695,6 +708,23 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"name",
+						"TF Acceptance OIDC ID Token AembitTenantOidcToken",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"id",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"oidc_id_token.is_aembit_tenant_oidc_token",
+						"true",
+					),
 				),
 			},
 			// ImportState testing
@@ -729,6 +759,18 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidTokenJWKS, "id"),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"name",
+						"TF Acceptance OIDC ID Token AembitTenantOidcToken - Modified",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenAembitTenantOidcToken,
+						"id",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -737,6 +779,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_OidcIdToken_MissingRequiredRSAField(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredRSAField.tf",
 	)
@@ -753,6 +796,7 @@ func TestAccTrustProviderResource_OidcIdToken_MissingRequiredRSAField(t *testing
 }
 
 func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/trust/oidc-id-token/TestAccTrustProviderResource_MissingRequiredEDSAField.tf",
 	)

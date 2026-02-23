@@ -10,6 +10,7 @@ import (
 const testDiscoveryIntegrationResourceWiz string = "aembit_discovery_integration.wiz"
 
 func TestAccDiscoveryIntegrationResource_Wiz(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/discovery_integration/wiz/TestAccDiscoveryIntegrationResource.tf",
 	)

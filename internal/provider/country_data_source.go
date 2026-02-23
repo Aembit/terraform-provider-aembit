@@ -95,7 +95,7 @@ func (d *countriesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *countriesDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	state := GetCountries(d.client)

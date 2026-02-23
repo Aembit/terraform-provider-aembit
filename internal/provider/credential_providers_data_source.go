@@ -301,6 +301,58 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"mcp_user_based_access_token": schema.SingleNestedAttribute{
+							Computed: true,
+							Attributes: map[string]schema.Attribute{
+								"mcp_server_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_authorization_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_token_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"oauth_introspection_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_id": schema.StringAttribute{
+									Computed: true,
+								},
+								"client_secret": schema.StringAttribute{
+									Computed:  true,
+									Sensitive: true,
+								},
+								"scopes": schema.StringAttribute{
+									Computed: true,
+								},
+								"resource": schema.StringAttribute{
+									Computed: true,
+								},
+								"is_pkce_required": schema.BoolAttribute{
+									Computed: true,
+								},
+								"callback_url": schema.StringAttribute{
+									Computed: true,
+								},
+								"custom_parameters": schema.SetNestedAttribute{
+									Computed: true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Computed: true,
+											},
+											"value": schema.StringAttribute{
+												Computed: true,
+											},
+											"value_type": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
 						"username_password": schema.SingleNestedAttribute{
 							Description: "Username/Password type Credential Provider configuration.",
 							Optional:    true,
@@ -588,7 +640,7 @@ func (d *credentialProvidersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *credentialProvidersDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.CredentialProvidersDataSourceModel

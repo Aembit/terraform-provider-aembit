@@ -32,6 +32,7 @@ func testDeleteAgentController(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAgentControllerResources(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/agent_controllers/TestAccAgentControllerResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/agent_controllers/TestAccAgentControllerResource.tfmod",
@@ -95,6 +96,7 @@ func TestAccAgentControllerResources(t *testing.T) {
 }
 
 func TestAccAgentControllerResource_Validation(t *testing.T) {
+	t.Parallel()
 	emptyNameFile, _ := os.ReadFile(
 		"../../tests/agent_controllers/TestAccAgentControllerResource.tfempty",
 	)

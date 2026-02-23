@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccIdentityProviderResource_Saml(t *testing.T) {
+	t.Parallel()
 	createFile, err := os.ReadFile(
 		"../../tests/identity_provider/saml/TestAccIdentityProviderResource.tf",
 	)
@@ -109,6 +110,7 @@ func TestAccIdentityProviderResource_Saml(t *testing.T) {
 }
 
 func TestAccIdentityProviderResource_Oidc(t *testing.T) {
+	t.Parallel()
 	createFile, err := os.ReadFile(
 		"../../tests/identity_provider/oidc/TestAccIdentityProviderResource.tf",
 	)
@@ -209,6 +211,7 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 }
 
 func TestAccIdentityProviderResource_Oidc_MissingSecret(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/identity_provider/oidc/TestAccIdentityProviderResource_MissingSecret.tf",
 	)

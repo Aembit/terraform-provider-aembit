@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testLogStreamsDataSource string = "data.aembit_log_streams.test"
+	testLogStreamsDataSource string = "data.aembit_log_streams.log_stream_data_source"
 	testLogStreamResource    string = "aembit_log_stream.aws_s3_bucket"
 )
 

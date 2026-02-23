@@ -166,7 +166,7 @@ func (d *serverWorkloadsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *serverWorkloadsDataSource) Read(
 	ctx context.Context,
-	req datasource.ReadRequest,
+	_ datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.ServerWorkloadsDataSourceModel

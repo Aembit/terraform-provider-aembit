@@ -33,6 +33,7 @@ func testDeleteLogStream(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccLogStreamResource_AWSS3Bucket(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/log_stream/awsS3Bucket/TestAccLogStreamResource.tf")
 	modifyFile, _ := os.ReadFile(
 		"../../tests/log_stream/awsS3Bucket/TestAccLogStreamResource.tfmod",
@@ -85,6 +86,7 @@ func TestAccLogStreamResource_AWSS3Bucket(t *testing.T) {
 }
 
 func TestAccLogStreamResource_GCSBucket(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/log_stream/gcsBucket/TestAccLogStreamResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/log_stream/gcsBucket/TestAccLogStreamResource.tfmod")
 
@@ -135,6 +137,7 @@ func TestAccLogStreamResource_GCSBucket(t *testing.T) {
 }
 
 func TestAccLogStreamResource_Splunk(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/log_stream/splunkHttpEventCollector/TestAccLogStreamResource.tf",
 	)
@@ -193,6 +196,7 @@ func TestAccLogStreamResource_Splunk(t *testing.T) {
 }
 
 func TestAccLogStreamResource_Crowdstrike(t *testing.T) {
+	t.Parallel()
 	createFile, _ := os.ReadFile(
 		"../../tests/log_stream/crowdstrikeHttpEventCollector/TestAccLogStreamResource.tf",
 	)
