@@ -37,7 +37,7 @@ var _ provider.Provider = &aembitProvider{}
 const FMT_READ_RESPONSE_ERROR = "failed to read response body: %w"
 
 // New is a helper function to simplify provider server and testing implementation.
-func New(version string, releaseTime string) func() provider.Provider {
+func New(version, releaseTime string) func() provider.Provider {
 	return func() provider.Provider {
 		return &aembitProvider{
 			version:     version,

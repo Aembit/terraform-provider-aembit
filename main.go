@@ -23,11 +23,12 @@ import (
 // can be customized.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
-// version is set to the release version by goreleaser. It is "dev" when the provider is built and run locally
+// The following values for version and date are based on the default GoReleaser functionality: https://goreleaser.com/cookbooks/using-main.version/
+
+// version is set to the release version by goreleaser. It is "dev" when the provider is built and run locally.
 var version string = "dev"
 
-// releaseTime is set to the time of the release, in ISO 8601 format. It is "unknown" when the provider is built and run locally
-// This is based on the default GoReleaser functionality: https://goreleaser.com/cookbooks/using-main.version/
+// releaseTime is set to the time of the release, in ISO 8601 format. It is "unknown" when the provider is built and run locally.
 var date string = "unknown"
 
 // goreleaser can pass other information to the main package, such as the specific commit
