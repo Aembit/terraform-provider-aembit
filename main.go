@@ -31,9 +31,6 @@ var version string = "dev"
 // releaseTime is set to the time of the release, in ISO 8601 format. It is "unknown" when the provider is built and run locally.
 var date string = "unknown"
 
-// goreleaser can pass other information to the main package, such as the specific commit
-// https://goreleaser.com/cookbooks/using-main.version/
-
 func main() {
 	var debug bool
 
