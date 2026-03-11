@@ -50,7 +50,6 @@ resource "aembit_client_workload" "test" {
 
 Required:
 
-- `key` (String) Client identity key.
 - `type` (String) Client identity type. Possible values are: 
 	* `aembitClientId`
 	* `awsAccountId`
@@ -88,5 +87,9 @@ Required:
 	* `terraformIdTokenProjectId`
 	* `terraformIdTokenWorkspaceId`
 - `value` (String) Client identity value.
+
+Optional:
+
+- `key` (String) Client identity key.
 
 
