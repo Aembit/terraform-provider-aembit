@@ -401,7 +401,7 @@ func convertClientWorkloadModelToDTO(
 			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 				Type:  identity.Type.ValueString(),
 				Value: identity.Value.ValueString(),
-				Key: identity.Key.ValueString(),
+				Key:   identity.Key.ValueString(),
 			})
 		}
 
@@ -452,7 +452,7 @@ func newClientWorkloadIdentityModel(
 		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
-			Key: types.StringValue(identity.Key),
+			Key:   types.StringValue(identity.Key),
 		}
 	}
 

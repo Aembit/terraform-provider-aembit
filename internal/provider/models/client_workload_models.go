@@ -34,5 +34,5 @@ type IdentitiesModel struct {
 var TfIdentityObjectType = types.ObjectType{AttrTypes: map[string]attr.Type{
 	"type":  types.StringType,
 	"value": types.StringType,
-	"key": types.StringType,
+	"key":   types.StringType,
 }}
