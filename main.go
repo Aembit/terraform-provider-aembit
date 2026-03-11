@@ -8,8 +8,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"terraform-provider-aembit/internal/provider"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -22,12 +23,13 @@ import (
 // can be customized.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
-// these will be set by the goreleaser configuration
-// to appropriate values for the compiled binary.
+// The following values for version and date are based on the default GoReleaser functionality: https://goreleaser.com/cookbooks/using-main.version/
+
+// version is set to the release version by goreleaser. It is "dev" when the provider is built and run locally.
 var version string = "dev"
 
-// goreleaser can pass other information to the main package, such as the specific commit
-// https://goreleaser.com/cookbooks/using-main.version/
+// releaseTime is set to the time of the release, in ISO 8601 format. It is "unknown" when the provider is built and run locally.
+var date string = "unknown"
 
 func main() {
 	var debug bool
@@ -45,7 +47,7 @@ func main() {
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New(version), opts)
+	err := providerserver.Serve(context.Background(), provider.New(version, date), opts)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
