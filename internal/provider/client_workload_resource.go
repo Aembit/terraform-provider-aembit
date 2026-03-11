@@ -177,7 +177,7 @@ func (r *clientWorkloadResource) Schema(
 						},
 						"key": schema.StringAttribute{
 							Description: "Client identity key.",
-							Required:    true,
+							Required:    false,
 						},
 					},
 				},
