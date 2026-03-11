@@ -41,5 +41,6 @@ Read-Only:
 
 Read-Only:
 
+- `key` (String) Client identity key.
 - `type` (String) Client identity type.
 - `value` (String) Client identity value.

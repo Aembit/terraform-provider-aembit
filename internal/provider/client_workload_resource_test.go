@@ -30,6 +30,13 @@ var (
 		"identities.2.value",
 		"identities.3.value",
 	}
+
+	testCWResourceIdentitiesKey = []string{
+		"identities.0.key",
+		"identities.1.key",
+		"identities.2.key",
+		"identities.3.key",
+	}
 )
 
 func testDeleteClientWorkload() resource.TestCheckFunc {
@@ -862,6 +869,84 @@ func TestAccClientWorkloadResource_OauthScope(t *testing.T) {
 						testCWResource,
 						"name",
 						"TF Acceptance - Oauth Scope - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_OidcIdToken(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/client/oidcIdToken/TestAccClientWorkloadOidcIdToken.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/oidcIdToken/TestAccClientWorkloadOidcIdToken.tfmod",
+	)
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"*claim_value*",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oidc Id Token",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"oidcIdToken",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						newName,
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesKey[0],
+						"claim_key",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - Oidc Id Token - Modified",
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),

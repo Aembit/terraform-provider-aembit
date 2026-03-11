@@ -27,10 +27,12 @@ type ClientWorkloadsDataSourceModel struct {
 type IdentitiesModel struct {
 	Type  types.String `tfsdk:"type"`
 	Value types.String `tfsdk:"value"`
+	Key   types.String `tfsdk:"key"`
 }
 
 // TfIdentityObjectType maps client workload identity data to an Object type.
 var TfIdentityObjectType = types.ObjectType{AttrTypes: map[string]attr.Type{
 	"type":  types.StringType,
 	"value": types.StringType,
+	"key": types.StringType,
 }}

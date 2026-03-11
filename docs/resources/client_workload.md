@@ -50,6 +50,7 @@ resource "aembit_client_workload" "test" {
 
 Required:
 
+- `key` (String) Client identity key.
 - `type` (String) Client identity type. Possible values are: 
 	* `aembitClientId`
 	* `awsAccountId`
@@ -74,6 +75,7 @@ Required:
 	* `k8sServiceAccountUID`
 	* `oauthRedirectUri`
 	* `oauthScope`
+	* `oidcIdToken`
 	* `oidcIdTokenAudience`
 	* `oidcIdTokenIssuer`
 	* `oidcIdTokenSubject`

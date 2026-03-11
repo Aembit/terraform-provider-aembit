@@ -88,6 +88,10 @@ func (r *clientWorkloadsDataSource) Schema(
 										Description: "Client identity value.",
 										Computed:    true,
 									},
+									"key": schema.StringAttribute{
+										Description: "Client identity key.",
+										Computed:    true,
+									},
 								},
 							},
 						},

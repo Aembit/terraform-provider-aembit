@@ -117,6 +117,7 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `k8sServiceAccountUID`\n" +
 								"\t* `oauthRedirectUri`\n" +
 								"\t* `oauthScope`\n" +
+								"\t* `oidcIdToken`\n" +
 								"\t* `oidcIdTokenAudience`\n" +
 								"\t* `oidcIdTokenIssuer`\n" +
 								"\t* `oidcIdTokenSubject`\n" +
@@ -155,6 +156,7 @@ func (r *clientWorkloadResource) Schema(
 									"k8sServiceAccountUID",
 									"oauthRedirectUri",
 									"oauthScope",
+									"oidcIdToken",
 									"oidcIdTokenAudience",
 									"oidcIdTokenIssuer",
 									"oidcIdTokenSubject",
@@ -171,6 +173,10 @@ func (r *clientWorkloadResource) Schema(
 						},
 						"value": schema.StringAttribute{
 							Description: "Client identity value.",
+							Required:    true,
+						},
+						"key": schema.StringAttribute{
+							Description: "Client identity key.",
 							Required:    true,
 						},
 					},
@@ -395,6 +401,7 @@ func convertClientWorkloadModelToDTO(
 			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 				Type:  identity.Type.ValueString(),
 				Value: identity.Value.ValueString(),
+				Key: identity.Key.ValueString(),
 			})
 		}
 
@@ -445,6 +452,7 @@ func newClientWorkloadIdentityModel(
 		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
+			Key: types.StringValue(identity.Key),
 		}
 	}
 
