@@ -396,6 +396,7 @@ func convertClientWorkloadModelToDTO(
 	var identities []models.IdentitiesModel
 	if len(model.Identities.Elements()) > 0 {
 		_ = model.Identities.ElementsAs(ctx, &identities, false)
+		
 
 		for _, identity := range identities {
 			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
@@ -452,7 +453,12 @@ func newClientWorkloadIdentityModel(
 		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
-			Key:   types.StringValue(identity.Key),
+			Key:   func() types.String {
+			    if identity.Key == "" {
+			        return types.StringNull()
+			    }
+			    return types.StringValue(identity.Key)
+			}(),
 		}
 	}
 
