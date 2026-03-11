@@ -175,8 +175,8 @@ func (r *clientWorkloadResource) Schema(
 							Description: "Client identity value.",
 							Required:    true,
 						},
-						"key": schema.StringAttribute{
-							Description: "Client identity key.",
+						"claim_name": schema.StringAttribute{
+							Description: "Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.",
 							Optional:    true,
 						},
 					},
@@ -401,7 +401,7 @@ func convertClientWorkloadModelToDTO(
 			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 				Type:  identity.Type.ValueString(),
 				Value: identity.Value.ValueString(),
-				Key:   identity.Key.ValueString(),
+				Key:   identity.ClaimName.ValueString(),
 			})
 		}
 
@@ -452,7 +452,7 @@ func newClientWorkloadIdentityModel(
 		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
-			Key: func() types.String {
+			ClaimName: func() types.String {
 				if identity.Key == "" {
 					return types.StringNull()
 				}
