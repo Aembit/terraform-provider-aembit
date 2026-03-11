@@ -31,11 +31,11 @@ var (
 		"identities.3.value",
 	}
 
-	testCWResourceIdentitiesKey = []string{
-		"identities.0.key",
-		"identities.1.key",
-		"identities.2.key",
-		"identities.3.key",
+	testCWResourceIdentitiesClaimName = []string{
+		"identities.0.claim_name",
+		"identities.1.claim_name",
+		"identities.2.claim_name",
+		"identities.3.claim_name",
 	}
 )
 
