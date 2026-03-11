@@ -41,5 +41,6 @@ Read-Only:
 
 Read-Only:
 
+- `claim_name` (String) Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.
 - `type` (String) Client identity type.
 - `value` (String) Client identity value.

@@ -117,6 +117,7 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `k8sServiceAccountUID`\n" +
 								"\t* `oauthRedirectUri`\n" +
 								"\t* `oauthScope`\n" +
+								"\t* `oidcIdToken`\n" +
 								"\t* `oidcIdTokenAudience`\n" +
 								"\t* `oidcIdTokenIssuer`\n" +
 								"\t* `oidcIdTokenSubject`\n" +
@@ -155,6 +156,7 @@ func (r *clientWorkloadResource) Schema(
 									"k8sServiceAccountUID",
 									"oauthRedirectUri",
 									"oauthScope",
+									"oidcIdToken",
 									"oidcIdTokenAudience",
 									"oidcIdTokenIssuer",
 									"oidcIdTokenSubject",
@@ -172,6 +174,10 @@ func (r *clientWorkloadResource) Schema(
 						"value": schema.StringAttribute{
 							Description: "Client identity value.",
 							Required:    true,
+						},
+						"claim_name": schema.StringAttribute{
+							Description: "Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.",
+							Optional:    true,
 						},
 					},
 				},
@@ -395,6 +401,7 @@ func convertClientWorkloadModelToDTO(
 			workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 				Type:  identity.Type.ValueString(),
 				Value: identity.Value.ValueString(),
+				Key:   identity.ClaimName.ValueString(),
 			})
 		}
 
@@ -445,6 +452,12 @@ func newClientWorkloadIdentityModel(
 		identities[i] = models.IdentitiesModel{
 			Type:  types.StringValue(identity.Type),
 			Value: types.StringValue(identity.Value),
+			ClaimName: func() types.String {
+				if identity.Key == "" {
+					return types.StringNull()
+				}
+				return types.StringValue(identity.Key)
+			}(),
 		}
 	}
 

@@ -88,6 +88,10 @@ func (r *clientWorkloadsDataSource) Schema(
 										Description: "Client identity value.",
 										Computed:    true,
 									},
+									"claim_name": schema.StringAttribute{
+										Description: "Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.",
+										Computed:    true,
+									},
 								},
 							},
 						},

@@ -74,6 +74,7 @@ Required:
 	* `k8sServiceAccountUID`
 	* `oauthRedirectUri`
 	* `oauthScope`
+	* `oidcIdToken`
 	* `oidcIdTokenAudience`
 	* `oidcIdTokenIssuer`
 	* `oidcIdTokenSubject`
@@ -86,5 +87,9 @@ Required:
 	* `terraformIdTokenProjectId`
 	* `terraformIdTokenWorkspaceId`
 - `value` (String) Client identity value.
+
+Optional:
+
+- `claim_name` (String) Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.
 
 
