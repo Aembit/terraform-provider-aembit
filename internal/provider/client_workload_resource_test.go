@@ -929,7 +929,7 @@ func TestAccClientWorkloadResource_OidcIdToken(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						testCWResource,
-						testCWResourceIdentitiesKey[0],
+						testCWResourceIdentitiesClaimName[0],
 						"claim_key",
 					),
 					// Verify dynamic values have any value set in the state.
