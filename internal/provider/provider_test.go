@@ -4,15 +4,18 @@
 package provider
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"testing"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-log/tflogtest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,7 +41,7 @@ func init() {
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"aembit": providerserver.NewProtocol6WithError(New("test")()),
+	"aembit": providerserver.NewProtocol6WithError(New("test", "unittest")()),
 }
 
 func TestUnitResourceConfigure(t *testing.T) {
@@ -59,4 +62,26 @@ func TestUnitDataSourceConfigure(t *testing.T) {
 
 	datasourceConfigure(datasource.ConfigureRequest{ProviderData: "invalidData"}, &configResponse)
 	assert.NotEmpty(t, configResponse.Diagnostics)
+}
+
+func TestUnitConfigureLogging(t *testing.T) {
+	t.Parallel()
+	// 1. Create a buffer to capture logs
+	var buf bytes.Buffer
+
+	// 2. Initialize a context with the test logger attached to the buffer
+	// This context will intercept all calls to tflog.Debug, tflog.Info, etc.
+	ctx := tflogtest.RootLogger(context.Background(), &buf)
+
+	// 3. Define your provider/struct for testing
+	p := New("1.2.3", "unittest")()
+
+	// 4. Execute the code that calls tflog.Debug
+	p.Configure(ctx, provider.ConfigureRequest{}, nil)
+
+	// 5. Verify the output in the buffer
+	loggedOutput := buf.String()
+
+	assert.Contains(t, loggedOutput, "Aembit Provider version: 1.2.3")
+	assert.Contains(t, loggedOutput, "Aembit Provider release time: unittest")
 }

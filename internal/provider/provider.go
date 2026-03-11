@@ -37,10 +37,11 @@ var _ provider.Provider = &aembitProvider{}
 const FMT_READ_RESPONSE_ERROR = "failed to read response body: %w"
 
 // New is a helper function to simplify provider server and testing implementation.
-func New(version string) func() provider.Provider {
+func New(version string, releaseTime string) func() provider.Provider {
 	return func() provider.Provider {
 		return &aembitProvider{
-			version: version,
+			version:     version,
+			releaseTime: releaseTime,
 		}
 	}
 }
@@ -62,7 +63,8 @@ type aembitProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
-	version string
+	version     string
+	releaseTime string
 }
 
 // Configure adds the provider configured client to the resource.
@@ -183,7 +185,14 @@ func (p *aembitProvider) Configure(
 	resp *provider.ConfigureResponse,
 ) {
 	var err error
+	tflog.Debug(ctx, "Aembit Provider version: "+p.version)
+	tflog.Debug(ctx, "Aembit Provider release time: "+p.releaseTime)
 	tflog.Info(ctx, "Configuring Aembit client...")
+
+	if resp == nil {
+		tflog.Error(ctx, "Received nil provider ConfigureResponse pointer.")
+		return
+	}
 
 	// Retrieve provider data from configuration
 	var config aembitProviderModel
