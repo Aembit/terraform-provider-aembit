@@ -22,7 +22,7 @@ resource "aembit_client_workload" "test" {
         {
             type = "oidcIdToken"
             value = "*claim_value*"
-            key = "claim_key"
+            claim_name = "claim_key"
         }
     ]
 }
