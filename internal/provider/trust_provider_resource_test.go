@@ -670,6 +670,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 	const trustProviderOidcidTokenKey = "aembit_trust_provider.oidcidtoken_key"
 	const trustProviderOidcidTokenJWKS = "aembit_trust_provider.oidcidtoken_jwks"
 	const trustProviderOidcidTokenAembitTenantOidcToken = "aembit_trust_provider.oidcidtoken_aembittenantoidctoken"
+	const trustProviderOidcidTokenCustomClaims = "aembit_trust_provider.oidcidtoken_customclaims"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -725,6 +726,24 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						"oidc_id_token.is_aembit_tenant_oidc_token",
 						"true",
 					),
+
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenCustomClaims,
+						"name",
+						"TF Acceptance OIDC ID Token with Custom Claims",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenCustomClaims,
+						"id",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenCustomClaims,
+						"oidc_id_token.is_aembit_tenant_oidc_token",
+						"true",
+					),
 				),
 			},
 			// ImportState testing
@@ -769,6 +788,18 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(
 						trustProviderOidcidTokenAembitTenantOidcToken,
+						"id",
+					),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenCustomClaims,
+						"name",
+						"TF Acceptance OIDC ID Token with Custom Claims - Modified",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenCustomClaims,
 						"id",
 					),
 				),

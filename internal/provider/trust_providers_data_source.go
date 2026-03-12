@@ -6,6 +6,7 @@ import (
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -483,6 +484,16 @@ func (d *trustProvidersDataSource) Schema(
 								},
 								"is_aembit_tenant_oidc_token": schema.BoolAttribute{
 									Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
+									Computed:    true,
+								},
+								"custom_claims": schema.SetAttribute{
+									Description: "The set of accepted Custom Claim values of the associated OIDC ID Token.",
+									ElementType: types.ObjectType{
+										AttrTypes: map[string]attr.Type{
+											"claim_key":   types.StringType,
+											"claim_value": types.StringType,
+										},
+									},
 									Computed:    true,
 								},
 							},

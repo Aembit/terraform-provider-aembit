@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -738,6 +739,16 @@ func (r *trustProviderResource) Schema(
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
+					"custom_claims": schema.SetAttribute{
+						Description: "The set of accepted Custom Claim values of the associated OIDC ID Token.",
+						ElementType: types.ObjectType{
+							AttrTypes: map[string]attr.Type{
+								"claim_key":   types.StringType,
+								"claim_value": types.StringType,
+							},
+						},
+						Optional:    true,
+					},
 				},
 			},
 			"certificate_signed_attestation": schema.SingleNestedAttribute{
@@ -1188,10 +1199,11 @@ func appendMatchRuleIfExists(
 	matchRules []aembit.TrustProviderMatchRuleDTO,
 	value basetypes.StringValue,
 	attrName string,
+	key basetypes.StringValue,
 ) []aembit.TrustProviderMatchRuleDTO {
 	if len(value.ValueString()) > 0 {
 		return append(matchRules, aembit.TrustProviderMatchRuleDTO{
-			Attribute: attrName, Value: value.ValueString(),
+			Attribute: attrName, Value: value.ValueString(), Key: key.ValueString(),
 		})
 	}
 	return matchRules
@@ -1204,7 +1216,20 @@ func appendMatchRulesIfExists(
 ) []aembit.TrustProviderMatchRuleDTO {
 	if len(values) > 0 {
 		for _, value := range values {
-			matchRules = appendMatchRuleIfExists(matchRules, value, attrName)
+			matchRules = appendMatchRuleIfExists(matchRules, value, attrName, types.StringNull(),)
+		}
+	}
+	return matchRules
+}
+
+func appendMatchRulesWithClaimsIfExists(
+	matchRules []aembit.TrustProviderMatchRuleDTO,
+	customClaims []models.TrustProviderOidcIdTokenCustomClaimModel,
+	attrName string,
+) []aembit.TrustProviderMatchRuleDTO {
+	if len(customClaims) > 0 {
+		for _, value := range customClaims {
+			matchRules = appendMatchRuleIfExists(matchRules, value.ClaimValue, attrName, value.ClaimKey)
 		}
 	}
 	return matchRules
@@ -1217,9 +1242,9 @@ func convertAzureMetadataModelToDTO(
 	dto.Provider = "AzureMetadataService"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.Sku, "AzureSku")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.Sku, "AzureSku", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AzureMetadata.Skus, "AzureSku")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.VMID, "AzureVmId")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AzureMetadata.VMID, "AzureVmId", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.AzureMetadata.VMIDs,
@@ -1229,6 +1254,7 @@ func convertAzureMetadataModelToDTO(
 		dto.MatchRules,
 		model.AzureMetadata.SubscriptionID,
 		"AzureSubscriptionId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1248,6 +1274,7 @@ func convertAwsRoleModelToDTO(
 		dto.MatchRules,
 		model.AwsRole.AccountID,
 		"AwsAccountId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1258,15 +1285,16 @@ func convertAwsRoleModelToDTO(
 		dto.MatchRules,
 		model.AwsRole.AssumedRole,
 		"AwsAssumedRole",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.AwsRole.AssumedRoles,
 		"AwsAssumedRole",
 	)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.RoleARN, "AwsRoleARN")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.RoleARN, "AwsRoleARN", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.AwsRole.RoleARNs, "AwsRoleARN")
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.Username, "AwsUsername")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsRole.Username, "AwsUsername", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.AwsRole.Usernames,
@@ -1289,6 +1317,7 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.AccountID,
 		"AwsAccountId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1299,11 +1328,13 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.Architecture,
 		"AwsArchitecture",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.AvailabilityZone,
 		"AwsAvailabilityZone",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1314,16 +1345,19 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.BillingProducts,
 		"AwsBillingProducts",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.ImageID,
 		"AwsImageId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.InstanceID,
 		"AwsInstanceId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1334,6 +1368,7 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.InstanceType,
 		"AwsInstanceType",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1344,28 +1379,33 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.KernelID,
 		"AwsKernelId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.MarketplaceProductCodes,
 		"AwsMarketplaceProductCodes",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.PendingTime,
 		"AwsPendingTime",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.PrivateIP,
 		"AwsPrivateIp",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRuleIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.RamdiskID,
 		"AwsRamdiskId",
+		types.StringNull(),
 	)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Region, "AwsRegion")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.AwsMetadata.Region, "AwsRegion", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.AwsMetadata.Regions,
@@ -1375,6 +1415,7 @@ func convertAwsMetadataModelToDTO(
 		dto.MatchRules,
 		model.AwsMetadata.Version,
 		"AwsVersion",
+		types.StringNull(),
 	)
 }
 
@@ -1385,7 +1426,7 @@ func convertGcpIdentityModelToDTO(
 	dto.Provider = "GcpIdentityToken"
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GcpIdentity.EMail, "Email")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.GcpIdentity.EMail, "Email", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.GcpIdentity.EMails, "Email")
 }
 
@@ -1402,6 +1443,7 @@ func convertGitHubActionModelToDTO(
 		dto.MatchRules,
 		model.GitHubAction.Actor,
 		"GithubActor",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1412,6 +1454,7 @@ func convertGitHubActionModelToDTO(
 		dto.MatchRules,
 		model.GitHubAction.Repository,
 		"GithubRepository",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1422,6 +1465,7 @@ func convertGitHubActionModelToDTO(
 		dto.MatchRules,
 		model.GitHubAction.Workflow,
 		"GithubWorkflow",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1442,6 +1486,7 @@ func convertGitLabJobModelToDTO(
 		dto.MatchRules,
 		model.GitLabJob.Subject,
 		"GitLabSubject",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1452,6 +1497,7 @@ func convertGitLabJobModelToDTO(
 		dto.MatchRules,
 		model.GitLabJob.ProjectPath,
 		"GitLabProjectPath",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1462,6 +1508,7 @@ func convertGitLabJobModelToDTO(
 		dto.MatchRules,
 		model.GitLabJob.NamespacePath,
 		"GitLabNamespacePath",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1472,6 +1519,7 @@ func convertGitLabJobModelToDTO(
 		dto.MatchRules,
 		model.GitLabJob.RefPath,
 		"GitLabRefPath",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1491,7 +1539,7 @@ func convertKerberosModelToDTO(
 	}
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Principal, "Principal")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.Principal, "Principal", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.Kerberos.Principals,
@@ -1501,13 +1549,14 @@ func convertKerberosModelToDTO(
 		dto.MatchRules,
 		model.Kerberos.RealmOrDomain,
 		"RealmOrDomain",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.Kerberos.RealmsOrDomains,
 		"RealmOrDomain",
 	)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.SourceIP, "SourceIp")
+	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.Kerberos.SourceIP, "SourceIp", types.StringNull())
 	dto.MatchRules = appendMatchRulesIfExists(dto.MatchRules, model.Kerberos.SourceIPs, "SourceIp")
 }
 
@@ -1535,6 +1584,7 @@ func convertKubernetesModelToDTO(
 		dto.MatchRules,
 		model.KubernetesService.Issuer,
 		"KubernetesIss",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1545,6 +1595,7 @@ func convertKubernetesModelToDTO(
 		dto.MatchRules,
 		model.KubernetesService.Namespace,
 		"KubernetesIoNamespace",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1555,6 +1606,7 @@ func convertKubernetesModelToDTO(
 		dto.MatchRules,
 		model.KubernetesService.PodName,
 		"KubernetesIoPodName",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1565,6 +1617,7 @@ func convertKubernetesModelToDTO(
 		dto.MatchRules,
 		model.KubernetesService.ServiceAccountName,
 		"KubernetesIoServiceAccountName",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1575,6 +1628,7 @@ func convertKubernetesModelToDTO(
 		dto.MatchRules,
 		model.KubernetesService.Subject,
 		"KubernetesSub",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1605,7 +1659,12 @@ func convertOidcIdTokenTpModelToDTO(
 	}
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
-	dto.MatchRules = appendMatchRuleIfExists(dto.MatchRules, model.OidcIdToken.Issuer, "OidcIssuer")
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules, 
+		model.OidcIdToken.Issuer, 
+		"OidcIssuer",
+		types.StringNull(),
+	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.OidcIdToken.Issuers,
@@ -1615,6 +1674,7 @@ func convertOidcIdTokenTpModelToDTO(
 		dto.MatchRules,
 		model.OidcIdToken.Subject,
 		"OidcSubject",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1625,11 +1685,17 @@ func convertOidcIdTokenTpModelToDTO(
 		dto.MatchRules,
 		model.OidcIdToken.Audience,
 		"OidcAudience",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
 		model.OidcIdToken.Audiences,
 		"OidcAudience",
+	)
+	dto.MatchRules = appendMatchRulesWithClaimsIfExists(
+		dto.MatchRules,
+		model.OidcIdToken.CustomClaims,
+		"OidcCustom",
 	)
 
 	return nil
@@ -1688,6 +1754,7 @@ func convertTerraformModelToDTO(
 		dto.MatchRules,
 		model.TerraformWorkspace.OrganizationID,
 		"TerraformOrganizationId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1698,6 +1765,7 @@ func convertTerraformModelToDTO(
 		dto.MatchRules,
 		model.TerraformWorkspace.ProjectID,
 		"TerraformProjectId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1708,6 +1776,7 @@ func convertTerraformModelToDTO(
 		dto.MatchRules,
 		model.TerraformWorkspace.WorkspaceID,
 		"TerraformWorkspaceId",
+		types.StringNull(),
 	)
 	dto.MatchRules = appendMatchRulesIfExists(
 		dto.MatchRules,
@@ -1996,6 +2065,9 @@ func convertOidcIdTokenTpDTOToModel(
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcAudience")) {
 		model.Audience, model.Audiences = extractMatchRules(dto.MatchRules, "OidcAudience")
 	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcCustom")) {
+		model.CustomClaims = extractCustomClaimMatchRules(dto.MatchRules, "OidcCustom")
+	}
 	return model
 }
 
@@ -2142,6 +2214,24 @@ func extractMatchRules(
 		}
 	}
 	return singleValue, multiValue
+}
+
+func extractCustomClaimMatchRules(
+	matchRules []aembit.TrustProviderMatchRuleDTO,
+	attributeName string,
+) ([]models.TrustProviderOidcIdTokenCustomClaimModel) {
+	var multiValue []models.TrustProviderOidcIdTokenCustomClaimModel
+
+	for _, rule := range matchRules {
+		if rule.Attribute == attributeName {
+			multiValue = append(multiValue, models.TrustProviderOidcIdTokenCustomClaimModel{
+				ClaimKey:   types.StringValue(rule.Key),
+				ClaimValue: types.StringValue(rule.Value),
+			})
+		}
+	}
+
+	return multiValue
 }
 
 // normalizeJSON takes raw JSON (string) and returns canonicalized version (minified)
