@@ -727,7 +727,6 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						"true",
 					),
 
-
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenCustomClaims,

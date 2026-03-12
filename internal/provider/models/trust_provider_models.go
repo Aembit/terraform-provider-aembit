@@ -103,22 +103,22 @@ type TrustProviderKubernetesModel struct {
 }
 
 type TrustProviderOidcIdTokenModel struct {
-	Issuer                  types.String         `tfsdk:"issuer"`
-	Issuers                 []types.String       `tfsdk:"issuers"`
-	Subject                 types.String         `tfsdk:"subject"`
-	Subjects                []types.String       `tfsdk:"subjects"`
-	Audience                types.String         `tfsdk:"audience"`
-	Audiences               []types.String       `tfsdk:"audiences"`
-	CustomClaims 		  	[]TrustProviderOidcIdTokenCustomClaimModel `tfsdk:"custom_claims"`
-	OIDCEndpoint            types.String         `tfsdk:"oidc_endpoint"`
-	PublicKey               types.String         `tfsdk:"public_key"`
-	Jwks                    jsontypes.Normalized `tfsdk:"jwks"`
-	IsAembitTenantOidcToken types.Bool           `tfsdk:"is_aembit_tenant_oidc_token"`
+	Issuer                  types.String                               `tfsdk:"issuer"`
+	Issuers                 []types.String                             `tfsdk:"issuers"`
+	Subject                 types.String                               `tfsdk:"subject"`
+	Subjects                []types.String                             `tfsdk:"subjects"`
+	Audience                types.String                               `tfsdk:"audience"`
+	Audiences               []types.String                             `tfsdk:"audiences"`
+	CustomClaims            []TrustProviderOidcIdTokenCustomClaimModel `tfsdk:"custom_claims"`
+	OIDCEndpoint            types.String                               `tfsdk:"oidc_endpoint"`
+	PublicKey               types.String                               `tfsdk:"public_key"`
+	Jwks                    jsontypes.Normalized                       `tfsdk:"jwks"`
+	IsAembitTenantOidcToken types.Bool                                 `tfsdk:"is_aembit_tenant_oidc_token"`
 }
 
 type TrustProviderOidcIdTokenCustomClaimModel struct {
-	ClaimKey types.String         `tfsdk:"claim_key"`
-	ClaimValue types.String         `tfsdk:"claim_value"`
+	ClaimKey   types.String `tfsdk:"claim_key"`
+	ClaimValue types.String `tfsdk:"claim_value"`
 }
 
 type TrustProviderGcpIdentityModel struct {

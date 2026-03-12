@@ -494,7 +494,7 @@ func (d *trustProvidersDataSource) Schema(
 											"claim_value": types.StringType,
 										},
 									},
-									Computed:    true,
+									Computed: true,
 								},
 							},
 						},

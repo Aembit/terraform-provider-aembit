@@ -747,7 +747,7 @@ func (r *trustProviderResource) Schema(
 								"claim_value": types.StringType,
 							},
 						},
-						Optional:    true,
+						Optional: true,
 					},
 				},
 			},
@@ -1216,7 +1216,7 @@ func appendMatchRulesIfExists(
 ) []aembit.TrustProviderMatchRuleDTO {
 	if len(values) > 0 {
 		for _, value := range values {
-			matchRules = appendMatchRuleIfExists(matchRules, value, attrName, types.StringNull(),)
+			matchRules = appendMatchRuleIfExists(matchRules, value, attrName, types.StringNull())
 		}
 	}
 	return matchRules
@@ -1660,8 +1660,8 @@ func convertOidcIdTokenTpModelToDTO(
 
 	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
 	dto.MatchRules = appendMatchRuleIfExists(
-		dto.MatchRules, 
-		model.OidcIdToken.Issuer, 
+		dto.MatchRules,
+		model.OidcIdToken.Issuer,
 		"OidcIssuer",
 		types.StringNull(),
 	)
@@ -2219,7 +2219,7 @@ func extractMatchRules(
 func extractCustomClaimMatchRules(
 	matchRules []aembit.TrustProviderMatchRuleDTO,
 	attributeName string,
-) ([]models.TrustProviderOidcIdTokenCustomClaimModel) {
+) []models.TrustProviderOidcIdTokenCustomClaimModel {
 	var multiValue []models.TrustProviderOidcIdTokenCustomClaimModel
 
 	for _, rule := range matchRules {
