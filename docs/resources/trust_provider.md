@@ -267,6 +267,7 @@ Optional:
 
 - `audience` (String) The Audience (`aud` claim) of the OIDC ID Token.
 - `audiences` (Set of String) The set of accepted Audience values of the associated OIDC ID Token. Used only for cases where multiple Audiences can be matched.
+- `custom_claims` (Set of Object) The set of accepted Custom Claim values of the associated OIDC ID Token. (see [below for nested schema](#nestedatt--oidc_id_token--custom_claims))
 - `is_aembit_tenant_oidc_token` (Boolean) Indicates if the OIDC attestation is performed against the current Aembit tenant.
 - `issuer` (String) The Issuer (`iss` claim) of the OIDC ID Token.
 - `issuers` (Set of String) The set of accepted Issuer values of the associated OIDC ID Token. Used only for cases where multiple Issuers can be matched.
@@ -275,6 +276,15 @@ Optional:
 - `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token.
 - `subject` (String) The Subject (`sub` claim) of the OIDC ID Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.
+
+<a id="nestedatt--oidc_id_token--custom_claims"></a>
+### Nested Schema for `oidc_id_token.custom_claims`
+
+Optional:
+
+- `claim_key` (String)
+- `claim_value` (String)
+
 
 
 <a id="nestedatt--terraform_workspace"></a>
