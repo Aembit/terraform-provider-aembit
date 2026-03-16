@@ -566,19 +566,11 @@ func convertLogStreamDTOToDatasourceModel(
 	}
 
 	if dto.Type == "CrowdstrikeHttpEventCollector" {
-		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorModel{
+		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorDatasourceModel{
 			HecHostPort:     types.StringValue(dto.HecHostPort),
 			HecSourceName:   types.StringValue(dto.HecSourceName),
 			Tls:             types.BoolValue(dto.Tls),
 			TlsVerification: types.StringValue(dto.TlsVerification),
-		}
-
-		if dto.ApiKey != "" {
-			model.CrowdstrikeHttpEventCollector.APIKey = types.StringValue(dto.ApiKey)
-		} else if state.CrowdstrikeHttpEventCollector != nil {
-			model.CrowdstrikeHttpEventCollector.APIKey = state.CrowdstrikeHttpEventCollector.APIKey
-		} else {
-			model.CrowdstrikeHttpEventCollector.APIKey = types.StringNull()
 		}
 	}
 
