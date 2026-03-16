@@ -7,16 +7,29 @@ import (
 // LogStreamResourceModel maps the resource schema.
 type LogStreamResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID                            types.String                        `tfsdk:"id"`
-	Name                          types.String                        `tfsdk:"name"`
-	Description                   types.String                        `tfsdk:"description"`
-	IsActive                      types.Bool                          `tfsdk:"is_active"`
-	DataType                      types.String                        `tfsdk:"data_type"`
-	Type                          types.String                        `tfsdk:"type"`
-	AWSS3Bucket                   *AWSS3BucketModel                   `tfsdk:"aws_s3_bucket"`
-	GCSBucket                     *GCSBucketModel                     `tfsdk:"gcs_bucket"`
-	SplunkHttpEventCollector      *SplunkHttpEventCollectorModel      `tfsdk:"splunk_http_event_collector"`
-	CrowdstrikeHttpEventCollector *CrowdstrikeHttpEventCollectorModel `tfsdk:"crowdstrike_http_event_collector"`
+	ID                            types.String                           `tfsdk:"id"`
+	Name                          types.String                           `tfsdk:"name"`
+	Description                   types.String                           `tfsdk:"description"`
+	IsActive                      types.Bool                             `tfsdk:"is_active"`
+	DataType                      types.String                           `tfsdk:"data_type"`
+	Type                          types.String                           `tfsdk:"type"`
+	AWSS3Bucket                   *AWSS3BucketModel                      `tfsdk:"aws_s3_bucket"`
+	GCSBucket                     *GCSBucketModel                        `tfsdk:"gcs_bucket"`
+	CrowdstrikeHttpEventCollector *CrowdstrikeHttpEventCollectorModel    `tfsdk:"crowdstrike_http_event_collector"`
+	SplunkHttpEventCollector      *SplunkHttpEventCollectorResourceModel `tfsdk:"splunk_http_event_collector"`
+}
+type LogStreamDatasourceModel struct {
+	// ID is required for Framework acceptance testing
+	ID                            types.String                             `tfsdk:"id"`
+	Name                          types.String                             `tfsdk:"name"`
+	Description                   types.String                             `tfsdk:"description"`
+	IsActive                      types.Bool                               `tfsdk:"is_active"`
+	DataType                      types.String                             `tfsdk:"data_type"`
+	Type                          types.String                             `tfsdk:"type"`
+	AWSS3Bucket                   *AWSS3BucketModel                        `tfsdk:"aws_s3_bucket"`
+	GCSBucket                     *GCSBucketModel                          `tfsdk:"gcs_bucket"`
+	CrowdstrikeHttpEventCollector *CrowdstrikeHttpEventCollectorModel      `tfsdk:"crowdstrike_http_event_collector"`
+	SplunkHttpEventCollector      *SplunkHttpEventCollectorDatasourceModel `tfsdk:"splunk_http_event_collector"`
 }
 
 // LogStreamsDataSourceModel maps the datasource schema.
@@ -37,13 +50,18 @@ type GCSBucketModel struct {
 	ServiceAccountEmail types.String `tfsdk:"service_account_email"`
 	TokenLifetime       types.Int64  `tfsdk:"token_lifetime"`
 }
-
-type SplunkHttpEventCollectorModel struct {
+type SplunkHttpEventCollectorResourceModel struct {
 	HecHostPort         types.String `tfsdk:"host_port"`
-	AuthenticationToken types.String `tfsdk:"authentication_token"`
 	HecSourceName       types.String `tfsdk:"source_name"`
 	Tls                 types.Bool   `tfsdk:"tls"`
 	TlsVerification     types.String `tfsdk:"tls_verification"`
+	AuthenticationToken types.String `tfsdk:"authentication_token"`
+}
+type SplunkHttpEventCollectorDatasourceModel struct {
+	HecHostPort     types.String `tfsdk:"host_port"`
+	HecSourceName   types.String `tfsdk:"source_name"`
+	Tls             types.Bool   `tfsdk:"tls"`
+	TlsVerification types.String `tfsdk:"tls_verification"`
 }
 
 type CrowdstrikeHttpEventCollectorModel struct {

@@ -487,7 +487,7 @@ func convertLogStreamDTOToModel(
 	}
 
 	if dto.Type == "SplunkHttpEventCollector" {
-		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
+		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorResourceModel{
 			HecHostPort:     types.StringValue(dto.HecHostPort),
 			HecSourceName:   types.StringValue(dto.HecSourceName),
 			Tls:             types.BoolValue(dto.Tls),
