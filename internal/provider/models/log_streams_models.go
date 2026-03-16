@@ -34,7 +34,7 @@ type LogStreamDatasourceModel struct {
 
 // LogStreamsDataSourceModel maps the datasource schema.
 type LogStreamsDataSourceModel struct {
-	LogStreams []LogStreamResourceModel `tfsdk:"log_streams"`
+	LogStreams []LogStreamDatasourceModel `tfsdk:"log_streams"`
 }
 
 type AWSS3BucketModel struct {
