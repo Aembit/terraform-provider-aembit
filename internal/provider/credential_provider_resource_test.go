@@ -14,15 +14,16 @@ import (
 )
 
 const (
-	testCredentialProviderAembit     = "aembit_credential_provider.aembit"
-	testCredentialProviderApiKey     = "aembit_credential_provider.api_key"
-	testCredentialProviderAWS        = "aembit_credential_provider.aws"
-	testCredentialProviderGCP        = "aembit_credential_provider.gcp"
-	testCredentialProviderSnowflake  = "aembit_credential_provider.snowflake"
-	testCredentialProviderUserPass   = "aembit_credential_provider.userpass"
-	gitlabManagedAccountResourcePath = "aembit_credential_provider.gitlab_managed_account"
-	awsSecretManagerResourcePath     = "aembit_credential_provider.aws_sm_value"
-	azureKeyVaultResourcePath        = "aembit_credential_provider.azure_key_vault_value_cp"
+	testCredentialProviderAembit            = "aembit_credential_provider.aembit"
+	testCredentialProviderAembitWithRefresh = "aembit_credential_provider.aembit_refresh_token_enabled"
+	testCredentialProviderApiKey            = "aembit_credential_provider.api_key"
+	testCredentialProviderAWS               = "aembit_credential_provider.aws"
+	testCredentialProviderGCP               = "aembit_credential_provider.gcp"
+	testCredentialProviderSnowflake         = "aembit_credential_provider.snowflake"
+	testCredentialProviderUserPass          = "aembit_credential_provider.userpass"
+	gitlabManagedAccountResourcePath        = "aembit_credential_provider.gitlab_managed_account"
+	awsSecretManagerResourcePath            = "aembit_credential_provider.aws_sm_value"
+	azureKeyVaultResourcePath               = "aembit_credential_provider.azure_key_vault_value_cp"
 )
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -72,10 +73,9 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 						"aembit_access_token.lifetime",
 						"1800",
 					),
-					resource.TestCheckResourceAttr(
+					resource.TestCheckNoResourceAttr(
 						testCredentialProviderAembit,
 						"aembit_access_token.absolute_token_lifetime",
-						"3600",
 					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
@@ -85,6 +85,30 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 					),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
+
+					resource.TestCheckResourceAttr(
+						testCredentialProviderAembitWithRefresh,
+						"name",
+						"TF Acceptance Aembit Token with Refresh Support",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderAembitWithRefresh,
+						"aembit_access_token.lifetime",
+						"1800",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderAembitWithRefresh,
+						"aembit_access_token.absolute_token_lifetime",
+						"3600",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembitWithRefresh, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderAembitWithRefresh,
+						"aembit_access_token.audience",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(testCredentialProviderAembitWithRefresh, "id"),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -114,6 +138,18 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(
 						testCredentialProviderAembit,
+						"aembit_access_token.audience",
+					),
+
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderAembitWithRefresh,
+						"name",
+						"TF Acceptance Aembit Token with Refresh Support - Modified",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderAembitWithRefresh,
 						"aembit_access_token.audience",
 					),
 				),
