@@ -506,7 +506,7 @@ func convertLogStreamDTOToModel(
 	}
 
 	if dto.Type == "CrowdstrikeHttpEventCollector" {
-		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorModel{
+		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorResourceModel{
 			HecHostPort:     types.StringValue(dto.HecHostPort),
 			HecSourceName:   types.StringValue(dto.HecSourceName),
 			Tls:             types.BoolValue(dto.Tls),
@@ -527,7 +527,6 @@ func convertLogStreamDTOToModel(
 
 func convertLogStreamDTOToDatasourceModel(
 	dto aembit.LogStreamDTO,
-	state models.LogStreamDatasourceModel,
 ) models.LogStreamDatasourceModel {
 	var model models.LogStreamDatasourceModel
 	model.ID = types.StringValue(dto.ExternalID)
