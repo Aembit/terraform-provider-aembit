@@ -120,6 +120,10 @@ func (r *credentialProviderResource) Schema(
 							int64validator.Between(900, 43200),
 						},
 					},
+					"absolute_token_lifetime": schema.Int32Attribute{
+						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+						Optional:    true,
+					},
 				},
 			},
 			"api_key": schema.SingleNestedAttribute{
@@ -786,6 +790,10 @@ func (r *credentialProviderResource) Schema(
 							}}, []attr.Value{}),
 						),
 					},
+					"absolute_token_lifetime": schema.Int32Attribute{
+						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+						Optional:    true,
+					},
 				},
 			},
 			"aws_secrets_manager_value": schema.SingleNestedAttribute{
@@ -1405,9 +1413,10 @@ func convertAembitTokenV2DTOToModel(
 ) *models.CredentialProviderAembitTokenModel {
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
 	value := models.CredentialProviderAembitTokenModel{
-		Audience: types.StringValue(dto.Audience),
-		Role:     types.StringValue(dto.RoleID),
-		Lifetime: dto.LifetimeInSeconds,
+		Audience:              types.StringValue(dto.Audience),
+		Role:                  types.StringValue(dto.RoleID),
+		Lifetime:              dto.LifetimeInSeconds,
+		AbsoluteTokenLifetime: dto.AbsoluteTokenLifetime,
 	}
 	return &value
 }
@@ -1627,12 +1636,13 @@ func convertOidcIdTokenDTOToModel(
 	_ models.CredentialProviderResourceModel,
 ) *models.CredentialProviderManagedOidcIdToken {
 	value := models.CredentialProviderManagedOidcIdToken{
-		Subject:           dto.Subject,
-		SubjectType:       dto.SubjectType,
-		LifetimeInMinutes: dto.LifetimeTimeSpanSeconds / 60,
-		Audience:          dto.Audience,
-		AlgorithmType:     dto.AlgorithmType,
-		Issuer:            types.StringValue(dto.Issuer),
+		Subject:               dto.Subject,
+		SubjectType:           dto.SubjectType,
+		LifetimeInMinutes:     dto.LifetimeTimeSpanSeconds / 60,
+		Audience:              dto.Audience,
+		AlgorithmType:         dto.AlgorithmType,
+		Issuer:                types.StringValue(dto.Issuer),
+		AbsoluteTokenLifetime: dto.AbsoluteTokenLifetime,
 	}
 
 	// Get the custom claims to be injected into the model
@@ -1705,6 +1715,7 @@ func convertToAembitTokenDTO(
 	credential.Type = "aembit-access-token"
 	credential.LifetimeInSeconds = model.AembitToken.Lifetime
 	credential.Audience = audience
+	credential.AbsoluteTokenLifetime = model.AembitToken.AbsoluteTokenLifetime
 	credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
 		RoleID: model.AembitToken.Role.ValueString(),
 	}
@@ -1922,6 +1933,7 @@ func convertToOidcIdTokenDTO(
 	credential.Issuer = issuer
 	credential.Audience = oidcToken.Audience
 	credential.AlgorithmType = oidcToken.AlgorithmType
+	credential.AbsoluteTokenLifetime = oidcToken.AbsoluteTokenLifetime
 
 	credential.CustomClaims = make(
 		[]aembit.CustomClaimsDTO,

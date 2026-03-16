@@ -72,6 +72,11 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 						"aembit_access_token.lifetime",
 						"1800",
 					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderAembit,
+						"aembit_access_token.absolute_token_lifetime",
+						"3600",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCredentialProviderAembit, "id"),
 					resource.TestCheckResourceAttrSet(

@@ -38,9 +38,10 @@ type CredentialProvidersDataSourceModel struct {
 }
 
 type CredentialProviderAembitTokenModel struct {
-	Audience types.String `tfsdk:"audience"`
-	Role     types.String `tfsdk:"role_id"`
-	Lifetime int32        `tfsdk:"lifetime"`
+	Audience              types.String `tfsdk:"audience"`
+	Role                  types.String `tfsdk:"role_id"`
+	Lifetime              int32        `tfsdk:"lifetime"`
+	AbsoluteTokenLifetime *int32       `tfsdk:"absolute_token_lifetime"`
 }
 
 type CredentialProviderAPIKeyModel struct {
@@ -154,13 +155,14 @@ type CredentialProviderManagedGitlabAccountModel struct {
 
 // CredentialProviderManagedOidcIdToken maps OIDC ID Token configuration.
 type CredentialProviderManagedOidcIdToken struct {
-	Subject           string                                 `tfsdk:"subject"`
-	SubjectType       string                                 `tfsdk:"subject_type"`
-	LifetimeInMinutes int64                                  `tfsdk:"lifetime_in_minutes"`
-	Audience          string                                 `tfsdk:"audience"`
-	AlgorithmType     string                                 `tfsdk:"algorithm_type"`
-	Issuer            types.String                           `tfsdk:"issuer"`
-	CustomClaims      []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+	Subject               string                                 `tfsdk:"subject"`
+	SubjectType           string                                 `tfsdk:"subject_type"`
+	LifetimeInMinutes     int64                                  `tfsdk:"lifetime_in_minutes"`
+	Audience              string                                 `tfsdk:"audience"`
+	AlgorithmType         string                                 `tfsdk:"algorithm_type"`
+	Issuer                types.String                           `tfsdk:"issuer"`
+	CustomClaims          []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+	AbsoluteTokenLifetime *int32                                 `tfsdk:"absolute_token_lifetime"`
 }
 
 type CredentialProviderCustomClaimsModel struct {
