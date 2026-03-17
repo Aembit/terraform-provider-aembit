@@ -61,6 +61,7 @@ Required:
 	* `Amazon Redshift`
 	* `HTTP`
 	* `MCP`
+	* `Microsoft SQL Server`
 	* `MySQL`
 	* `Oracle Database`
 	* `PostgreSQL`
