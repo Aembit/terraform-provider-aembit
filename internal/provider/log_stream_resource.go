@@ -383,6 +383,18 @@ func (r *logStreamResource) Delete(
 		return
 	}
 
+	// Check if LogStream is Active - if it is, disable it first
+	if state.IsActive == types.BoolValue(true) {
+		_, err := r.client.DisableLogStream(state.ID.ValueString(), nil)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error disabling Log Stream",
+				"Could not disable Log Stream, unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+
 	// Delete existing Log Stream
 	_, err := r.client.DeleteLogStream(ctx, state.ID.ValueString(), nil)
 	if err != nil {
