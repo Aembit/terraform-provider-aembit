@@ -90,6 +90,6 @@ Required:
 
 Optional:
 
-- `claim_name` (String) Client identity claim name. Applicable for OIDC ID Token Client Workload Identifier type.
+- `claim_name` (String) Client identity claim name. Applicable for oidcIdToken Client identity type.
 
 
