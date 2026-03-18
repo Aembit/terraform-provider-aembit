@@ -487,7 +487,7 @@ func convertLogStreamDTOToModel(
 	}
 
 	if dto.Type == "SplunkHttpEventCollector" {
-		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorModel{
+		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorResourceModel{
 			HecHostPort:     types.StringValue(dto.HecHostPort),
 			HecSourceName:   types.StringValue(dto.HecSourceName),
 			Tls:             types.BoolValue(dto.Tls),
@@ -506,7 +506,7 @@ func convertLogStreamDTOToModel(
 	}
 
 	if dto.Type == "CrowdstrikeHttpEventCollector" {
-		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorModel{
+		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorResourceModel{
 			HecHostPort:     types.StringValue(dto.HecHostPort),
 			HecSourceName:   types.StringValue(dto.HecSourceName),
 			Tls:             types.BoolValue(dto.Tls),
@@ -519,6 +519,57 @@ func convertLogStreamDTOToModel(
 			model.CrowdstrikeHttpEventCollector.APIKey = state.CrowdstrikeHttpEventCollector.APIKey
 		} else {
 			model.CrowdstrikeHttpEventCollector.APIKey = types.StringNull()
+		}
+	}
+
+	return model
+}
+
+func convertLogStreamDTOToDatasourceModel(
+	dto aembit.LogStreamDTO,
+) models.LogStreamDatasourceModel {
+	var model models.LogStreamDatasourceModel
+	model.ID = types.StringValue(dto.ExternalID)
+	model.Name = types.StringValue(dto.Name)
+	model.Description = types.StringValue(dto.Description)
+	model.IsActive = types.BoolValue(dto.IsActive)
+
+	model.DataType = types.StringValue(dto.DataType)
+	model.Type = types.StringValue(dto.Type)
+
+	if dto.Type == "AwsS3Bucket" {
+		model.AWSS3Bucket = &models.AWSS3BucketModel{
+			S3BucketRegion: types.StringValue(dto.S3BucketRegion),
+			S3BucketName:   types.StringValue(dto.S3BucketName),
+			S3PathPrefix:   types.StringValue(dto.S3PathPrefix),
+		}
+	}
+
+	if dto.Type == "GcsBucket" {
+		model.GCSBucket = &models.GCSBucketModel{
+			GCSBucketName:       types.StringValue(dto.GCSBucketName),
+			GCSPathPrefix:       types.StringValue(dto.GCSPathPrefix),
+			Audience:            types.StringValue(dto.Audience),
+			ServiceAccountEmail: types.StringValue(dto.ServiceAccountEmail),
+			TokenLifetime:       types.Int64Value(dto.TokenLifetime),
+		}
+	}
+
+	if dto.Type == "SplunkHttpEventCollector" {
+		model.SplunkHttpEventCollector = &models.SplunkHttpEventCollectorDatasourceModel{
+			HecHostPort:     types.StringValue(dto.HecHostPort),
+			HecSourceName:   types.StringValue(dto.HecSourceName),
+			Tls:             types.BoolValue(dto.Tls),
+			TlsVerification: types.StringValue(dto.TlsVerification),
+		}
+	}
+
+	if dto.Type == "CrowdstrikeHttpEventCollector" {
+		model.CrowdstrikeHttpEventCollector = &models.CrowdstrikeHttpEventCollectorDatasourceModel{
+			HecHostPort:     types.StringValue(dto.HecHostPort),
+			HecSourceName:   types.StringValue(dto.HecSourceName),
+			Tls:             types.BoolValue(dto.Tls),
+			TlsVerification: types.StringValue(dto.TlsVerification),
 		}
 	}
 

@@ -197,7 +197,7 @@ func (d *logStreamsDataSource) Read(
 
 	// Map response body to model
 	for _, logStream := range logStreams {
-		logStreamState := convertLogStreamDTOToModel(logStream, models.LogStreamResourceModel{})
+		logStreamState := convertLogStreamDTOToDatasourceModel(logStream)
 		state.LogStreams = append(state.LogStreams, logStreamState)
 	}
 

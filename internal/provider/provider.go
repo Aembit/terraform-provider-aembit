@@ -631,6 +631,7 @@ func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version strin
 		getAembitTenantId(clientId),
 		stackDomain,
 	)
+
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBufferString(details.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
