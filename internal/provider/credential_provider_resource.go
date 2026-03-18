@@ -120,6 +120,10 @@ func (r *credentialProviderResource) Schema(
 							int64validator.Between(900, 43200),
 						},
 					},
+					"absolute_token_lifetime": schema.Int32Attribute{
+						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+						Optional:    true,
+					},
 				},
 			},
 			"api_key": schema.SingleNestedAttribute{
@@ -786,6 +790,10 @@ func (r *credentialProviderResource) Schema(
 							}}, []attr.Value{}),
 						),
 					},
+					"absolute_token_lifetime": schema.Int32Attribute{
+						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+						Optional:    true,
+					},
 				},
 			},
 			"aws_secrets_manager_value": schema.SingleNestedAttribute{
@@ -1257,7 +1265,7 @@ func convertCredentialProviderModelToV2DTO(
 
 	// Handle the OidcIdToken use case
 	if model.OidcIdToken != nil {
-		convertToOidcIdTokenDTO(
+		convertToOidcIdTokenDTOWithRefreshSupport(
 			&credential,
 			*model.OidcIdToken,
 			fmt.Sprintf(oidcIssuerTemplate, tenantID, stackDomain),
@@ -1373,7 +1381,7 @@ func convertCredentialProviderV2DTOToModel(
 	case "gitlab-managed-account":
 		model.ManagedGitlabAccount = convertManagedGitlabAccountDTOToModel(dto, *planModel)
 	case "oidc-id-token":
-		model.OidcIdToken = convertOidcIdTokenDTOToModel(dto, *planModel)
+		model.OidcIdToken = convertOidcIdTokenDTOToModelWithRefreshSupport(dto)
 	case "aws-secret-manager-value":
 		model.AwsSecretsManagerValue = &models.CredentialProviderAwsSecretsManagerValueModel{
 			SecretArn:            types.StringValue(dto.SecretArn),
@@ -1394,7 +1402,7 @@ func convertCredentialProviderV2DTOToModel(
 			),
 		}
 	case "jwt-svid-token":
-		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto, *planModel)
+		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto)
 	}
 	return model
 }
@@ -1405,9 +1413,10 @@ func convertAembitTokenV2DTOToModel(
 ) *models.CredentialProviderAembitTokenModel {
 	// First, parse the credentialProvider.ProviderDetail JSON returned from Aembit Cloud
 	value := models.CredentialProviderAembitTokenModel{
-		Audience: types.StringValue(dto.Audience),
-		Role:     types.StringValue(dto.RoleID),
-		Lifetime: dto.LifetimeInSeconds,
+		Audience:              types.StringValue(dto.Audience),
+		Role:                  types.StringValue(dto.RoleID),
+		Lifetime:              dto.LifetimeInSeconds,
+		AbsoluteTokenLifetime: dto.AbsoluteTokenLifetime,
 	}
 	return &value
 }
@@ -1622,10 +1631,10 @@ func convertManagedGitlabAccountDTOToModel(
 }
 
 // convertOidcIdTokenDTOToModel converts the OidcIdToken state object into a model ready for terraform processing.
-func convertOidcIdTokenDTOToModel(
+func convertOidcIdTokenDTOToBaseModel(
 	dto aembit.CredentialProviderV2DTO,
-	_ models.CredentialProviderResourceModel,
-) *models.CredentialProviderManagedOidcIdToken {
+) models.CredentialProviderManagedOidcIdToken {
+
 	value := models.CredentialProviderManagedOidcIdToken{
 		Subject:           dto.Subject,
 		SubjectType:       dto.SubjectType,
@@ -1635,10 +1644,8 @@ func convertOidcIdTokenDTOToModel(
 		Issuer:            types.StringValue(dto.Issuer),
 	}
 
-	// Get the custom claims to be injected into the model
 	claims := make([]*models.CredentialProviderCustomClaimsModel, len(dto.CustomClaims))
-	// types.ObjectValue(models.CredentialProviderCustomClaimsModel.AttrTypes),
-	// claims := getSetObjectAttr(ctx, model.VaultClientToken, "custom_claims")
+
 	for i, claim := range dto.CustomClaims {
 		claims[i] = &models.CredentialProviderCustomClaimsModel{
 			Key:       claim.Key,
@@ -1646,8 +1653,31 @@ func convertOidcIdTokenDTOToModel(
 			ValueType: claim.ValueType,
 		}
 	}
+
 	value.CustomClaims = claims
-	return &value
+
+	return value
+}
+
+func convertOidcIdTokenDTOToModel(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderManagedOidcIdToken {
+
+	base := convertOidcIdTokenDTOToBaseModel(dto)
+
+	return &base
+}
+
+func convertOidcIdTokenDTOToModelWithRefreshSupport(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport {
+
+	base := convertOidcIdTokenDTOToBaseModel(dto)
+
+	return &models.CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport{
+		CredentialProviderManagedOidcIdToken: base,
+		AbsoluteTokenLifetime:                dto.AbsoluteTokenLifetime,
+	}
 }
 
 // Get the custom parameters to be injected into the model.
@@ -1705,6 +1735,7 @@ func convertToAembitTokenDTO(
 	credential.Type = "aembit-access-token"
 	credential.LifetimeInSeconds = model.AembitToken.Lifetime
 	credential.Audience = audience
+	credential.AbsoluteTokenLifetime = model.AembitToken.AbsoluteTokenLifetime
 	credential.CredentialAembitTokenV2DTO = aembit.CredentialAembitTokenV2DTO{
 		RoleID: model.AembitToken.Role.ValueString(),
 	}
@@ -1909,7 +1940,7 @@ func convertToManagedGitlabAccountDTO(
 	credential.CredentialProviderIntegrationExternalId = model.ManagedGitlabAccount.CredentialProviderIntegrationExternalId
 }
 
-func convertToOidcIdTokenDTO(
+func convertToOidcIdTokenDTOBase(
 	credential *aembit.CredentialProviderV2DTO,
 	oidcToken models.CredentialProviderManagedOidcIdToken,
 	issuer string,
@@ -1927,6 +1958,7 @@ func convertToOidcIdTokenDTO(
 		[]aembit.CustomClaimsDTO,
 		len(oidcToken.CustomClaims),
 	)
+
 	for i, claim := range oidcToken.CustomClaims {
 		credential.CustomClaims[i] = aembit.CustomClaimsDTO{
 			Key:       claim.Key,
@@ -1934,6 +1966,36 @@ func convertToOidcIdTokenDTO(
 			ValueType: claim.ValueType,
 		}
 	}
+}
+
+func convertToOidcIdTokenDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	oidcToken models.CredentialProviderManagedOidcIdToken,
+	issuer string,
+	credentialType string,
+) {
+	convertToOidcIdTokenDTOBase(
+		credential,
+		oidcToken,
+		issuer,
+		credentialType,
+	)
+}
+
+func convertToOidcIdTokenDTOWithRefreshSupport(
+	credential *aembit.CredentialProviderV2DTO,
+	oidcToken models.CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport,
+	issuer string,
+	credentialType string,
+) {
+	convertToOidcIdTokenDTOBase(
+		credential,
+		oidcToken.CredentialProviderManagedOidcIdToken,
+		issuer,
+		credentialType,
+	)
+
+	credential.AbsoluteTokenLifetime = oidcToken.AbsoluteTokenLifetime
 }
 
 func convertToAwsSecretsManagerValueDTO(

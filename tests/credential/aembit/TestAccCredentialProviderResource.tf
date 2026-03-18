@@ -41,3 +41,13 @@ resource "aembit_credential_provider" "aembit" {
 		lifetime = 1800
 	}
 }
+
+resource "aembit_credential_provider" "aembit_refresh_token_enabled" {
+	name = "TF Acceptance Aembit Token with Refresh Support"
+	is_active = false
+	aembit_access_token = {
+		role_id = aembit_role.role.id
+		lifetime = 1800
+		absolute_token_lifetime = 3600
+	}
+}

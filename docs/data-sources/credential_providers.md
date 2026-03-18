@@ -55,6 +55,7 @@ Read-Only:
 
 Read-Only:
 
+- `absolute_token_lifetime` (Number) Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.
 - `audience` (String) Audience of the Credential Provider.
 - `lifetime` (Number) Lifetime of the Credential Provider.
 - `role_id` (String) Aembit Role ID of the Credential Provider.
@@ -279,6 +280,7 @@ Read-Only:
 
 Read-Only:
 
+- `absolute_token_lifetime` (Number) Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.
 - `algorithm_type` (String) JWT Signing algorithm type (RS256 or ES256)
 - `audience` (String) Audience for OIDC ID Token configuration of the Credential Provider.
 - `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token--custom_claims))
