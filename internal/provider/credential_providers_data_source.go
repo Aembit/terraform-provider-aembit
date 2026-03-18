@@ -96,6 +96,10 @@ func (d *credentialProvidersDataSource) Schema(
 									Description: "Lifetime of the Credential Provider.",
 									Computed:    true,
 								},
+								"absolute_token_lifetime": schema.Int32Attribute{
+									Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+									Computed:    true,
+								},
 							},
 						},
 						"api_key": schema.SingleNestedAttribute{
@@ -510,6 +514,10 @@ func (d *credentialProvidersDataSource) Schema(
 											},
 										},
 									},
+								},
+								"absolute_token_lifetime": schema.Int32Attribute{
+									Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
+									Computed:    true,
 								},
 							},
 						},
