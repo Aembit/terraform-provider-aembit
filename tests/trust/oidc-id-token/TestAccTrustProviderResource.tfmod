@@ -62,3 +62,21 @@ resource "aembit_trust_provider" "oidcidtoken_aembittenantoidctoken" {
 		is_aembit_tenant_oidc_token = true
 	}
 }
+
+resource "aembit_trust_provider" "oidcidtoken_customclaims" {
+	name = "TF Acceptance OIDC ID Token with Custom Claims - Modified"
+	is_active = true
+	oidc_id_token = {
+		custom_claims = [
+    	  {
+    	    claim_key   = "key1"
+    	    claim_value = "value1"
+    	  },
+    	  {
+    	    claim_key   = "key2"
+    	    claim_value = "value2"
+    	  }
+    	]
+		is_aembit_tenant_oidc_token = true
+	}
+}
