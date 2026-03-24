@@ -872,7 +872,7 @@ func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
 	}
 }
 
-// disabled enforce_sso should not have IDPs
+// disabled enforce_sso should not have IDPs.
 func TestConvertClientWorkloadModelToDTO_ValidRedirectURIWithDisabledSSO(t *testing.T) {
 	t.Parallel()
 
@@ -911,7 +911,7 @@ func TestConvertClientWorkloadModelToDTO_ValidRedirectURIWithSSOIdentityProvider
 	}
 }
 
-// if oauthRedirectUri is specified, then no other identity types are allowed
+// if oauthRedirectUri is specified, then no other identity types are allowed.
 func TestConvertClientWorkloadModelToDTO_MixedRedirectURIIdentitiesReturnsDiagnostics(t *testing.T) {
 	t.Parallel()
 
