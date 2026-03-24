@@ -8,6 +8,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -73,6 +74,15 @@ func (r *clientWorkloadsDataSource) Schema(
 						},
 						"is_active": schema.BoolAttribute{
 							Description: "Active/Inactive status of the client workload.",
+							Computed:    true,
+						},
+						"enforce_sso": schema.BoolAttribute{
+							Description: "Whether SSO is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.",
+							Computed:    true,
+						},
+						"sso_identity_providers": schema.SetAttribute{
+							Description: "Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enforce_sso' is true.",
+							ElementType: types.StringType,
 							Computed:    true,
 						},
 						"identities": schema.SetNestedAttribute{

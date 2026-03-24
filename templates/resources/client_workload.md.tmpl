@@ -12,16 +12,31 @@ Resource to create and manage Client Workloads in a Aembit Cloud tenant.
 
 ## Example Usage
 ```terraform
+resource "aembit_identity_provider" "primary" {
+    name = "Primary OIDC IdP"
+    is_active = true
+    oidc = {
+        oidc_base_url = "https://example.oidc.com"
+        client_id = "example-client-id"
+        scopes = "openid profile email"
+        auth_type = "ClientSecret"
+        client_secret = "example-client-secret"
+        pcke_required = true
+    }
+}
+
 resource "aembit_client_workload" "test" {
     name = "Name"
     description = "Description"
     is_active = true
+    enforce_sso = false
     identities = [
         {
-            type = "k8sNamespace"
-            value = "default"
+            type = "oauthRedirectUri"
+            value = "https://example.com/callback"
         }
     ]
+    sso_identity_providers = [aembit_identity_provider.primary.id]
 }
 ```
 

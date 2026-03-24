@@ -30,10 +30,12 @@ Optional:
 Read-Only:
 
 - `description` (String) User-provided description of the client workload.
+- `enforce_sso` (Boolean) Whether SSO is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.
 - `id` (String) Unique identifier of the client workload.
 - `identities` (Attributes Set) Set of client workload identities. (see [below for nested schema](#nestedatt--client_workloads--identities))
 - `is_active` (Boolean) Active/Inactive status of the client workload.
 - `name` (String) User-provided name of the client workload.
+- `sso_identity_providers` (Set of String) Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enforce_sso' is true.
 - `tags` (Map of String) Tags are key-value pairs.
 
 <a id="nestedatt--client_workloads--identities"></a>
