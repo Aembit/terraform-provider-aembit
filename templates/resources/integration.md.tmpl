@@ -22,7 +22,6 @@ resource "aembit_integration" "crowdstrike" {
 		token_url = "https://url/token"
 		client_id = "client_id"
 		client_secret = "client_secret"
-		audience = "audience"
 	}
 }
 
