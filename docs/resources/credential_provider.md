@@ -188,6 +188,10 @@ Required:
 - `lifetime` (Number) Lifetime of the Credential Provider.
 - `role_id` (String) Aembit Role ID of the Credential Provider.
 
+Optional:
+
+- `absolute_token_lifetime` (Number) Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.
+
 Read-Only:
 
 - `audience` (String) Audience of the Credential Provider.
@@ -450,6 +454,7 @@ Required:
 
 Optional:
 
+- `absolute_token_lifetime` (Number) Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.
 - `custom_claims` (Attributes Set) Set of Custom Claims for the JWT Token. (see [below for nested schema](#nestedatt--oidc_id_token--custom_claims))
 
 Read-Only:

@@ -8,28 +8,28 @@ import (
 // CredentialProviderResourceModel maps the resource schema.
 type CredentialProviderResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID                      types.String                                    `tfsdk:"id"`
-	Name                    types.String                                    `tfsdk:"name"`
-	Description             types.String                                    `tfsdk:"description"`
-	IsActive                types.Bool                                      `tfsdk:"is_active"`
-	Tags                    types.Map                                       `tfsdk:"tags"`
-	TagsAll                 types.Map                                       `tfsdk:"tags_all"`
-	AembitToken             *CredentialProviderAembitTokenModel             `tfsdk:"aembit_access_token"`
-	APIKey                  *CredentialProviderAPIKeyModel                  `tfsdk:"api_key"`
-	AwsSTS                  *CredentialProviderAwsSTSModel                  `tfsdk:"aws_sts"`
-	GoogleWorkload          *CredentialProviderGoogleWorkloadModel          `tfsdk:"google_workload_identity"`
-	AzureEntraWorkload      *CredentialProviderAzureEntraWorkloadModel      `tfsdk:"azure_entra_workload_identity"`
-	SnowflakeToken          *CredentialProviderSnowflakeTokenModel          `tfsdk:"snowflake_jwt"`
-	OAuthClientCredentials  *CredentialProviderOAuthClientCredentialsModel  `tfsdk:"oauth_client_credentials"`
-	OAuthAuthorizationCode  *CredentialProviderOAuthAuthorizationCodeModel  `tfsdk:"oauth_authorization_code"`
-	UsernamePassword        *CredentialProviderUserPassModel                `tfsdk:"username_password"`
-	VaultClientToken        *CredentialProviderVaultClientTokenModel        `tfsdk:"vault_client_token"`
-	ManagedGitlabAccount    *CredentialProviderManagedGitlabAccountModel    `tfsdk:"managed_gitlab_account"`
-	OidcIdToken             *CredentialProviderManagedOidcIdToken           `tfsdk:"oidc_id_token"`
-	AwsSecretsManagerValue  *CredentialProviderAwsSecretsManagerValueModel  `tfsdk:"aws_secrets_manager_value"`
-	AzureKeyVaultValue      *CredentialProviderAzureKeyVaultValueModel      `tfsdk:"azure_key_vault_value"`
-	JwtSvidToken            *CredentialProviderManagedOidcIdToken           `tfsdk:"jwt_svid_token"`
-	McpUserBasedAccessToken *CredentialProviderMcpUserBasedAccessTokenModel `tfsdk:"mcp_user_based_access_token"`
+	ID                      types.String                                                 `tfsdk:"id"`
+	Name                    types.String                                                 `tfsdk:"name"`
+	Description             types.String                                                 `tfsdk:"description"`
+	IsActive                types.Bool                                                   `tfsdk:"is_active"`
+	Tags                    types.Map                                                    `tfsdk:"tags"`
+	TagsAll                 types.Map                                                    `tfsdk:"tags_all"`
+	AembitToken             *CredentialProviderAembitTokenModel                          `tfsdk:"aembit_access_token"`
+	APIKey                  *CredentialProviderAPIKeyModel                               `tfsdk:"api_key"`
+	AwsSTS                  *CredentialProviderAwsSTSModel                               `tfsdk:"aws_sts"`
+	GoogleWorkload          *CredentialProviderGoogleWorkloadModel                       `tfsdk:"google_workload_identity"`
+	AzureEntraWorkload      *CredentialProviderAzureEntraWorkloadModel                   `tfsdk:"azure_entra_workload_identity"`
+	SnowflakeToken          *CredentialProviderSnowflakeTokenModel                       `tfsdk:"snowflake_jwt"`
+	OAuthClientCredentials  *CredentialProviderOAuthClientCredentialsModel               `tfsdk:"oauth_client_credentials"`
+	OAuthAuthorizationCode  *CredentialProviderOAuthAuthorizationCodeModel               `tfsdk:"oauth_authorization_code"`
+	UsernamePassword        *CredentialProviderUserPassModel                             `tfsdk:"username_password"`
+	VaultClientToken        *CredentialProviderVaultClientTokenModel                     `tfsdk:"vault_client_token"`
+	ManagedGitlabAccount    *CredentialProviderManagedGitlabAccountModel                 `tfsdk:"managed_gitlab_account"`
+	OidcIdToken             *CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport `tfsdk:"oidc_id_token"`
+	AwsSecretsManagerValue  *CredentialProviderAwsSecretsManagerValueModel               `tfsdk:"aws_secrets_manager_value"`
+	AzureKeyVaultValue      *CredentialProviderAzureKeyVaultValueModel                   `tfsdk:"azure_key_vault_value"`
+	JwtSvidToken            *CredentialProviderManagedOidcIdToken                        `tfsdk:"jwt_svid_token"`
+	McpUserBasedAccessToken *CredentialProviderMcpUserBasedAccessTokenModel              `tfsdk:"mcp_user_based_access_token"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -38,9 +38,10 @@ type CredentialProvidersDataSourceModel struct {
 }
 
 type CredentialProviderAembitTokenModel struct {
-	Audience types.String `tfsdk:"audience"`
-	Role     types.String `tfsdk:"role_id"`
-	Lifetime int32        `tfsdk:"lifetime"`
+	Audience              types.String `tfsdk:"audience"`
+	Role                  types.String `tfsdk:"role_id"`
+	Lifetime              int32        `tfsdk:"lifetime"`
+	AbsoluteTokenLifetime *int32       `tfsdk:"absolute_token_lifetime"`
 }
 
 type CredentialProviderAPIKeyModel struct {
@@ -161,6 +162,11 @@ type CredentialProviderManagedOidcIdToken struct {
 	AlgorithmType     string                                 `tfsdk:"algorithm_type"`
 	Issuer            types.String                           `tfsdk:"issuer"`
 	CustomClaims      []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+}
+
+type CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport struct {
+	CredentialProviderManagedOidcIdToken
+	AbsoluteTokenLifetime *int32 `tfsdk:"absolute_token_lifetime"`
 }
 
 type CredentialProviderCustomClaimsModel struct {
