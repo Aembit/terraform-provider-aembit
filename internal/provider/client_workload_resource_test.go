@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -827,6 +828,149 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_MixedRedirectURIIdentitiesReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid Mixed Redirect URI"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    },
+    {
+      type  = "k8sNamespace"
+      value = "default"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("oauthRedirectUri"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_RedirectURIWithSSOAndMissingIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Missing Redirect URI SSO IDPs"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = true
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_RedirectURIWithDisabledSSOAndIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Redirect URI Disabled SSO With IDPs"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = false
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    }
+  ]
+  sso_identity_providers = [
+    "11111111-1111-1111-1111-111111111111",
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_NonRedirectWithFalseEnforceSSOReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid Enforce SSO"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = false
+  identities = [
+    {
+      type  = "k8sNamespace"
+      value = "tf-invalid-enforce-sso"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("enforce_sso"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_NonRedirectWithIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid SSO IDP Mapping"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  identities = [
+    {
+      type  = "k8sNamespace"
+      value = "tf-invalid-sso-idp-mapping"
+    }
+  ]
+  sso_identity_providers = [
+    "11111111-1111-1111-1111-111111111111",
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
 		},
 	})
 }

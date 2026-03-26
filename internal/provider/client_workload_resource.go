@@ -22,10 +22,11 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &clientWorkloadResource{}
-	_ resource.ResourceWithConfigure   = &clientWorkloadResource{}
-	_ resource.ResourceWithImportState = &clientWorkloadResource{}
-	_ resource.ResourceWithModifyPlan  = &clientWorkloadResource{}
+	_ resource.Resource                   = &clientWorkloadResource{}
+	_ resource.ResourceWithConfigure      = &clientWorkloadResource{}
+	_ resource.ResourceWithImportState    = &clientWorkloadResource{}
+	_ resource.ResourceWithModifyPlan     = &clientWorkloadResource{}
+	_ resource.ResourceWithValidateConfig = &clientWorkloadResource{}
 )
 
 // NewClientWorkloadResource is a helper function to simplify the provider implementation.
@@ -223,6 +224,60 @@ func (r *clientWorkloadResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+}
+
+func (r *clientWorkloadResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config models.ClientWorkloadResourceModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var identities []models.IdentitiesModel
+	if config.Identities.IsUnknown() {
+		return
+	}
+	if len(config.Identities.Elements()) > 0 {
+		diags = config.Identities.ElementsAs(ctx, &identities, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+	if len(identities) == 0 {
+		return
+	}
+
+	// Redirect URI client identities cannot be combined with other identity types.
+	identityDiags, hasRedirectURI := validateRedirectURIIdentityTypeForConfig(identities)
+	resp.Diagnostics.Append(identityDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	effectiveEnforceSso := true
+	if config.EnforceSso.IsUnknown() {
+		return
+	}
+	if !config.EnforceSso.IsNull() {
+		effectiveEnforceSso = config.EnforceSso.ValueBool()
+	}
+
+	if config.SsoIdentityProviders.IsUnknown() {
+		return
+	}
+
+	resp.Diagnostics.Append(validateRedirectURIConfigurationForConfig(
+		hasRedirectURI,
+		effectiveEnforceSso,
+		config.EnforceSso,
+		config.SsoIdentityProviders,
+	)...)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -554,41 +609,67 @@ func validateRedirectURIIdentityType(
 	ssoIdentityProviders types.Set,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	type clientWorkloadIdentitySummary struct {
-		hasRedirectURI    bool
-		hasNonRedirectURI bool
+	identityDiags, hasRedirectURI := validateRedirectURIIdentityTypeForConfig(identities)
+	diags.Append(identityDiags...)
+	if diags.HasError() {
+		return diags
 	}
 
-	summary := clientWorkloadIdentitySummary{}
+	effectiveEnforceSso := true
+	if !enforceSso.IsNull() {
+		effectiveEnforceSso = enforceSso.ValueBool()
+	}
+
+	diags.Append(validateRedirectURIConfigurationForConfig(
+		hasRedirectURI,
+		effectiveEnforceSso,
+		enforceSso,
+		ssoIdentityProviders,
+	)...)
+
+	return diags
+}
+
+func validateRedirectURIIdentityTypeForConfig(
+	identities []models.IdentitiesModel,
+) (diag.Diagnostics, bool) {
+	var diags diag.Diagnostics
+	hasRedirectURI := false
+	hasNonRedirectURI := false
+
 	for _, identity := range identities {
 		if identity.Type.IsNull() {
 			continue
 		}
 
 		if identity.Type.ValueString() == "oauthRedirectUri" {
-			summary.hasRedirectURI = true
+			hasRedirectURI = true
 			continue
 		}
 
-		summary.hasNonRedirectURI = true
+		hasNonRedirectURI = true
 	}
 
-	if summary.hasRedirectURI && summary.hasNonRedirectURI {
+	if hasRedirectURI && hasNonRedirectURI {
 		diags.AddAttributeError(
 			path.Root("identities"),
 			"Invalid client workload identities configuration",
 			"`oauthRedirectUri` must be the only client workload identity type when it is configured.",
 		)
-		return diags
 	}
 
-	if summary.hasRedirectURI {
-		effectiveEnforceSso := true
-		if !enforceSso.IsNull() {
-			effectiveEnforceSso = enforceSso.ValueBool()
-		}
+	return diags, hasRedirectURI
+}
 
+func validateRedirectURIConfigurationForConfig(
+	hasRedirectURI bool,
+	effectiveEnforceSso bool,
+	enforceSso types.Bool,
+	ssoIdentityProviders types.Set,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if hasRedirectURI {
 		if effectiveEnforceSso && (ssoIdentityProviders.IsNull() || len(ssoIdentityProviders.Elements()) == 0) {
 			diags.AddAttributeError(
 				path.Root("sso_identity_providers"),
