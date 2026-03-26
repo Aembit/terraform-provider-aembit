@@ -13,6 +13,8 @@ type ClientWorkloadResourceModel struct {
 	Description                    types.String `tfsdk:"description"`
 	IsActive                       types.Bool   `tfsdk:"is_active"`
 	Identities                     types.Set    `tfsdk:"identities"`
+	EnforceSso                     types.Bool   `tfsdk:"enforce_sso"`
+	SsoIdentityProviders           types.Set    `tfsdk:"sso_identity_providers"`
 	Tags                           types.Map    `tfsdk:"tags"`
 	TagsAll                        types.Map    `tfsdk:"tags_all"`
 	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`

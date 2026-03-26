@@ -12,16 +12,31 @@ Resource to create and manage Client Workloads in a Aembit Cloud tenant.
 
 ## Example Usage
 ```terraform
+resource "aembit_identity_provider" "primary" {
+    name = "Primary OIDC IdP"
+    is_active = true
+    oidc = {
+        oidc_base_url = "https://example.oidc.com"
+        client_id = "example-client-id"
+        scopes = "openid profile email"
+        auth_type = "ClientSecret"
+        client_secret = "example-client-secret"
+        pcke_required = true
+    }
+}
+
 resource "aembit_client_workload" "test" {
     name = "Name"
     description = "Description"
     is_active = true
+    enforce_sso = false
     identities = [
         {
-            type = "k8sNamespace"
-            value = "default"
+            type = "oauthRedirectUri"
+            value = "https://example.com/callback"
         }
     ]
+    sso_identity_providers = [aembit_identity_provider.primary.id]
 }
 ```
 
@@ -36,7 +51,9 @@ resource "aembit_client_workload" "test" {
 ### Optional
 
 - `description` (String) Description for the Client Workload.
+- `enforce_sso` (Boolean) Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.
 - `is_active` (Boolean) Active status of the Client Workload.
+- `sso_identity_providers` (Set of String) Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enable_sso' is true.
 - `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Client Workload.
 - `tags` (Map of String) Tags are key-value pairs.
 - `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
@@ -73,6 +90,7 @@ Required:
 	* `k8sServiceAccountName`
 	* `k8sServiceAccountUID`
 	* `oauthRedirectUri`
+	 	When configured, it must be the only client workload identity type in the set.
 	* `oauthScope`
 	* `oidcIdToken`
 	* `oidcIdTokenAudience`
@@ -91,5 +109,6 @@ Required:
 Optional:
 
 - `claim_name` (String) Client identity claim name. Applicable for oidcIdToken Client identity type.
+
 
 

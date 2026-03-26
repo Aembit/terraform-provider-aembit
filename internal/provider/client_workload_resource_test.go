@@ -4,9 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
+	"terraform-provider-aembit/internal/provider/models"
+
+	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -781,8 +787,22 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 						testCWResourceIdentitiesValue[0],
 						"https://test.aembit.local:12345",
 					),
+					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "true"),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"sso_identity_providers.#",
+						"2",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCWResource,
+						"sso_identity_providers.0",
+					),
+					resource.TestCheckResourceAttrSet(
+						testCWResource,
+						"sso_identity_providers.1",
+					),
 				),
 			},
 			// ImportState testing
@@ -799,11 +819,380 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 					),
 					// Verify active state updated.
 					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "true"),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"sso_identity_providers.#",
+						"1",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func TestAccClientWorkloadResource_MixedRedirectURIIdentitiesReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid Mixed Redirect URI"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    },
+    {
+      type  = "k8sNamespace"
+      value = "default"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("oauthRedirectUri"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_RedirectURIWithSSOAndMissingIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Missing Redirect URI SSO IDPs"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = true
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_RedirectURIWithDisabledSSOAndIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Redirect URI Disabled SSO With IDPs"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = false
+  identities = [
+    {
+      type  = "oauthRedirectUri"
+      value = "https://example.com/callback"
+    }
+  ]
+  sso_identity_providers = [
+    "11111111-1111-1111-1111-111111111111",
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_NonRedirectWithFalseEnforceSSOReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid Enforce SSO"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  enforce_sso = false
+  identities = [
+    {
+      type  = "k8sNamespace"
+      value = "tf-invalid-enforce-sso"
+    }
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("enforce_sso"),
+			},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_NonRedirectWithIDPsReturnsPlanError(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "aembit_client_workload" "test" {
+  name        = "TF Acceptance - Invalid SSO IDP Mapping"
+  description = "Acceptance Test Client Workload"
+  is_active   = false
+  identities = [
+    {
+      type  = "k8sNamespace"
+      value = "tf-invalid-sso-idp-mapping"
+    }
+  ]
+  sso_identity_providers = [
+    "11111111-1111-1111-1111-111111111111",
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile("sso_identity_providers"),
+			},
+		},
+	})
+}
+
+func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
+	t.Parallel()
+
+	redirectModel := convertClientWorkloadDTOToModel(context.Background(), aembit.ClientWorkloadExternalDTO{
+		EntityDTO: aembit.EntityDTO{
+			ExternalID: "4fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
+			Name:       "redirect workload",
+			IsActive:   true,
+		},
+		Identities: []aembit.ClientWorkloadIdentityDTO{
+			{Type: "oauthRedirectUri", Value: "https://example.com/callback"},
+		},
+		EnforceSso:           false,
+		SsoIdentityProviders: []string{"11111111-1111-1111-1111-111111111111"},
+	}, &models.ClientWorkloadResourceModel{})
+
+	assertSetContainsString(t, redirectModel.SsoIdentityProviders, "11111111-1111-1111-1111-111111111111")
+	if redirectModel.EnforceSso.ValueBool() {
+		t.Fatalf("expected redirect workload enforce_sso to stay false")
+	}
+
+	nonRedirectModel := convertClientWorkloadDTOToModel(context.Background(), aembit.ClientWorkloadExternalDTO{
+		EntityDTO: aembit.EntityDTO{
+			ExternalID: "5fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
+			Name:       "non-redirect workload",
+			IsActive:   true,
+		},
+		Identities: []aembit.ClientWorkloadIdentityDTO{
+			{Type: "k8sNamespace", Value: "default"},
+		},
+		EnforceSso: false,
+	}, &models.ClientWorkloadResourceModel{})
+
+	if !nonRedirectModel.EnforceSso.ValueBool() {
+		t.Fatalf("expected non-redirect workload enforce_sso to normalize to true")
+	}
+	if !nonRedirectModel.SsoIdentityProviders.IsNull() {
+		t.Fatalf("expected non-redirect workload sso_identity_providers to be null")
+	}
+}
+
+// disabled enforce_sso should not have IDPs.
+func TestConvertClientWorkloadModelToDTO_ValidRedirectURIWithDisabledSSO(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("oauthRedirectUri"), Value: types.StringValue("https://example.com/callback"), ClaimName: types.StringNull()}},
+		types.BoolValue(false),
+		types.SetNull(types.StringType),
+	)
+
+	dto, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	if dto.EnforceSso {
+		t.Fatalf("expected enforce_sso to remain false for redirect URI workload")
+	}
+}
+
+func TestConvertClientWorkloadModelToDTO_ValidRedirectURIWithSSOIdentityProviders(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("oauthRedirectUri"), Value: types.StringValue("https://example.com/callback"), ClaimName: types.StringNull()}},
+		types.BoolValue(true),
+		types.SetValueMust(types.StringType, []attr.Value{types.StringValue("11111111-1111-1111-1111-111111111111")}),
+	)
+
+	dto, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	if len(dto.SsoIdentityProviders) != 1 {
+		t.Fatalf("expected one sso_identity_provider, got %v", dto.SsoIdentityProviders)
+	}
+}
+
+// if oauthRedirectUri is specified, then no other identity types are allowed.
+func TestConvertClientWorkloadModelToDTO_MixedRedirectURIIdentitiesReturnsDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{
+			{Type: types.StringValue("oauthRedirectUri"), Value: types.StringValue("https://example.com/callback"), ClaimName: types.StringNull()},
+			{Type: types.StringValue("k8sNamespace"), Value: types.StringValue("default"), ClaimName: types.StringNull()},
+		},
+		types.BoolValue(true),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics for mixed redirect URI identities")
+	}
+}
+
+func TestConvertClientWorkloadModelToDTO_RedirectURIWithSSOAndMissingIDPsReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("oauthRedirectUri"), Value: types.StringValue("https://example.com/callback"), ClaimName: types.StringNull()}},
+		types.BoolValue(true),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when enforce_sso is true and no idps are set")
+	}
+}
+
+func TestConvertClientWorkloadModelToDTO_RedirectURIWithDisabledSSOAndIdentityProvidersReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("oauthRedirectUri"), Value: types.StringValue("https://example.com/callback"), ClaimName: types.StringNull()}},
+		types.BoolValue(false),
+		types.SetValueMust(types.StringType, []attr.Value{types.StringValue("11111111-1111-1111-1111-111111111111")}),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when enforce_sso is false and idps are set")
+	}
+}
+
+func TestConvertClientWorkloadModelToDTO_NonRedirectURIWithFalseEnforceSSOReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("k8sNamespace"), Value: types.StringValue("default"), ClaimName: types.StringNull()}},
+		types.BoolValue(false),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when non-redirect workload sets enforce_sso to false")
+	}
+}
+
+func TestConvertClientWorkloadModelToDTO_NonRedirectURIWithIdentityProvidersReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("k8sNamespace"), Value: types.StringValue("default"), ClaimName: types.StringNull()}},
+		types.BoolValue(true),
+		types.SetValueMust(types.StringType, []attr.Value{types.StringValue("11111111-1111-1111-1111-111111111111")}),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when non-redirect workload sets sso_identity_providers")
+	}
+}
+
+func assertSetContainsString(t *testing.T, set types.Set, expected string) {
+	t.Helper()
+
+	var values []string
+	diags := set.ElementsAs(context.Background(), &values, false)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics reading set: %v", diags)
+	}
+
+	for _, value := range values {
+		if value == expected {
+			return
+		}
+	}
+
+	t.Fatalf("expected set to contain %q, got %v", expected, values)
+}
+
+func newClientWorkloadResourceModel(
+	t *testing.T,
+	identities []models.IdentitiesModel,
+	enforceSso types.Bool,
+	ssoIdentityProviders types.Set,
+) models.ClientWorkloadResourceModel {
+	t.Helper()
+
+	identitiesSet := types.SetNull(models.TfIdentityObjectType)
+	if identities != nil {
+		identitiesSet = types.SetValueMust(models.TfIdentityObjectType, identityModelsToAttrValues(identities))
+	}
+
+	return models.ClientWorkloadResourceModel{
+		Name:                           types.StringValue("test workload"),
+		Description:                    types.StringValue("test description"),
+		IsActive:                       types.BoolValue(true),
+		Identities:                     identitiesSet,
+		EnforceSso:                     enforceSso,
+		SsoIdentityProviders:           ssoIdentityProviders,
+		Tags:                           types.MapNull(types.StringType),
+		StandaloneCertificateAuthority: types.StringNull(),
+	}
+}
+
+func identityModelsToAttrValues(identities []models.IdentitiesModel) []attr.Value {
+	values := make([]attr.Value, len(identities))
+	for i, identity := range identities {
+		values[i] = types.ObjectValueMust(models.TfIdentityObjectType.AttrTypes, map[string]attr.Value{
+			"type":       identity.Type,
+			"value":      identity.Value,
+			"claim_name": identity.ClaimName,
+		})
+	}
+
+	return values
 }
 
 func TestAccClientWorkloadResource_OauthScope(t *testing.T) {
