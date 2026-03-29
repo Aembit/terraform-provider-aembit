@@ -126,6 +126,7 @@ func (r *serverWorkloadResource) Schema(
 							"\t* `Amazon Redshift`\n" +
 							"\t* `HTTP`\n" +
 							"\t* `MCP`\n" +
+							"\t* `Microsoft SQL Server`\n" +
 							"\t* `MySQL`\n" +
 							"\t* `Oracle Database`\n" +
 							"\t* `PostgreSQL`\n" +
@@ -137,6 +138,7 @@ func (r *serverWorkloadResource) Schema(
 								"Amazon Redshift",
 								"HTTP",
 								"MCP",
+								"Microsoft SQL Server",
 								"MySQL",
 								"OAuth",
 								"Oracle Database",

@@ -125,3 +125,22 @@ resource "aembit_server_workload" "test_oracle_database" {
 		}
 	}
 }
+
+resource "aembit_server_workload" "test_microsoft_sql_server" {
+	name = "Unit Test 1 Microsoft SQL Server"
+    description = "Description"
+    is_active = false
+	service_endpoint = {
+		host = "microsofsqlserver.testhost.com"
+		port = 1433
+		app_protocol = "Microsoft SQL Server"
+		transport_protocol = "TCP"
+		requested_port = 1433
+        requested_tls = true
+		tls_verification = "full"
+		authentication_config = {
+			method = "Password Authentication"
+			scheme = "Password"
+		}
+	}
+}
