@@ -1357,6 +1357,7 @@ func convertCredentialProviderV2DTOToModel(
 		value := models.CredentialProviderOAuthAuthorizationCodeModel{}
 		value.OAuthDiscoveryUrl = types.StringValue(dto.OAuthUrl)
 		value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
+		value.FinalCallbackUrl = types.StringValue(dto.FinalCallbackUrl)
 		value.State = types.StringValue(dto.State)
 		value.Lifetime = dto.LifetimeTimeSpanSeconds
 		if dto.LifetimeExpiration != nil {
@@ -1549,7 +1550,6 @@ func convertOAuthCodeDTOToModel(
 	value.Scopes = types.StringValue(dto.Scope)
 	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
 	value.CallBackUrl = types.StringValue(dto.CallBackUrl)
-	value.FinalCallbackUrl = types.StringValue(dto.FinalCallbackUrl)
 
 	// Get the custom parameters to be injected into the model
 	parameters := make(

@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"aembit.io/aembit"
 	"terraform-provider-aembit/internal/provider/models"
+
+	"aembit.io/aembit"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -16,6 +17,7 @@ func TestConvertToOAuthAuthorizationCodeDTO_IncludesFinalCallbackUrl(t *testing.
 		OAuthAuthorizationCode: &models.CredentialProviderOAuthAuthorizationCodeModel{
 			OAuthDiscoveryUrl:    types.StringValue("https://aembit.io/.well-known/openid-configuration"),
 			UserAuthorizationUrl: types.StringValue("https://aembit.io/user-authorize"),
+			FinalCallbackUrl:     types.StringValue("https://aembit.io/final-callback"),
 			State:                types.StringValue("state"),
 			Lifetime:             31536000,
 			OAuthCodeModel: models.OAuthCodeModel{
@@ -27,7 +29,6 @@ func TestConvertToOAuthAuthorizationCodeDTO_IncludesFinalCallbackUrl(t *testing.
 				Scopes:                types.StringValue("scope"),
 				IsPkceRequired:        types.BoolValue(true),
 				CallBackUrl:           types.StringValue("https://aembit.io/callback"),
-				FinalCallbackUrl:      types.StringValue("https://aembit.io/final-callback"),
 			},
 		},
 	}
@@ -46,8 +47,11 @@ func TestConvertToOAuthAuthorizationCodeDTO_IncludesFinalCallbackUrl(t *testing.
 	}
 }
 
-func TestConvertOAuthCodeDTOToModel_IncludesFinalCallbackUrl(t *testing.T) {
+func TestConvertCredentialProviderV2DTOToModel_OAuthAuthorizationCode_IncludesFinalCallbackUrl(
+	t *testing.T,
+) {
 	dto := aembit.CredentialProviderV2DTO{
+		Type:             "oauth-authorization-code",
 		ClientID:         "client-id",
 		Scope:            "scope",
 		CustomParameters: []aembit.CustomClaimsDTO{},
@@ -61,12 +65,22 @@ func TestConvertOAuthCodeDTOToModel_IncludesFinalCallbackUrl(t *testing.T) {
 		},
 	}
 
-	model := convertOAuthCodeDTOToModel(dto)
+	model := convertCredentialProviderV2DTOToModel(
+		context.Background(),
+		dto,
+		&models.CredentialProviderResourceModel{Tags: types.MapNull(types.StringType)},
+		"tenant",
+		"stack.example",
+	)
 
-	if model.FinalCallbackUrl.ValueString() != "https://aembit.io/final-callback" {
+	if model.OAuthAuthorizationCode == nil {
+		t.Fatal("expected oauth authorization code model to be set")
+	}
+
+	if model.OAuthAuthorizationCode.FinalCallbackUrl.ValueString() != "https://aembit.io/final-callback" {
 		t.Fatalf(
 			"expected final callback url to be mapped, got %q",
-			model.FinalCallbackUrl.ValueString(),
+			model.OAuthAuthorizationCode.FinalCallbackUrl.ValueString(),
 		)
 	}
 }
