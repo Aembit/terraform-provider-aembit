@@ -276,6 +276,9 @@ func (d *credentialProvidersDataSource) Schema(
 								"callback_url": schema.StringAttribute{
 									Computed: true,
 								},
+								"final_callback_url": schema.StringAttribute{
+									Computed: true,
+								},
 								"state": schema.StringAttribute{
 									Computed: true,
 								},

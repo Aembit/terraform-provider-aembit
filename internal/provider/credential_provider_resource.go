@@ -409,6 +409,15 @@ func (r *credentialProviderResource) Schema(
 							"\t* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource. \n",
 						Computed: true,
 					},
+					"final_callback_url": schema.StringAttribute{
+						Description: "Final callback URL for the OAuth Credential Provider. This field is available only when the tenant has the FinalCallbackUrl entitlement. If the entitlement is disabled, the API will reject create or update requests that set this value.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
 					"state": schema.StringAttribute{
 						Description: "State for the OAuth Credential Provider.",
 						Computed:    true,
@@ -1348,6 +1357,7 @@ func convertCredentialProviderV2DTOToModel(
 		value := models.CredentialProviderOAuthAuthorizationCodeModel{}
 		value.OAuthDiscoveryUrl = types.StringValue(dto.OAuthUrl)
 		value.UserAuthorizationUrl = types.StringValue(dto.UserAuthorizationUrl)
+		value.FinalCallbackUrl = types.StringValue(dto.FinalCallbackUrl)
 		value.State = types.StringValue(dto.State)
 		value.Lifetime = dto.LifetimeTimeSpanSeconds
 		if dto.LifetimeExpiration != nil {
@@ -1843,6 +1853,7 @@ func convertToOAuthAuthorizationCodeDTO(
 		UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
 		IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
 		CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
+		FinalCallbackUrl:     model.OAuthAuthorizationCode.FinalCallbackUrl.ValueString(),
 		State:                model.OAuthAuthorizationCode.State.ValueString(),
 	}
 	if len(model.ID.ValueString()) > 0 {

@@ -385,6 +385,7 @@ Required:
 Optional:
 
 - `custom_parameters` (Attributes Set) Set Custom Parameters for the OAuth Credential Provider. (see [below for nested schema](#nestedatt--oauth_authorization_code--custom_parameters))
+- `final_callback_url` (String) Final callback URL for the OAuth Credential Provider. This field is available only when the tenant has the FinalCallbackUrl entitlement. If the entitlement is disabled, the API will reject create or update requests that set this value.
 - `is_pkce_required` (Boolean) PKCE required flag for the OAuth Credential Provider.
 - `lifetime` (Number) Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.
 - `oauth_introspection_url` (String) Introspection Url of the OAuth 2.0 introspection endpoint, used to validate and obtain metadata about access tokens
