@@ -626,6 +626,7 @@ const (
 	testOAuthAuthCodeResource              = "aembit_credential_provider.oauth_authorization_code"
 	testOAuthAuthCodeEmptyCustomParameters = "aembit_credential_provider.oauth_authorization_code_empty_custom_parameters"
 	testOAuthAuthCodeUserAuthUrl           = "oauth_authorization_code.user_authorization_url"
+	testOAuthAuthCodeFinalCallbackUrl      = "oauth_authorization_code.final_callback_url"
 )
 
 func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
@@ -666,6 +667,11 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 						testOAuthAuthCodeResource,
 						testOAuthAuthCodeUserAuthUrl,
 					),
+					resource.TestCheckResourceAttr(
+						testOAuthAuthCodeResource,
+						testOAuthAuthCodeFinalCallbackUrl,
+						"https://aembit.io/final-callback",
+					),
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
 						testOAuthAuthCodeEmptyCustomParameters,
@@ -699,6 +705,11 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						testOAuthAuthCodeResource,
 						testOAuthAuthCodeUserAuthUrl,
+					),
+					resource.TestCheckResourceAttr(
+						testOAuthAuthCodeResource,
+						testOAuthAuthCodeFinalCallbackUrl,
+						"https://aembit.io/final-callback-updated",
 					),
 				),
 			},

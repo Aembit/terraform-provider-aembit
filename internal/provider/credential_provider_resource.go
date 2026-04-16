@@ -409,6 +409,15 @@ func (r *credentialProviderResource) Schema(
 							"\t* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource. \n",
 						Computed: true,
 					},
+					"final_callback_url": schema.StringAttribute{
+						Description: "Final callback URL for the OAuth Credential Provider. This field is available only when the tenant has the FinalCallbackUrl entitlement. If the entitlement is disabled, the API will reject create or update requests that set this value.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
 					"state": schema.StringAttribute{
 						Description: "State for the OAuth Credential Provider.",
 						Computed:    true,
@@ -1540,6 +1549,7 @@ func convertOAuthCodeDTOToModel(
 	value.Scopes = types.StringValue(dto.Scope)
 	value.IsPkceRequired = types.BoolValue(dto.IsPkceRequired)
 	value.CallBackUrl = types.StringValue(dto.CallBackUrl)
+	value.FinalCallbackUrl = types.StringValue(dto.FinalCallbackUrl)
 
 	// Get the custom parameters to be injected into the model
 	parameters := make(
@@ -1843,6 +1853,7 @@ func convertToOAuthAuthorizationCodeDTO(
 		UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
 		IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
 		CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
+		FinalCallbackUrl:     model.OAuthAuthorizationCode.FinalCallbackUrl.ValueString(),
 		State:                model.OAuthAuthorizationCode.State.ValueString(),
 	}
 	if len(model.ID.ValueString()) > 0 {

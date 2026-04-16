@@ -97,6 +97,7 @@ type OAuthCodeModel struct {
 	CustomParameters      []*CredentialProviderOAuthClientCustomParametersModel `tfsdk:"custom_parameters"`
 	IsPkceRequired        types.Bool                                            `tfsdk:"is_pkce_required"`
 	CallBackUrl           types.String                                          `tfsdk:"callback_url"`
+	FinalCallbackUrl      types.String                                          `tfsdk:"final_callback_url"`
 }
 
 // CredentialProviderOAuthAuthorizationCodeModel maps OAuth Authorization Code Flow configuration.

@@ -13,6 +13,7 @@ resource "aembit_credential_provider" "oauth_authorization_code" {
 		client_secret = "test_client_secret"
 		scopes = "test_scopes"
 		is_pkce_required = true
+		final_callback_url = "https://aembit.io/final-callback"
 		lifetime = 31536000
 		custom_parameters = [
 			{
@@ -45,4 +46,3 @@ resource "aembit_credential_provider" "oauth_authorization_code_empty_custom_par
 		lifetime = 31536000
 	}
 }
-
