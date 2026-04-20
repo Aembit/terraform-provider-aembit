@@ -97,6 +97,10 @@ func (r *trustProviderResource) Schema(
 				Optional:    true,
 				Computed:    true,
 			},
+			"client_id": schema.StringAttribute{
+				Description: "Edge SDK Client ID for the Trust Provider. Only populated for supported associated use cases.",
+				Computed:    true,
+			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
 			"azure_metadata": schema.SingleNestedAttribute{
@@ -1797,6 +1801,7 @@ func convertTrustProviderDTOToModel(
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
+	model.ClientID = types.StringNull()
 
 	// handle tags
 	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
@@ -1825,6 +1830,30 @@ func convertTrustProviderDTOToModel(
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	case "CertificateSignedAttestation":
 		model.CertificateSignedAttestation = &models.TrustProviderCertificateSignedAttestationModel{}
+	}
+
+	stackDomainLower := strings.ToLower(stackDomain)
+	stack := strings.Split(stackDomainLower, ".")[0]
+
+	if tenant != "" && stack != "" {
+		switch dto.Provider {
+		case "GcpIdentityToken":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gcp_idtoken:%s", stack, tenant, dto.ExternalID))
+		case "GitHubIdentityToken":
+			if model.GitHubAction != nil {
+				model.ClientID = model.GitHubAction.OIDCClientID
+			}
+		case "GitLabIdentityToken":
+			if model.GitLabJob != nil {
+				model.ClientID = model.GitLabJob.OIDCClientID
+			}
+		case "KubernetesServiceAccount":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:kubernetes_idtoken:%s", stack, tenant, dto.ExternalID))
+		case "OidcIdToken":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:oidc_id_token:%s", stack, tenant, dto.ExternalID))
+		case "TerraformIdentityToken":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:terraform_idtoken:%s", stack, tenant, dto.ExternalID))
+		}
 	}
 
 	return model

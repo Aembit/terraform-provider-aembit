@@ -77,6 +77,10 @@ func (d *trustProvidersDataSource) Schema(
 							Description: "Active/Inactive status of the trust provider.",
 							Computed:    true,
 						},
+						"client_id": schema.StringAttribute{
+							Description: "Edge SDK Client ID for the Trust Provider.",
+							Computed:    true,
+						},
 						"tags":     TagsComputedMapAttribute(),
 						"tags_all": TagsAllMapAttribute(),
 						"azure_metadata": schema.SingleNestedAttribute{
