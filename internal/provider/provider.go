@@ -188,11 +188,7 @@ func (p *aembitProvider) Configure(
 	tflog.Debug(ctx, "Aembit Provider version: "+p.version)
 	tflog.Debug(ctx, "Aembit Provider release time: "+p.releaseTime)
 
-	if releaseTime, err := time.Parse(time.RFC3339, p.releaseTime); err == nil {
-		if releaseTime.Before(time.Now().AddDate(-1, 0, 0)) {
-			tflog.Warn(ctx, fmt.Sprintf("This Aembit Provider version (%s) is more than 1 year old. Aembit recommends updating to the latest version.", p.version))
-		}
-	}
+	p.checkVersionWarning(ctx, resp)
 
 	tflog.Info(ctx, "Configuring Aembit client...")
 
@@ -352,6 +348,18 @@ func (p *aembitProvider) Configure(
 		fmt.Sprintf("Configured Aembit client (%s)", p.version),
 		map[string]any{"success": true},
 	)
+}
+
+func (p *aembitProvider) checkVersionWarning(ctx context.Context, resp *provider.ConfigureResponse) {
+	if releaseTime, err := time.Parse(time.RFC3339, p.releaseTime); err == nil {
+		if releaseTime.Before(time.Now().AddDate(-1, 0, 0)) {
+			msg := fmt.Sprintf("This Aembit Provider version (%s) is more than 1 year old. Aembit recommends updating to the latest version.", p.version)
+			tflog.Warn(ctx, msg)
+			if resp != nil {
+				resp.Diagnostics.AddWarning("Aembit Provider Version Warning", msg)
+			}
+		}
+	}
 }
 
 func (p *aembitProvider) Resources(_ context.Context) []func() resource.Resource {
