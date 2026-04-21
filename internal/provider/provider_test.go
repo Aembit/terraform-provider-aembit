@@ -102,7 +102,11 @@ func TestUnitConfigureOldReleaseWarning(t *testing.T) {
 
 	// 4. Execute the code that calls tflog.Warn and adds a diagnostic warning
 	resp := &provider.ConfigureResponse{}
-	p.(*aembitProvider).checkVersionWarning(ctx, resp)
+	ap, ok := p.(*aembitProvider)
+	if !ok {
+		t.Fatalf("expected *aembitProvider, got %T", p)
+	}
+	ap.checkVersionWarning(ctx, resp)
 
 	// 5. Verify the output in the buffer
 	loggedOutput := buf.String()
