@@ -8,6 +8,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -84,4 +85,26 @@ func TestUnitConfigureLogging(t *testing.T) {
 
 	assert.Contains(t, loggedOutput, "Aembit Provider version: 1.2.3")
 	assert.Contains(t, loggedOutput, "Aembit Provider release time: unittest")
+}
+
+func TestUnitConfigureOldReleaseWarning(t *testing.T) {
+	t.Parallel()
+	// 1. Create a buffer to capture logs
+	var buf bytes.Buffer
+
+	// 2. Initialize a context with the test logger attached to the buffer
+	ctx := tflogtest.RootLogger(context.Background(), &buf)
+
+	// 3. Define your provider/struct for testing with an old release time
+	// One year and one day ago
+	oldDate := time.Now().AddDate(-1, 0, -1).Format(time.RFC3339)
+	p := New("1.2.3", oldDate)()
+
+	// 4. Execute the code that calls tflog.Warn
+	p.Configure(ctx, provider.ConfigureRequest{}, nil)
+
+	// 5. Verify the output in the buffer
+	loggedOutput := buf.String()
+
+	assert.Contains(t, loggedOutput, "This Aembit Provider version (1.2.3) is more than 1 year old")
 }
