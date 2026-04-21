@@ -19,6 +19,11 @@ const (
 	trustProviderGitLabMixed       = "aembit_trust_provider.gitlab_mixed"
 	gitLabOidcClientID             = "gitlab_job.oidc_client_id"
 	gitLabIdentityArnMatch         = ":identity:gitlab_idtoken:"
+	githubIdentityArnMatch         = ":identity:github_idtoken:"
+	oidcIdentityArnMatch           = ":identity:oidc_id_token:"
+	gcpIdentityArnMatch            = ":identity:gcp_idtoken:"
+	kubernetesIdentityArnMatch     = ":identity:kubernetes_idtoken:"
+	terraformIdentityArnMatch      = ":identity:terraform_idtoken:"
 	trustProviderAwsPath           = "aembit_trust_provider.aws"
 	trustProviderGcp               = "aembit_trust_provider.gcp"
 	trustProviderGitHub            = "aembit_trust_provider.github"
@@ -202,6 +207,11 @@ func TestAccTrustProviderResource_GcpIdentity(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderGcp, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderGcp, "id"),
+					checkValidClientID(
+						trustProviderGcp,
+						"client_id",
+						gcpIdentityArnMatch,
+					),
 				),
 			},
 			// ImportState testing
@@ -247,6 +257,11 @@ func TestAccTrustProviderResource_GitHubAction(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderGitHub, "id"),
+					checkValidClientID(
+						trustProviderGitHub,
+						"client_id",
+						githubIdentityArnMatch,
+					),
 				),
 			},
 			// ImportState testing
@@ -411,6 +426,21 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 						gitLabOidcClientID,
 						gitLabIdentityArnMatch,
 					),
+					checkValidClientID(
+						trustProviderGitLab1,
+						"client_id",
+						gitLabIdentityArnMatch,
+					),
+					checkValidClientID(
+						trustProviderGitLab2,
+						"client_id",
+						gitLabIdentityArnMatch,
+					),
+					checkValidClientID(
+						trustProviderGitLabMixed,
+						"client_id",
+						gitLabIdentityArnMatch,
+					),
 				),
 			},
 			// ImportState testing
@@ -569,6 +599,11 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					checkValidClientID(
+						trustProviderKubernetes,
+						"client_id",
+						kubernetesIdentityArnMatch,
+					),
 				),
 			},
 			// ImportState testing
@@ -632,6 +667,11 @@ func TestAccTrustProviderResource_TerraformWorkspace(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderTerraformResource, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderTerraformResource, "id"),
+					checkValidClientID(
+						trustProviderTerraformResource,
+						"client_id",
+						terraformIdentityArnMatch,
+					),
 				),
 			},
 			// ImportState testing
@@ -689,6 +729,11 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
+					checkValidClientID(
+						trustProviderOidcidToken,
+						"client_id",
+						oidcIdentityArnMatch,
+					),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderOidcidTokenKey,

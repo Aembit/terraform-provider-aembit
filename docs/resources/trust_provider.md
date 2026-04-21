@@ -112,6 +112,7 @@ Please make sure to update your configuration accordingly.
 
 ### Read-Only
 
+- `client_id` (String) Edge SDK Client ID for the Trust Provider. Only populated for supported associated use cases.
 - `id` (String) Unique identifier of the Trust Provider.
 
 <a id="nestedatt--aws_metadata"></a>
