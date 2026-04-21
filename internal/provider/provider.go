@@ -187,6 +187,13 @@ func (p *aembitProvider) Configure(
 	var err error
 	tflog.Debug(ctx, "Aembit Provider version: "+p.version)
 	tflog.Debug(ctx, "Aembit Provider release time: "+p.releaseTime)
+
+	if releaseTime, err := time.Parse(time.RFC3339, p.releaseTime); err == nil {
+		if releaseTime.Before(time.Now().AddDate(-1, 0, 0)) {
+			tflog.Warn(ctx, fmt.Sprintf("This Aembit Provider version (%s) is more than 1 year old. Aembit recommends updating to the latest version.", p.version))
+		}
+	}
+
 	tflog.Info(ctx, "Configuring Aembit client...")
 
 	if resp == nil {
