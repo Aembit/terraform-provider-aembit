@@ -100,11 +100,23 @@ func TestUnitConfigureOldReleaseWarning(t *testing.T) {
 	oldDate := time.Now().AddDate(-1, 0, -1).Format(time.RFC3339)
 	p := New("1.2.3", oldDate)()
 
-	// 4. Execute the code that calls tflog.Warn
-	p.Configure(ctx, provider.ConfigureRequest{}, nil)
+	// 4. Execute the code that calls tflog.Warn and adds a diagnostic warning
+	resp := &provider.ConfigureResponse{}
+	p.(*aembitProvider).checkVersionWarning(ctx, resp)
 
 	// 5. Verify the output in the buffer
 	loggedOutput := buf.String()
-
 	assert.Contains(t, loggedOutput, "This Aembit Provider version (1.2.3) is more than 1 year old")
+
+	// 6. Verify the diagnostic warning
+	assert.NotEmpty(t, resp.Diagnostics)
+	found := false
+	for _, diag := range resp.Diagnostics {
+		if diag.Summary() == "Aembit Provider Version Warning" &&
+			assert.Contains(t, diag.Detail(), "This Aembit Provider version (1.2.3) is more than 1 year old") {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "Expected diagnostic warning not found")
 }
