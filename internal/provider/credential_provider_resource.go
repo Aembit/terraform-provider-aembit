@@ -21,8 +21,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -944,6 +946,69 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"x509_svid_certificate": schema.SingleNestedAttribute{
+				Description: "X.509-SVID Certificate type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"subject": schema.StringAttribute{
+						Description: "Subject for X.509-SVID Certificate configuration of the Credential Provider.",
+						Required:    true,
+					},
+					"subject_type": schema.StringAttribute{
+						Description: "Type of value for the X.509-SVID Certificate. Possible values are `literal` or `dynamic`.",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{
+								"literal",
+								"dynamic",
+							}...),
+						},
+					},
+					"spiffe_id": schema.StringAttribute{
+						Description: "The SPIFFE ID of the identity to be used for the X.509-SVID Certificate. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SpiffeSubjectValidation(),
+						},
+					},
+					"lifetime_in_minutes": schema.Int32Attribute{
+						Description: "Lifetime of the Credential Provider in minutes.",
+						Required:    true,
+						Validators: []validator.Int32{
+							int32validator.Between(15, 2073600), // max 1440 days in minutes
+						},
+					},
+					"algorithm_type": schema.StringAttribute{
+						Description: "X.509-SVID Certificate Signing algorithm type (RS256 or ES256)",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+						},
+					},
+					"id_kp_client_auth": schema.BoolAttribute{
+						Description: "Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate. Defaults to `true`.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+					},
+					"id_kp_server_auth": schema.BoolAttribute{
+						Description: "Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate. Defaults to `false`.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"standalone_certificate_authority": schema.StringAttribute{
+						Description: "Standalone Certificate Authority ID configured for this Credential Provider.",
+						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							validators.UUIDRegexValidation(),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -970,6 +1035,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("azure_key_vault_value"),
 			path.MatchRoot("jwt_svid_token"),
 			path.MatchRoot("mcp_user_based_access_token"),
+			path.MatchRoot("x509_svid_certificate"),
 		),
 	}
 }
@@ -1302,6 +1368,11 @@ func convertCredentialProviderModelToV2DTO(
 		convertToAzureKeyVaultValueDTO(&credential, model)
 	}
 
+	// Handle the X.509-SVID Certificate use case
+	if model.X509SvidCertificate != nil {
+		convertToX509SvidCertificateDTO(&credential, model)
+	}
+
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return credential
 }
@@ -1336,6 +1407,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.AzureKeyVaultValue = nil
 	model.JwtSvidToken = nil
 	model.McpUserBasedAccessToken = nil
+	model.X509SvidCertificate = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1411,9 +1483,13 @@ func convertCredentialProviderV2DTOToModel(
 				dto.CredentialProviderIntegrationExternalId,
 			),
 		}
+
 	case "jwt-svid-token":
 		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto)
+	case "x509svid":
+		model.X509SvidCertificate = convertX509SvidCertificateDTOToModel(dto)
 	}
+
 	return model
 }
 
@@ -1665,6 +1741,29 @@ func convertOidcIdTokenDTOToBaseModel(
 	}
 
 	value.CustomClaims = claims
+
+	return value
+}
+
+// convertX509SvidCertificateDTOToModel converts the X509SvidCertificate state object into a model ready for terraform processing.
+func convertX509SvidCertificateDTOToModel(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderX509SvidCertificateModel {
+	value := &models.CredentialProviderX509SvidCertificateModel{
+		Subject:           dto.Subject,
+		SubjectType:       dto.SubjectType,
+		SpiffeId:          dto.SpiffeId,
+		LifetimeInMinutes: dto.LifetimeTimeSpanSeconds / 60,
+		AlgorithmType:     dto.AlgorithmType,
+		IdkpClientAuth:    dto.IdkpClientAuth,
+		IdkpServerAuth:    dto.IdkpServerAuth,
+	}
+
+	if dto.StandaloneCertificateAuthority == "" {
+		value.StandaloneCertificateAuthority = types.StringNull()
+	} else {
+		value.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+	}
 
 	return value
 }
@@ -2030,6 +2129,21 @@ func convertToAzureKeyVaultValueDTO(
 	credential.SecretName2 = model.AzureKeyVaultValue.SecretName2.ValueString()
 	credential.PrivateNetworkAccess = model.AzureKeyVaultValue.PrivateNetworkAccess.ValueBool()
 	credential.CredentialProviderIntegrationExternalId = model.AzureKeyVaultValue.CredentialProviderIntegrationExternalId.ValueString()
+}
+
+func convertToX509SvidCertificateDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "x509svid"
+	credential.Subject = model.X509SvidCertificate.Subject
+	credential.SubjectType = model.X509SvidCertificate.SubjectType
+	credential.SpiffeId = model.X509SvidCertificate.SpiffeId
+	credential.AlgorithmType = model.X509SvidCertificate.AlgorithmType
+	credential.LifetimeTimeSpanSeconds = model.X509SvidCertificate.LifetimeInMinutes * 60
+	credential.IdkpClientAuth = model.X509SvidCertificate.IdkpClientAuth
+	credential.IdkpServerAuth = model.X509SvidCertificate.IdkpServerAuth
+	credential.StandaloneCertificateAuthority = model.X509SvidCertificate.StandaloneCertificateAuthority.ValueString()
 }
 
 func convertSetToSlice(set []types.String) []string {

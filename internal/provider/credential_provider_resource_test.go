@@ -102,13 +102,19 @@ func TestAccCredentialProviderResource_AembitToken(t *testing.T) {
 						"3600",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCredentialProviderAembitWithRefresh, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderAembitWithRefresh,
+						"id",
+					),
 					resource.TestCheckResourceAttrSet(
 						testCredentialProviderAembitWithRefresh,
 						"aembit_access_token.audience",
 					),
 					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(testCredentialProviderAembitWithRefresh, "id"),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderAembitWithRefresh,
+						"id",
+					),
 				),
 			},
 			// Test Aembit API Removal causes re-create with non-empty plan
@@ -1109,6 +1115,7 @@ const (
 	jwtSvidTokenResourcePath_nullCustomClaims              = "aembit_credential_provider.jwt_svid_token_null_custom_claims"
 	jwtSvidTokenResourcePath_dynamicSubjectProcessHash     = "aembit_credential_provider.jwt_svid_token_dynamic_subject_process_hash"
 	jwtSvidTokenResourcePath_dynamicClaimProcessHash       = "aembit_credential_provider.jwt_svid_token_dynamic_claim_process_hash"
+	x509SvidCertificateResourcePath                        = "aembit_credential_provider.x509_svid_certificate"
 )
 
 func TestAccCredentialProviderResource_VaultClientToken(t *testing.T) {
@@ -1484,6 +1491,74 @@ func TestAccCredentialProviderResource_JwtSvidToken_InvalidSubject(t *testing.T)
 				Config:      string(createFile),
 				ExpectError: regexp.MustCompile(`must be in the format`),
 			},
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_X509SvidCertificate(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/x509-svid-certificate/TestAccCredentialProviderResource.tf",
+	)
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/x509-svid-certificate/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						x509SvidCertificateResourcePath,
+						"name",
+						"TF Acceptance X.509-SVID Certificate",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(x509SvidCertificateResourcePath, "id"),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(x509SvidCertificateResourcePath, "id"),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						x509SvidCertificateResourcePath,
+						"name",
+						"TF Acceptance X.509-SVID Certificate",
+					),
+
+					resource.TestCheckResourceAttrSet(
+						x509SvidCertificateResourcePath,
+						"x509_svid_certificate.standalone_certificate_authority",
+					),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      x509SvidCertificateResourcePath,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						x509SvidCertificateResourcePath,
+						"name",
+						"TF Acceptance X.509-SVID Certificate - Modified",
+					),
+
+					resource.TestCheckNoResourceAttr(
+						x509SvidCertificateResourcePath,
+						"x509_svid_certificate.standalone_certificate_authority",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
