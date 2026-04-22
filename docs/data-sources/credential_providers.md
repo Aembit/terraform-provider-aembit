@@ -49,6 +49,7 @@ Read-Only:
 - `oidc_id_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token))
 - `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
+- `x509_svid_certificate` (Attributes) X.509-SVID Certificate type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--x509_svid_certificate))
 
 <a id="nestedatt--credential_providers--aembit_access_token"></a>
 ### Nested Schema for `credential_providers.aembit_access_token`
@@ -327,3 +328,22 @@ Read-Only:
 - `key` (String)
 - `value` (String)
 - `value_type` (String)
+
+
+
+<a id="nestedatt--credential_providers--x509_svid_certificate"></a>
+### Nested Schema for `credential_providers.x509_svid_certificate`
+
+Optional:
+
+- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Credential Provider.
+
+Read-Only:
+
+- `algorithm_type` (String) X.509-SVID Certificate Signing algorithm type (RS256 or ES256)
+- `id_kp_client_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate.
+- `id_kp_server_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate.
+- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `spiffe_id` (String) The SPIFFE ID of the identity to be used for the X.509-SVID. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').
+- `subject` (String) Subject for X.509-SVID Certificate configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the X.509-SVID Certificate. Possible values are `literal` or `dynamic`.
