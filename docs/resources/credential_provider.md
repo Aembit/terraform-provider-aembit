@@ -534,7 +534,7 @@ Required:
 Required:
 
 - `key_usage` (String) X.509-SVID Certificate Key Usage (digitalSignature)
-- `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
+- `lifetime_in_minutes` (Number) Lifetime of the generated X.509 SVID certificate in minutes.
 - `spiffe_id` (String) The SPIFFE ID of the identity to be used for the X.509-SVID Certificate. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').
 - `spiffe_id_type` (String) Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.
 - `subject` (String) Subject for X.509-SVID Certificate configuration of the Credential Provider.
@@ -544,6 +544,6 @@ Optional:
 
 - `id_kp_client_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate. Defaults to `true`.
 - `id_kp_server_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate. Defaults to `false`.
-- `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Credential Provider.
+- `standalone_certificate_authority` (String) Standalone Certificate Authority configured for this Credential Provider.
 
 

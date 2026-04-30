@@ -983,7 +983,7 @@ func (r *credentialProviderResource) Schema(
 						},
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
-						Description: lifetime_in_minutes_description,
+						Description: "Lifetime of the generated X.509 SVID certificate in minutes.",
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(15, 2073600), // max 1440 days in minutes
@@ -1009,7 +1009,7 @@ func (r *credentialProviderResource) Schema(
 						Default:     booldefault.StaticBool(false),
 					},
 					"standalone_certificate_authority": schema.StringAttribute{
-						Description: "Standalone Certificate Authority ID configured for this Credential Provider.",
+						Description: "Standalone Certificate Authority configured for this Credential Provider.",
 						Optional:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
