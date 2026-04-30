@@ -13,8 +13,9 @@ resource "aembit_credential_provider" "x509_svid_certificate" {
 		subject = "subject"
 		subject_type = "literal"
 		spiffe_id = "spiffe://test.com/path"
+		spiffe_id_type = "literal"
 		lifetime_in_minutes = 120
-		algorithm_type = "ES256"
+		key_usage = "digitalSignature"
 		id_kp_client_auth = true
 		id_kp_server_auth = false
 		standalone_certificate_authority = aembit_standalone_certificate_authority.first_ca.id

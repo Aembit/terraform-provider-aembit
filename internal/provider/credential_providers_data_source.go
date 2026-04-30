@@ -668,6 +668,16 @@ func (d *credentialProvidersDataSource) Schema(
 										validators.SpiffeSubjectValidation(),
 									},
 								},
+								"spiffe_id_type": schema.StringAttribute{
+									Description: "Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
 								"lifetime_in_minutes": schema.Int32Attribute{
 									Description: "Lifetime of the Credential Provider in minutes.",
 									Computed:    true,
@@ -678,11 +688,11 @@ func (d *credentialProvidersDataSource) Schema(
 										), // max 1440 days in minutes
 									},
 								},
-								"algorithm_type": schema.StringAttribute{
-									Description: "X.509-SVID Certificate Signing algorithm type (RS256 or ES256)",
+								"key_usage": schema.StringAttribute{
+									Description: "X.509-SVID Certificate Key Usage (digitalSignature)",
 									Computed:    true,
 									Validators: []validator.String{
-										stringvalidator.OneOf([]string{"RS256", "ES256"}...),
+										stringvalidator.OneOf([]string{"digitalSignature"}...),
 									},
 								},
 								"id_kp_client_auth": schema.BoolAttribute{

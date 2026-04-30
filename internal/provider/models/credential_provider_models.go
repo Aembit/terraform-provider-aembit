@@ -171,8 +171,9 @@ type CredentialProviderX509SvidCertificateModel struct {
 	Subject                        string       `tfsdk:"subject"`
 	SubjectType                    string       `tfsdk:"subject_type"`
 	SpiffeId                       string       `tfsdk:"spiffe_id"`
+	SpiffeIdType                   string       `tfsdk:"spiffe_id_type"`
 	LifetimeInMinutes              int64        `tfsdk:"lifetime_in_minutes"`
-	AlgorithmType                  string       `tfsdk:"algorithm_type"`
+	KeyUsage                       string       `tfsdk:"key_usage"`
 	IdkpClientAuth                 bool         `tfsdk:"id_kp_client_auth"`
 	IdkpServerAuth                 bool         `tfsdk:"id_kp_server_auth"`
 	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`
