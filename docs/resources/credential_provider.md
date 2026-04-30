@@ -533,11 +533,12 @@ Required:
 
 Required:
 
-- `algorithm_type` (String) X.509-SVID Certificate Signing algorithm type (RS256 or ES256)
+- `key_usage` (String) X.509-SVID Certificate Key Usage (digitalSignature)
 - `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
 - `spiffe_id` (String) The SPIFFE ID of the identity to be used for the X.509-SVID Certificate. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').
+- `spiffe_id_type` (String) Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.
 - `subject` (String) Subject for X.509-SVID Certificate configuration of the Credential Provider.
-- `subject_type` (String) Type of value for the X.509-SVID Certificate. Possible values are `literal` or `dynamic`.
+- `subject_type` (String) Type of value for the X.509-SVID Certificate Subject. Possible values are `literal` or `dynamic`.
 
 Optional:
 

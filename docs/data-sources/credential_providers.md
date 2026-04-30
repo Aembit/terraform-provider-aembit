@@ -340,10 +340,11 @@ Optional:
 
 Read-Only:
 
-- `algorithm_type` (String) X.509-SVID Certificate Signing algorithm type (RS256 or ES256)
 - `id_kp_client_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate.
 - `id_kp_server_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate.
+- `key_usage` (String) X.509-SVID Certificate Key Usage (digitalSignature)
 - `lifetime_in_minutes` (Number) Lifetime of the Credential Provider in minutes.
 - `spiffe_id` (String) The SPIFFE ID of the identity to be used for the X.509-SVID. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').
+- `spiffe_id_type` (String) Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.
 - `subject` (String) Subject for X.509-SVID Certificate configuration of the Credential Provider.
 - `subject_type` (String) Type of value for the X.509-SVID Certificate. Possible values are `literal` or `dynamic`.
