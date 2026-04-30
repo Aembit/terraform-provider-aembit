@@ -4,8 +4,10 @@ import (
 	"context"
 
 	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -487,7 +489,7 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in minutes.",
+									Description: lifetime_in_minutes_description,
 									Computed:    true,
 								},
 								"algorithm_type": schema.StringAttribute{
@@ -608,7 +610,7 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in minutes.",
+									Description: lifetime_in_minutes_description,
 									Computed:    true,
 								},
 								"algorithm_type": schema.StringAttribute{
@@ -638,6 +640,73 @@ func (d *credentialProvidersDataSource) Schema(
 											},
 										},
 									},
+								},
+							},
+						},
+						"x509_svid_certificate": schema.SingleNestedAttribute{
+							Description: "X.509-SVID Certificate type Credential Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"subject": schema.StringAttribute{
+									Description: "Subject for X.509-SVID Certificate configuration of the Credential Provider.",
+									Computed:    true,
+								},
+								"subject_type": schema.StringAttribute{
+									Description: "Type of value for the X.509-SVID Certificate. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+								"spiffe_id": schema.StringAttribute{
+									Description: "The SPIFFE ID of the identity to be used for the X.509-SVID. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').",
+									Computed:    true,
+									Validators: []validator.String{
+										validators.SpiffeSubjectValidation(),
+									},
+								},
+								"spiffe_id_type": schema.StringAttribute{
+									Description: "Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{
+											"literal",
+											"dynamic",
+										}...),
+									},
+								},
+								"lifetime_in_minutes": schema.Int32Attribute{
+									Description: "Lifetime of the generated X.509 SVID certificate in minutes.",
+									Computed:    true,
+									Validators: []validator.Int32{
+										int32validator.Between(
+											15,
+											2073600,
+										), // max 1440 days in minutes
+									},
+								},
+								"key_usage": schema.StringAttribute{
+									Description: "X.509-SVID Certificate Key Usage (digitalSignature)",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOf([]string{"digitalSignature"}...),
+									},
+								},
+								"id_kp_client_auth": schema.BoolAttribute{
+									Description: "Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate.",
+									Computed:    true,
+								},
+								"id_kp_server_auth": schema.BoolAttribute{
+									Description: "Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate.",
+									Computed:    true,
+								},
+								"standalone_certificate_authority": schema.StringAttribute{
+									Description: "Standalone Certificate Authority configured for this Credential Provider, otherwise the Tenant default CA will be used.",
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},

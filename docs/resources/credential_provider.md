@@ -179,6 +179,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
 - `username_password` (Attributes) Username/Password type Credential Provider configuration. (see [below for nested schema](#nestedatt--username_password))
 - `vault_client_token` (Attributes) Vault Client Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--vault_client_token))
+- `x509_svid_certificate` (Attributes) X.509-SVID Certificate type Credential Provider configuration. (see [below for nested schema](#nestedatt--x509_svid_certificate))
 
 <a id="nestedatt--aembit_access_token"></a>
 ### Nested Schema for `aembit_access_token`
@@ -525,5 +526,24 @@ Required:
 - `value` (String) Value for the JWT Token Custom Claim.
 - `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.
 
+
+
+<a id="nestedatt--x509_svid_certificate"></a>
+### Nested Schema for `x509_svid_certificate`
+
+Required:
+
+- `key_usage` (String) X.509-SVID Certificate Key Usage (digitalSignature)
+- `lifetime_in_minutes` (Number) Lifetime of the generated X.509 SVID certificate in minutes.
+- `spiffe_id` (String) The SPIFFE ID of the identity to be used for the X.509-SVID Certificate. This must be a valid SPIFFE ID (e.g., 'spiffe://example.org/service').
+- `spiffe_id_type` (String) Type of value for the X.509-SVID Certificate SpiffeId. Possible values are `literal` or `dynamic`.
+- `subject` (String) Subject for X.509-SVID Certificate configuration of the Credential Provider.
+- `subject_type` (String) Type of value for the X.509-SVID Certificate Subject. Possible values are `literal` or `dynamic`.
+
+Optional:
+
+- `id_kp_client_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Client Authentication (id-kp-clientAuth) should be included in the certificate. Defaults to `true`.
+- `id_kp_server_auth` (Boolean) Indicates whether the Extended Key Usage (EKU) for Server Authentication (id-kp-serverAuth) should be included in the certificate. Defaults to `false`.
+- `standalone_certificate_authority` (String) Standalone Certificate Authority configured for this Credential Provider.
 
 

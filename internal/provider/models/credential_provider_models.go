@@ -30,6 +30,7 @@ type CredentialProviderResourceModel struct {
 	AzureKeyVaultValue      *CredentialProviderAzureKeyVaultValueModel                   `tfsdk:"azure_key_vault_value"`
 	JwtSvidToken            *CredentialProviderManagedOidcIdToken                        `tfsdk:"jwt_svid_token"`
 	McpUserBasedAccessToken *CredentialProviderMcpUserBasedAccessTokenModel              `tfsdk:"mcp_user_based_access_token"`
+	X509SvidCertificate     *CredentialProviderX509SvidCertificateModel                  `tfsdk:"x509_svid_certificate"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -163,6 +164,19 @@ type CredentialProviderManagedOidcIdToken struct {
 	AlgorithmType     string                                 `tfsdk:"algorithm_type"`
 	Issuer            types.String                           `tfsdk:"issuer"`
 	CustomClaims      []*CredentialProviderCustomClaimsModel `tfsdk:"custom_claims"`
+}
+
+// CredentialProviderX509SvidCertificateModel maps X.509-SVID Certificate configuration.
+type CredentialProviderX509SvidCertificateModel struct {
+	Subject                        string       `tfsdk:"subject"`
+	SubjectType                    string       `tfsdk:"subject_type"`
+	SpiffeId                       string       `tfsdk:"spiffe_id"`
+	SpiffeIdType                   string       `tfsdk:"spiffe_id_type"`
+	LifetimeInMinutes              int64        `tfsdk:"lifetime_in_minutes"`
+	KeyUsage                       string       `tfsdk:"key_usage"`
+	IdkpClientAuth                 bool         `tfsdk:"id_kp_client_auth"`
+	IdkpServerAuth                 bool         `tfsdk:"id_kp_server_auth"`
+	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`
 }
 
 type CredentialProviderManagedOidcIdTokenWithRefreshTokenSupport struct {
