@@ -489,7 +489,7 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in minutes.",
+									Description: lifetime_in_minutes_description,
 									Computed:    true,
 								},
 								"algorithm_type": schema.StringAttribute{
@@ -610,7 +610,7 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed:    true,
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in minutes.",
+									Description: lifetime_in_minutes_description,
 									Computed:    true,
 								},
 								"algorithm_type": schema.StringAttribute{
@@ -679,7 +679,7 @@ func (d *credentialProvidersDataSource) Schema(
 									},
 								},
 								"lifetime_in_minutes": schema.Int32Attribute{
-									Description: "Lifetime of the Credential Provider in minutes.",
+									Description: lifetime_in_minutes_description,
 									Computed:    true,
 									Validators: []validator.Int32{
 										int32validator.Between(
