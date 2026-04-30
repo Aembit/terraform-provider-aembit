@@ -38,6 +38,7 @@ var (
 )
 
 const oidcIssuerTemplate string = "https://%s.id.%s"
+const lifetime_in_minutes_description string = "Lifetime of the Credential Provider in minutes"
 
 // NewCredentialProviderResource is a helper function to simplify the provider implementation.
 func NewCredentialProviderResource() resource.Resource {
@@ -750,7 +751,7 @@ func (r *credentialProviderResource) Schema(
 						Computed:    true,
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
-						Description: "Lifetime of the Credential Provider in minutes.",
+						Description: lifetime_in_minutes_description,
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 5256000), // max ten years
@@ -893,7 +894,7 @@ func (r *credentialProviderResource) Schema(
 						Computed:    true,
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
-						Description: "Lifetime of the Credential Provider in minutes.",
+						Description: lifetime_in_minutes_description,
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(1, 5256000), // max ten years
@@ -982,7 +983,7 @@ func (r *credentialProviderResource) Schema(
 						},
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
-						Description: "Lifetime of the Credential Provider in minutes.",
+						Description: lifetime_in_minutes_description,
 						Required:    true,
 						Validators: []validator.Int32{
 							int32validator.Between(15, 2073600), // max 1440 days in minutes
