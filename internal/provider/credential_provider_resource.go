@@ -38,7 +38,7 @@ var (
 )
 
 const oidcIssuerTemplate string = "https://%s.id.%s"
-const lifetime_in_minutes_description string = "Lifetime of the Credential Provider in minutes"
+const lifetime_in_minutes_description string = "Lifetime of the Credential Provider in minutes."
 
 // NewCredentialProviderResource is a helper function to simplify the provider implementation.
 func NewCredentialProviderResource() resource.Resource {
