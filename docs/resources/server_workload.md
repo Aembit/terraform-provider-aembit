@@ -114,6 +114,8 @@ Required:
 		* `POST Body`
 	* For Authentation Method `Password Authentication`:
 		* `Password`
+	* For Authentation Method `mTLS Authentication`:
+		* `x509 Certificate`
 
 Optional:
 
