@@ -125,3 +125,23 @@ resource "aembit_server_workload" "test_oracle_database" {
 		}
 	}
 }
+
+resource "aembit_server_workload" "test_mtls" {
+	name = "Unit Test 1 mTLS"
+    description = "Description"
+    is_active = false
+	service_endpoint = {
+		host = "unittest.testhost.com"
+		port = 443
+        tls = true
+		app_protocol = "HTTP"
+		transport_protocol = "TCP"
+		requested_port = 443
+        requested_tls = true
+		tls_verification = "full"
+		authentication_config = {
+			method = "mTLS Authentication"
+			scheme = "x509 Certificate"
+		}		
+	}
+}

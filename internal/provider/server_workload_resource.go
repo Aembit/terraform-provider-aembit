@@ -214,6 +214,7 @@ func (r *serverWorkloadResource) Schema(
 										"JWT Token Authentication",
 										"OAuth Client Authentication",
 										"Password Authentication",
+										"mTLS Authentication",
 									}...),
 								},
 							},
@@ -232,7 +233,9 @@ func (r *serverWorkloadResource) Schema(
 									"\t* For Authentation Method `OAuth Client Authentication`:\n" +
 									"\t\t* `POST Body`\n" +
 									"\t* For Authentation Method `Password Authentication`:\n" +
-									"\t\t* `Password`\n",
+									"\t\t* `Password`\n" +
+									"\t* For Authentation Method `mTLS Authentication`:\n" +
+									"\t\t* `x509 Certificate`\n",
 								Required: true,
 								Validators: []validator.String{
 									stringvalidator.OneOf([]string{
@@ -245,6 +248,7 @@ func (r *serverWorkloadResource) Schema(
 										"Snowflake JWT",
 										"Password",
 										"POST Body",
+										"x509 Certificate",
 									}...),
 								},
 							},
