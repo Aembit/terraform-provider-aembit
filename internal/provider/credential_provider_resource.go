@@ -1051,10 +1051,12 @@ func (r *credentialProviderResource) Schema(
 					},
 					"scope": schema.StringAttribute{
 						Description: "Claude Scope.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("workspace:developer"),
 					},
 					"lifetime": schema.Int64Attribute{
-						Description: "Lifetime (seconds) of the Claude credentials requested by the Credential Provider.",
+						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the retrieved Claude Token is managed within Claude Workload Identity configuration.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3600),

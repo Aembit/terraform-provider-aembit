@@ -164,6 +164,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `aws_sts` (Attributes) AWS Security Token Service Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--aws_sts))
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--azure_entra_workload_identity))
 - `azure_key_vault_value` (Attributes) Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext formats. (see [below for nested schema](#nestedatt--azure_key_vault_value))
+- `claude_wif` (Attributes) Claude Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--claude_wif))
 - `description` (String) Description for the Credential Provider.
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
@@ -266,6 +267,23 @@ Optional:
 
 - `private_network_access` (Boolean) Indicates that the Azure Key Vault is accessible via a private network only.
 - `secret_name_2` (String) Similar to `secret_name_1` but used when you need a credential provider to work with 2 secret values. For example, a username / password pair.
+
+
+<a id="nestedatt--claude_wif"></a>
+### Nested Schema for `claude_wif`
+
+Required:
+
+- `federation_rule_id` (String) Claude Federation Rule ID.
+- `organization_id` (String) Claude Organization ID.
+- `service_account_id` (String) Claude Service Account ID.
+
+Optional:
+
+- `audience` (String) Claude Audience.
+- `lifetime` (Number) Lifetime (in seconds) of the JWT Token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the retrieved Claude Token is managed within Claude Workload Identity configuration.
+- `scope` (String) Claude Scope.
+- `workspace_id` (String) Claude Workspace ID.
 
 
 <a id="nestedatt--google_workload_identity"></a>
