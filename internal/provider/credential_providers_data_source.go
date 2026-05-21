@@ -739,7 +739,7 @@ func (d *credentialProvidersDataSource) Schema(
 									Computed:    true,
 								},
 								"lifetime": schema.Int64Attribute{
-									Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the retrieved Claude Token is managed within Claude Workload Identity configuration.",
+									Description: "Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.",
 									Computed:    true,
 								},
 							},

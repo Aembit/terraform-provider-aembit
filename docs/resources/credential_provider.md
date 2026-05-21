@@ -281,7 +281,7 @@ Required:
 Optional:
 
 - `audience` (String) Claude Audience.
-- `lifetime` (Number) Lifetime (in seconds) of the JWT Token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the retrieved Claude Token is managed within Claude Workload Identity configuration.
+- `lifetime` (Number) Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.
 - `scope` (String) Claude Scope.
 - `workspace_id` (String) Claude Workspace ID.
 
