@@ -1020,6 +1020,52 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"claude_wif": schema.SingleNestedAttribute{
+				Description: "Claude Workload Identity Federation type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"federation_rule_id": schema.StringAttribute{
+						Description: "Claude Federation Rule ID.",
+						Required:    true,
+					},
+					"service_account_id": schema.StringAttribute{
+						Description: "Claude Service Account ID.",
+						Required:    true,
+					},
+					"organization_id": schema.StringAttribute{
+						Description: "Claude Organization ID.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.UUIDRegexValidation(),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "Claude Audience.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"workspace_id": schema.StringAttribute{
+						Description: "Claude Workspace ID.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"scope": schema.StringAttribute{
+						Description: "Claude Scope.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("workspace:developer"),
+					},
+					"lifetime": schema.Int64Attribute{
+						Description: "Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(3600),
+						Validators: []validator.Int64{
+							int64validator.Between(900, 43200),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -1047,6 +1093,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("jwt_svid_token"),
 			path.MatchRoot("mcp_user_based_access_token"),
 			path.MatchRoot("x509_svid_certificate"),
+			path.MatchRoot("claude_wif"),
 		),
 	}
 }
@@ -1384,6 +1431,11 @@ func convertCredentialProviderModelToV2DTO(
 		convertToX509SvidCertificateDTO(&credential, model)
 	}
 
+	// Handle the Claude Wif use case
+	if model.ClaudeWif != nil {
+		convertToClaudeWifDTO(&credential, model)
+	}
+
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return credential
 }
@@ -1419,6 +1471,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.JwtSvidToken = nil
 	model.McpUserBasedAccessToken = nil
 	model.X509SvidCertificate = nil
+	model.ClaudeWif = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1499,6 +1552,8 @@ func convertCredentialProviderV2DTOToModel(
 		model.JwtSvidToken = convertOidcIdTokenDTOToModel(dto)
 	case "x509svid":
 		model.X509SvidCertificate = convertX509SvidCertificateDTOToModel(dto)
+	case "claude-wif":
+		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto)
 	}
 
 	return model
@@ -1878,8 +1933,7 @@ func convertToAwsSTSDTO(
 	credential.Type = "aws-sts-oidc"
 	credential.Lifetime = model.AwsSTS.Lifetime
 	credential.CredentialAwsSTSV2DTO = aembit.CredentialAwsSTSV2DTO{
-		RoleArn:  model.AwsSTS.RoleARN.ValueString(),
-		Lifetime: model.AwsSTS.Lifetime,
+		RoleArn: model.AwsSTS.RoleARN.ValueString(),
 	}
 }
 
@@ -2176,4 +2230,35 @@ func convertSliceToSet(slice []string) []types.String {
 	}
 
 	return result
+}
+
+func convertToClaudeWifDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "claude-wif"
+	credential.Audience = model.ClaudeWif.Audience.ValueString()
+	credential.Lifetime = model.ClaudeWif.Lifetime
+	credential.Scope = model.ClaudeWif.Scope.ValueString()
+	credential.CredentialClaudeWifV2DTO = aembit.CredentialClaudeWifV2DTO{
+		FederationRuleId: model.ClaudeWif.FederationRuleId.ValueString(),
+		ServiceAccountId: model.ClaudeWif.ServiceAccountId.ValueString(),
+		OrganizationId:   model.ClaudeWif.OrganizationId.ValueString(),
+		WorkspaceId:      model.ClaudeWif.WorkspaceId.ValueString(),
+	}
+}
+
+func convertClaudeWifV2DTOToModel(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderClaudeWifModel {
+	value := models.CredentialProviderClaudeWifModel{
+		FederationRuleId: types.StringValue(dto.FederationRuleId),
+		ServiceAccountId: types.StringValue(dto.ServiceAccountId),
+		OrganizationId:   types.StringValue(dto.OrganizationId),
+		Audience:         types.StringValue(dto.Audience),
+		WorkspaceId:      types.StringValue(dto.WorkspaceId),
+		Scope:            types.StringValue(dto.Scope),
+		Lifetime:         dto.Lifetime,
+	}
+	return &value
 }

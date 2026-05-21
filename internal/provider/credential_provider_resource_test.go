@@ -18,6 +18,7 @@ const (
 	testCredentialProviderAembitWithRefresh = "aembit_credential_provider.aembit_refresh_token_enabled"
 	testCredentialProviderApiKey            = "aembit_credential_provider.api_key"
 	testCredentialProviderAWS               = "aembit_credential_provider.aws"
+	testCredentialProviderClaude            = "aembit_credential_provider.claude"
 	testCredentialProviderGCP               = "aembit_credential_provider.gcp"
 	testCredentialProviderSnowflake         = "aembit_credential_provider.snowflake"
 	testCredentialProviderUserPass          = "aembit_credential_provider.userpass"
@@ -1555,6 +1556,68 @@ func TestAccCredentialProviderResource_X509SvidCertificate(t *testing.T) {
 					resource.TestCheckNoResourceAttr(
 						x509SvidCertificateResourcePath,
 						"x509_svid_certificate.standalone_certificate_authority",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_ClaudeWif(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile("../../tests/credential/claude/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/claude/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential set values
+					resource.TestCheckResourceAttr(
+						testCredentialProviderClaude,
+						"name",
+						"TF Acceptance Claude Wif",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderClaude,
+						"claude_wif.lifetime",
+						"3600",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderClaude,
+						"claude_wif.federation_rule_id",
+						"fdrl_test",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCredentialProviderClaude, "id"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      testCredentialProviderClaude,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderClaude,
+						"name",
+						"TF Acceptance Claude Wif - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderClaude,
+						"claude_wif.lifetime",
+						"1800",
 					),
 				),
 			},

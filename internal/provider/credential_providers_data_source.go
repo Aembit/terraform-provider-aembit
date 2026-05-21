@@ -710,6 +710,40 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"claude_wif": schema.SingleNestedAttribute{
+							Description: "Claude Workload Identity Federation type Credential Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"federation_rule_id": schema.StringAttribute{
+									Description: "Claude Federation Rule ID.",
+									Computed:    true,
+								},
+								"service_account_id": schema.StringAttribute{
+									Description: "Claude Service Account ID.",
+									Computed:    true,
+								},
+								"organization_id": schema.StringAttribute{
+									Description: "Claude Organization ID.",
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "Claude Audience.",
+									Computed:    true,
+								},
+								"workspace_id": schema.StringAttribute{
+									Description: "Claude Workspace ID.",
+									Computed:    true,
+								},
+								"scope": schema.StringAttribute{
+									Description: "Claude Scope.",
+									Computed:    true,
+								},
+								"lifetime": schema.Int64Attribute{
+									Description: "Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},

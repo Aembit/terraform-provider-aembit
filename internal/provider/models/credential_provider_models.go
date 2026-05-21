@@ -31,6 +31,7 @@ type CredentialProviderResourceModel struct {
 	JwtSvidToken            *CredentialProviderManagedOidcIdToken                        `tfsdk:"jwt_svid_token"`
 	McpUserBasedAccessToken *CredentialProviderMcpUserBasedAccessTokenModel              `tfsdk:"mcp_user_based_access_token"`
 	X509SvidCertificate     *CredentialProviderX509SvidCertificateModel                  `tfsdk:"x509_svid_certificate"`
+	ClaudeWif               *CredentialProviderClaudeWifModel                            `tfsdk:"claude_wif"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -54,6 +55,16 @@ type CredentialProviderAwsSTSModel struct {
 	RoleARN       types.String `tfsdk:"role_arn"`
 	TokenAudience types.String `tfsdk:"token_audience"`
 	Lifetime      int32        `tfsdk:"lifetime"`
+}
+
+type CredentialProviderClaudeWifModel struct {
+	FederationRuleId types.String `tfsdk:"federation_rule_id"`
+	ServiceAccountId types.String `tfsdk:"service_account_id"`
+	OrganizationId   types.String `tfsdk:"organization_id"`
+	Audience         types.String `tfsdk:"audience"`
+	WorkspaceId      types.String `tfsdk:"workspace_id"`
+	Scope            types.String `tfsdk:"scope"`
+	Lifetime         int32        `tfsdk:"lifetime"`
 }
 
 type CredentialProviderGoogleWorkloadModel struct {
