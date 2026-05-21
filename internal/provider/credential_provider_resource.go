@@ -2262,6 +2262,3 @@ func convertClaudeWifV2DTOToModel(
 	}
 	return &value
 }
-
-
-
