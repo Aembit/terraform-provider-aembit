@@ -98,6 +98,7 @@ func (r *clientWorkloadResource) Schema(
 						"type": schema.StringAttribute{
 							Description: "Client identity type. Possible values are: \n" +
 								"\t* `aembitClientId`\n" +
+								"\t* `cimdClientId`\n" +
 								"\t* `awsAccountId`\n" +
 								"\t* `awsEc2InstanceId`\n" +
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
@@ -138,6 +139,7 @@ func (r *clientWorkloadResource) Schema(
 							Validators: []validator.String{
 								stringvalidator.OneOf([]string{
 									"aembitClientId",
+									"cimdClientId",
 									"awsAccountId",
 									"awsEc2InstanceId",
 									//"awsEcsServiceName",	// Hiding for now
