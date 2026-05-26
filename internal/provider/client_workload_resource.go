@@ -99,6 +99,7 @@ func (r *clientWorkloadResource) Schema(
 							Description: "Client identity type. Possible values are: \n" +
 								"\t* `aembitClientId`\n" +
 								"\t* `cimdClientId`\n" +
+								"\t* `cimdClientId`\n" +
 								"\t* `awsAccountId`\n" +
 								"\t* `awsEc2InstanceId`\n" +
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
@@ -139,6 +140,7 @@ func (r *clientWorkloadResource) Schema(
 							Validators: []validator.String{
 								stringvalidator.OneOf([]string{
 									"aembitClientId",
+									"cimdClientId",
 									"cimdClientId",
 									"awsAccountId",
 									"awsEc2InstanceId",
@@ -280,6 +282,9 @@ func (r *clientWorkloadResource) ValidateConfig(
 		config.EnforceSso,
 		config.SsoIdentityProviders,
 	)...)
+
+	// CIMD Client ID values must be valid URLs.
+	resp.Diagnostics.Append(validateCimdClientIdIdentityTypeForConfig(identities)...)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -628,6 +633,31 @@ func validateRedirectURIIdentityType(
 		enforceSso,
 		ssoIdentityProviders,
 	)...)
+
+	return diags
+}
+
+func validateCimdClientIdIdentityTypeForConfig(
+	identities []models.IdentitiesModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, identity := range identities {
+		if identity.Type.IsNull() || identity.Value.IsNull() {
+			continue
+		}
+
+		if identity.Type.ValueString() == "cimdClientId" {
+			val := identity.Value.ValueString()
+			if !validators.CimdUrlRegex.MatchString(val) {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					"Invalid CIMD Client ID Value",
+					"CIMD Client ID must be a valid https URL (starts with https://, contains a path, and has no query string, fragment, or user information). Got: " + val,
+				)
+			}
+		}
+	}
 
 	return diags
 }

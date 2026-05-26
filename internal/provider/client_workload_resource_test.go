@@ -1345,3 +1345,59 @@ func TestAccClientWorkloadResource_OidcIdToken(t *testing.T) {
 		},
 	})
 }
+
+
+func TestAccClientWorkloadResource_CimdClientId(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "aembit_client_workload" "test" {
+						name        = "TF Acceptance - CIMD Client ID"
+						description = "Acceptance Test client workload with CIMD URL"
+						identities = [
+							{
+								type  = "cimdClientId"
+								value = "https://mcpjam.com/.well-known/oauth/client-metadata.json"
+							}
+						]
+					}
+				`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(testCWResource, "name", "TF Acceptance - CIMD Client ID"),
+					resource.TestCheckResourceAttr(testCWResource, "description", "Acceptance Test client workload with CIMD URL"),
+					resource.TestCheckResourceAttr(testCWResource, "identities.0.type", "cimdClientId"),
+					resource.TestCheckResourceAttr(testCWResource, "identities.0.value", "https://mcpjam.com/.well-known/oauth/client-metadata.json"),
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+		},
+	})
+}
+
+func TestAccClientWorkloadResource_CimdClientId_Invalid(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "aembit_client_workload" "test" {
+						name        = "TF Acceptance - CIMD Client ID Invalid"
+						description = "Acceptance Test client workload with invalid CIMD URL"
+						identities = [
+							{
+								type  = "cimdClientId"
+								value = "http://mcpjam.com" // Needs https:// and a path
+							}
+						]
+					}
+				`,
+				ExpectError: regexp.MustCompile("Invalid CIMD Client ID Value"),
+			},
+		},
+	})
+}
