@@ -47,7 +47,7 @@ var (
 			`(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`,
 	)
 	AwsIamRoleArnRegex = regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[\w+=,.@/-]+$`)
-	CimdUrlRegex = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}\/[^?#@\s]+$`)
+	CimdUrlRegex       = regexp.MustCompile(`^https:\/\/[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}\/[^?#@\s]+$`)
 	AwsSecretArnRegex  = regexp.MustCompile(
 		`^arn:aws:secretsmanager:[a-z0-9-]+:\d{12}:secret:[A-Za-z0-9/_+=.@-]+-[A-Za-z0-9]{6}$`,
 	)
