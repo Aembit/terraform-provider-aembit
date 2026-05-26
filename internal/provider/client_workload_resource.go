@@ -651,7 +651,7 @@ func validateCimdClientIdIdentityTypeForConfig(
 				diags.AddAttributeError(
 					path.Root("identities"),
 					"Invalid CIMD Client ID Value",
-					"CIMD Client ID must be a valid https URL (starts with https://, contains a path, and has no query string, fragment, or user information)."
+					"CIMD Client ID must be a valid https URL (starts with https://, contains a path, and has no query string, fragment, or user information).",
 				)
 			}
 		}
