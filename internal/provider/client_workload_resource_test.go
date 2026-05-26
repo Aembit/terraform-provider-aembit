@@ -1346,7 +1346,6 @@ func TestAccClientWorkloadResource_OidcIdToken(t *testing.T) {
 	})
 }
 
-
 func TestAccClientWorkloadResource_CimdClientId(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
