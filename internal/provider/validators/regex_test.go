@@ -400,4 +400,3 @@ func TestRegex_CimdUrl_Invalid(t *testing.T) {
 		})
 	}
 }
-
