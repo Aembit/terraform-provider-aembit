@@ -383,7 +383,7 @@ func TestRegex_CimdUrl_Valid(t *testing.T) {
 func TestRegex_CimdUrl_Invalid(t *testing.T) {
 	t.Parallel()
 	invalidInputs := []string{
-		"http://example.com/path",            // Not https
+		"http://example.com/path",             // Not https
 		"https://example.com",                 // No path
 		"https://example.com/",                // Path is just / (regex [^?#@\s]+ requires at least one char after /)
 		"https://example.com/path?query=1",    // Query string not allowed
