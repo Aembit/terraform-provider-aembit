@@ -63,6 +63,10 @@ func (d *accessConditionsDataSource) Schema(
 							Description: "Unique identifier of the accessCondition.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Access Condition.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the accessCondition.",
 							Computed:    true,

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -71,6 +72,15 @@ func (r *accessConditionResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Access Condition.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Condition.",
@@ -253,8 +263,13 @@ func (r *accessConditionResource) Create(
 		return
 	}
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new AccessCondition
-	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil)
+	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Access Condition",
@@ -265,6 +280,8 @@ func (r *accessConditionResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -288,6 +305,8 @@ func (r *accessConditionResource) Read(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Get refreshed trust value from Aembit
 	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil)
 	if err != nil {
@@ -304,9 +323,10 @@ func (r *accessConditionResource) Read(
 	}
 
 	state = convertAccessConditionDTOToModel(ctx, accessCondition, &state)
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -326,6 +346,8 @@ func (r *accessConditionResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -360,6 +382,8 @@ func (r *accessConditionResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)

@@ -65,6 +65,10 @@ func (d *trustProvidersDataSource) Schema(
 							Description: "Unique identifier of the trust provider.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Trust Provider.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the trust provider.",
 							Computed:    true,

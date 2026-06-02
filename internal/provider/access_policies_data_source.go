@@ -64,6 +64,10 @@ func (d *accessPoliciesDataSource) Schema(
 							Description: "Unique identifier of the access policy.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Access Policy.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "Placeholder name of the access policy.",
 							Computed:    true,

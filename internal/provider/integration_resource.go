@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -66,6 +67,15 @@ func (r *integrationResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Integration.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Integration.",
@@ -162,8 +172,13 @@ func (r *integrationResource) Create(
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Integration
-	integration, err := r.client.CreateIntegrationV2(dto, nil)
+	integration, err := r.client.CreateIntegrationV2(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -174,6 +189,8 @@ func (r *integrationResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertIntegrationDTOToModel(ctx, *integration, &plan)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -197,6 +214,8 @@ func (r *integrationResource) Read(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Get refreshed trust value from Aembit
 	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil)
 	if err != nil {
@@ -213,6 +232,8 @@ func (r *integrationResource) Read(
 	}
 
 	state = convertIntegrationDTOToModel(ctx, integration, &state)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -235,6 +256,8 @@ func (r *integrationResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -261,7 +284,9 @@ func (r *integrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIntegrationDTOToModel(ctx, *integration, &plan)
+	state = convertIntegrationDTOToModel(ctx, *newIntegration, &plan)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)

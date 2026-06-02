@@ -64,6 +64,10 @@ func (r *clientWorkloadsDataSource) Schema(
 							Description: "Unique identifier of the client workload.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Client Workload.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the client workload.",
 							Computed:    true,

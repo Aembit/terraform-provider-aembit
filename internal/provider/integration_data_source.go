@@ -73,6 +73,10 @@ func (d *integrationsDataSource) Schema(
 							Description: "Unique identifier of the integration.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Integration.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the integration.",
 							Computed:    true,
