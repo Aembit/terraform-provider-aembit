@@ -68,6 +68,10 @@ func (d *credentialProvidersDataSource) Schema(
 							Description: "Unique identifier of the credential provider.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Credential Provider.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the credential provider.",
 							Computed:    true,

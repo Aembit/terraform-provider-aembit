@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -67,6 +68,15 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Standalone Certificate Authority.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "User-provided name for the standalone certificate authority.",
@@ -139,21 +149,25 @@ func (r *standaloneCertificateAuthorityResource) Create(
 		r.client.DefaultTags,
 	)
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Standalone Certificate Authority
-	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(
-		standaloneCertificate,
-		nil,
-	)
+	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Standalone Certificate Authority",
-			"Could not create Standalone Certificate Authority, unexpected error: "+err.Error(),
+			"Error creating standalone certificate authority",
+			"Could not create standalone certificate authority, unexpected error: "+err.Error(),
 		)
 		return
 	}
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificateResponse, &plan)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -176,6 +190,8 @@ func (r *standaloneCertificateAuthorityResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Get refreshed workload value from Aembit
 	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(
@@ -202,6 +218,8 @@ func (r *standaloneCertificateAuthorityResource) Read(
 	// Overwrite items with refreshed state
 	state = convertStandaloneCertificateDTOToModel(ctx, standaloneCertificate, &state)
 
+	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -223,6 +241,8 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -250,6 +270,8 @@ func (r *standaloneCertificateAuthorityResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertStandaloneCertificateDTOToModel(ctx, *serverWorkload, &plan)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)

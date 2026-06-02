@@ -63,6 +63,10 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 							Description: "Unique identifier of the standalone certificate authority.",
 							Computed:    true,
 						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Standalone Certificate Authority.",
+							Computed:    true,
+						},
 						"name": schema.StringAttribute{
 							Description: "User-provided name of the standalone certificate authority.",
 							Computed:    true,

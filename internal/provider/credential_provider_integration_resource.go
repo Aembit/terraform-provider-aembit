@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -68,6 +69,15 @@ func (r *credentialProviderIntegrationResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider Integration.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider Integration.",
@@ -216,6 +226,8 @@ func (r *credentialProviderIntegrationResource) Create(
 		r.client.StackDomain,
 	)
 
+	plan.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -237,6 +249,8 @@ func (r *credentialProviderIntegrationResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Get refreshed trust value from Aembit
 	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
@@ -263,6 +277,8 @@ func (r *credentialProviderIntegrationResource) Read(
 		r.client.StackDomain,
 	)
 
+	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -284,6 +300,8 @@ func (r *credentialProviderIntegrationResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -316,6 +334,8 @@ func (r *credentialProviderIntegrationResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)

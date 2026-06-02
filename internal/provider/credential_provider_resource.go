@@ -85,6 +85,15 @@ func (r *credentialProviderResource) Schema(
 					validators.UUIDRegexValidation(),
 				},
 			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
+			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
 				Required:    true,
@@ -1130,8 +1139,13 @@ func (r *credentialProviderResource) Create(
 		r.client.DefaultTags,
 	)
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Credential Provider
-	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil)
+	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Credential Provider",
@@ -1148,6 +1162,8 @@ func (r *credentialProviderResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -1170,6 +1186,8 @@ func (r *credentialProviderResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Get refreshed credential value from Aembit
 	credentialProvider, err, notFound := r.client.GetCredentialProviderV2(
@@ -1197,6 +1215,8 @@ func (r *credentialProviderResource) Read(
 		r.client.StackDomain,
 	)
 
+	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1218,6 +1238,8 @@ func (r *credentialProviderResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -1249,17 +1271,19 @@ func (r *credentialProviderResource) Update(
 		)
 		return
 	}
+// Map response body to schema and populate Computed attribute values
+state = convertCredentialProviderV2DTOToModel(
+	ctx,
+	*credentialProvider,
+	&plan,
+	r.client.Tenant,
+	r.client.StackDomain,
+)
 
-	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderV2DTOToModel(
-		ctx,
-		*credentialProvider,
-		&plan,
-		r.client.Tenant,
-		r.client.StackDomain,
-	)
-	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
+state.ResourceSetId = types.StringValue(resourceSetId)
+
+// Set state to fully populated data
+diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

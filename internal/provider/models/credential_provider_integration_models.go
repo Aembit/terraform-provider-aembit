@@ -8,6 +8,7 @@ import (
 type CredentialProviderIntegrationResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                   types.String                                            `tfsdk:"id"`
+	ResourceSetId        types.String                                            `tfsdk:"resource_set_id"`
 	Name                 types.String                                            `tfsdk:"name"`
 	Description          types.String                                            `tfsdk:"description"`
 	GitLab               *CredentialProviderIntegrationGitlabModel               `tfsdk:"gitlab"`
