@@ -5,8 +5,9 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 // ServerWorkloadResourceModel maps the resource schema.
 type ServerWorkloadResourceModel struct {
 	// ID is required for Framework acceptance testing
-	ID              types.String          `tfsdk:"id"`
-	Name            types.String          `tfsdk:"name"`
+	ID                             types.String          `tfsdk:"id"`
+	ResourceSetId                  types.String          `tfsdk:"resource_set_id"`
+	Name                           types.String          `tfsdk:"name"`
 	Description     types.String          `tfsdk:"description"`
 	IsActive        types.Bool            `tfsdk:"is_active"`
 	Tags            types.Map             `tfsdk:"tags"`

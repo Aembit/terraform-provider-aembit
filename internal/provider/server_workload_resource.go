@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -69,6 +70,15 @@ func (r *serverWorkloadResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Server Workload.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Server Workload.",
@@ -290,8 +300,13 @@ func (r *serverWorkloadResource) Create(
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Server Workload
-	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
+	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating server workload",
@@ -304,6 +319,8 @@ func (r *serverWorkloadResource) Create(
 	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
 		r.client.Tenant,
 		r.client.StackDomain)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -327,6 +344,8 @@ func (r *serverWorkloadResource) Read(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Get refreshed workload value from Aembit
 	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil)
 	if err != nil {
@@ -346,6 +365,8 @@ func (r *serverWorkloadResource) Read(
 	state = convertServerWorkloadDTOToModel(ctx, serverWorkload, &state,
 		r.client.Tenant,
 		r.client.StackDomain)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -368,6 +389,8 @@ func (r *serverWorkloadResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -397,6 +420,8 @@ func (r *serverWorkloadResource) Update(
 	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
 		r.client.Tenant,
 		r.client.StackDomain)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
