@@ -80,6 +80,15 @@ func (r *trustProviderResource) Schema(
 					validators.UUIDRegexValidation(),
 				},
 			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Trust Provider.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
+			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Trust Provider.",
 				Required:    true,
@@ -960,8 +969,13 @@ func (r *trustProviderResource) Create(
 		return
 	}
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Trust Provider
-	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
+	trustProvider, err := r.client.CreateTrustProvider(trust, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Trust Provider",
@@ -978,6 +992,8 @@ func (r *trustProviderResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -1000,6 +1016,8 @@ func (r *trustProviderResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Get refreshed trust value from Aembit
 	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil)
@@ -1024,6 +1042,8 @@ func (r *trustProviderResource) Read(
 		r.client.StackDomain,
 	)
 
+	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1045,6 +1065,8 @@ func (r *trustProviderResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -1085,6 +1107,8 @@ func (r *trustProviderResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
