@@ -73,6 +73,15 @@ func (r *accessPolicyResource) Schema(
 					validators.UUIDRegexValidation(),
 				},
 			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Access Policy.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
+			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Policy.",
 				Optional:    true,
@@ -246,8 +255,13 @@ func (r *accessPolicyResource) Create(
 	// Generate API request body from plan
 	policy := convertAccessPolicyModelToPolicyDTO(plan, nil)
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
+
 	// Create new Access Policy
-	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
+	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating access policy",
@@ -258,6 +272,7 @@ func (r *accessPolicyResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessPolicyDTOToModel(plan, *accessPolicy)
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 	plan.CredentialProviders = sortCredentialProviders(
 		plan.CredentialProviders,
 		initialOrderOfCredentialProviders,
@@ -285,6 +300,8 @@ func (r *accessPolicyResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
@@ -323,6 +340,7 @@ func (r *accessPolicyResource) Read(
 	}
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
+	state.ResourceSetId = types.StringValue(resourceSetId)
 	state.CredentialProviders = sortCredentialProviders(
 		state.CredentialProviders,
 		initialOrderOfCredentialProviders,
@@ -350,6 +368,8 @@ func (r *accessPolicyResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -383,6 +403,7 @@ func (r *accessPolicyResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessPolicyDTOToModel(plan, *accessPolicy)
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	state.CredentialProviders = sortCredentialProviders(
 		state.CredentialProviders,
