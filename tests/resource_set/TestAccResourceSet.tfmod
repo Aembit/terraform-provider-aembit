@@ -1,0 +1,14 @@
+provider "aembit" {
+}
+
+data "aembit_roles" "test" {}
+
+locals {
+  role_ids_by_name = { for role in data.aembit_roles.test.roles : role.name => role.id }
+}
+
+resource "aembit_resource_set" "crs" {
+	name = "TF Acceptance Custom ResourceSet - Modified"
+	description = "TF Acceptance Custom ResourceSet - Modified"
+	roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
+}
