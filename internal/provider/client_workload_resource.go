@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,6 +73,15 @@ func (r *clientWorkloadResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Client Workload.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Client Workload.",
@@ -301,8 +311,12 @@ func (r *clientWorkloadResource) Create(
 		return
 	}
 
+	resourceSetId := plan.ResourceSetId.ValueString()
+	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
+		resourceSetId = DEFAULT_RESOURCESET_ID
+	}
 	// Create new Client Workload
-	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating client workload",
@@ -314,6 +328,7 @@ func (r *clientWorkloadResource) Create(
 	// Map response body to schema and populate Computed attribute values
 	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
 
+	plan.ResourceSetId = types.StringValue(resourceSetId)
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -336,6 +351,8 @@ func (r *clientWorkloadResource) Read(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Get refreshed workload value from Aembit
 	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil)
 	if err != nil {
@@ -353,7 +370,7 @@ func (r *clientWorkloadResource) Read(
 
 	// Overwrite items with refreshed state
 	state = convertClientWorkloadDTOToModel(ctx, clientWorkload, &state)
-
+	state.ResourceSetId = types.StringValue(resourceSetId)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -376,6 +393,7 @@ func (r *clientWorkloadResource) Update(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
 
@@ -406,6 +424,8 @@ func (r *clientWorkloadResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
