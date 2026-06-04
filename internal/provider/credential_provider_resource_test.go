@@ -1594,6 +1594,10 @@ func TestAccCredentialProviderResource_ClaudeWif(t *testing.T) {
 						"claude_wif.federation_rule_id",
 						"fdrl_test",
 					),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderClaude,
+						"claude_wif.oidc_issuer",
+					),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(testCredentialProviderClaude, "id"),
 				),
@@ -1618,6 +1622,10 @@ func TestAccCredentialProviderResource_ClaudeWif(t *testing.T) {
 						testCredentialProviderClaude,
 						"claude_wif.lifetime",
 						"1800",
+					),
+					resource.TestCheckResourceAttrSet(
+						testCredentialProviderClaude,
+						"claude_wif.oidc_issuer",
 					),
 				),
 			},

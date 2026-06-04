@@ -58,6 +58,7 @@ type CredentialProviderAwsSTSModel struct {
 }
 
 type CredentialProviderClaudeWifModel struct {
+	OIDCIssuer       types.String `tfsdk:"oidc_issuer"`
 	FederationRuleId types.String `tfsdk:"federation_rule_id"`
 	ServiceAccountId types.String `tfsdk:"service_account_id"`
 	OrganizationId   types.String `tfsdk:"organization_id"`

@@ -714,6 +714,10 @@ func (d *credentialProvidersDataSource) Schema(
 							Description: "Claude Workload Identity Federation type Credential Provider configuration.",
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
+								"oidc_issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.",
+									Computed:    true,
+								},
 								"federation_rule_id": schema.StringAttribute{
 									Description: "Claude Federation Rule ID.",
 									Computed:    true,
