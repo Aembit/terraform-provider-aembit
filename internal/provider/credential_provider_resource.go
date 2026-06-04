@@ -1024,6 +1024,10 @@ func (r *credentialProviderResource) Schema(
 				Description: "Claude Workload Identity Federation type Credential Provider configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
+					"oidc_issuer": schema.StringAttribute{
+						Description: "OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.",
+						Computed:    true,
+					},
 					"federation_rule_id": schema.StringAttribute{
 						Description: "Claude Federation Rule ID.",
 						Required:    true,
@@ -1061,7 +1065,7 @@ func (r *credentialProviderResource) Schema(
 						Computed:    true,
 						Default:     int64default.StaticInt64(3600),
 						Validators: []validator.Int64{
-							int64validator.Between(900, 43200),
+							int64validator.Between(300, 43200),
 						},
 					},
 				},
@@ -1553,7 +1557,7 @@ func convertCredentialProviderV2DTOToModel(
 	case "x509svid":
 		model.X509SvidCertificate = convertX509SvidCertificateDTOToModel(dto)
 	case "claude-wif":
-		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto)
+		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto, tenant, stackDomain)
 	}
 
 	return model
@@ -2250,8 +2254,10 @@ func convertToClaudeWifDTO(
 
 func convertClaudeWifV2DTOToModel(
 	dto aembit.CredentialProviderV2DTO,
+	tenant, stackDomain string,
 ) *models.CredentialProviderClaudeWifModel {
 	value := models.CredentialProviderClaudeWifModel{
+		OIDCIssuer:       types.StringValue(fmt.Sprintf(oidcIssuerTemplate, tenant, stackDomain)),
 		FederationRuleId: types.StringValue(dto.FederationRuleId),
 		ServiceAccountId: types.StringValue(dto.ServiceAccountId),
 		OrganizationId:   types.StringValue(dto.OrganizationId),

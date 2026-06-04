@@ -285,6 +285,10 @@ Optional:
 - `scope` (String) Claude Scope.
 - `workspace_id` (String) Claude Workspace ID.
 
+Read-Only:
+
+- `oidc_issuer` (String) OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.
+
 
 <a id="nestedatt--google_workload_identity"></a>
 ### Nested Schema for `google_workload_identity`
