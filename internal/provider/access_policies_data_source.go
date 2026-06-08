@@ -173,7 +173,7 @@ func (d *accessPoliciesDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	accessPolicies, err := d.client.GetAccessPoliciesV2(nil, resourceSetId)
+	accessPolicies, err := d.client.GetAccessPoliciesV2(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Access Policies",
@@ -190,7 +190,7 @@ func (d *accessPoliciesDataSource) Read(
 		credentialMappings, err, _ := d.client.GetAccessPolicyV2CredentialMappings(
 			accessPolicy.ExternalID,
 			nil,
-			resourceSetId,
+			&resourceSetId,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(

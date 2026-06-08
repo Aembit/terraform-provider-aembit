@@ -268,7 +268,7 @@ func (r *accessPolicyResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Access Policy
-	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil, resourceSetId)
+	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating access policy",
@@ -317,7 +317,7 @@ func (r *accessPolicyResource) Read(
 	}
 
 	// Get refreshed policy value from Aembit
-	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil, resourceSetId)
+	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil, &resourceSetId)
 
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -336,7 +336,7 @@ func (r *accessPolicyResource) Read(
 	credentialMappings, err, _ := r.client.GetAccessPolicyV2CredentialMappings(
 		state.ID.ValueString(),
 		nil,
-		resourceSetId,
+		&resourceSetId,
 	)
 
 	if err != nil {
@@ -400,7 +400,7 @@ func (r *accessPolicyResource) Update(
 	policy := convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
 	// Update Access Policy
-	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, resourceSetId)
+	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating access policy",
@@ -445,7 +445,7 @@ func (r *accessPolicyResource) Delete(
 
 	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Policy",
@@ -456,7 +456,7 @@ func (r *accessPolicyResource) Delete(
 	}
 
 	// Delete existing Access Policy
-	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Access Policy",

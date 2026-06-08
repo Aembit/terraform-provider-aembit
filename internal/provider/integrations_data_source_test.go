@@ -26,7 +26,7 @@ func testFindIntegration(resourceName string) resource.TestCheckFunc {
 
 		resourceSetID := rs.Primary.Attributes["resource_set_id"]
 
-		if _, err, notFound = testClient.GetIntegrationV2(rs.Primary.ID, nil, resourceSetID); notFound {
+		if _, err, notFound = testClient.GetIntegrationV2(rs.Primary.ID, nil, &resourceSetID); notFound {
 			return err
 		}
 		return nil

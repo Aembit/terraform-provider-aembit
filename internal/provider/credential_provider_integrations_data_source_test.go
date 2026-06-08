@@ -28,7 +28,7 @@ func testFindCredentialProviderIntegration(resourceName string) resource.TestChe
 
 		resourceSetID := rs.Primary.Attributes["resource_set_id"]
 
-		if _, err, notFound = testClient.GetCredentialProviderIntegration(rs.Primary.ID, nil, resourceSetID); notFound {
+		if _, err, notFound = testClient.GetCredentialProviderIntegration(rs.Primary.ID, nil, &resourceSetID); notFound {
 			return err
 		}
 		return nil

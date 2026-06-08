@@ -267,7 +267,7 @@ func (r *accessConditionResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new AccessCondition
-	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil, resourceSetId)
+	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Access Condition",
@@ -306,7 +306,7 @@ func (r *accessConditionResource) Read(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil, resourceSetId)
+	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Access Condition",
@@ -369,7 +369,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Update AccessCondition
-	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, resourceSetId)
+	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Access Condition",
@@ -409,7 +409,7 @@ func (r *accessConditionResource) Delete(
 
 	// Check if Access Condition is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Condition",
@@ -420,7 +420,7 @@ func (r *accessConditionResource) Delete(
 	}
 
 	// Delete existing AccessCondition
-	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting AccessCondition",

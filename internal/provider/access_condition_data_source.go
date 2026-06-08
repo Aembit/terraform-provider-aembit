@@ -194,7 +194,7 @@ func (d *accessConditionsDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	accessConditions, err := d.client.GetAccessConditionsV2(nil, resourceSetId)
+	accessConditions, err := d.client.GetAccessConditionsV2(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit AccessConditions",

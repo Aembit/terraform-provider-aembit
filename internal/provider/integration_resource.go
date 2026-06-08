@@ -177,7 +177,7 @@ func (r *integrationResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Integration
-	integration, err := r.client.CreateIntegrationV2(dto, nil, resourceSetId)
+	integration, err := r.client.CreateIntegrationV2(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -216,7 +216,7 @@ func (r *integrationResource) Read(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil, resourceSetId)
+	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
@@ -273,7 +273,7 @@ func (r *integrationResource) Update(
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegrationV2(dto, nil, resourceSetId)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -313,7 +313,7 @@ func (r *integrationResource) Delete(
 
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -324,7 +324,7 @@ func (r *integrationResource) Delete(
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",

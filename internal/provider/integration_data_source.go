@@ -149,7 +149,7 @@ func (d *integrationsDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	integrations, err := d.client.GetIntegrationsV2(nil, resourceSetId)
+	integrations, err := d.client.GetIntegrationsV2(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",

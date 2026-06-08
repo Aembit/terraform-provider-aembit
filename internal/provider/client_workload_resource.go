@@ -316,7 +316,7 @@ func (r *clientWorkloadResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Client Workload
-	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, resourceSetId)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating client workload",
@@ -354,7 +354,7 @@ func (r *clientWorkloadResource) Read(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil, resourceSetId)
+	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Client Workload",
@@ -414,7 +414,7 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Update Client Workload
-	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil, resourceSetId)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating client workload",
@@ -454,7 +454,7 @@ func (r *clientWorkloadResource) Delete(
 
 	// Check if Client Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -465,7 +465,7 @@ func (r *clientWorkloadResource) Delete(
 	}
 
 	// Delete existing Client Workload
-	_, err := r.client.DeleteClientWorkload(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteClientWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Client Workload",

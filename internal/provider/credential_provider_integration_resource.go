@@ -221,7 +221,7 @@ func (r *credentialProviderIntegrationResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Integration
-	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil, resourceSetId)
+	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -268,7 +268,7 @@ func (r *credentialProviderIntegrationResource) Read(
 	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
 		state.ID.ValueString(),
 		nil,
-		resourceSetId,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -331,7 +331,7 @@ func (r *credentialProviderIntegrationResource) Update(
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
-	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, resourceSetId)
+	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider Integration",
@@ -375,7 +375,7 @@ func (r *credentialProviderIntegrationResource) Delete(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Delete existing Credential Provider Integration
-	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider Integration",

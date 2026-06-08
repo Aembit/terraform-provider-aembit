@@ -305,7 +305,7 @@ func (r *serverWorkloadResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Server Workload
-	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, resourceSetId)
+	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating server workload",
@@ -346,7 +346,7 @@ func (r *serverWorkloadResource) Read(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed workload value from Aembit
-	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil, resourceSetId)
+	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Server Workload",
@@ -406,7 +406,7 @@ func (r *serverWorkloadResource) Update(
 	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Server Workload
-	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, resourceSetId)
+	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating server workload",
@@ -448,7 +448,7 @@ func (r *serverWorkloadResource) Delete(
 
 	// Check if Server Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Server Workload",
@@ -459,7 +459,7 @@ func (r *serverWorkloadResource) Delete(
 	}
 
 	// Delete existing Server Workload
-	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",

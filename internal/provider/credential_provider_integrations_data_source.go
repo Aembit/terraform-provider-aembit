@@ -178,7 +178,7 @@ func (d *credentialProviderIntegrationsDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	integrations, err := d.client.GetCredentialProviderIntegrations(nil, resourceSetId)
+	integrations, err := d.client.GetCredentialProviderIntegrations(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Provider Integrations",

@@ -537,7 +537,7 @@ func (d *trustProvidersDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	trustProviders, err := d.client.GetTrustProviders(nil, resourceSetId)
+	trustProviders, err := d.client.GetTrustProviders(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Trust Providers",

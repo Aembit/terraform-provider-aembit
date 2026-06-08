@@ -127,7 +127,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	standaloneCertificates, err := d.client.GetStandaloneCertificates(nil, resourceSetId)
+	standaloneCertificates, err := d.client.GetStandaloneCertificates(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Standalone Certificate Authorities",

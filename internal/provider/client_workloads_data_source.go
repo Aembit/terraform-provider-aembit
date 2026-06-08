@@ -143,7 +143,7 @@ func (d *clientWorkloadsDataSource) Read(
 
 	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
 
-	clientWorkloads, err := d.client.GetClientWorkloads(nil, resourceSetId)
+	clientWorkloads, err := d.client.GetClientWorkloads(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Client Workloads",

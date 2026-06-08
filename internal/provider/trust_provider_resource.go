@@ -973,7 +973,7 @@ func (r *trustProviderResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Trust Provider
-	trustProvider, err := r.client.CreateTrustProvider(trust, nil, resourceSetId)
+	trustProvider, err := r.client.CreateTrustProvider(trust, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Trust Provider",
@@ -1018,7 +1018,7 @@ func (r *trustProviderResource) Read(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil, resourceSetId)
+	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Trust Provider",
@@ -1088,7 +1088,7 @@ func (r *trustProviderResource) Update(
 	}
 
 	// Update Trust Provider
-	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, resourceSetId)
+	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Trust Provider",
@@ -1134,7 +1134,7 @@ func (r *trustProviderResource) Delete(
 
 	// Check if Trust Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Trust Provider",
@@ -1145,7 +1145,7 @@ func (r *trustProviderResource) Delete(
 	}
 
 	// Delete existing Trust Provider
-	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Trust Provider",

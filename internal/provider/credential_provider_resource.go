@@ -1143,7 +1143,7 @@ func (r *credentialProviderResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Credential Provider
-	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, resourceSetId)
+	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Credential Provider",
@@ -1191,7 +1191,7 @@ func (r *credentialProviderResource) Read(
 	credentialProvider, err, notFound := r.client.GetCredentialProviderV2(
 		state.ID.ValueString(),
 		nil,
-		resourceSetId,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -1262,7 +1262,7 @@ func (r *credentialProviderResource) Update(
 	)
 
 	// Update Credential Provider
-	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, resourceSetId)
+	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider",
@@ -1307,7 +1307,7 @@ func (r *credentialProviderResource) Delete(
 
 	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil, resourceSetId)
+		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Credential Provider",
@@ -1318,7 +1318,7 @@ func (r *credentialProviderResource) Delete(
 	}
 
 	// Delete existing Credential Provider
-	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",

@@ -154,7 +154,7 @@ func (r *standaloneCertificateAuthorityResource) Create(
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Standalone Certificate Authority
-	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, resourceSetId)
+	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating standalone certificate authority",
@@ -196,7 +196,7 @@ func (r *standaloneCertificateAuthorityResource) Read(
 	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(
 		state.ID.ValueString(),
 		nil,
-		resourceSetId,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -259,7 +259,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Standalone Certificate Authority
-	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil, resourceSetId)
+	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Standalone Certificate Authority",
@@ -298,7 +298,7 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Delete existing Standalone Certificate Authority
-	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil, resourceSetId)
+	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Standalone Certificate Authority",

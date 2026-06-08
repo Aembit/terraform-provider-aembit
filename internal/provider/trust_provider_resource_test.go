@@ -41,7 +41,7 @@ func testDeleteTrustProvider(resourceName string) resource.TestCheckFunc {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 		resourceSetId := getResourceSetId(types.StringValue(rs.Primary.Attributes["resource_set_id"]), testClient)
-		if ok, err = testClient.DeleteTrustProvider(context.Background(), rs.Primary.ID, nil, resourceSetId); !ok {
+		if ok, err = testClient.DeleteTrustProvider(context.Background(), rs.Primary.ID, nil, &resourceSetId); !ok {
 			return err
 		}
 		return nil
