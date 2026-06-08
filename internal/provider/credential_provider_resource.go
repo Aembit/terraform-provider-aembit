@@ -1113,6 +1113,7 @@ func (r *credentialProviderResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -1139,10 +1140,7 @@ func (r *credentialProviderResource) Create(
 		r.client.DefaultTags,
 	)
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Credential Provider
 	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, resourceSetId)
@@ -1187,12 +1185,13 @@ func (r *credentialProviderResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed credential value from Aembit
 	credentialProvider, err, notFound := r.client.GetCredentialProviderV2(
 		state.ID.ValueString(),
 		nil,
+		resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -1239,7 +1238,7 @@ func (r *credentialProviderResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -1263,7 +1262,7 @@ func (r *credentialProviderResource) Update(
 	)
 
 	// Update Credential Provider
-	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil)
+	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider",
@@ -1271,19 +1270,19 @@ func (r *credentialProviderResource) Update(
 		)
 		return
 	}
-// Map response body to schema and populate Computed attribute values
-state = convertCredentialProviderV2DTOToModel(
-	ctx,
-	*credentialProvider,
-	&plan,
-	r.client.Tenant,
-	r.client.StackDomain,
-)
+	// Map response body to schema and populate Computed attribute values
+	state = convertCredentialProviderV2DTOToModel(
+		ctx,
+		*credentialProvider,
+		&plan,
+		r.client.Tenant,
+		r.client.StackDomain,
+	)
 
-state.ResourceSetId = types.StringValue(resourceSetId)
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
-// Set state to fully populated data
-diags = resp.State.Set(ctx, state)
+	// Set state to fully populated data
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1304,9 +1303,11 @@ func (r *credentialProviderResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Credential Provider",
@@ -1317,7 +1318,7 @@ func (r *credentialProviderResource) Delete(
 	}
 
 	// Delete existing Credential Provider
-	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",
@@ -1333,6 +1334,14 @@ func (r *credentialProviderResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

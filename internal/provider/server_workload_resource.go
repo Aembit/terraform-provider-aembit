@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -281,6 +282,7 @@ func (r *serverWorkloadResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -300,10 +302,7 @@ func (r *serverWorkloadResource) Create(
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, resourceSetId)
@@ -344,10 +343,10 @@ func (r *serverWorkloadResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed workload value from Aembit
-	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil)
+	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Server Workload",
@@ -390,7 +389,7 @@ func (r *serverWorkloadResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -407,7 +406,7 @@ func (r *serverWorkloadResource) Update(
 	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Server Workload
-	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
+	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating server workload",
@@ -445,9 +444,11 @@ func (r *serverWorkloadResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Server Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil)
+		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Server Workload",
@@ -458,7 +459,7 @@ func (r *serverWorkloadResource) Delete(
 	}
 
 	// Delete existing Server Workload
-	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",
@@ -468,13 +469,21 @@ func (r *serverWorkloadResource) Delete(
 	}
 }
 
-// Imports an existing resource by passing externalID.
+// Imports an existing resource by passing externalId.
 func (r *serverWorkloadResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Retrieve import externalID and save to id attribute
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
+	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 

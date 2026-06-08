@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -24,6 +25,7 @@ var (
 	_ resource.Resource                = &credentialProviderIntegrationResource{}
 	_ resource.ResourceWithConfigure   = &credentialProviderIntegrationResource{}
 	_ resource.ResourceWithImportState = &credentialProviderIntegrationResource{}
+	_ resource.ResourceWithModifyPlan  = &credentialProviderIntegrationResource{}
 )
 
 // NewIntegrationResource is a helper function to simplify the provider implementation.
@@ -52,6 +54,14 @@ func (r *credentialProviderIntegrationResource) Configure(
 	resp *resource.ConfigureResponse,
 ) {
 	r.client = resourceConfigure(req, resp)
+}
+
+func (r *credentialProviderIntegrationResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Schema defines the schema for the resource.
@@ -208,8 +218,10 @@ func (r *credentialProviderIntegrationResource) Create(
 	// Generate API request body from plan
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, nil)
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Create new Integration
-	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil)
+	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -250,12 +262,13 @@ func (r *credentialProviderIntegrationResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
 	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
 		state.ID.ValueString(),
 		nil,
+		resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -301,7 +314,7 @@ func (r *credentialProviderIntegrationResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -318,7 +331,7 @@ func (r *credentialProviderIntegrationResource) Update(
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
-	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil)
+	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider Integration",
@@ -359,8 +372,10 @@ func (r *credentialProviderIntegrationResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Delete existing Credential Provider Integration
-	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider Integration",
@@ -376,6 +391,14 @@ func (r *credentialProviderIntegrationResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

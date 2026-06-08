@@ -181,7 +181,11 @@ func (r *identityProviderDataSource) Read(
 ) {
 	// Get current state
 	var state models.IdentityProviderDataSourceModel
-	req.Config.Get(ctx, &state)
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	idps, err := r.client.GetIdentityProviders(nil)
 	if err != nil {
@@ -191,6 +195,8 @@ func (r *identityProviderDataSource) Read(
 		)
 		return
 	}
+
+	state.IdentityProviders = make([]models.IdentityProviderResourceModel, 0)
 
 	for _, idp := range idps {
 		idpState := convertIdentityProviderDTOToModel(
@@ -203,8 +209,8 @@ func (r *identityProviderDataSource) Read(
 		state.IdentityProviders = append(state.IdentityProviders, idpState)
 	}
 
-	// Set refreshed state
-	diags := resp.State.Set(ctx, &state)
+	// Set state
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

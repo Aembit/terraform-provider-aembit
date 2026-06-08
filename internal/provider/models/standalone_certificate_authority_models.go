@@ -20,5 +20,6 @@ type StandaloneCertificateAuthorityResourceModel struct {
 
 // StandaloneCertificatesDataSourceModel maps the datasource schema.
 type StandaloneCertificateAuthoritiesDataSourceModel struct {
+	ResourceSetId          types.String                                  `tfsdk:"resource_set_id"`
 	StandaloneCertificates []StandaloneCertificateAuthorityResourceModel `tfsdk:"standalone_certificate_authorities"`
 }

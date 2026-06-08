@@ -53,7 +53,8 @@ func testDeleteClientWorkload() resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[testCWResource]; !ok {
 			return fmt.Errorf("Not found: %s", testCWResource)
 		}
-		if ok, err = testClient.DeleteClientWorkload(context.Background(), rs.Primary.ID, nil); !ok {
+		resourceSetId := getResourceSetId(types.StringValue(rs.Primary.Attributes["resource_set_id"]), testClient)
+		if ok, err = testClient.DeleteClientWorkload(context.Background(), rs.Primary.ID, nil, resourceSetId); !ok {
 			return err
 		}
 		return nil

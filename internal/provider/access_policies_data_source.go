@@ -54,6 +54,11 @@ func (d *accessPoliciesDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages access policies.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier to filter the Access Policies, or provider-level override.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"access_policies": schema.ListNestedAttribute{
 				Description: "List of access policies.",
 				Computed:    true,
@@ -156,12 +161,19 @@ func (d *accessPoliciesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *accessPoliciesDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.AccessPoliciesDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	accessPolicies, err := d.client.GetAccessPoliciesV2(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	accessPolicies, err := d.client.GetAccessPoliciesV2(nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Access Policies",
@@ -170,12 +182,15 @@ func (d *accessPoliciesDataSource) Read(
 		return
 	}
 
+	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Map response body to model
 	for _, accessPolicy := range accessPolicies {
 		// fetch mappings values individually
 		credentialMappings, err, _ := d.client.GetAccessPolicyV2CredentialMappings(
 			accessPolicy.ExternalID,
 			nil,
+			resourceSetId,
 		)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -189,7 +204,7 @@ func (d *accessPoliciesDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -225,6 +225,7 @@ func (r *accessConditionResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Configure validators to ensure that only one Access Condition type is specified.
@@ -263,10 +264,7 @@ func (r *accessConditionResource) Create(
 		return
 	}
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new AccessCondition
 	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil, resourceSetId)
@@ -305,10 +303,10 @@ func (r *accessConditionResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil)
+	accessCondition, err, notFound := r.client.GetAccessConditionV2(state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Access Condition",
@@ -347,7 +345,7 @@ func (r *accessConditionResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -371,7 +369,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Update AccessCondition
-	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil)
+	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Access Condition",
@@ -407,9 +405,11 @@ func (r *accessConditionResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Access Condition is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Condition",
@@ -420,7 +420,7 @@ func (r *accessConditionResource) Delete(
 	}
 
 	// Delete existing AccessCondition
-	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting AccessCondition",
@@ -436,6 +436,14 @@ func (r *accessConditionResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

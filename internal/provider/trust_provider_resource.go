@@ -778,6 +778,7 @@ func (r *trustProviderResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Configure validators to ensure that only one Trust Provider type is specified.
@@ -969,10 +970,7 @@ func (r *trustProviderResource) Create(
 		return
 	}
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Trust Provider
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil, resourceSetId)
@@ -1017,10 +1015,10 @@ func (r *trustProviderResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil)
+	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Trust Provider",
@@ -1066,7 +1064,7 @@ func (r *trustProviderResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -1090,7 +1088,7 @@ func (r *trustProviderResource) Update(
 	}
 
 	// Update Trust Provider
-	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
+	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Trust Provider",
@@ -1132,9 +1130,11 @@ func (r *trustProviderResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Trust Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil)
+		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Trust Provider",
@@ -1145,7 +1145,7 @@ func (r *trustProviderResource) Delete(
 	}
 
 	// Delete existing Trust Provider
-	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Trust Provider",
@@ -1161,6 +1161,14 @@ func (r *trustProviderResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -153,6 +154,7 @@ func (r *integrationResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -172,10 +174,7 @@ func (r *integrationResource) Create(
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegrationV2(dto, nil, resourceSetId)
@@ -214,10 +213,10 @@ func (r *integrationResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed trust value from Aembit
-	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil)
+	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
@@ -257,7 +256,7 @@ func (r *integrationResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -274,7 +273,7 @@ func (r *integrationResource) Update(
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegrationV2(dto, nil)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -284,7 +283,7 @@ func (r *integrationResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertIntegrationDTOToModel(ctx, *newIntegration, &plan)
+	state = convertIntegrationDTOToModel(ctx, *integration, &plan)
 
 	state.ResourceSetId = types.StringValue(resourceSetId)
 
@@ -310,9 +309,11 @@ func (r *integrationResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -323,7 +324,7 @@ func (r *integrationResource) Delete(
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
@@ -339,6 +340,14 @@ func (r *integrationResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

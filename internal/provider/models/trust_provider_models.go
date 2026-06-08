@@ -31,6 +31,7 @@ type TrustProviderResourceModel struct {
 
 // trustProviderDataSourceModel maps the datasource schema.
 type TrustProvidersDataSourceModel struct {
+	ResourceSetId  types.String                 `tfsdk:"resource_set_id"`
 	TrustProviders []TrustProviderResourceModel `tfsdk:"trust_providers"`
 }
 

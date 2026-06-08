@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -125,6 +126,7 @@ func (r *standaloneCertificateAuthorityResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -149,10 +151,7 @@ func (r *standaloneCertificateAuthorityResource) Create(
 		r.client.DefaultTags,
 	)
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Standalone Certificate Authority
 	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, resourceSetId)
@@ -191,12 +190,13 @@ func (r *standaloneCertificateAuthorityResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Get refreshed workload value from Aembit
 	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(
 		state.ID.ValueString(),
 		nil,
+		resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -242,7 +242,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -259,7 +259,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Standalone Certificate Authority
-	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil)
+	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Standalone Certificate Authority",
@@ -295,8 +295,10 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Delete existing Standalone Certificate Authority
-	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Standalone Certificate Authority",
@@ -306,13 +308,21 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 	}
 }
 
-// Imports an existing resource by passing externalID.
+// Imports an existing resource by passing externalId.
 func (r *standaloneCertificateAuthorityResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Retrieve import externalID and save to id attribute
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
+	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -27,6 +28,7 @@ var (
 	_ resource.Resource                = &accessPolicyResource{}
 	_ resource.ResourceWithConfigure   = &accessPolicyResource{}
 	_ resource.ResourceWithImportState = &accessPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &accessPolicyResource{}
 )
 
 // NewAccessPolicyResource is a helper function to simplify the provider implementation.
@@ -55,6 +57,14 @@ func (r *accessPolicyResource) Configure(
 	resp *resource.ConfigureResponse,
 ) {
 	r.client = resourceConfigure(req, resp)
+}
+
+func (r *accessPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Schema defines the schema for the resource.
@@ -255,10 +265,7 @@ func (r *accessPolicyResource) Create(
 	// Generate API request body from plan
 	policy := convertAccessPolicyModelToPolicyDTO(plan, nil)
 
-	resourceSetId := plan.ResourceSetId.ValueString()
-	if plan.ResourceSetId.IsNull() || plan.ResourceSetId.IsUnknown() {
-		resourceSetId = DEFAULT_RESOURCESET_ID
-	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Access Policy
 	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil, resourceSetId)
@@ -301,7 +308,7 @@ func (r *accessPolicyResource) Read(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
@@ -310,7 +317,7 @@ func (r *accessPolicyResource) Read(
 	}
 
 	// Get refreshed policy value from Aembit
-	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil)
+	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil, resourceSetId)
 
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -329,6 +336,7 @@ func (r *accessPolicyResource) Read(
 	credentialMappings, err, _ := r.client.GetAccessPolicyV2CredentialMappings(
 		state.ID.ValueString(),
 		nil,
+		resourceSetId,
 	)
 
 	if err != nil {
@@ -369,7 +377,7 @@ func (r *accessPolicyResource) Update(
 		return
 	}
 
-	resourceSetId := state.ResourceSetId.ValueString()
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -392,7 +400,7 @@ func (r *accessPolicyResource) Update(
 	policy := convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
 	// Update Access Policy
-	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil)
+	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating access policy",
@@ -433,9 +441,11 @@ func (r *accessPolicyResource) Delete(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil, resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Policy",
@@ -446,7 +456,7 @@ func (r *accessPolicyResource) Delete(
 	}
 
 	// Delete existing Access Policy
-	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Access Policy",
@@ -462,6 +472,14 @@ func (r *accessPolicyResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

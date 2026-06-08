@@ -23,6 +23,7 @@ type ClientWorkloadResourceModel struct {
 
 // clientWorkloadDataSourceModel maps the datasource schema.
 type ClientWorkloadsDataSourceModel struct {
+	ResourceSetId   types.String                  `tfsdk:"resource_set_id"`
 	ClientWorkloads []ClientWorkloadResourceModel `tfsdk:"client_workloads"`
 }
 

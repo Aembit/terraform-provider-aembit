@@ -29,6 +29,7 @@ type IntegrationOAuthClientCredentialsModel struct {
 
 // integrationDataSourceModel maps the datasource schema.
 type IntegrationsDataSourceModel struct {
-	Type         types.String               `tfsdk:"type"`
-	Integrations []IntegrationResourceModel `tfsdk:"integrations"`
+	ResourceSetId types.String               `tfsdk:"resource_set_id"`
+	Type          types.String               `tfsdk:"type"`
+	Integrations  []IntegrationResourceModel `tfsdk:"integrations"`
 }

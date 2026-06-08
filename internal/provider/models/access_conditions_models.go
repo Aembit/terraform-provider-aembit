@@ -61,5 +61,6 @@ type ScheduleModel struct {
 
 // accessConditionDataSourceModel maps the datasource schema.
 type AccessConditionsDataSourceModel struct {
+	ResourceSetId    types.String                   `tfsdk:"resource_set_id"`
 	AccessConditions []AccessConditionResourceModel `tfsdk:"access_conditions"`
 }

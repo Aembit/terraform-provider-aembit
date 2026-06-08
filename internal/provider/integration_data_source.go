@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -55,6 +56,11 @@ func (d *integrationsDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages an integration.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Integration.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"type": schema.StringAttribute{
 				Optional:    true,
 				Description: "Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)",
@@ -135,9 +141,15 @@ func (d *integrationsDataSource) Read(
 ) {
 	var state models.IntegrationsDataSourceModel
 
-	req.Config.Get(ctx, &state)
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	integrations, err := d.client.GetIntegrationsV2(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	integrations, err := d.client.GetIntegrationsV2(nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Integrations",
@@ -145,6 +157,8 @@ func (d *integrationsDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, integration := range integrations {
@@ -165,7 +179,7 @@ func (d *integrationsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

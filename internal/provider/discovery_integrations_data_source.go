@@ -131,10 +131,16 @@ func (d *discoveryIntegrationsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *discoveryIntegrationsDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.DiscoveryIntegrationsDataSourceModel
+
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	discoveryIntegrations, err := d.client.GetDiscoveryIntegrations(nil)
 	if err != nil {
@@ -157,7 +163,7 @@ func (d *discoveryIntegrationsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

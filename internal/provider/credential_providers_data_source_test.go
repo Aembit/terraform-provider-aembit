@@ -25,7 +25,10 @@ func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
-		if _, err, notFound = testClient.GetCredentialProviderV2(rs.Primary.ID, nil); notFound {
+
+		resourceSetID := rs.Primary.Attributes["resource_set_id"]
+
+		if _, err, notFound = testClient.GetCredentialProviderV2(rs.Primary.ID, nil, resourceSetID); notFound {
 			return err
 		}
 		return nil

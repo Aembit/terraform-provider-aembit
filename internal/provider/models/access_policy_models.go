@@ -21,6 +21,7 @@ type AccessPolicyResourceModel struct {
 
 // accessPoliciesDataSourceModel maps the datasource schema.
 type AccessPoliciesDataSourceModel struct {
+	ResourceSetId  types.String                `tfsdk:"resource_set_id"`
 	AccessPolicies []AccessPolicyResourceModel `tfsdk:"access_policies"`
 }
 

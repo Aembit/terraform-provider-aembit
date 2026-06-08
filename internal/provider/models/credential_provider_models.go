@@ -37,6 +37,7 @@ type CredentialProviderResourceModel struct {
 
 // credentialProviderDataSourceModel maps the datasource schema.
 type CredentialProvidersDataSourceModel struct {
+	ResourceSetId       types.String                      `tfsdk:"resource_set_id"`
 	CredentialProviders []CredentialProviderResourceModel `tfsdk:"credential_providers"`
 }
 

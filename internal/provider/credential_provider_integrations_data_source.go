@@ -6,6 +6,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
 )
 
@@ -52,6 +53,11 @@ func (d *credentialProviderIntegrationsDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages a credential provider integration.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider Integration.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"credential_provider_integrations": schema.ListNestedAttribute{
 				Description: "List of credential provider integrations.",
 				Computed:    true,
@@ -164,9 +170,15 @@ func (d *credentialProviderIntegrationsDataSource) Read(
 ) {
 	var state models.CredentialProviderIntegrationsDataSourceModel
 
-	req.Config.Get(ctx, &state)
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	integrations, err := d.client.GetCredentialProviderIntegrations(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	integrations, err := d.client.GetCredentialProviderIntegrations(nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Provider Integrations",
@@ -174,6 +186,9 @@ func (d *credentialProviderIntegrationsDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
+	state.CredentialProviderIntegrations = make([]models.CredentialProviderIntegrationResourceModel, 0)
 
 	// Map response body to model
 	for _, integration := range integrations {
@@ -191,7 +206,7 @@ func (d *credentialProviderIntegrationsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

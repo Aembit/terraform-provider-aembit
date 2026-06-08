@@ -54,6 +54,11 @@ func (r *clientWorkloadsDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages client workloads.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier to filter the Client Workloads.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"client_workloads": schema.ListNestedAttribute{
 				Description: "List of client workloads.",
 				Computed:    true,
@@ -126,12 +131,19 @@ func (r *clientWorkloadsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *clientWorkloadsDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.ClientWorkloadsDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	clientWorkloads, err := d.client.GetClientWorkloads(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	clientWorkloads, err := d.client.GetClientWorkloads(nil, resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Client Workloads",
@@ -139,6 +151,8 @@ func (d *clientWorkloadsDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, clientWorkload := range clientWorkloads {
@@ -152,7 +166,7 @@ func (d *clientWorkloadsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
