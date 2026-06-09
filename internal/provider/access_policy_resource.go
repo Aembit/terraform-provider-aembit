@@ -283,7 +283,7 @@ func (r *accessPolicyResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessPolicyDTOToModel(plan, *accessPolicy)
-	plan.ResourceSetId = types.StringValue(resourceSetId)
+
 	plan.CredentialProviders = sortCredentialProviders(
 		plan.CredentialProviders,
 		initialOrderOfCredentialProviders,
@@ -352,7 +352,6 @@ func (r *accessPolicyResource) Read(
 	}
 
 	state = convertAccessPolicyExternalDTOToModel(accessPolicy, credentialMappings)
-	state.ResourceSetId = types.StringValue(resourceSetId)
 	state.CredentialProviders = sortCredentialProviders(
 		state.CredentialProviders,
 		initialOrderOfCredentialProviders,
@@ -380,8 +379,6 @@ func (r *accessPolicyResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -412,7 +409,7 @@ func (r *accessPolicyResource) Update(
 	policy := convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
 	// Update Access Policy
-	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, &resourceSetId)
+	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, &policy.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Access Policy",
@@ -423,7 +420,6 @@ func (r *accessPolicyResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessPolicyDTOToModel(plan, *accessPolicy)
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	state.CredentialProviders = sortCredentialProviders(
 		state.CredentialProviders,
@@ -453,7 +449,7 @@ func (r *accessPolicyResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -472,7 +468,7 @@ func (r *accessPolicyResource) Delete(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Access Policy",
-			"Could not delete access policy, unexpected error: "+err.Error(),
+			"Could not delete Access Policy, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -557,6 +553,8 @@ func convertAccessPolicyModelToPolicyDTO(
 		}
 	}
 
+	policy.ResourceSet = model.ResourceSetId.ValueString()
+
 	return policy
 }
 
@@ -640,6 +638,7 @@ func convertAccessPolicyDTOToModel(
 		model.AccessConditions = nil
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 
@@ -702,6 +701,7 @@ func convertAccessPolicyExternalDTOToModel(
 		}
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

@@ -284,8 +284,6 @@ func (r *accessConditionResource) Create(
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
 
-	plan.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -431,7 +429,7 @@ func (r *accessConditionResource) Delete(
 	_, err := r.client.DeleteAccessCondition(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting AccessCondition",
+			"Error Deleting Access Condition",
 			"Could not delete Access Condition, unexpected error: "+err.Error(),
 		)
 		return
@@ -566,7 +564,7 @@ func convertAccessConditionModelToDTO(
 	}
 
 	accessCondition.Tags = collectAllTagsDto(ctx, client.DefaultTags, model.Tags)
-
+	accessCondition.ResourceSet = model.ResourceSetId.ValueString()
 	return accessCondition, nil
 }
 

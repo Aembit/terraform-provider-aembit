@@ -1,3 +1,6 @@
+provider "aembit" {
+}
+
 resource "aembit_credential_provider_integration" "awsiamrole_cpi" {
 	name = "TF Acceptance Aws IAM Role Credential Provider Integration"
 	description = "TF Acceptance Aws IAM Role Credential Provider Integration Description"

@@ -221,10 +221,10 @@ func (r *credentialProviderIntegrationResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, nil)
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Integration
 	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil, &resourceSetId)
@@ -243,8 +243,6 @@ func (r *credentialProviderIntegrationResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -296,8 +294,6 @@ func (r *credentialProviderIntegrationResource) Read(
 		r.client.StackDomain,
 	)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -319,8 +315,6 @@ func (r *credentialProviderIntegrationResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -345,7 +339,7 @@ func (r *credentialProviderIntegrationResource) Update(
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
-	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, &resourceSetId)
+	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider Integration",
@@ -361,8 +355,6 @@ func (r *credentialProviderIntegrationResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -386,7 +378,7 @@ func (r *credentialProviderIntegrationResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Delete existing Credential Provider Integration
 	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil, &resourceSetId)
@@ -453,6 +445,9 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.KeyVaultName = model.AzureEntraFederation.KeyVaultName.ValueString()
 		credentialIntegration.FetchSecretNames = model.AzureEntraFederation.FetchSecretNames.ValueBool()
 	}
+
+	credentialIntegration.ResourceSet = model.ResourceSetId.ValueString()
+
 	return credentialIntegration
 }
 
@@ -501,5 +496,7 @@ func convertCredentialProviderIntegrationDTOToModel(
 	default:
 		// This should never happen as the API restricts the type field to known values
 	}
+
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

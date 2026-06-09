@@ -1134,6 +1134,8 @@ func (r *credentialProviderResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	credential := convertCredentialProviderModelToV2DTO(
 		ctx,
@@ -1143,8 +1145,6 @@ func (r *credentialProviderResource) Create(
 		r.client.StackDomain,
 		r.client.DefaultTags,
 	)
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Credential Provider
 	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, &resourceSetId)
@@ -1164,8 +1164,6 @@ func (r *credentialProviderResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -1218,8 +1216,6 @@ func (r *credentialProviderResource) Read(
 		r.client.StackDomain,
 	)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1241,9 +1237,6 @@ func (r *credentialProviderResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
-
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
 
@@ -1274,7 +1267,7 @@ func (r *credentialProviderResource) Update(
 	)
 
 	// Update Credential Provider
-	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, &resourceSetId)
+	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, &credential.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider",
@@ -1290,8 +1283,6 @@ func (r *credentialProviderResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -1315,7 +1306,7 @@ func (r *credentialProviderResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -1482,6 +1473,7 @@ func convertCredentialProviderModelToV2DTO(
 	}
 
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	credential.ResourceSet = model.ResourceSetId.ValueString()
 	return credential
 }
 
@@ -1601,6 +1593,7 @@ func convertCredentialProviderV2DTOToModel(
 		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto)
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

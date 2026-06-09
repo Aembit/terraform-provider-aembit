@@ -149,6 +149,8 @@ func (r *standaloneCertificateAuthorityResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	standaloneCertificate := convertStandaloneCertificateModelToDTO(
 		ctx,
@@ -156,8 +158,6 @@ func (r *standaloneCertificateAuthorityResource) Create(
 		nil,
 		r.client.DefaultTags,
 	)
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Standalone Certificate Authority
 	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, &resourceSetId)
@@ -171,8 +171,6 @@ func (r *standaloneCertificateAuthorityResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificateResponse, &plan)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -224,8 +222,6 @@ func (r *standaloneCertificateAuthorityResource) Read(
 	// Overwrite items with refreshed state
 	state = convertStandaloneCertificateDTOToModel(ctx, standaloneCertificate, &state)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -248,8 +244,6 @@ func (r *standaloneCertificateAuthorityResource) Update(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
-
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
 
@@ -270,10 +264,10 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	}
 
 	// Generate API request body from plan
-	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
+	dto := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Standalone Certificate Authority
-	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil, &resourceSetId)
+	standaloneCertificate, err := r.client.UpdateStandaloneCertificate(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Standalone Certificate Authority",
@@ -283,9 +277,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertStandaloneCertificateDTOToModel(ctx, *serverWorkload, &plan)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
+	state = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificate, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -309,7 +301,7 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Delete existing Standalone Certificate Authority
 	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil, &resourceSetId)
@@ -361,6 +353,7 @@ func convertStandaloneCertificateModelToDTO(
 	}
 
 	standaloneCertificate.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	standaloneCertificate.ResourceSet = model.ResourceSetId.ValueString()
 	return standaloneCertificate
 }
 
@@ -382,5 +375,6 @@ func convertStandaloneCertificateDTOToModel(
 	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

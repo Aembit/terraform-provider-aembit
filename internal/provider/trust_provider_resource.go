@@ -966,6 +966,8 @@ func (r *trustProviderResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	trust, err := convertTrustProviderModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 	if err != nil {
@@ -975,8 +977,6 @@ func (r *trustProviderResource) Create(
 		)
 		return
 	}
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Trust Provider
 	trustProvider, err := r.client.CreateTrustProvider(trust, nil, &resourceSetId)
@@ -996,8 +996,6 @@ func (r *trustProviderResource) Create(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -1046,8 +1044,6 @@ func (r *trustProviderResource) Read(
 		r.client.StackDomain,
 	)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1069,8 +1065,6 @@ func (r *trustProviderResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -1102,7 +1096,7 @@ func (r *trustProviderResource) Update(
 	}
 
 	// Update Trust Provider
-	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, &resourceSetId)
+	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, &trust.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Trust Provider",
@@ -1119,8 +1113,6 @@ func (r *trustProviderResource) Update(
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -1144,7 +1136,7 @@ func (r *trustProviderResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Trust Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -1242,6 +1234,7 @@ func convertTrustProviderModelToDTO(
 	}
 
 	trust.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	trust.ResourceSet = model.ResourceSetId.ValueString()
 	return trust, err
 }
 
@@ -1901,6 +1894,8 @@ func convertTrustProviderDTOToModel(
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:terraform_idtoken:%s", stack, tenant, dto.ExternalID))
 		}
 	}
+
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 
 	return model
 }

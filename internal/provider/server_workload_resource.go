@@ -304,11 +304,10 @@ func (r *serverWorkloadResource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Server Workload
 	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, &resourceSetId)
@@ -324,8 +323,6 @@ func (r *serverWorkloadResource) Create(
 	plan = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
 		r.client.Tenant,
 		r.client.StackDomain)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -371,8 +368,6 @@ func (r *serverWorkloadResource) Read(
 		r.client.Tenant,
 		r.client.StackDomain)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -394,8 +389,6 @@ func (r *serverWorkloadResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -420,7 +413,7 @@ func (r *serverWorkloadResource) Update(
 	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Server Workload
-	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, &resourceSetId)
+	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, &workload.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Server Workload",
@@ -433,8 +426,6 @@ func (r *serverWorkloadResource) Update(
 	state = convertServerWorkloadDTOToModel(ctx, *serverWorkload, &plan,
 		r.client.Tenant,
 		r.client.StackDomain)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -458,7 +449,7 @@ func (r *serverWorkloadResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Server Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -565,6 +556,7 @@ func convertServerWorkloadModelToDTO(
 	}
 
 	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	workload.ResourceSet = model.ResourceSetId.ValueString()
 	return workload
 }
 
@@ -610,5 +602,6 @@ func convertServerWorkloadDTOToModel(
 		}
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

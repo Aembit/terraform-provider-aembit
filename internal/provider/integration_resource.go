@@ -176,11 +176,10 @@ func (r *integrationResource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
-
-	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Create new Integration
 	integration, err := r.client.CreateIntegrationV2(dto, nil, &resourceSetId)
@@ -194,8 +193,6 @@ func (r *integrationResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertIntegrationDTOToModel(ctx, *integration, &plan)
-
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -238,8 +235,6 @@ func (r *integrationResource) Read(
 
 	state = convertIntegrationDTOToModel(ctx, integration, &state)
 
-	state.ResourceSetId = types.StringValue(resourceSetId)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -261,8 +256,6 @@ func (r *integrationResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -287,7 +280,7 @@ func (r *integrationResource) Update(
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegrationV2(dto, nil, &resourceSetId)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -298,8 +291,6 @@ func (r *integrationResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertIntegrationDTOToModel(ctx, *integration, &plan)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -323,7 +314,7 @@ func (r *integrationResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -396,6 +387,7 @@ func convertIntegrationModelToDTO(
 	}
 
 	integration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	integration.ResourceSet = model.ResourceSetId.ValueString()
 	return integration
 }
 
@@ -435,5 +427,6 @@ func convertIntegrationDTOToModel(
 	// handle tags
 	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
