@@ -1058,6 +1058,7 @@ func (r *trustProviderResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	errorUpdateMessage := "Error updating Trust Provider"
 	// Get current state
 	var state models.TrustProviderResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -1079,7 +1080,7 @@ func (r *trustProviderResource) Update(
 
 	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
 		resp.Diagnostics.AddError(
-			"Error updating Trust Provider",
+			errorUpdateMessage,
 			"Changing the ResourceSet of the resource is not supported.",
 		)
 		return
@@ -1089,7 +1090,7 @@ func (r *trustProviderResource) Update(
 	trust, err := convertTrustProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Trust Provider",
+			errorUpdateMessage,
 			err.Error(),
 		)
 		return
@@ -1099,7 +1100,7 @@ func (r *trustProviderResource) Update(
 	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, &trust.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Trust Provider",
+			errorUpdateMessage,
 			"Could not update Trust Provider, unexpected error: "+err.Error(),
 		)
 		return

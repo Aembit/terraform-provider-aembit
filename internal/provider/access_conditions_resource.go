@@ -339,6 +339,8 @@ func (r *accessConditionResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	errorUpdateMessage := "Error updating Access Condition"
+
 	// Get current state
 	var state models.AccessConditionResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -360,7 +362,7 @@ func (r *accessConditionResource) Update(
 
 	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
 		resp.Diagnostics.AddError(
-			"Error updating Access Condition",
+			errorUpdateMessage,
 			"Changing the ResourceSet of the resource is not supported.",
 		)
 		return
@@ -370,7 +372,7 @@ func (r *accessConditionResource) Update(
 	dto, err := convertAccessConditionModelToDTO(ctx, plan, &externalID, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Access Condition",
+			errorUpdateMessage,
 			err.Error(),
 		)
 		return
@@ -380,7 +382,7 @@ func (r *accessConditionResource) Update(
 	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Access Condition",
+			errorUpdateMessage,
 			"Could not update Access Condition, unexpected error: "+err.Error(),
 		)
 		return
