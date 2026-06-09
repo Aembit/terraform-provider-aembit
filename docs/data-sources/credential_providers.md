@@ -162,6 +162,7 @@ Read-Only:
 - `audience` (String) Claude Audience.
 - `federation_rule_id` (String) Claude Federation Rule ID.
 - `lifetime` (Number) Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.
+- `oidc_issuer` (String) OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.
 - `organization_id` (String) Claude Organization ID.
 - `scope` (String) Claude Scope.
 - `service_account_id` (String) Claude Service Account ID.
