@@ -17,6 +17,7 @@ Manages an integration.
 
 ### Optional
 
+- `resource_set_id` (String) ResourceSet unique identifier of the Integration.
 - `type` (String) Filter integrations by type (either `AembitTimeCondition` or `AembitGeoIPCondition`)
 
 ### Read-Only
@@ -38,6 +39,7 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the integration.
 - `name` (String) User-provided name of the integration.
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials authentication information for the integration. (see [below for nested schema](#nestedatt--integrations--oauth_client_credentials))
+- `resource_set_id` (String) ResourceSet unique identifier of the Integration.
 - `sync_frequency` (Number) Frequency to be used for synchronizing the integration.
 - `tags` (Map of String) Tags are key-value pairs.
 - `type` (String) Type of Aembit integration (either `WizIntegrationApi` or `CrowdStrike`).
