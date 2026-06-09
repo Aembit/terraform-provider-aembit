@@ -271,7 +271,6 @@ func (r *accessConditionResource) Create(
 	}
 
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
-
 	// Create new AccessCondition
 	accessCondition, err := r.client.CreateAccessConditionV2(dto, nil, &resourceSetId)
 	if err != nil {
@@ -327,7 +326,6 @@ func (r *accessConditionResource) Read(
 	}
 
 	state = convertAccessConditionDTOToModel(ctx, accessCondition, &state)
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, state)
@@ -350,8 +348,6 @@ func (r *accessConditionResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
 
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
@@ -383,7 +379,7 @@ func (r *accessConditionResource) Update(
 	}
 
 	// Update AccessCondition
-	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, &resourceSetId)
+	accessCondition, err := r.client.UpdateAccessConditionV2(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Access Condition",
@@ -394,8 +390,6 @@ func (r *accessConditionResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertAccessConditionDTOToModel(ctx, *accessCondition, &plan)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -419,7 +413,7 @@ func (r *accessConditionResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Access Condition is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -706,6 +700,7 @@ func convertAccessConditionDTOToModel(
 		model.Time = &acTimeZone
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

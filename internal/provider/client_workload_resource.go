@@ -322,10 +322,9 @@ func (r *clientWorkloadResource) Create(
 	}
 
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
-	workload.ResourceSet = resourceSetId
 
 	// Create new Client Workload
-	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Client Workload",
@@ -378,7 +377,6 @@ func (r *clientWorkloadResource) Read(
 
 	// Overwrite items with refreshed state
 	state = convertClientWorkloadDTOToModel(ctx, clientWorkload, &state)
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -429,7 +427,7 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Update Client Workload
-	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil, &workload.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Client Workload",
