@@ -408,6 +408,14 @@ func (r *serverWorkloadResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Server Workload",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
@@ -415,8 +423,8 @@ func (r *serverWorkloadResource) Update(
 	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating server workload",
-			"Could not update server workload, unexpected error: "+err.Error(),
+			"Error updating Server Workload",
+			"Could not update Server Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -469,7 +477,7 @@ func (r *serverWorkloadResource) Delete(
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",
-			"Could not delete server workload, unexpected error: "+err.Error(),
+			"Could not delete Server Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}

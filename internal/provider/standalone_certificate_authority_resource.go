@@ -261,6 +261,14 @@ func (r *standaloneCertificateAuthorityResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Standalone Certificate Authority",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 

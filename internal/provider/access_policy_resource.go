@@ -394,6 +394,14 @@ func (r *accessPolicyResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Access Policy",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
@@ -407,8 +415,8 @@ func (r *accessPolicyResource) Update(
 	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating access policy",
-			"Could not update access policy, unexpected error: "+err.Error(),
+			"Error updating Access Policy",
+			"Could not update Access Policy, unexpected error: "+err.Error(),
 		)
 		return
 	}

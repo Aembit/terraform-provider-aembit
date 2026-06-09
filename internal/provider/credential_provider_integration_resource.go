@@ -333,6 +333,14 @@ func (r *credentialProviderIntegrationResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Credential Provider Integration",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 

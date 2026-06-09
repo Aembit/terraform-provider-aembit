@@ -364,6 +364,14 @@ func (r *accessConditionResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Access Condition",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	dto, err := convertAccessConditionModelToDTO(ctx, plan, &externalID, r.client)
 	if err != nil {

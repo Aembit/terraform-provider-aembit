@@ -1083,6 +1083,14 @@ func (r *trustProviderResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Trust Provider",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	trust, err := convertTrustProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	if err != nil {

@@ -275,6 +275,14 @@ func (r *integrationResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Integration",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
@@ -322,8 +330,8 @@ func (r *integrationResource) Delete(
 		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error disabling Client Workload",
-				"Could not disable Client Workload, unexpected error: "+err.Error(),
+				"Error disabling Integration",
+				"Could not disable Integration, unexpected error: "+err.Error(),
 			)
 			return
 		}

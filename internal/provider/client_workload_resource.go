@@ -328,8 +328,8 @@ func (r *clientWorkloadResource) Create(
 	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating client workload",
-			"Could not create client workload, unexpected error: "+err.Error(),
+			"Error creating Client Workload",
+			"Could not create Client Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -413,6 +413,14 @@ func (r *clientWorkloadResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Client Workload",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload, diags := convertClientWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	resp.Diagnostics.Append(diags...)
@@ -424,8 +432,8 @@ func (r *clientWorkloadResource) Update(
 	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating client workload",
-			"Could not update client workload, unexpected error: "+err.Error(),
+			"Error updating Client Workload",
+			"Could not update Client Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
