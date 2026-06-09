@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -73,6 +74,10 @@ func (r *clientWorkloadResource) Schema(
 				Computed:    true,
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
+				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"resource_set_id": schema.StringAttribute{
@@ -212,6 +217,9 @@ func (r *clientWorkloadResource) Schema(
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
 				},
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -314,9 +322,10 @@ func (r *clientWorkloadResource) Create(
 	}
 
 	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+	workload.ResourceSet = resourceSetId
 
 	// Create new Client Workload
-	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, &resourceSetId)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating client workload",
@@ -328,7 +337,6 @@ func (r *clientWorkloadResource) Create(
 	// Map response body to schema and populate Computed attribute values
 	plan = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
 
-	plan.ResourceSetId = types.StringValue(resourceSetId)
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -371,6 +379,7 @@ func (r *clientWorkloadResource) Read(
 	// Overwrite items with refreshed state
 	state = convertClientWorkloadDTOToModel(ctx, clientWorkload, &state)
 	state.ResourceSetId = types.StringValue(resourceSetId)
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -393,8 +402,6 @@ func (r *clientWorkloadResource) Update(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
-
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
 
@@ -414,7 +421,7 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Update Client Workload
-	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil, &resourceSetId)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating client workload",
@@ -425,8 +432,6 @@ func (r *clientWorkloadResource) Update(
 
 	// Map response body to schema and populate Computed attribute values
 	state = convertClientWorkloadDTOToModel(ctx, *clientWorkload, &plan)
-
-	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -450,7 +455,7 @@ func (r *clientWorkloadResource) Delete(
 		return
 	}
 
-	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Client Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
@@ -564,6 +569,7 @@ func convertClientWorkloadModelToDTO(
 
 	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 
+	workload.ResourceSet = model.ResourceSetId.ValueString()
 	return workload, diags
 }
 
@@ -594,6 +600,7 @@ func convertClientWorkloadDTOToModel(
 		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

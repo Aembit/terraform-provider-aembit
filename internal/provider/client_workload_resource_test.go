@@ -980,10 +980,12 @@ func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
 	t.Parallel()
 
 	redirectModel := convertClientWorkloadDTOToModel(context.Background(), aembit.ClientWorkloadExternalDTO{
-		EntityDTO: aembit.EntityDTO{
-			ExternalID: "4fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
-			Name:       "redirect workload",
-			IsActive:   true,
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "4fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
+				Name:       "redirect workload",
+				IsActive:   true,
+			},
 		},
 		Identities: []aembit.ClientWorkloadIdentityDTO{
 			{Type: "oauthRedirectUri", Value: "https://example.com/callback"},
@@ -998,10 +1000,12 @@ func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
 	}
 
 	nonRedirectModel := convertClientWorkloadDTOToModel(context.Background(), aembit.ClientWorkloadExternalDTO{
-		EntityDTO: aembit.EntityDTO{
-			ExternalID: "5fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
-			Name:       "non-redirect workload",
-			IsActive:   true,
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "5fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
+				Name:       "non-redirect workload",
+				IsActive:   true,
+			},
 		},
 		Identities: []aembit.ClientWorkloadIdentityDTO{
 			{Type: "k8sNamespace", Value: "default"},

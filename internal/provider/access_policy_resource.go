@@ -82,6 +82,10 @@ func (r *accessPolicyResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_set_id": schema.StringAttribute{
 				Description: "ResourceSet unique identifier of the Access Policy.",
