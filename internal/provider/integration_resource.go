@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -95,11 +96,15 @@ func (r *integrationResource) Schema(
 				Description: "Description for the Integration.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Integration.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -99,11 +100,15 @@ func (r *accessConditionResource) Schema(
 				Description: "Description for the Access Condition.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Access Condition.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -156,12 +161,18 @@ func (r *accessConditionResource) Schema(
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"match_local_ip": schema.BoolAttribute{
 						Description: "The condition requires that managed hosts have a local IP that matches the CrowdStrike-identified local or connection IP.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},

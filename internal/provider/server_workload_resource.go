@@ -100,6 +100,9 @@ func (r *serverWorkloadResource) Schema(
 				Description: "Description for the Server Workload.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Server Workload.",

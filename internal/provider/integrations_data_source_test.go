@@ -34,27 +34,34 @@ func testFindIntegration(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccIntegrationsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/integration/data/TestAccIntegrationsDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Wiz")
+	createFile1, _ := os.ReadFile("../../tests/integration/data/TestAccIntegrationsDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/integration/data/TestAccIntegrationsDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/integration/data/TestAccIntegrationsDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Integrations returned
-					resource.TestCheckResourceAttrSet(testIntegrationsDataSource, "integrations.#"),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testIntegrationsDataSource,
-						"integrations.0.id",
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
+	for _, createFile := range files {
+		createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance Wiz")
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Integrations returned
+						resource.TestCheckResourceAttrSet(testIntegrationsDataSource, "integrations.#"),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testIntegrationsDataSource,
+							"integrations.0.id",
+						),
+						// Find newly created entry
+						testFindIntegration(testIntegrationResource),
 					),
-					// Find newly created entry
-					testFindIntegration(testIntegrationResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }

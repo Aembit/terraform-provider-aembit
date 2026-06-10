@@ -34,39 +34,46 @@ func testFindAccessCondition(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccAccessConditionsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(
-		string(createFile),
-		"",
-		"TF Acceptance Crowdstrike",
-	)
+	createFile1, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/condition/data/TestAccAccessConditionsDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Access Conditions returned
-					resource.TestCheckResourceAttrSet(
-						testAccessConditionsDataSource,
-						"access_conditions.#",
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
+	for _, createFile := range files {
+		createFileConfig, _, _ := randomizeFileConfigs(
+			string(createFile),
+			"",
+			"TF Acceptance Crowdstrike",
+		)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Access Conditions returned
+						resource.TestCheckResourceAttrSet(
+							testAccessConditionsDataSource,
+							"access_conditions.#",
+						),
+						resource.TestCheckResourceAttr(
+							testAccessConditionResource,
+							"crowdstrike_conditions.match_mac_address",
+							"true",
+						),
+						resource.TestCheckResourceAttr(
+							testAccessConditionResource,
+							"crowdstrike_conditions.match_local_ip",
+							"true",
+						),
+						// Find newly created entry
+						testFindAccessCondition(testAccessConditionResource),
 					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResource,
-						"crowdstrike_conditions.match_mac_address",
-						"true",
-					),
-					resource.TestCheckResourceAttr(
-						testAccessConditionResource,
-						"crowdstrike_conditions.match_local_ip",
-						"true",
-					),
-					// Find newly created entry
-					testFindAccessCondition(testAccessConditionResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }
