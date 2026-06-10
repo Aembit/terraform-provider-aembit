@@ -33,11 +33,11 @@ func testFindServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadsDataSource(t *testing.T) {
-	//createFile1, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource_ResourceSet.tf")
+	createFile1, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource_ResourceSet.tf")
 	createFile2, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource_ProviderResourceSet.tf")
-	//createFile3, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
+	createFile3, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
 
-	files := [1]string{string(createFile2)}
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
 
 	for _, createFile := range files {
 		randID := rand.Intn(10000000)
