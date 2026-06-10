@@ -36,34 +36,39 @@ func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccCredentialProvidersDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile(
-		"../../tests/credential/data/TestAccCredentialProvidersDataSource.tf",
-	)
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance OAuth")
+	createFile1, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/credential/data/TestAccCredentialProvidersDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Credential Providers returned
-					resource.TestCheckResourceAttrSet(
-						testCredentialProvidersDataSource,
-						"credential_providers.#",
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
+	for _, createFile := range files {
+		createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance OAuth")
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Credential Providers returned
+						resource.TestCheckResourceAttrSet(
+							testCredentialProvidersDataSource,
+							"credential_providers.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testCredentialProvidersDataSource,
+							"credential_providers.0.id",
+						),
+						// Find newly created entry
+						testFindCredentialProvider(testCredentialProviderResource),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testCredentialProvidersDataSource,
-						"credential_providers.0.id",
-					),
-					// Find newly created entry
-					testFindCredentialProvider(testCredentialProviderResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func TestAccAzureKeyVaultValueCredentialProvidersDataSource(t *testing.T) {

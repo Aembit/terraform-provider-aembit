@@ -34,34 +34,41 @@ func testFindTrustProvider(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccTrustProvidersDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(
-		string(createFile),
-		"",
-		"TF Acceptance Kubernetes",
-	)
+	createFile1, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/trust/data/TestAccTrustProvidersDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Trust Providers returned
-					resource.TestCheckResourceAttrSet(
-						testTrustProvidersDataSource,
-						"trust_providers.#",
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
+	for _, createFile := range files {
+		createFileConfig, _, _ := randomizeFileConfigs(
+			string(createFile),
+			"",
+			"TF Acceptance Kubernetes",
+		)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Trust Providers returned
+						resource.TestCheckResourceAttrSet(
+							testTrustProvidersDataSource,
+							"trust_providers.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testTrustProvidersDataSource,
+							"trust_providers.0.id",
+						),
+						// Find newly created entry
+						testFindTrustProvider(testTrustProviderResource),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testTrustProvidersDataSource,
-						"trust_providers.0.id",
-					),
-					// Find newly created entry
-					testFindTrustProvider(testTrustProviderResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }

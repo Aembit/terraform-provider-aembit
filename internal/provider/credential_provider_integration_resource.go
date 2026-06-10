@@ -106,6 +106,9 @@ func (r *credentialProviderIntegrationResource) Schema(
 				Description: "Description for the Credential Provider Integration.",
 				Optional:    true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"gitlab": schema.SingleNestedAttribute{
 				Description: "GitLab Managed Account type Credential Provider Integration configuration.",
@@ -154,10 +157,16 @@ func (r *credentialProviderIntegrationResource) Schema(
 					"oidc_issuer_url": schema.StringAttribute{
 						Description: "OIDC Issuer URL for AWS IAM Identity Provider configuration",
 						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"token_audience": schema.StringAttribute{
 						Description: "Token Audience for AWS IAM Identity Provider configuration",
 						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},
@@ -200,6 +209,9 @@ func (r *credentialProviderIntegrationResource) Schema(
 					"oidc_issuer_url": schema.StringAttribute{
 						Description: "OIDC Issuer URL for Azure Entra Federation configuration",
 						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},

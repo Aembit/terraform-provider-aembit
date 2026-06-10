@@ -36,40 +36,45 @@ func testFindCredentialProviderIntegration(resourceName string) resource.TestChe
 }
 
 func TestAccGitLabCredentialProviderIntegrationsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile(
-		"../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource.tf",
-	)
-	createFileConfig, _, _ := randomizeFileConfigs(
-		string(createFile),
-		"",
-		"TF Acceptance GitLab Credential Integration",
-	)
+	createFile1, _ := os.ReadFile("../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/credential_provider_integration/data/TestAccGitLabCpiDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Integrations returned
-					resource.TestCheckResourceAttrSet(
-						testCredentialProviderIntegrationsDataSource,
-						"credential_provider_integrations.#",
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
+	for _, createFile := range files {
+		createFileConfig, _, _ := randomizeFileConfigs(
+			string(createFile),
+			"",
+			"TF Acceptance GitLab Credential Integration",
+		)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Integrations returned
+						resource.TestCheckResourceAttrSet(
+							testCredentialProviderIntegrationsDataSource,
+							"credential_provider_integrations.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testCredentialProviderIntegrationsDataSource,
+							"credential_provider_integrations.0.id",
+						),
+						// Find newly created entry
+						testFindCredentialProviderIntegration(
+							testCredentialProviderIntegrationResource,
+						),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testCredentialProviderIntegrationsDataSource,
-						"credential_provider_integrations.0.id",
-					),
-					// Find newly created entry
-					testFindCredentialProviderIntegration(
-						testCredentialProviderIntegrationResource,
-					),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }
 
 func TestAccAwsIamRoleCredentialProviderIntegrationsDataSource(t *testing.T) {
