@@ -1,7 +1,23 @@
 provider "aembit" {
+    alias = "rs_loader"
+}
+
+data "aembit_resource_sets" "all" {
+    provider = aembit.rs_loader
+}
+
+locals {
+    tf_testing_rs_id = [for rs in data.aembit_resource_sets.all.resource_sets : rs.id if rs.name == "TF Testing"][0]
+}
+
+// Create a Provider and Resource in the TF Testing Resource Set
+provider "aembit" {
+    alias = "rs_manager"
+    resource_set_id = local.tf_testing_rs_id
 }
 
 resource "aembit_client_workload" "first_client" {
+	provider = aembit.rs_manager
     name = "first terraform client workload"
     description = "new client workload for policy integration"
     is_active = false
@@ -14,6 +30,7 @@ resource "aembit_client_workload" "first_client" {
 }
 
 resource "aembit_trust_provider" "azure1" {
+	provider = aembit.rs_manager
 	name = "TF Acceptance Azure"
 	azure_metadata = {
 		subscription_id = "subscription_id"
@@ -21,6 +38,7 @@ resource "aembit_trust_provider" "azure1" {
 }
 
 resource "aembit_trust_provider" "azure2" {
+	provider = aembit.rs_manager
 	name = "TF Acceptance Azure"
 	azure_metadata = {
 		subscription_id = "subscription_id"
@@ -28,6 +46,7 @@ resource "aembit_trust_provider" "azure2" {
 }
 
 resource "aembit_integration" "wiz" {
+	provider = aembit.rs_manager
 	name = "TF Acceptance Wiz"
 	is_active = false
 	type = "WizIntegrationApi"
@@ -42,6 +61,7 @@ resource "aembit_integration" "wiz" {
 }
 
 resource "aembit_access_condition" "wiz" {
+	provider = aembit.rs_manager
 	name = "TF Acceptance Wiz"
 	integration_id = aembit_integration.wiz.id
 	wiz_conditions = {
@@ -51,6 +71,7 @@ resource "aembit_access_condition" "wiz" {
 }
 
 resource "aembit_credential_provider" "snowflake1" {
+	provider = aembit.rs_manager
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
 	snowflake_jwt = {
@@ -60,6 +81,7 @@ resource "aembit_credential_provider" "snowflake1" {
 }
 
 resource "aembit_server_workload" "first_server" {
+	provider = aembit.rs_manager
     name = "first terraform server workload"
     description = "new server workload for policy integration"
     is_active = false
@@ -76,6 +98,7 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
+	provider = aembit.rs_manager
 	name = "TF First Policy"
     is_active = false
     client_workload = aembit_client_workload.first_client.id
@@ -91,5 +114,6 @@ resource "aembit_access_policy" "first_policy" {
 }
 
 data "aembit_access_policies" "test" {
+	provider = aembit.rs_manager
 	depends_on = [ aembit_access_policy.first_policy ]
 }

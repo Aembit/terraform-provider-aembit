@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -106,6 +107,7 @@ func (r *accessPolicyResource) Schema(
 				Description: "Active/Inactive status of the Access Policy.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"client_workload": schema.StringAttribute{
 				Description: "Client workload ID configured in the Access Policy.",
@@ -191,31 +193,49 @@ func (r *accessPolicyResource) Schema(
 							Description: "Name of the header for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"header_value": schema.StringAttribute{
 							Description: "Value of the header for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"httpbody_field_path": schema.StringAttribute{
 							Description: "Field path in the HTTP body for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"httpbody_field_value": schema.StringAttribute{
 							Description: "Field value in the HTTP body for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"access_key_id": schema.StringAttribute{
 							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 				},

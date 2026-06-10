@@ -1,7 +1,20 @@
 provider "aembit" {
 }
 
+data "aembit_roles" "test" {}
+
+locals {
+  role_ids_by_name = { for role in data.aembit_roles.test.roles : role.name => role.id }
+}
+
+resource "aembit_resource_set" "crs" {
+	name = "TF Acceptance Custom ResourceSet"
+	description = "TF Acceptance Custom ResourceSet"
+	roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
+}
+
 resource "aembit_client_workload" "first_client" {
+	resource_set_id = aembit_resource_set.crs.id
     name = "first terraform client workload"
     description = "new client workload for policy integration"
     is_active = false
@@ -14,6 +27,7 @@ resource "aembit_client_workload" "first_client" {
 }
 
 resource "aembit_trust_provider" "azure1" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Azure"
 	azure_metadata = {
 		subscription_id = "subscription_id"
@@ -21,6 +35,7 @@ resource "aembit_trust_provider" "azure1" {
 }
 
 resource "aembit_trust_provider" "azure2" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Azure"
 	azure_metadata = {
 		subscription_id = "subscription_id"
@@ -28,6 +43,7 @@ resource "aembit_trust_provider" "azure2" {
 }
 
 resource "aembit_integration" "wiz" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Wiz"
 	is_active = false
 	type = "WizIntegrationApi"
@@ -42,6 +58,7 @@ resource "aembit_integration" "wiz" {
 }
 
 resource "aembit_access_condition" "wiz" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Wiz"
 	integration_id = aembit_integration.wiz.id
 	wiz_conditions = {
@@ -51,6 +68,7 @@ resource "aembit_access_condition" "wiz" {
 }
 
 resource "aembit_credential_provider" "snowflake1" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Snowflake Token 1"
 	is_active = true
 	snowflake_jwt = {
@@ -60,6 +78,7 @@ resource "aembit_credential_provider" "snowflake1" {
 }
 
 resource "aembit_server_workload" "first_server" {
+	resource_set_id = aembit_resource_set.crs.id
     name = "first terraform server workload"
     description = "new server workload for policy integration"
     is_active = false
@@ -76,6 +95,7 @@ resource "aembit_server_workload" "first_server" {
 }
 
 resource "aembit_access_policy" "first_policy" {
+	resource_set_id = aembit_resource_set.crs.id
 	name = "TF First Policy"
     is_active = false
     client_workload = aembit_client_workload.first_client.id
