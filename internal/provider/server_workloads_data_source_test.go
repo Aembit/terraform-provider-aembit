@@ -2,7 +2,9 @@ package provider
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -31,39 +33,52 @@ func testFindServerWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccServerWorkloadsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
-	createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
+	//createFile1, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource_ProviderResourceSet.tf")
+	//createFile3, _ := os.ReadFile("../../tests/server/data/TestAccServerWorkloadsDataSource.tf")
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Server Workloads returned
-					resource.TestCheckResourceAttrSet(
-						testServerWorkloadsDataSource,
-						"server_workloads.#",
+	files := [1]string{string(createFile2)}
+
+	for _, createFile := range files {
+		randID := rand.Intn(10000000)
+		createFileConfig := strings.ReplaceAll(
+			createFile,
+			"unittest.testhost.com",
+			fmt.Sprintf("unittest%d.testhost.com", randID),
+		)
+		createFileConfig, _, _ = randomizeFileConfigs(createFileConfig, "", "Unit Test 1")
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Server Workloads returned
+						resource.TestCheckResourceAttrSet(
+							testServerWorkloadsDataSource,
+							"server_workloads.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testServerWorkloadsDataSource,
+							"server_workloads.0.id",
+						),
+						resource.TestCheckResourceAttrSet(
+							testServerWorkloadsDataSource,
+							"server_workloads.0.service_endpoint.external_id",
+						),
+						// Verify placeholder ID is set
+						resource.TestCheckResourceAttrSet(
+							testServerWorkloadsDataSource,
+							"server_workloads.0.id",
+						),
+						// Find newly created entry
+						testFindServerWorkload(testServerWorkloadResource),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testServerWorkloadsDataSource,
-						"server_workloads.0.id",
-					),
-					resource.TestCheckResourceAttrSet(
-						testServerWorkloadsDataSource,
-						"server_workloads.0.service_endpoint.external_id",
-					),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(
-						testServerWorkloadsDataSource,
-						"server_workloads.0.id",
-					),
-					// Find newly created entry
-					testFindServerWorkload(testServerWorkloadResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }
