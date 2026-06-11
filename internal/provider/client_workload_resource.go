@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -98,9 +97,6 @@ func (r *clientWorkloadResource) Schema(
 				Description: "Description for the Client Workload.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Client Workload.",
@@ -217,9 +213,6 @@ func (r *clientWorkloadResource) Schema(
 				Computed:    true,
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
-				},
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"tags":     TagsMapAttribute(),

@@ -192,49 +192,31 @@ func (r *accessPolicyResource) Schema(
 							Description: "Name of the header for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"header_value": schema.StringAttribute{
 							Description: "Value of the header for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"httpbody_field_path": schema.StringAttribute{
 							Description: "Field path in the HTTP body for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"httpbody_field_value": schema.StringAttribute{
 							Description: "Field value in the HTTP body for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"access_key_id": schema.StringAttribute{
 							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
 							Computed:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 					},
 				},
