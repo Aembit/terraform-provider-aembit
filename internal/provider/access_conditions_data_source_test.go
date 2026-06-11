@@ -42,7 +42,7 @@ func TestAccAccessConditionsDataSource(t *testing.T) {
 
 	for _, createFile := range files {
 		createFileConfig, _, _ := randomizeFileConfigs(
-			string(createFile),
+			createFile,
 			"",
 			"TF Acceptance Crowdstrike",
 		)

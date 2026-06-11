@@ -43,7 +43,7 @@ func TestAccCredentialProvidersDataSource(t *testing.T) {
 	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
 
 	for _, createFile := range files {
-		createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "TF Acceptance OAuth")
+		createFileConfig, _, _ := randomizeFileConfigs(createFile, "", "TF Acceptance OAuth")
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

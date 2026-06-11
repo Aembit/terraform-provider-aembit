@@ -22,7 +22,7 @@ func TestAccAccessPoliciesDataSource(t *testing.T) {
 	for _, createFile := range files {
 		randID := rand.Intn(10000000)
 		createFileConfig := strings.ReplaceAll(
-			string(createFile),
+			createFile,
 			"clientworkloadNamespace",
 			fmt.Sprintf("clientworkloadNamespace%d", randID),
 		)
