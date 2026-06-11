@@ -361,3 +361,42 @@ func TestAwsSecretArnRegex(t *testing.T) {
 		t.Errorf("expected invalid AWS Secret ARN to not match regex")
 	}
 }
+
+func TestRegex_CimdUrl_Valid(t *testing.T) {
+	t.Parallel()
+	validInputs := []string{
+		"https://mcpjam.com/.well-known/oauth/client-metadata.json",
+		"https://example.com/some/path",
+		"https://sub.example.com/path/to/resource",
+		"https://a.b.co/d",
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			if !CimdUrlRegex.MatchString(input) {
+				t.Errorf("Expected valid CIMD URL, but got invalid: %s", input)
+			}
+		})
+	}
+}
+
+func TestRegex_CimdUrl_Invalid(t *testing.T) {
+	t.Parallel()
+	invalidInputs := []string{
+		"http://example.com/path",             // Not https
+		"https://example.com",                 // No path
+		"https://example.com/",                // Path is just / (regex [^?#@\s]+ requires at least one char after /)
+		"https://example.com/path?query=1",    // Query string not allowed
+		"https://example.com/path#fragment",   // Fragment not allowed
+		"https://user@example.com/path",       // User info not allowed
+		"https://example.com/path with space", // Spaces not allowed
+	}
+	for _, input := range invalidInputs {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			if CimdUrlRegex.MatchString(input) {
+				t.Errorf("Expected invalid CIMD URL, but got valid: %s", input)
+			}
+		})
+	}
+}
