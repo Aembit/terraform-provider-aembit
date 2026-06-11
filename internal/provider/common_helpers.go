@@ -31,25 +31,58 @@ func modifyPlanForResourceSetId(
 	resp *resource.ModifyPlanResponse,
 	client *aembit.CloudClient,
 ) {
-	// Exit if the plan or state is null (destroy scenario)
+	// Exit if the resource is being destroyed
 	if req.Plan.Raw.IsNull() {
 		return
 	}
 
-	if client == nil || client.ResourceSetId == "" || client.ResourceSetId == DEFAULT_RESOURCESET_ID {
-		return
-	}
-
-	var resourceSetId types.String
-	diags := req.Plan.GetAttribute(ctx, path.Root("resource_set_id"), &resourceSetId)
+	// Inspect the CONFIG, not the Plan.
+	// This tells us exactly what the user wrote in their HCL file.
+	var configVal types.String
+	diags := req.Config.GetAttribute(ctx, path.Root("resource_set_id"), &configVal)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	if !resourceSetId.IsUnknown() && resourceSetId.ValueString() != client.ResourceSetId {
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("resource_set_id"), client.ResourceSetId)...)
+	// If the config value is Unknown, the user explicitly populated this field
+	// with a reference to another resource that hasn't been created yet.
+	// We MUST exit early and let Terraform Core resolve the dependency.
+	if configVal.IsUnknown() {
+		return
 	}
+
+	// If the config value is Null, it means the user completely omitted the
+	// attribute from their HCL block. Now it is safe to apply our defaulting logic.
+	if configVal.IsNull() {
+		// Determine our target fallback ID
+		targetResourceSetId := DEFAULT_RESOURCESET_ID
+		if client != nil && client.ResourceSetId != "" {
+			targetResourceSetId = client.ResourceSetId
+		}
+
+		var stateVal types.String
+		diags := req.State.GetAttribute(ctx, path.Root("resource_set_id"), &stateVal)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		// If it's already in the state and matches our target provider ID,
+		// pass the state back into the plan to declare "No Changes".
+		if !stateVal.IsNull() && !stateVal.IsUnknown() {
+			if stateVal.ValueString() == targetResourceSetId {
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("resource_set_id"), stateVal)...)
+				return
+			}
+		}
+
+		// Otherwise (creation or provider ID changed), fill the plan with the target ID
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("resource_set_id"), types.StringValue(targetResourceSetId))...)
+	}
+
+	// If configVal is a known string, the user explicitly provided a hardcoded ID.
+	// We do nothing and let Terraform handle standard value matching.
 }
 
 func getResourceSetId(resourceSetId types.String, client *aembit.CloudClient) string {

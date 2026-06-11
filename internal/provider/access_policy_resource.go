@@ -95,7 +95,6 @@ func (r *accessPolicyResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
-				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Policy.",

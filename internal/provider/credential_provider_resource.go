@@ -96,7 +96,6 @@ func (r *credentialProviderResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
-				Default: stringdefault.StaticString(DEFAULT_RESOURCESET_ID),
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
