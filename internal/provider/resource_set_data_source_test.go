@@ -14,6 +14,7 @@ const (
 	testResourceSetDefault    string = "data.aembit_resource_set.default"
 	testResourceSetsAll       string = "data.aembit_resource_sets.all"
 	testResourceSetDataSource string = "data.aembit_resource_sets.aembit_resource_set_datasource"
+	testResourceSetResource   string = "aembit_resource_set.crs"
 )
 
 func testFindResourceSet(resourceName string) resource.TestCheckFunc {
@@ -26,9 +27,7 @@ func testFindResourceSet(resourceName string) resource.TestCheckFunc {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		resourceSetID := rs.Primary.Attributes["resource_set_id"]
-
-		if _, err, notFound = testClient.GetResourceSet(resourceSetID, nil); notFound {
+		if _, err, notFound = testClient.GetResourceSet(rs.Primary.ID, nil); notFound {
 			return err
 		}
 		return nil
@@ -79,7 +78,7 @@ func TestAccResourceSetDataSource(t *testing.T) {
 						regexp.MustCompile(`[3-9]`),
 					),
 					// Find newly created entry
-					testFindResourceSet(testResourceSetDataSource),
+					testFindResourceSet(testResourceSetResource),
 				),
 			},
 		},

@@ -62,10 +62,12 @@ func modifyPlanForResourceSetId(
 		}
 
 		var stateVal types.String
-		diags := req.State.GetAttribute(ctx, path.Root("resource_set_id"), &stateVal)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
+		if !req.State.Raw.IsNull() {
+			stateDiags := req.State.GetAttribute(ctx, path.Root("resource_set_id"), &stateVal)
+			resp.Diagnostics.Append(stateDiags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 
 		// If it's already in the state and matches our target provider ID,
