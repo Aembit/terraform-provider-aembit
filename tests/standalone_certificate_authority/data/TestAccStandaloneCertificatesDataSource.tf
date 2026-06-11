@@ -1,3 +1,6 @@
+provider "aembit" {
+}
+
 resource "aembit_standalone_certificate_authority" "test" {
 	name = "Unit Test 1"
     description = "Description"
@@ -6,9 +9,6 @@ resource "aembit_standalone_certificate_authority" "test" {
         color = "blue"
         day   = "Sunday"
     }
-}
-
-provider "aembit" {
 }
 
 data "aembit_standalone_certificate_authorities" "test" {

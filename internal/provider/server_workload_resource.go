@@ -212,9 +212,6 @@ func (r *serverWorkloadResource) Schema(
 						Description: "TLS requested on the Server Workload service endpoint.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"tls": schema.BoolAttribute{
 						Description: "TLS indicated on the Server Workload service endpoint.",
