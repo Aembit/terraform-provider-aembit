@@ -29,5 +29,6 @@ resource "aembit_integration" "wiz" {
 }
 
 data "aembit_integrations" "test" {
+	resource_set_id = aembit_resource_set.crs.id
     depends_on = [ aembit_integration.wiz ]
 }

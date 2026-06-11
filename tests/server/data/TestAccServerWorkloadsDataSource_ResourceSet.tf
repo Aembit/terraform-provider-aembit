@@ -40,5 +40,6 @@ resource "aembit_server_workload" "test" {
 }
 
 data "aembit_server_workloads" "test" {
+	resource_set_id = aembit_resource_set.crs.id
     depends_on = [ aembit_server_workload.test ]
 }

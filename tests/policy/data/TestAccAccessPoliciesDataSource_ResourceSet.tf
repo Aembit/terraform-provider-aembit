@@ -111,5 +111,6 @@ resource "aembit_access_policy" "first_policy" {
 }
 
 data "aembit_access_policies" "test" {
+	resource_set_id = aembit_resource_set.crs.id
 	depends_on = [ aembit_access_policy.first_policy ]
 }

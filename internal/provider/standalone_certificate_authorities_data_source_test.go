@@ -32,11 +32,11 @@ func testFindStandaloneCertificate(resourceName string) resource.TestCheckFunc {
 
 func TestAccStandaloneCertificatesDataSource(t *testing.T) {
 	createFile1, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource_ProviderResourceSet.tf")
-	//createFile2, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource_ProviderResourceSet.tf")
-	//createFile3, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource.tf")
+	createFile2, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource_ResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/standalone_certificate_authority/data/TestAccStandaloneCertificatesDataSource.tf")
 
-	//files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
-	files := [1]string{string(createFile1)}
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
+
 	for _, createFile := range files {
 		createFileConfig, _, _ := randomizeFileConfigs(string(createFile), "", "Unit Test 1")
 
@@ -45,8 +45,7 @@ func TestAccStandaloneCertificatesDataSource(t *testing.T) {
 			Steps: []resource.TestStep{
 				// Read testing
 				{
-					Config:             createFileConfig,
-					ExpectNonEmptyPlan: true,
+					Config: createFileConfig,
 					Check: resource.ComposeAggregateTestCheckFunc(
 						// Verify non-zero number of Standalone Certificate Authorities returned
 						resource.TestCheckResourceAttrSet(

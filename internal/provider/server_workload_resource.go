@@ -13,8 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -100,9 +98,6 @@ func (r *serverWorkloadResource) Schema(
 				Description: "Description for the Server Workload.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Server Workload.",
@@ -118,16 +113,10 @@ func (r *serverWorkloadResource) Schema(
 					"external_id": schema.StringAttribute{
 						Description: "Unique identifier of the service endpoint.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"id": schema.Int64Attribute{
 						Description: "Number identifier of the service endpoint.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
-						},
 					},
 					"host": schema.StringAttribute{
 						Description: "Hostname of the Server Workload service endpoint.\n" +
@@ -141,9 +130,6 @@ func (r *serverWorkloadResource) Schema(
 					"aembit_mcp_authorization_server_url": schema.StringAttribute{
 						Description: "Aembit MCP Authorization Server URL",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"port": schema.Int64Attribute{
 						Description: "Port of the Server Workload service endpoint.",
@@ -181,9 +167,6 @@ func (r *serverWorkloadResource) Schema(
 						Description: "Requested port of the Server Workload service endpoint.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.Int64{
 							int64validator.Between(1, 65535),
 							validators.RequestedPortEqualsPortForMCPValidation(),
@@ -217,18 +200,12 @@ func (r *serverWorkloadResource) Schema(
 						Description: "TLS indicated on the Server Workload service endpoint.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"url_path": schema.StringAttribute{
 						Description: "URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.",
 						Required:    false,
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"http_headers": schema.MapAttribute{
 						Description: "HTTP Headers are key-value pairs.",
@@ -296,9 +273,6 @@ func (r *serverWorkloadResource) Schema(
 								Description: "Server Workload Service authentication config. <br>This value is used to identify the HTTP Header or Query Parameter used for the associated authentication scheme. <br>**Note:** This value is required in cases where an HTTP Header or Query Parameter is required, for example with `HTTP Authentication` and scheme `Header`.",
 								Optional:    true,
 								Computed:    true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
 							},
 						},
 					},

@@ -47,6 +47,7 @@ EOT
 }
 
 data "aembit_trust_providers" "test" {
+	resource_set_id = aembit_resource_set.crs.id
     depends_on = [
         aembit_trust_provider.kubernetes,
         aembit_trust_provider.kubernetes_key

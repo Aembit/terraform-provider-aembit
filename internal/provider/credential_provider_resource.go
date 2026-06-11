@@ -109,9 +109,6 @@ func (r *credentialProviderResource) Schema(
 				Description: "Description for the Credential Provider.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Credential Provider.",
@@ -128,9 +125,6 @@ func (r *credentialProviderResource) Schema(
 					"audience": schema.StringAttribute{
 						Description: "Audience of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"role_id": schema.StringAttribute{
 						Description: "Aembit Role ID of the Credential Provider.",
@@ -167,9 +161,6 @@ func (r *credentialProviderResource) Schema(
 					"oidc_issuer": schema.StringAttribute{
 						Description: "OIDC Issuer for AWS IAM Identity Provider configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"role_arn": schema.StringAttribute{
 						Description: "AWS Role Arn to be used for the AWS Session credentials requested by the Credential Provider.",
@@ -178,9 +169,6 @@ func (r *credentialProviderResource) Schema(
 					"token_audience": schema.StringAttribute{
 						Description: "Token Audience for AWS IAM Identity Provider configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (seconds) of the AWS Session credentials requested by the Credential Provider.",
@@ -200,9 +188,6 @@ func (r *credentialProviderResource) Schema(
 					"oidc_issuer": schema.StringAttribute{
 						Description: "OIDC Issuer for GCP Workload Identity Federation configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"audience": schema.StringAttribute{
 						Description: "Audience for GCP Workload Identity Federation configuration of the Credential Provider.",
@@ -233,9 +218,6 @@ func (r *credentialProviderResource) Schema(
 					"oidc_issuer": schema.StringAttribute{
 						Description: "OIDC Issuer for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"audience": schema.StringAttribute{
 						Description: "Audience for Azure Entra Workload Identity Federation configuration of the Credential Provider.",
@@ -287,9 +269,6 @@ func (r *credentialProviderResource) Schema(
 					"alter_user_command": schema.StringAttribute{
 						Description: "Snowflake Alter User Command generated for configuration of Snowflake by the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -386,9 +365,6 @@ func (r *credentialProviderResource) Schema(
 					"user_authorization_url": schema.StringAttribute{
 						Description: "3rd Party Authorization URL for User Consent for the OAuth Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the OAuth Credential Provider.",
@@ -449,9 +425,6 @@ func (r *credentialProviderResource) Schema(
 							"\t* https://AEMBIT_TENANT_ID.AEMBIT_STACK_DOMAIN/api/v1/credential-providers/RESOURCE_ID/callback \n" +
 							"\t* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource. \n",
 						Computed: true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"final_callback_url": schema.StringAttribute{
 						Description: "Final callback URL for the OAuth Credential Provider. This field is available only when the tenant has the FinalCallbackUrl entitlement. If the entitlement is disabled, the API will reject create or update requests that set this value.",
@@ -465,9 +438,6 @@ func (r *credentialProviderResource) Schema(
 					"state": schema.StringAttribute{
 						Description: "State for the OAuth Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (in seconds) of the OAuth Authorization Code credentials requested by the Credential Provider.",
@@ -481,9 +451,6 @@ func (r *credentialProviderResource) Schema(
 					"lifetime_expiration": schema.StringAttribute{
 						Description: "ISO 8601 formatted Lifetime Expiration of the OAuth Authorization Code credentials requested by the Credential Provider. This expiration timer begins when the user successfully completes an authorization of the Credential Provider and will be set to the authorization time plus the Credential Provider Lifetime value at that moment.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -535,9 +502,6 @@ func (r *credentialProviderResource) Schema(
 						Description: "Resource for the MCP User Based Access Token Credential Provider.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"custom_parameters": schema.SetNestedAttribute{
 						Description: "Set Custom Parameters for the MCP User Based Access Token Credential Provider.",
@@ -585,9 +549,6 @@ func (r *credentialProviderResource) Schema(
 							"\t* https://AEMBIT_TENANT_ID.mcp.AEMBIT_STACK_DOMAIN/userauth/RESOURCE_ID/callback \n" +
 							"\t* RESOURCE_ID should be a valid uuid pre-generated for the Credential Provider resource. \n",
 						Computed: true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -802,9 +763,6 @@ func (r *credentialProviderResource) Schema(
 					"issuer": schema.StringAttribute{
 						Description: "OIDC Issuer for OIDC ID Token configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
 						Description: lifetime_in_minutes_description,
@@ -948,9 +906,6 @@ func (r *credentialProviderResource) Schema(
 					"issuer": schema.StringAttribute{
 						Description: "Issuer claim for JWT-SVID Token configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"lifetime_in_minutes": schema.Int32Attribute{
 						Description: lifetime_in_minutes_description,
@@ -1086,9 +1041,6 @@ func (r *credentialProviderResource) Schema(
 					"oidc_issuer": schema.StringAttribute{
 						Description: "OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"federation_rule_id": schema.StringAttribute{
 						Description: "Claude Federation Rule ID.",
@@ -1109,17 +1061,11 @@ func (r *credentialProviderResource) Schema(
 						Description: "Claude Audience.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"workspace_id": schema.StringAttribute{
 						Description: "Claude Workspace ID.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"scope": schema.StringAttribute{
 						Description: "Claude Scope.",

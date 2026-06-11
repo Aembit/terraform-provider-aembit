@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -97,9 +96,6 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 				Description: "User-provided description for the standalone certificate authority.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -121,16 +117,10 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 			"client_workload_count": schema.Int32Attribute{
 				Description: "Client workloads associated with the standalone certificate authority.",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Int32{
-					int32planmodifier.UseStateForUnknown(),
-				},
 			},
 			"resource_set_count": schema.Int32Attribute{
 				Description: "Resource sets associated with the standalone certificate authority.",
 				Computed:    true,
-				PlanModifiers: []planmodifier.Int32{
-					int32planmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}

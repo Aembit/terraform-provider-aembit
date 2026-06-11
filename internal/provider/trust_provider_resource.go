@@ -106,9 +106,6 @@ func (r *trustProviderResource) Schema(
 				Description: "Description for the Trust Provider.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Trust Provider.",
@@ -119,9 +116,6 @@ func (r *trustProviderResource) Schema(
 			"client_id": schema.StringAttribute{
 				Description: "Edge SDK Client ID for the Trust Provider. Only populated for supported associated use cases.",
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -416,16 +410,10 @@ func (r *trustProviderResource) Schema(
 					"oidc_client_id": schema.StringAttribute{
 						Description: "The OAuth Client ID value required for authenticating a GitHub Action.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"oidc_audience": schema.StringAttribute{
 						Description: "The audience value required for the GitHub Action ID Token.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -442,16 +430,10 @@ func (r *trustProviderResource) Schema(
 					"oidc_client_id": schema.StringAttribute{
 						Description: "The OAuth Client ID value required for authenticating a GitLab Job.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"oidc_audience": schema.StringAttribute{
 						Description: "The audience value required for the GitLab Job ID Token.",
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"namespace_path": schema.StringAttribute{
 						Description: "The GitLab ID Token Namespace Path which initiated the GitLab Job.",
@@ -657,9 +639,6 @@ func (r *trustProviderResource) Schema(
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
 						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",
@@ -773,9 +752,6 @@ func (r *trustProviderResource) Schema(
 						Description: "The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.",
 						Optional:    true,
 						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"is_aembit_tenant_oidc_token": schema.BoolAttribute{
 						Description: "Indicates if the OIDC attestation is performed against the current Aembit tenant.",

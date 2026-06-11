@@ -32,7 +32,6 @@ resource "aembit_client_workload" "test" {
 
 data "aembit_client_workloads" "test" {
     provider = aembit.rs_manager
-
     depends_on = [ aembit_client_workload.test ]
 }
 

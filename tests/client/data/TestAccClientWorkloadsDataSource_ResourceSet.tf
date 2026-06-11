@@ -27,5 +27,6 @@ resource "aembit_client_workload" "test" {
 }
 
 data "aembit_client_workloads" "test" {
+    resource_set_id = aembit_resource_set.crs.id
     depends_on = [ aembit_client_workload.test ]
 }

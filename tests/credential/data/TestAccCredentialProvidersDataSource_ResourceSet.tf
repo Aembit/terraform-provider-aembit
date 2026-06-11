@@ -34,5 +34,6 @@ resource "aembit_credential_provider" "oauth" {
 }
 
 data "aembit_credential_providers" "test" {
+	resource_set_id = aembit_resource_set.crs.id
     depends_on = [ aembit_credential_provider.oauth ]
 }

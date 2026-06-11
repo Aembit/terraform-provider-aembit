@@ -96,9 +96,6 @@ func (r *integrationResource) Schema(
 				Description: "Description for the Integration.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"is_active": schema.BoolAttribute{
 				Description: "Active status of the Integration.",

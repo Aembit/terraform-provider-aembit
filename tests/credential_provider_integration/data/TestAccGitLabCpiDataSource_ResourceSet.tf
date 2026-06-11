@@ -23,5 +23,6 @@ resource "aembit_credential_provider_integration" "aws_sm_secret" {
 }
 
 data "aembit_credential_provider_integrations" "test" {
+	resource_set_id = aembit_resource_set.crs.id
     depends_on = [ aembit_credential_provider_integration.aws_sm_secret ]
 }
