@@ -84,6 +84,18 @@ func (r *credentialProviderResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Credential Provider.",
@@ -101,6 +113,7 @@ func (r *credentialProviderResource) Schema(
 				Description: "Active status of the Credential Provider.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -1108,6 +1121,7 @@ func (r *credentialProviderResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -1124,6 +1138,8 @@ func (r *credentialProviderResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	credential := convertCredentialProviderModelToV2DTO(
 		ctx,
@@ -1135,7 +1151,7 @@ func (r *credentialProviderResource) Create(
 	)
 
 	// Create new Credential Provider
-	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil)
+	credentialProvider, err := r.client.CreateCredentialProviderV2(credential, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Credential Provider",
@@ -1175,10 +1191,13 @@ func (r *credentialProviderResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed credential value from Aembit
 	credentialProvider, err, notFound := r.client.GetCredentialProviderV2(
 		state.ID.ValueString(),
 		nil,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -1222,7 +1241,6 @@ func (r *credentialProviderResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	// Extract external ID from state
 	externalID := state.ID.ValueString()
 
@@ -1231,6 +1249,14 @@ func (r *credentialProviderResource) Update(
 	diags = req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Credential Provider",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
 		return
 	}
 
@@ -1245,7 +1271,7 @@ func (r *credentialProviderResource) Update(
 	)
 
 	// Update Credential Provider
-	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil)
+	credentialProvider, err := r.client.UpdateCredentialProviderV2(credential, nil, &credential.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider",
@@ -1253,17 +1279,17 @@ func (r *credentialProviderResource) Update(
 		)
 		return
 	}
-
 	// Map response body to schema and populate Computed attribute values
-	plan = convertCredentialProviderV2DTOToModel(
+	state = convertCredentialProviderV2DTOToModel(
 		ctx,
 		*credentialProvider,
 		&plan,
 		r.client.Tenant,
 		r.client.StackDomain,
 	)
+
 	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1284,9 +1310,11 @@ func (r *credentialProviderResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Credential Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Credential Provider",
@@ -1297,7 +1325,7 @@ func (r *credentialProviderResource) Delete(
 	}
 
 	// Delete existing Credential Provider
-	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider",
@@ -1313,6 +1341,14 @@ func (r *credentialProviderResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -1441,6 +1477,7 @@ func convertCredentialProviderModelToV2DTO(
 	}
 
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	credential.ResourceSet = model.ResourceSetId.ValueString()
 	return credential
 }
 
@@ -1560,6 +1597,7 @@ func convertCredentialProviderV2DTOToModel(
 		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto, tenant, stackDomain)
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

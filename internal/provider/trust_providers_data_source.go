@@ -55,6 +55,11 @@ func (d *trustProvidersDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages an trust provider.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier to filter the Trust Providers, or provider-level override.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"trust_providers": schema.ListNestedAttribute{
 				Description: "List of trust providers.",
 				Computed:    true,
@@ -63,6 +68,10 @@ func (d *trustProvidersDataSource) Schema(
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
 							Description: "Unique identifier of the trust provider.",
+							Computed:    true,
+						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Trust Provider.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -516,12 +525,19 @@ func (d *trustProvidersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *trustProvidersDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.TrustProvidersDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	trustProviders, err := d.client.GetTrustProviders(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	trustProviders, err := d.client.GetTrustProviders(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Trust Providers",
@@ -529,6 +545,8 @@ func (d *trustProvidersDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, trustProvider := range trustProviders {
@@ -544,7 +562,7 @@ func (d *trustProvidersDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

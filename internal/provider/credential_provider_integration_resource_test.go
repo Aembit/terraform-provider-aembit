@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -25,7 +26,8 @@ func testDeleteCredentialProviderIntegration(resourceName string) resource.TestC
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
-		if ok, err = testClient.DeleteCredentialProviderIntegration(context.Background(), rs.Primary.ID, nil); !ok {
+		resourceSetId := getResourceSetId(types.StringValue(rs.Primary.Attributes["resource_set_id"]), testClient)
+		if ok, err = testClient.DeleteCredentialProviderIntegration(context.Background(), rs.Primary.ID, nil, &resourceSetId); !ok {
 			return err
 		}
 		return nil

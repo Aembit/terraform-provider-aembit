@@ -27,6 +27,7 @@ description: |-
 - `credential_providers` (Attributes Set) Set of Credential Providers to enforce on the Access Policy. (see [below for nested schema](#nestedatt--credential_providers))
 - `is_active` (Boolean) Active/Inactive status of the Access Policy.
 - `name` (String) Name for the Access Policy.
+- `resource_set_id` (String) ResourceSet unique identifier of the Access Policy.
 - `trust_providers` (Set of String) Set of Trust Providers to enforce on the Access Policy.
 
 ### Read-Only

@@ -6,6 +6,7 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 type StandaloneCertificateAuthorityResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                  types.String `tfsdk:"id"`
+	ResourceSetId       types.String `tfsdk:"resource_set_id"`
 	Name                types.String `tfsdk:"name"`
 	Description         types.String `tfsdk:"description"`
 	Tags                types.Map    `tfsdk:"tags"`
@@ -19,5 +20,6 @@ type StandaloneCertificateAuthorityResourceModel struct {
 
 // StandaloneCertificatesDataSourceModel maps the datasource schema.
 type StandaloneCertificateAuthoritiesDataSourceModel struct {
+	ResourceSetId          types.String                                  `tfsdk:"resource_set_id"`
 	StandaloneCertificates []StandaloneCertificateAuthorityResourceModel `tfsdk:"standalone_certificate_authorities"`
 }

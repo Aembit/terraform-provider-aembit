@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -27,6 +29,7 @@ var (
 	_ resource.Resource                = &accessPolicyResource{}
 	_ resource.ResourceWithConfigure   = &accessPolicyResource{}
 	_ resource.ResourceWithImportState = &accessPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &accessPolicyResource{}
 )
 
 // NewAccessPolicyResource is a helper function to simplify the provider implementation.
@@ -57,6 +60,14 @@ func (r *accessPolicyResource) Configure(
 	r.client = resourceConfigure(req, resp)
 }
 
+func (r *accessPolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
+}
+
 // Schema defines the schema for the resource.
 func (r *accessPolicyResource) Schema(
 	_ context.Context,
@@ -72,6 +83,18 @@ func (r *accessPolicyResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Access Policy.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Access Policy.",
@@ -83,6 +106,7 @@ func (r *accessPolicyResource) Schema(
 				Description: "Active/Inactive status of the Access Policy.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"client_workload": schema.StringAttribute{
 				Description: "Client workload ID configured in the Access Policy.",
@@ -246,8 +270,10 @@ func (r *accessPolicyResource) Create(
 	// Generate API request body from plan
 	policy := convertAccessPolicyModelToPolicyDTO(plan, nil)
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Create new Access Policy
-	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil)
+	accessPolicy, err := r.client.CreateAccessPolicyV2(policy, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating access policy",
@@ -258,6 +284,7 @@ func (r *accessPolicyResource) Create(
 
 	// Map response body to schema and populate Computed attribute values
 	plan = convertAccessPolicyDTOToModel(plan, *accessPolicy)
+
 	plan.CredentialProviders = sortCredentialProviders(
 		plan.CredentialProviders,
 		initialOrderOfCredentialProviders,
@@ -286,6 +313,8 @@ func (r *accessPolicyResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
@@ -293,7 +322,7 @@ func (r *accessPolicyResource) Read(
 	}
 
 	// Get refreshed policy value from Aembit
-	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil)
+	accessPolicy, err, notFound := r.client.GetAccessPolicyV2(state.ID.ValueString(), nil, &resourceSetId)
 
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -312,6 +341,7 @@ func (r *accessPolicyResource) Read(
 	credentialMappings, err, _ := r.client.GetAccessPolicyV2CredentialMappings(
 		state.ID.ValueString(),
 		nil,
+		&resourceSetId,
 	)
 
 	if err != nil {
@@ -362,6 +392,14 @@ func (r *accessPolicyResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Access Policy",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	initialOrderOfCredentialProviders := make([]string, len(state.CredentialProviders))
 
 	for i, cp := range state.CredentialProviders {
@@ -372,11 +410,11 @@ func (r *accessPolicyResource) Update(
 	policy := convertAccessPolicyModelToPolicyDTO(plan, &externalID)
 
 	// Update Access Policy
-	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil)
+	accessPolicy, err := r.client.UpdateAccessPolicyV2(policy, nil, &policy.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating access policy",
-			"Could not update access policy, unexpected error: "+err.Error(),
+			"Error updating Access Policy",
+			"Could not update Access Policy, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -412,9 +450,11 @@ func (r *accessPolicyResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Access Policy is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Access Policy",
@@ -425,11 +465,11 @@ func (r *accessPolicyResource) Delete(
 	}
 
 	// Delete existing Access Policy
-	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteAccessPolicyV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Access Policy",
-			"Could not delete access policy, unexpected error: "+err.Error(),
+			"Could not delete Access Policy, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -441,6 +481,14 @@ func (r *accessPolicyResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -505,6 +553,8 @@ func convertAccessPolicyModelToPolicyDTO(
 			}
 		}
 	}
+
+	policy.ResourceSet = model.ResourceSetId.ValueString()
 
 	return policy
 }
@@ -589,6 +639,7 @@ func convertAccessPolicyDTOToModel(
 		model.AccessConditions = nil
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 
@@ -651,6 +702,7 @@ func convertAccessPolicyExternalDTOToModel(
 		}
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 

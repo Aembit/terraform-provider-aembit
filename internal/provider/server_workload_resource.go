@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -65,6 +68,18 @@ func (r *serverWorkloadResource) Schema(
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Server Workload.",
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Server Workload.",
+				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
@@ -271,6 +286,7 @@ func (r *serverWorkloadResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -286,12 +302,13 @@ func (r *serverWorkloadResource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Server Workload
-	serverWorkload, err := r.client.CreateServerWorkload(workload, nil)
+	serverWorkload, err := r.client.CreateServerWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating server workload",
@@ -327,8 +344,10 @@ func (r *serverWorkloadResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed workload value from Aembit
-	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil)
+	serverWorkload, err, notFound := r.client.GetServerWorkload(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Server Workload",
@@ -380,15 +399,23 @@ func (r *serverWorkloadResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Server Workload",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload := convertServerWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Server Workload
-	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil)
+	serverWorkload, err := r.client.UpdateServerWorkload(workload, nil, &workload.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating server workload",
-			"Could not update server workload, unexpected error: "+err.Error(),
+			"Error updating Server Workload",
+			"Could not update Server Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -420,9 +447,11 @@ func (r *serverWorkloadResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Server Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil)
+		_, err := r.client.DisableServerWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Server Workload",
@@ -433,23 +462,31 @@ func (r *serverWorkloadResource) Delete(
 	}
 
 	// Delete existing Server Workload
-	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteServerWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Server Workload",
-			"Could not delete server workload, unexpected error: "+err.Error(),
+			"Could not delete Server Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
 }
 
-// Imports an existing resource by passing externalID.
+// Imports an existing resource by passing externalId.
 func (r *serverWorkloadResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Retrieve import externalID and save to id attribute
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
+	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
@@ -517,6 +554,7 @@ func convertServerWorkloadModelToDTO(
 	}
 
 	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	workload.ResourceSet = model.ResourceSetId.ValueString()
 	return workload
 }
 
@@ -538,6 +576,7 @@ func convertServerWorkloadDTOToModel(
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	model.ServiceEndpoint = &models.ServiceEndpointModel{
+		ID:                types.Int64Value(int64(dto.ServiceEndpoint.ID)),
 		ExternalID:        types.StringValue(dto.ServiceEndpoint.ExternalID),
 		Host:              types.StringValue(dto.ServiceEndpoint.Host),
 		Port:              types.Int64Value(int64(dto.ServiceEndpoint.Port)),
@@ -562,5 +601,6 @@ func convertServerWorkloadDTOToModel(
 		}
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

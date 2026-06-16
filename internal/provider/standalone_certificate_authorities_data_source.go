@@ -8,6 +8,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -53,6 +54,11 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages a standalone certificate authority.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "Unique identifier of the Resource Set.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"standalone_certificate_authorities": schema.ListNestedAttribute{
 				Description: "List of standalone certificate authorities.",
 				Computed:    true,
@@ -61,6 +67,10 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
 							Description: "Unique identifier of the standalone certificate authority.",
+							Computed:    true,
+						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Standalone Certificate Authority.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -105,12 +115,19 @@ func (d *standaloneCertificateAuthoritiesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *standaloneCertificateAuthoritiesDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.StandaloneCertificateAuthoritiesDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	standaloneCertificates, err := d.client.GetStandaloneCertificates(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	standaloneCertificates, err := d.client.GetStandaloneCertificates(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Standalone Certificate Authorities",
@@ -118,6 +135,8 @@ func (d *standaloneCertificateAuthoritiesDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, standaloneCertificate := range standaloneCertificates {
@@ -134,7 +153,7 @@ func (d *standaloneCertificateAuthoritiesDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

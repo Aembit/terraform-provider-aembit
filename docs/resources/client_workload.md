@@ -53,6 +53,7 @@ resource "aembit_client_workload" "test" {
 - `description` (String) Description for the Client Workload.
 - `enforce_sso` (Boolean) Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.
 - `is_active` (Boolean) Active status of the Client Workload.
+- `resource_set_id` (String) ResourceSet unique identifier of the Client Workload.
 - `sso_identity_providers` (Set of String) Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enable_sso' is true.
 - `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Client Workload.
 - `tags` (Map of String) Tags are key-value pairs.

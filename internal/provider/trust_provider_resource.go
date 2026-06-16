@@ -21,7 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -79,6 +81,18 @@ func (r *trustProviderResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Trust Provider.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Trust Provider.",
@@ -96,6 +110,7 @@ func (r *trustProviderResource) Schema(
 				Description: "Active status of the Trust Provider.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"client_id": schema.StringAttribute{
 				Description: "Edge SDK Client ID for the Trust Provider. Only populated for supported associated use cases.",
@@ -769,6 +784,7 @@ func (r *trustProviderResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Configure validators to ensure that only one Trust Provider type is specified.
@@ -950,6 +966,8 @@ func (r *trustProviderResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	trust, err := convertTrustProviderModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 	if err != nil {
@@ -961,7 +979,7 @@ func (r *trustProviderResource) Create(
 	}
 
 	// Create new Trust Provider
-	trustProvider, err := r.client.CreateTrustProvider(trust, nil)
+	trustProvider, err := r.client.CreateTrustProvider(trust, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Trust Provider",
@@ -1001,8 +1019,10 @@ func (r *trustProviderResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed trust value from Aembit
-	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil)
+	trustProvider, err, notFound := r.client.GetTrustProvider(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Trust Provider",
@@ -1038,6 +1058,7 @@ func (r *trustProviderResource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
+	errorUpdateMessage := "Error updating Trust Provider"
 	// Get current state
 	var state models.TrustProviderResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -1057,21 +1078,29 @@ func (r *trustProviderResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			errorUpdateMessage,
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	trust, err := convertTrustProviderModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Trust Provider",
+			errorUpdateMessage,
 			err.Error(),
 		)
 		return
 	}
 
 	// Update Trust Provider
-	trustProvider, err := r.client.UpdateTrustProvider(trust, nil)
+	trustProvider, err := r.client.UpdateTrustProvider(trust, nil, &trust.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating Trust Provider",
+			errorUpdateMessage,
 			"Could not update Trust Provider, unexpected error: "+err.Error(),
 		)
 		return
@@ -1108,9 +1137,11 @@ func (r *trustProviderResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Trust Provider is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil)
+		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Trust Provider",
@@ -1121,7 +1152,7 @@ func (r *trustProviderResource) Delete(
 	}
 
 	// Delete existing Trust Provider
-	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteTrustProvider(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Trust Provider",
@@ -1137,6 +1168,14 @@ func (r *trustProviderResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -1196,6 +1235,7 @@ func convertTrustProviderModelToDTO(
 	}
 
 	trust.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	trust.ResourceSet = model.ResourceSetId.ValueString()
 	return trust, err
 }
 
@@ -1855,6 +1895,8 @@ func convertTrustProviderDTOToModel(
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:terraform_idtoken:%s", stack, tenant, dto.ExternalID))
 		}
 	}
+
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 
 	return model
 }

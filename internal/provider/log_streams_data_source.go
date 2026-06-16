@@ -181,10 +181,16 @@ func (d *logStreamsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *logStreamsDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.LogStreamsDataSourceModel
+
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	logStreams, err := d.client.GetLogStreams(nil)
 	if err != nil {
@@ -202,7 +208,7 @@ func (d *logStreamsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -26,7 +26,10 @@ func testFindClientWorkload(resourceName string) resource.TestCheckFunc {
 		if rs, ok = s.RootModule().Resources[resourceName]; !ok {
 			return fmt.Errorf("Not found: %s", resourceName)
 		}
-		if _, err, notFound = testClient.GetClientWorkload(context.Background(), rs.Primary.ID, nil); notFound {
+
+		resourceSetID := rs.Primary.Attributes["resource_set_id"]
+
+		if _, err, notFound = testClient.GetClientWorkload(context.Background(), rs.Primary.ID, nil, &resourceSetID); notFound {
 			return err
 		}
 		return nil
@@ -34,42 +37,49 @@ func testFindClientWorkload(resourceName string) resource.TestCheckFunc {
 }
 
 func TestAccClientWorkloadsDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/client/data/TestAccClientWorkloadsDataSource.tf")
+	createFile1, _ := os.ReadFile("../../tests/client/data/TestAccClientWorkloadsDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/client/data/TestAccClientWorkloadsDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/client/data/TestAccClientWorkloadsDataSource.tf")
 
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(
-		string(createFile),
-		"unittest1namespace",
-		fmt.Sprintf("unittest1namespace%d", randID),
-	)
-	createFileConfig, _, _ = randomizeFileConfigs(
-		createFileConfig,
-		"",
-		"Acceptance Test client workload",
-	)
-	createFileConfig, _, _ = randomizeFileConfigs(createFileConfig, "", "unittestname")
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify non-zero number of Client Workloads returned
-					resource.TestCheckResourceAttrSet(
-						testClientWorkloadsDataSource,
-						"client_workloads.#",
+	for _, createFile := range files {
+		randID := rand.Intn(10000000)
+		createFileConfig := strings.ReplaceAll(
+			createFile,
+			"unittest1namespace",
+			fmt.Sprintf("unittest1namespace%d", randID),
+		)
+		createFileConfig, _, _ = randomizeFileConfigs(
+			createFileConfig,
+			"",
+			"Acceptance Test client workload",
+		)
+		createFileConfig, _, _ = randomizeFileConfigs(createFileConfig, "", "unittestname")
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify non-zero number of Client Workloads returned
+						resource.TestCheckResourceAttrSet(
+							testClientWorkloadsDataSource,
+							"client_workloads.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testClientWorkloadsDataSource,
+							"client_workloads.0.id",
+						),
+						// Find newly created entry
+						testFindClientWorkload(testClientWorkloadResource),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testClientWorkloadsDataSource,
-						"client_workloads.0.id",
-					),
-					// Find newly created entry
-					testFindClientWorkload(testClientWorkloadResource),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
+
 }

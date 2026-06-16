@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 
+	"terraform-provider-aembit/internal/provider/models"
+	"terraform-provider-aembit/internal/provider/validators"
+
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-aembit/internal/provider/models"
-	"terraform-provider-aembit/internal/provider/validators"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -287,11 +288,7 @@ func convertResourceSetModelToDTO(
 		}
 	}
 
-	if dto.StandaloneCertificateAuthority == "" {
-		model.StandaloneCertificateAuthority = types.StringNull()
-	} else {
-		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
-	}
+	dto.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
 
 	return dto
 }
@@ -305,7 +302,12 @@ func convertResourceSetDTOToModel(
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
-	model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+
+	if dto.StandaloneCertificateAuthority == "" {
+		model.StandaloneCertificateAuthority = types.StringNull()
+	} else {
+		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
+	}
 
 	model.Roles = make([]types.String, len(dto.Roles))
 	if len(dto.Roles) > 0 {

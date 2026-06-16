@@ -13,46 +13,52 @@ import (
 const testAccessPoliciesDataSource string = "data.aembit_access_policies.test"
 
 func TestAccAccessPoliciesDataSource(t *testing.T) {
-	createFile, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource.tf")
+	createFile1, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource_ResourceSet.tf")
+	createFile2, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource_ProviderResourceSet.tf")
+	createFile3, _ := os.ReadFile("../../tests/policy/data/TestAccAccessPoliciesDataSource.tf")
 
-	randID := rand.Intn(10000000)
-	createFileConfig := strings.ReplaceAll(
-		string(createFile),
-		"clientworkloadNamespace",
-		fmt.Sprintf("clientworkloadNamespace%d", randID),
-	)
+	files := [3]string{string(createFile1), string(createFile2), string(createFile3)}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify number of Access Policies returned
-					resource.TestCheckResourceAttrSet(
-						testAccessPoliciesDataSource,
-						"access_policies.#",
+	for _, createFile := range files {
+		randID := rand.Intn(10000000)
+		createFileConfig := strings.ReplaceAll(
+			createFile,
+			"clientworkloadNamespace",
+			fmt.Sprintf("clientworkloadNamespace%d", randID),
+		)
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// Read testing
+				{
+					Config: createFileConfig,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						// Verify number of Access Policies returned
+						resource.TestCheckResourceAttrSet(
+							testAccessPoliciesDataSource,
+							"access_policies.#",
+						),
+						// Verify dynamic values have any value set in the state.
+						resource.TestCheckResourceAttrSet(
+							testAccessPoliciesDataSource,
+							"access_policies.0.id",
+						),
+						resource.TestCheckResourceAttrSet(
+							testAccessPoliciesDataSource,
+							"access_policies.0.client_workload",
+						),
+						// Commented out as access policies can be created without trust provider(s)/access condition(s)/credential provider(s)
+						// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
+						// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
+						// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
+						resource.TestCheckResourceAttrSet(
+							testAccessPoliciesDataSource,
+							"access_policies.0.server_workload",
+						),
 					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(
-						testAccessPoliciesDataSource,
-						"access_policies.0.id",
-					),
-					resource.TestCheckResourceAttrSet(
-						testAccessPoliciesDataSource,
-						"access_policies.0.client_workload",
-					),
-					// Commented out as access policies can be created without trust provider(s)/access condition(s)/credential provider(s)
-					// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.trust_providers.#"),
-					// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.access_conditions.#"),
-					// resource.TestCheckResourceAttrSet(testAccessPoliciesDataSource, "access_policies.0.credential_provider"),
-					resource.TestCheckResourceAttrSet(
-						testAccessPoliciesDataSource,
-						"access_policies.0.server_workload",
-					),
-				),
+				},
 			},
-		},
-	})
+		})
+	}
 }

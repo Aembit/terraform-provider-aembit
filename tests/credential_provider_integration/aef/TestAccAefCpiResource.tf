@@ -1,3 +1,6 @@
+provider "aembit" {
+}
+
 resource "aembit_credential_provider_integration" "azure_entra_federation_cpi" {
     name                   = "TF Acceptance Azure Entra Federation Credential Provider Integration"
     description            = "TF Acceptance Azure Entra Federation Credential Provider Integration Description"

@@ -54,6 +54,11 @@ func (d *serverWorkloadsDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages an server workload.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "Unique identifier of the Resource Set.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"server_workloads": schema.ListNestedAttribute{
 				Description: "List of server workloads.",
 				Computed:    true,
@@ -62,6 +67,10 @@ func (d *serverWorkloadsDataSource) Schema(
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
 							Description: "Unique identifier of the server workload.",
+							Computed:    true,
+						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Server Workload.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -166,12 +175,19 @@ func (d *serverWorkloadsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *serverWorkloadsDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.ServerWorkloadsDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	serverWorkloads, err := d.client.GetServerWorkloads(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	serverWorkloads, err := d.client.GetServerWorkloads(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Server Workloads",
@@ -179,6 +195,9 @@ func (d *serverWorkloadsDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
+	state.ServerWorkloads = make([]models.ServerWorkloadResourceModel, 0, len(serverWorkloads))
 
 	// Map response body to model
 	for _, serverWorkload := range serverWorkloads {
@@ -194,7 +213,7 @@ func (d *serverWorkloadsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

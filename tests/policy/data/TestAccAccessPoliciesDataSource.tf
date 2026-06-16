@@ -90,4 +90,6 @@ resource "aembit_access_policy" "first_policy" {
     server_workload = aembit_server_workload.first_server.id
 }
 
-data "aembit_access_policies" "test" {}
+data "aembit_access_policies" "test" {
+	depends_on = [ aembit_access_policy.first_policy ]
+}

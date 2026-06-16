@@ -66,6 +66,7 @@ resource "aembit_credential_provider_integration" "azure_entra_federation_cpi" {
 - `azure_entra_federation` (Attributes) Configuration of Credential Provider Integration of type Azure Entra Federation (see [below for nested schema](#nestedatt--azure_entra_federation))
 - `description` (String) Description for the Credential Provider Integration.
 - `gitlab` (Attributes) GitLab Managed Account type Credential Provider Integration configuration. (see [below for nested schema](#nestedatt--gitlab))
+- `resource_set_id` (String) ResourceSet unique identifier of the Credential Provider Integration.
 
 ### Read-Only
 

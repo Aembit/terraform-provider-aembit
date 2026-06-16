@@ -9,6 +9,7 @@ import (
 type CredentialProviderResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                      types.String                                                 `tfsdk:"id"`
+	ResourceSetId           types.String                                                 `tfsdk:"resource_set_id"`
 	Name                    types.String                                                 `tfsdk:"name"`
 	Description             types.String                                                 `tfsdk:"description"`
 	IsActive                types.Bool                                                   `tfsdk:"is_active"`
@@ -36,6 +37,7 @@ type CredentialProviderResourceModel struct {
 
 // credentialProviderDataSourceModel maps the datasource schema.
 type CredentialProvidersDataSourceModel struct {
+	ResourceSetId       types.String                      `tfsdk:"resource_set_id"`
 	CredentialProviders []CredentialProviderResourceModel `tfsdk:"credential_providers"`
 }
 

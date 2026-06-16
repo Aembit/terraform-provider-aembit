@@ -35,6 +35,7 @@ var _ provider.Provider = &aembitProvider{}
 
 // Constant strings.
 const FMT_READ_RESPONSE_ERROR = "failed to read response body: %w"
+const DEFAULT_RESOURCESET_ID = "ffffffff-ffff-ffff-ffff-ffffffffffff"
 
 // New is a helper function to simplify provider server and testing implementation.
 func New(version, releaseTime string) func() provider.Provider {
@@ -378,7 +379,7 @@ func (p *aembitProvider) Resources(_ context.Context) []func() resource.Resource
 		NewCredentialProviderIntegrationResource,
 		NewDiscoveryIntegrationResource,
 		NewLogStreamResource,
-		// NewResourceSetResource,	// Preventing Resource Set Resources via Terraform until we add support for deleting Resource Sets
+		NewResourceSetResource,
 		NewGlobalPolicyComplianceResource,
 		NewIdentityProviderResource,
 		NewTrustProviderSecretResource,

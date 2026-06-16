@@ -95,10 +95,15 @@ func (d *agentControllersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *agentControllersDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.AgentControllersDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	agentControllers, err := d.client.GetAgentControllers(nil)
 	if err != nil {
@@ -121,7 +126,7 @@ func (d *agentControllersDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -11,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -66,6 +70,18 @@ func (r *integrationResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Integration.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "Name for the Integration.",
@@ -83,6 +99,7 @@ func (r *integrationResource) Schema(
 				Description: "Active status of the Integration.",
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
@@ -143,6 +160,7 @@ func (r *integrationResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -158,12 +176,13 @@ func (r *integrationResource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
 
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, nil, r.client.DefaultTags)
 
 	// Create new Integration
-	integration, err := r.client.CreateIntegrationV2(dto, nil)
+	integration, err := r.client.CreateIntegrationV2(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -197,8 +216,10 @@ func (r *integrationResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed trust value from Aembit
-	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil)
+	integration, err, notFound := r.client.GetIntegrationV2(state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Integration",
@@ -247,11 +268,19 @@ func (r *integrationResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Integration",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	dto := convertIntegrationModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Integration
-	integration, err := r.client.UpdateIntegrationV2(dto, nil)
+	integration, err := r.client.UpdateIntegrationV2(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Integration",
@@ -285,20 +314,22 @@ func (r *integrationResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Integration is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil)
+		_, err := r.client.DisableIntegrationV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error disabling Client Workload",
-				"Could not disable Client Workload, unexpected error: "+err.Error(),
+				"Error disabling Integration",
+				"Could not disable Integration, unexpected error: "+err.Error(),
 			)
 			return
 		}
 	}
 
 	// Delete existing Integration
-	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteIntegrationV2(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Integration",
@@ -314,6 +345,14 @@ func (r *integrationResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -348,6 +387,7 @@ func convertIntegrationModelToDTO(
 	}
 
 	integration.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	integration.ResourceSet = model.ResourceSetId.ValueString()
 	return integration
 }
 
@@ -387,5 +427,6 @@ func convertIntegrationDTOToModel(
 	// handle tags
 	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

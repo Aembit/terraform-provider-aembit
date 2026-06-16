@@ -183,10 +183,15 @@ func (d *rolesDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *rolesDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.RolesDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	roles, err := d.client.GetRoles(nil)
 	if err != nil {
@@ -204,7 +209,7 @@ func (d *rolesDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

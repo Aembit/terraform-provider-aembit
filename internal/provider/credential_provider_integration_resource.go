@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -14,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -23,6 +26,7 @@ var (
 	_ resource.Resource                = &credentialProviderIntegrationResource{}
 	_ resource.ResourceWithConfigure   = &credentialProviderIntegrationResource{}
 	_ resource.ResourceWithImportState = &credentialProviderIntegrationResource{}
+	_ resource.ResourceWithModifyPlan  = &credentialProviderIntegrationResource{}
 )
 
 // NewIntegrationResource is a helper function to simplify the provider implementation.
@@ -53,6 +57,14 @@ func (r *credentialProviderIntegrationResource) Configure(
 	r.client = resourceConfigure(req, resp)
 }
 
+func (r *credentialProviderIntegrationResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
+}
+
 // Schema defines the schema for the resource.
 func (r *credentialProviderIntegrationResource) Schema(
 	_ context.Context,
@@ -64,6 +76,18 @@ func (r *credentialProviderIntegrationResource) Schema(
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Credential Provider Integration.",
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider Integration.",
+				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
@@ -195,11 +219,13 @@ func (r *credentialProviderIntegrationResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, nil)
 
 	// Create new Integration
-	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil)
+	credentialIntegration, err := r.client.CreateCredentialProviderIntegration(dto, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Integration",
@@ -238,10 +264,13 @@ func (r *credentialProviderIntegrationResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed trust value from Aembit
 	credentialIntegration, err, notFound := r.client.GetCredentialProviderIntegration(
 		state.ID.ValueString(),
 		nil,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -296,11 +325,19 @@ func (r *credentialProviderIntegrationResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Credential Provider Integration",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	dto := convertCredentialProviderIntegrationModelToDTO(plan, &externalID)
 
 	// Update Credential Provider Integration
-	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil)
+	credentialIntegration, err := r.client.UpdateCredentialProviderIntegration(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Credential Provider Integration",
@@ -339,8 +376,10 @@ func (r *credentialProviderIntegrationResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Delete existing Credential Provider Integration
-	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteCredentialProviderIntegration(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Credential Provider Integration",
@@ -356,6 +395,14 @@ func (r *credentialProviderIntegrationResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -396,6 +443,9 @@ func convertCredentialProviderIntegrationModelToDTO(
 		credentialIntegration.KeyVaultName = model.AzureEntraFederation.KeyVaultName.ValueString()
 		credentialIntegration.FetchSecretNames = model.AzureEntraFederation.FetchSecretNames.ValueBool()
 	}
+
+	credentialIntegration.ResourceSet = model.ResourceSetId.ValueString()
+
 	return credentialIntegration
 }
 
@@ -444,5 +494,7 @@ func convertCredentialProviderIntegrationDTOToModel(
 	default:
 		// This should never happen as the API restricts the type field to known values
 	}
+
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

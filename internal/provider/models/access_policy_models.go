@@ -8,6 +8,7 @@ import (
 type AccessPolicyResourceModel struct {
 	// ID is required for Framework acceptance testing
 	ID                  types.String                    `tfsdk:"id"`
+	ResourceSetId       types.String                    `tfsdk:"resource_set_id"`
 	Name                types.String                    `tfsdk:"name"`
 	IsActive            types.Bool                      `tfsdk:"is_active"`
 	ClientWorkload      types.String                    `tfsdk:"client_workload"`
@@ -20,6 +21,7 @@ type AccessPolicyResourceModel struct {
 
 // accessPoliciesDataSourceModel maps the datasource schema.
 type AccessPoliciesDataSourceModel struct {
+	ResourceSetId  types.String                `tfsdk:"resource_set_id"`
 	AccessPolicies []AccessPolicyResourceModel `tfsdk:"access_policies"`
 }
 

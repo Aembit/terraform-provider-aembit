@@ -58,6 +58,11 @@ func (d *credentialProvidersDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages an credential provider.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Credential Provider.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"credential_providers": schema.ListNestedAttribute{
 				Description: "List of credential providers.",
 				Computed:    true,
@@ -66,6 +71,10 @@ func (d *credentialProvidersDataSource) Schema(
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
 							Description: "Unique identifier of the credential provider.",
+							Computed:    true,
+						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Credential Provider.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -758,12 +767,20 @@ func (d *credentialProvidersDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *credentialProvidersDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.CredentialProvidersDataSourceModel
 
-	credentialProviders, err := d.client.GetCredentialProvidersV2(nil)
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	credentialProviders, err := d.client.GetCredentialProvidersV2(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit Credential Providers",
@@ -771,6 +788,8 @@ func (d *credentialProvidersDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, credentialProvider := range credentialProviders {
@@ -786,7 +805,7 @@ func (d *credentialProvidersDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -67,6 +70,18 @@ func (r *standaloneCertificateAuthorityResource) Schema(
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Standalone Certificate Authority.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "User-provided name for the standalone certificate authority.",
@@ -115,6 +130,7 @@ func (r *standaloneCertificateAuthorityResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -131,6 +147,8 @@ func (r *standaloneCertificateAuthorityResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Generate API request body from plan
 	standaloneCertificate := convertStandaloneCertificateModelToDTO(
 		ctx,
@@ -140,14 +158,11 @@ func (r *standaloneCertificateAuthorityResource) Create(
 	)
 
 	// Create new Standalone Certificate Authority
-	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(
-		standaloneCertificate,
-		nil,
-	)
+	standaloneCertificateResponse, err := r.client.CreateStandaloneCertificate(standaloneCertificate, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Standalone Certificate Authority",
-			"Could not create Standalone Certificate Authority, unexpected error: "+err.Error(),
+			"Error creating standalone certificate authority",
+			"Could not create standalone certificate authority, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -177,10 +192,13 @@ func (r *standaloneCertificateAuthorityResource) Read(
 		return
 	}
 
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
 	// Get refreshed workload value from Aembit
 	standaloneCertificate, err, notFound := r.client.GetStandaloneCertificate(
 		state.ID.ValueString(),
 		nil,
+		&resourceSetId,
 	)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
@@ -235,11 +253,19 @@ func (r *standaloneCertificateAuthorityResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Standalone Certificate Authority",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
-	workload := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
+	dto := convertStandaloneCertificateModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 
 	// Update Standalone Certificate Authority
-	serverWorkload, err := r.client.UpdateStandaloneCertificate(workload, nil)
+	standaloneCertificate, err := r.client.UpdateStandaloneCertificate(dto, nil, &dto.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating Standalone Certificate Authority",
@@ -249,7 +275,7 @@ func (r *standaloneCertificateAuthorityResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertStandaloneCertificateDTOToModel(ctx, *serverWorkload, &plan)
+	state = convertStandaloneCertificateDTOToModel(ctx, *standaloneCertificate, &plan)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -273,8 +299,10 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Delete existing Standalone Certificate Authority
-	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteStandaloneCertificate(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Standalone Certificate Authority",
@@ -284,13 +312,21 @@ func (r *standaloneCertificateAuthorityResource) Delete(
 	}
 }
 
-// Imports an existing resource by passing externalID.
+// Imports an existing resource by passing externalId.
 func (r *standaloneCertificateAuthorityResource) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Retrieve import externalID and save to id attribute
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
+	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
@@ -315,6 +351,7 @@ func convertStandaloneCertificateModelToDTO(
 	}
 
 	standaloneCertificate.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
+	standaloneCertificate.ResourceSet = model.ResourceSetId.ValueString()
 	return standaloneCertificate
 }
 
@@ -336,5 +373,6 @@ func convertStandaloneCertificateDTOToModel(
 	model.Tags = newTagsModelFromPlan(ctx, planModel.Tags)
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }

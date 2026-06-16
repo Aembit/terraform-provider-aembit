@@ -6,10 +6,14 @@ data "aembit_resource_sets" "all" {
     provider = aembit.rs_loader
 }
 
-// Create a Provider and Resource in the second Resource Set
+locals {
+    tf_testing_rs_id = [for rs in data.aembit_resource_sets.all.resource_sets : rs.id if rs.name == "TF Testing"][0]
+}
+
+// Create a Provider and Resource in the TF Testing Resource Set
 provider "aembit" {
     alias = "rs_manager"
-    resource_set_id = data.aembit_resource_sets.all.resource_sets[1].id
+    resource_set_id = local.tf_testing_rs_id
 }
 
 resource "aembit_client_workload" "test" {

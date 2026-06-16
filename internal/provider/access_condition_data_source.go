@@ -8,6 +8,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -53,6 +54,11 @@ func (d *accessConditionsDataSource) Schema(
 	resp.Schema = schema.Schema{
 		Description: "Manages an accessCondition.",
 		Attributes: map[string]schema.Attribute{
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier to filter the Access Conditions, or provider-level override.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"access_conditions": schema.ListNestedAttribute{
 				Description: "List of accessConditions.",
 				Computed:    true,
@@ -61,6 +67,10 @@ func (d *accessConditionsDataSource) Schema(
 						// ID field is required for Terraform Framework acceptance testing.
 						"id": schema.StringAttribute{
 							Description: "Unique identifier of the accessCondition.",
+							Computed:    true,
+						},
+						"resource_set_id": schema.StringAttribute{
+							Description: "ResourceSet unique identifier of the Access Condition.",
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
@@ -172,12 +182,19 @@ func (d *accessConditionsDataSource) Schema(
 // Read refreshes the Terraform state with the latest data.
 func (d *accessConditionsDataSource) Read(
 	ctx context.Context,
-	_ datasource.ReadRequest,
+	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
 	var state models.AccessConditionsDataSourceModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	accessConditions, err := d.client.GetAccessConditionsV2(nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, d.client)
+
+	accessConditions, err := d.client.GetAccessConditionsV2(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Read Aembit AccessConditions",
@@ -185,6 +202,8 @@ func (d *accessConditionsDataSource) Read(
 		)
 		return
 	}
+
+	state.ResourceSetId = types.StringValue(resourceSetId)
 
 	// Map response body to model
 	for _, accessCondition := range accessConditions {
@@ -198,7 +217,7 @@ func (d *accessConditionsDataSource) Read(
 	}
 
 	// Set state
-	diags := resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

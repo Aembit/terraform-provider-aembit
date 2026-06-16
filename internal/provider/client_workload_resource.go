@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -68,6 +69,18 @@ func (r *clientWorkloadResource) Schema(
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
 				Description: "Unique identifier of the Client Workload.",
+				Computed:    true,
+				Validators: []validator.String{
+					validators.UUIDRegexValidation(),
+				},
+				// Prevent ID from becoming "known after apply" on updates
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_set_id": schema.StringAttribute{
+				Description: "ResourceSet unique identifier of the Client Workload.",
+				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
@@ -226,6 +239,7 @@ func (r *clientWorkloadResource) ModifyPlan(
 	resp *resource.ModifyPlanResponse,
 ) {
 	modifyPlanForTagsAll(ctx, req, resp, r.client.DefaultTags)
+	modifyPlanForResourceSetId(ctx, req, resp, r.client)
 }
 
 func (r *clientWorkloadResource) ValidateConfig(
@@ -306,12 +320,14 @@ func (r *clientWorkloadResource) Create(
 		return
 	}
 
+	resourceSetId := getResourceSetId(plan.ResourceSetId, r.client)
+
 	// Create new Client Workload
-	clientWorkload, err := r.client.CreateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.CreateClientWorkload(workload, nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating client workload",
-			"Could not create client workload, unexpected error: "+err.Error(),
+			"Error creating Client Workload",
+			"Could not create Client Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -341,8 +357,10 @@ func (r *clientWorkloadResource) Read(
 		return
 	}
 
-	// Get refreshed workload value from Aembit
-	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil)
+	resourceSetId := getResourceSetId(state.ResourceSetId, r.client)
+
+	// Get refreshed trust value from Aembit
+	clientWorkload, err, notFound := r.client.GetClientWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Client Workload",
@@ -392,6 +410,14 @@ func (r *clientWorkloadResource) Update(
 		return
 	}
 
+	if !state.ResourceSetId.Equal(plan.ResourceSetId) {
+		resp.Diagnostics.AddError(
+			"Error updating Client Workload",
+			"Changing the ResourceSet of the resource is not supported.",
+		)
+		return
+	}
+
 	// Generate API request body from plan
 	workload, diags := convertClientWorkloadModelToDTO(ctx, plan, &externalID, r.client.DefaultTags)
 	resp.Diagnostics.Append(diags...)
@@ -400,11 +426,11 @@ func (r *clientWorkloadResource) Update(
 	}
 
 	// Update Client Workload
-	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil)
+	clientWorkload, err := r.client.UpdateClientWorkload(workload, nil, &workload.ResourceSet)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating client workload",
-			"Could not update client workload, unexpected error: "+err.Error(),
+			"Error updating Client Workload",
+			"Could not update Client Workload, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -434,9 +460,11 @@ func (r *clientWorkloadResource) Delete(
 		return
 	}
 
+	resourceSetId := state.ResourceSetId.ValueString()
+
 	// Check if Client Workload is Active - if it is, disable it first
 	if state.IsActive == types.BoolValue(true) {
-		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil)
+		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error disabling Client Workload",
@@ -447,7 +475,7 @@ func (r *clientWorkloadResource) Delete(
 	}
 
 	// Delete existing Client Workload
-	_, err := r.client.DeleteClientWorkload(ctx, state.ID.ValueString(), nil)
+	_, err := r.client.DeleteClientWorkload(ctx, state.ID.ValueString(), nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting Client Workload",
@@ -463,6 +491,14 @@ func (r *clientWorkloadResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
+	idParts := strings.Split(req.ID, ",")
+
+	if len(idParts) == 2 {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("resource_set_id"), idParts[0])...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
+		return
+	}
+
 	// Retrieve import externalId and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -538,6 +574,7 @@ func convertClientWorkloadModelToDTO(
 
 	workload.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 
+	workload.ResourceSet = model.ResourceSetId.ValueString()
 	return workload, diags
 }
 
@@ -568,6 +605,7 @@ func convertClientWorkloadDTOToModel(
 		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 	}
 
+	model.ResourceSetId = types.StringValue(dto.ResourceSet)
 	return model
 }
 
