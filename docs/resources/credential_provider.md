@@ -175,6 +175,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `oauth_authorization_code` (Attributes) OAuth Authorization Code Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) OAuth Client Credentials Flow type Credential Provider configuration. (see [below for nested schema](#nestedatt--oauth_client_credentials))
 - `oidc_id_token` (Attributes) OIDC ID Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--oidc_id_token))
+- `openai_wif` (Attributes) OpenAI Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--openai_wif))
 - `resource_set_id` (String) ResourceSet unique identifier of the Credential Provider.
 - `snowflake_jwt` (Attributes) JSON Web Token type Credential Provider configuration. (see [below for nested schema](#nestedatt--snowflake_jwt))
 - `tags` (Map of String) Tags are key-value pairs.
@@ -495,6 +496,19 @@ Required:
 - `value` (String) Value for the JWT Token Custom Claim.
 - `value_type` (String) Type of value for the JWT Token Custom Claim. Possible values are `literal` or `dynamic`.
 
+
+
+<a id="nestedatt--openai_wif"></a>
+### Nested Schema for `openai_wif`
+
+Required:
+
+- `identity_provider_id` (String) Aembit Identity Provider (IDP) ID.
+- `service_account_id` (String) OpenAI Service Account ID.
+
+Optional:
+
+- `audience` (String) OpenAI Audience.
 
 
 <a id="nestedatt--snowflake_jwt"></a>

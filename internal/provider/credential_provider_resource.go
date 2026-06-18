@@ -1083,6 +1083,25 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"openai_wif": schema.SingleNestedAttribute{
+				Description: "OpenAI Workload Identity Federation type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"identity_provider_id": schema.StringAttribute{
+						Description: "Aembit Identity Provider (IDP) ID.",
+						Required:    true,
+					},
+					"service_account_id": schema.StringAttribute{
+						Description: "OpenAI Service Account ID.",
+						Required:    true,
+					},
+					"audience": schema.StringAttribute{
+						Description: "OpenAI Audience.",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -1111,6 +1130,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("mcp_user_based_access_token"),
 			path.MatchRoot("x509_svid_certificate"),
 			path.MatchRoot("claude_wif"),
+			path.MatchRoot("openai_wif"),
 		),
 	}
 }
@@ -1476,6 +1496,11 @@ func convertCredentialProviderModelToV2DTO(
 		convertToClaudeWifDTO(&credential, model)
 	}
 
+	// Handle the OpenAI Wif use case
+	if model.OpenAiWif != nil {
+		convertToOpenAiWifDTO(&credential, model)
+	}
+
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	credential.ResourceSet = model.ResourceSetId.ValueString()
 	return credential
@@ -1513,6 +1538,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.McpUserBasedAccessToken = nil
 	model.X509SvidCertificate = nil
 	model.ClaudeWif = nil
+	model.OpenAiWif = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1595,6 +1621,8 @@ func convertCredentialProviderV2DTOToModel(
 		model.X509SvidCertificate = convertX509SvidCertificateDTOToModel(dto)
 	case "claude-wif":
 		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto, tenant, stackDomain)
+	case "openai-wif":
+		model.OpenAiWif = convertOpenAiWifV2DTOToModel(dto)
 	}
 
 	model.ResourceSetId = types.StringValue(dto.ResourceSet)
@@ -2282,9 +2310,9 @@ func convertToClaudeWifDTO(
 	credential.Audience = model.ClaudeWif.Audience.ValueString()
 	credential.Lifetime = model.ClaudeWif.Lifetime
 	credential.Scope = model.ClaudeWif.Scope.ValueString()
+	credential.ServiceAccountId = model.ClaudeWif.ServiceAccountId.ValueString()
 	credential.CredentialClaudeWifV2DTO = aembit.CredentialClaudeWifV2DTO{
 		FederationRuleId: model.ClaudeWif.FederationRuleId.ValueString(),
-		ServiceAccountId: model.ClaudeWif.ServiceAccountId.ValueString(),
 		OrganizationId:   model.ClaudeWif.OrganizationId.ValueString(),
 		WorkspaceId:      model.ClaudeWif.WorkspaceId.ValueString(),
 	}
@@ -2303,6 +2331,29 @@ func convertClaudeWifV2DTOToModel(
 		WorkspaceId:      types.StringValue(dto.WorkspaceId),
 		Scope:            types.StringValue(dto.Scope),
 		Lifetime:         dto.Lifetime,
+	}
+	return &value
+}
+
+func convertToOpenAiWifDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "openai-wif"
+	credential.Audience = model.OpenAiWif.Audience.ValueString()
+	credential.ServiceAccountId = model.OpenAiWif.ServiceAccountId.ValueString()
+	credential.CredentialOpenAiWifV2DTO = aembit.CredentialOpenAiWifV2DTO{
+		IdentityProviderId: model.OpenAiWif.IdentityProviderId.ValueString(),
+	}
+}
+
+func convertOpenAiWifV2DTOToModel(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderOpenAiWifModel {
+	value := models.CredentialProviderOpenAiWifModel{
+		IdentityProviderId: types.StringValue(dto.IdentityProviderId),
+		ServiceAccountId:   types.StringValue(dto.ServiceAccountId),
+		Audience:           types.StringValue(dto.Audience),
 	}
 	return &value
 }

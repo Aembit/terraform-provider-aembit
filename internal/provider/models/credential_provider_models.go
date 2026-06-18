@@ -33,6 +33,7 @@ type CredentialProviderResourceModel struct {
 	McpUserBasedAccessToken *CredentialProviderMcpUserBasedAccessTokenModel              `tfsdk:"mcp_user_based_access_token"`
 	X509SvidCertificate     *CredentialProviderX509SvidCertificateModel                  `tfsdk:"x509_svid_certificate"`
 	ClaudeWif               *CredentialProviderClaudeWifModel                            `tfsdk:"claude_wif"`
+	OpenAiWif               *CredentialProviderOpenAiWifModel                            `tfsdk:"openai_wif"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -68,6 +69,12 @@ type CredentialProviderClaudeWifModel struct {
 	WorkspaceId      types.String `tfsdk:"workspace_id"`
 	Scope            types.String `tfsdk:"scope"`
 	Lifetime         int32        `tfsdk:"lifetime"`
+}
+
+type CredentialProviderOpenAiWifModel struct {
+	IdentityProviderId types.String `tfsdk:"identity_provider_id"`
+	ServiceAccountId   types.String `tfsdk:"service_account_id"`
+	Audience           types.String `tfsdk:"audience"`
 }
 
 type CredentialProviderGoogleWorkloadModel struct {

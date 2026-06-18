@@ -52,6 +52,7 @@ Read-Only:
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
 - `oauth_client_credentials` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_client_credentials))
 - `oidc_id_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oidc_id_token))
+- `openai_wif` (Attributes) OpenAI Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--openai_wif))
 - `resource_set_id` (String) ResourceSet unique identifier of the Credential Provider.
 - `tags` (Map of String) Tags are key-value pairs.
 - `vault_client_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--vault_client_token))
@@ -321,6 +322,16 @@ Read-Only:
 - `value` (String)
 - `value_type` (String)
 
+
+
+<a id="nestedatt--credential_providers--openai_wif"></a>
+### Nested Schema for `credential_providers.openai_wif`
+
+Read-Only:
+
+- `audience` (String) OpenAI Audience.
+- `identity_provider_id` (String) Aembit Identity Provider (IDP) ID.
+- `service_account_id` (String) OpenAI Service Account ID.
 
 
 <a id="nestedatt--credential_providers--vault_client_token"></a>
