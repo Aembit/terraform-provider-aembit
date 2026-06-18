@@ -757,6 +757,24 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"openai_wif": schema.SingleNestedAttribute{
+							Description: "OpenAI Workload Identity Federation type Credential Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"identity_provider_id": schema.StringAttribute{
+									Description: "Aembit Identity Provider (IDP) ID.",
+									Computed:    true,
+								},
+								"service_account_id": schema.StringAttribute{
+									Description: "OpenAI Service Account ID.",
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "OpenAI Audience.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},

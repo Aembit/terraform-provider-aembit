@@ -42,6 +42,7 @@ Read-Only:
 
 - `api_key` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--api_key))
 - `claude_wif` (Attributes) Claude Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--claude_wif))
+- `openai_wif` (Attributes) OpenAI Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--openai_wif))
 - `description` (String) User-provided description of the credential provider.
 - `id` (String) Unique identifier of the credential provider.
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
@@ -169,9 +170,20 @@ Read-Only:
 - `lifetime` (Number) Lifetime (in seconds) of the Aembit-issued OIDC token used to authenticate to the Claude Workload Identity Federation. Note: The lifetime of the resulting Claude access token is managed within the Claude platform.
 - `oidc_issuer` (String) OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.
 - `organization_id` (String) Claude Organization ID.
-- `scope` (String) Claude Scope.
 - `service_account_id` (String) Claude Service Account ID.
 - `workspace_id` (String) Claude Workspace ID.
+- `scope` (String) Claude Scope.
+
+
+<a id="nestedatt--credential_providers--openai_wif"></a>
+### Nested Schema for `credential_providers.openai_wif`
+
+Read-Only:
+
+- `identity_provider_id` (String) Aembit Identity Provider (IDP) ID.
+- `service_account_id` (String) OpenAI Service Account ID.
+- `audience` (String) OpenAI Audience.
+
 
 
 <a id="nestedatt--credential_providers--jwt_svid_token"></a>

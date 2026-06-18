@@ -165,6 +165,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 - `azure_entra_workload_identity` (Attributes) Azure Entra Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--azure_entra_workload_identity))
 - `azure_key_vault_value` (Attributes) Azure Key Vault Value type Credential Provider configuration. This type of credential provider supports secret values in plaintext formats. (see [below for nested schema](#nestedatt--azure_key_vault_value))
 - `claude_wif` (Attributes) Claude Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--claude_wif))
+- `openai_wif` (Attributes) OpenAI Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--openai_wif))
 - `description` (String) Description for the Credential Provider.
 - `google_workload_identity` (Attributes) Google Workload Identity Federation type Credential Provider configuration. (see [below for nested schema](#nestedatt--google_workload_identity))
 - `id` (String) Unique identifier of the Credential Provider.
@@ -289,6 +290,19 @@ Optional:
 Read-Only:
 
 - `oidc_issuer` (String) OIDC Issuer for Claude Workload Identity Federation configuration of the Credential Provider.
+
+
+<a id="nestedatt--openai_wif"></a>
+### Nested Schema for `openai_wif`
+
+Required:
+
+- `identity_provider_id` (String) Aembit Identity Provider (IDP) ID.
+- `service_account_id` (String) OpenAI Service Account ID.
+
+Optional:
+
+- `audience` (String) OpenAI Audience.
 
 
 <a id="nestedatt--google_workload_identity"></a>

@@ -20,6 +20,7 @@ const (
 	testCredentialProviderApiKey            = "aembit_credential_provider.api_key"
 	testCredentialProviderAWS               = "aembit_credential_provider.aws"
 	testCredentialProviderClaude            = "aembit_credential_provider.claude"
+	testCredentialProviderOpenAi            = "aembit_credential_provider.openai"
 	testCredentialProviderGCP               = "aembit_credential_provider.gcp"
 	testCredentialProviderSnowflake         = "aembit_credential_provider.snowflake"
 	testCredentialProviderUserPass          = "aembit_credential_provider.userpass"
@@ -1635,3 +1636,81 @@ func TestAccCredentialProviderResource_ClaudeWif(t *testing.T) {
 		},
 	})
 }
+
+func TestAccCredentialProviderResource_OpenAiWif(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile("../../tests/credential/openai/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/openai/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential set values
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"name",
+						"TF Acceptance OpenAI Wif",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.identity_provider_id",
+						"idp_test",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.service_account_id",
+						"svac_test",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.audience",
+						"aud_test",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCredentialProviderOpenAi, "id"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      testCredentialProviderOpenAi,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"name",
+						"TF Acceptance OpenAI Wif - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.identity_provider_id",
+						"idp_test_mod",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.service_account_id",
+						"svac_test_mod",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderOpenAi,
+						"openai_wif.audience",
+						"aud_test_mod",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
