@@ -2310,9 +2310,9 @@ func convertToClaudeWifDTO(
 	credential.Audience = model.ClaudeWif.Audience.ValueString()
 	credential.Lifetime = model.ClaudeWif.Lifetime
 	credential.Scope = model.ClaudeWif.Scope.ValueString()
+	credential.ServiceAccountId = model.ClaudeWif.ServiceAccountId.ValueString()
 	credential.CredentialClaudeWifV2DTO = aembit.CredentialClaudeWifV2DTO{
 		FederationRuleId: model.ClaudeWif.FederationRuleId.ValueString(),
-		ServiceAccountId: model.ClaudeWif.ServiceAccountId.ValueString(),
 		OrganizationId:   model.ClaudeWif.OrganizationId.ValueString(),
 		WorkspaceId:      model.ClaudeWif.WorkspaceId.ValueString(),
 	}
@@ -2341,9 +2341,9 @@ func convertToOpenAiWifDTO(
 ) {
 	credential.Type = "openai-wif"
 	credential.Audience = model.OpenAiWif.Audience.ValueString()
+	credential.ServiceAccountId = model.OpenAiWif.ServiceAccountId.ValueString()
 	credential.CredentialOpenAiWifV2DTO = aembit.CredentialOpenAiWifV2DTO{
 		IdentityProviderId: model.OpenAiWif.IdentityProviderId.ValueString(),
-		ServiceAccountId:   model.OpenAiWif.ServiceAccountId.ValueString(),
 	}
 }
 
