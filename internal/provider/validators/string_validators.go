@@ -54,8 +54,8 @@ var (
 	SpiffeRegex = regexp.MustCompile(
 		`^spiffe:\/\/`,
 	)
-	IdentityProviderIDPrefixRegex = regexp.MustCompile(`^idp_`)
-	ServiceAccountIDPrefixRegex   = regexp.MustCompile(`^user-`)
+	IdentityProviderIDPrefixRegex = regexp.MustCompile(`^idp_\S+`)
+	ServiceAccountIDPrefixRegex   = regexp.MustCompile(`^user-\S+`)
 )
 
 func NameLengthValidation() validator.String {
