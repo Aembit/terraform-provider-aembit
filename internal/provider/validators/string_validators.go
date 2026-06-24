@@ -54,6 +54,8 @@ var (
 	SpiffeRegex = regexp.MustCompile(
 		`^spiffe:\/\/`,
 	)
+	IdentityProviderIDPrefixRegex = regexp.MustCompile(`^idp_`)
+	ServiceAccountIDPrefixRegex   = regexp.MustCompile(`^user-`)
 )
 
 func NameLengthValidation() validator.String {
@@ -188,5 +190,19 @@ func SpiffeSubjectValidation() validator.String {
 	return stringvalidator.RegexMatches(
 		SpiffeRegex,
 		"must be in the format: spiffe://trust-domain-name/path",
+	)
+}
+
+func IdentityProviderIDPrefixValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		IdentityProviderIDPrefixRegex,
+		"must be prefixed with \"idp_\"",
+	)
+}
+
+func ServiceAccountIDPrefixValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		ServiceAccountIDPrefixRegex,
+		"must be prefixed with \"user-\"",
 	)
 }
