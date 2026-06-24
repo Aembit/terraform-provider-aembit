@@ -141,7 +141,6 @@ func TestIdentityProviderIDPrefixValidation(t *testing.T) {
 		"idp_test",
 		"idp_12345",
 		"idp_some-idp-id",
-		"idp_",
 	}
 
 	for _, input := range validInputs {
@@ -163,6 +162,7 @@ func TestIdentityProviderIDPrefixValidation(t *testing.T) {
 		"test_idp_",
 		"idp",
 		"123-idp_",
+		"idp_",
 	}
 
 	for _, input := range invalidInputs {
@@ -196,7 +196,6 @@ func TestServiceAccountIDPrefixValidation(t *testing.T) {
 		"user-test",
 		"user-12345",
 		"user-some-service-account-id",
-		"user-",
 	}
 
 	for _, input := range validInputs {
@@ -218,6 +217,7 @@ func TestServiceAccountIDPrefixValidation(t *testing.T) {
 		"test-user-",
 		"user",
 		"123-user-",
+		"user-",
 	}
 
 	for _, input := range invalidInputs {
