@@ -124,3 +124,113 @@ func TestSpiffeSubjectValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestIdentityProviderIDPrefixValidation(t *testing.T) {
+	t.Parallel()
+
+	v := IdentityProviderIDPrefixValidation()
+	require.NotNil(t, v)
+
+	ctx := context.Background()
+
+	// Verify Description and MarkdownDescription
+	require.Contains(t, v.Description(ctx), "must be prefixed with \"idp_\"")
+	require.Contains(t, v.MarkdownDescription(ctx), "must be prefixed with \"idp_\"")
+
+	validInputs := []string{
+		"idp_test",
+		"idp_12345",
+		"idp_some-idp-id",
+	}
+
+	for _, input := range validInputs {
+		t.Run("Valid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("identity_provider_id"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.False(t, resp.Diagnostics.HasError(), "Expected valid Identity Provider ID, but got error: %s", resp.Diagnostics)
+		})
+	}
+
+	invalidInputs := []string{
+		"id_test",
+		"test_idp_",
+		"idp",
+		"123-idp_",
+		"idp_",
+	}
+
+	for _, input := range invalidInputs {
+		t.Run("Invalid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("identity_provider_id"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.True(t, resp.Diagnostics.HasError(), "Expected invalid Identity Provider ID to fail validation, but it succeeded: %s", input)
+		})
+	}
+}
+
+func TestServiceAccountIDPrefixValidation(t *testing.T) {
+	t.Parallel()
+
+	v := ServiceAccountIDPrefixValidation()
+	require.NotNil(t, v)
+
+	ctx := context.Background()
+
+	// Verify Description and MarkdownDescription
+	require.Contains(t, v.Description(ctx), "must be prefixed with \"user-\"")
+	require.Contains(t, v.MarkdownDescription(ctx), "must be prefixed with \"user-\"")
+
+	validInputs := []string{
+		"user-test",
+		"user-12345",
+		"user-some-service-account-id",
+	}
+
+	for _, input := range validInputs {
+		t.Run("Valid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("service_account_id"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.False(t, resp.Diagnostics.HasError(), "Expected valid Service Account ID, but got error: %s", resp.Diagnostics)
+		})
+	}
+
+	invalidInputs := []string{
+		"usr-test",
+		"test-user-",
+		"user",
+		"123-user-",
+		"user-",
+	}
+
+	for _, input := range invalidInputs {
+		t.Run("Invalid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("service_account_id"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.True(t, resp.Diagnostics.HasError(), "Expected invalid Service Account ID to fail validation, but it succeeded: %s", input)
+		})
+	}
+}

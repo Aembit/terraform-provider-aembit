@@ -1090,10 +1090,16 @@ func (r *credentialProviderResource) Schema(
 					"identity_provider_id": schema.StringAttribute{
 						Description: "Aembit Identity Provider (IDP) ID.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.IdentityProviderIDPrefixValidation(),
+						},
 					},
 					"service_account_id": schema.StringAttribute{
 						Description: "OpenAI Service Account ID.",
 						Required:    true,
+						Validators: []validator.String{
+							validators.ServiceAccountIDPrefixValidation(),
+						},
 					},
 					"audience": schema.StringAttribute{
 						Description: "OpenAI Audience.",

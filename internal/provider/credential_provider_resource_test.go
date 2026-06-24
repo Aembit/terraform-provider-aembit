@@ -1665,7 +1665,7 @@ func TestAccCredentialProviderResource_OpenAiWif(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testCredentialProviderOpenAi,
 						"openai_wif.service_account_id",
-						"svac_test",
+						"user-test",
 					),
 					resource.TestCheckResourceAttr(
 						testCredentialProviderOpenAi,
@@ -1700,7 +1700,7 @@ func TestAccCredentialProviderResource_OpenAiWif(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testCredentialProviderOpenAi,
 						"openai_wif.service_account_id",
-						"svac_test_mod",
+						"user-test-mod",
 					),
 					resource.TestCheckResourceAttr(
 						testCredentialProviderOpenAi,
@@ -1710,6 +1710,38 @@ func TestAccCredentialProviderResource_OpenAiWif(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_OpenAiWif_InvalidIdentityProvider(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/openai/TestAccCredentialProviderResource_InvalidIdentityProvider.tf",
+	)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`must be prefixed with "idp_"`),
+			},
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_OpenAiWif_InvalidServiceAccount(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/openai/TestAccCredentialProviderResource_InvalidServiceAccount.tf",
+	)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`must be prefixed with "user-"`),
+			},
 		},
 	})
 }
