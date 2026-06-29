@@ -9,6 +9,8 @@ import (
 )
 
 // skipNotCI can be used to skip tests which can ONLY run on GitHub.
+//
+//nolint:unused
 func skipNotCI(t *testing.T) {
 	if os.Getenv("CI") == "" {
 		t.Skip("Skipping testing in non CI environment")
