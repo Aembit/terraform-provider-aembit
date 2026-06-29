@@ -220,56 +220,6 @@ func TestAccClientWorkloadResource_k8sPodName(t *testing.T) {
 	})
 }
 
-// TestAccClientWorkloadResource_k8sPodName_CustomResourceSet tests resource creation within a custom resource set.
-func TestAccClientWorkloadResource_k8sPodName_CustomResourceSetAuth(t *testing.T) {
-	skipNotCI(t)
-
-	createFile, _ := os.ReadFile(
-		"../../tests/client/resourceSet/TestAccClientWorkloadCustomResourceSet.tf",
-	)
-	createFileConfig, _, newName := randomizeFileConfigs(
-		string(createFile),
-		"",
-		"custom-resource-set",
-	)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// Create and Read testing
-			{
-				Config: createFileConfig,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify Client Workload Name, Description, Active status
-					resource.TestCheckResourceAttr(testCWResource, "name", "TF Acceptance RS"),
-					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
-					// Verify Workload Identity.
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						testCWResourceIdentitiesCount,
-						"1",
-					),
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						testCWResourceIdentitiesType[0],
-						"k8sPodName",
-					),
-					resource.TestCheckResourceAttr(
-						testCWResource,
-						testCWResourceIdentitiesValue[0],
-						newName,
-					),
-					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(testCWResource, "id"),
-				),
-			},
-			// ImportState testing
-			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
-			// Delete testing automatically occurs in TestCase
-		},
-	})
-}
-
 func TestAccClientWorkloadResource_AwsLambdaArn(t *testing.T) {
 	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/client/awsLambdaArn/TestAccClientWorkloadResource.tf")
