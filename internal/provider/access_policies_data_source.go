@@ -97,6 +97,12 @@ func (d *accessPoliciesDataSource) Schema(
 							Computed:    true,
 							ElementType: types.StringType,
 						},
+						"content_securities": schema.ListAttribute{
+							Description: "Set of Content Securities to enforce on the Access Policy.",
+							Optional:    true,
+							Computed:    true,
+							ElementType: types.StringType,
+						},
 						"credential_provider": schema.StringAttribute{
 							Description: "Configured Credential Provider of the access policy.",
 							Computed:    true,

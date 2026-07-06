@@ -53,6 +53,7 @@ resource "aembit_access_policy" "first_policy" {
         aembit_trust_provider.azure1.id
     ]
     access_conditions = []
+    content_securities = []
     credential_provider = aembit_credential_provider.snowflake1.id
     server_workload = aembit_server_workload.first_server.id
 }

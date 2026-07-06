@@ -65,6 +65,7 @@ var basicAccessPolicyChecks = []resource.TestCheckFunc{
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "client_workload"),
 	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "trust_providers.#", "0"),
 	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "access_conditions.#", "0"),
+	resource.TestCheckResourceAttr(AccessPolicyPathFirst, "content_securities.#", "0"),
 	resource.TestCheckResourceAttrSet(AccessPolicyPathFirst, "server_workload"),
 
 	// Verify values for Second Policy.
