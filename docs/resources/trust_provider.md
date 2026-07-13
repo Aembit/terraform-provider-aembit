@@ -94,6 +94,7 @@ Please make sure to update your configuration accordingly.
 
 ### Optional
 
+- `aws_alb_jwt` (Attributes) AWS Application Load Balancer JWT type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_alb_jwt))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_metadata))
 - `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
@@ -115,6 +116,31 @@ Please make sure to update your configuration accordingly.
 
 - `client_id` (String) Edge SDK Client ID for the Trust Provider. Only populated for supported associated use cases.
 - `id` (String) Unique identifier of the Trust Provider.
+
+<a id="nestedatt--aws_alb_jwt"></a>
+### Nested Schema for `aws_alb_jwt`
+
+Optional:
+
+- `audience` (String) The Audience (`aud` claim) of the AWS ALB JWT.
+- `audiences` (Set of String) The set of accepted Audience values of the associated AWS ALB JWT. Used only for cases where multiple Audiences can be matched.
+- `custom_claims` (Set of Object) The set of accepted Custom Claim values of the associated AWS ALB JWT. (see [below for nested schema](#nestedatt--aws_alb_jwt--custom_claims))
+- `email` (String) The Email (`email` claim) of the AWS ALB JWT.
+- `emails` (Set of String) The set of accepted Email values of the associated AWS ALB JWT. Used only for cases where multiple Emails can be matched.
+- `issuer` (String) The Issuer (`iss` claim) of the AWS ALB JWT.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated AWS ALB JWT. Used only for cases where multiple Issuers can be matched.
+- `subject` (String) The Subject (`sub` claim) of the AWS ALB JWT.
+- `subjects` (Set of String) The set of accepted Subject values of the associated AWS ALB JWT. Used only for cases where multiple Subjects can be matched.
+
+<a id="nestedatt--aws_alb_jwt--custom_claims"></a>
+### Nested Schema for `aws_alb_jwt.custom_claims`
+
+Optional:
+
+- `claim_key` (String)
+- `claim_value` (String)
+
+
 
 <a id="nestedatt--aws_metadata"></a>
 ### Nested Schema for `aws_metadata`
