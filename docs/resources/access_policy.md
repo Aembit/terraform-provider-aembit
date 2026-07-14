@@ -23,6 +23,7 @@ description: |-
 ### Optional
 
 - `access_conditions` (Set of String) Set of Access Conditions to enforce on the Access Policy.
+- `content_security` (Set of String) Set of Content Security records to enforce on the Access Policy.
 - `credential_provider` (String) Credential Provider ID configured in the Access Policy.
 - `credential_providers` (Attributes Set) Set of Credential Providers to enforce on the Access Policy. (see [below for nested schema](#nestedatt--credential_providers))
 - `is_active` (Boolean) Active/Inactive status of the Access Policy.
