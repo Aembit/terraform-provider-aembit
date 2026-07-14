@@ -148,8 +148,8 @@ func (r *accessPolicyResource) Schema(
 					setplanmodifier.RequiresReplace(),
 				},
 			},
-			"content_securities": schema.SetAttribute{
-				Description: "Set of Content Securities to enforce on the Access Policy.",
+			"content_security": schema.SetAttribute{
+				Description: "Set of Content Security records to enforce on the Access Policy.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
@@ -525,7 +525,7 @@ func convertAccessPolicyModelToPolicyDTO(
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
 	policy.TrustProviders = make([]string, len(model.TrustProviders))
 	policy.AccessConditions = make([]string, len(model.AccessConditions))
-	policy.ContentSecurities = make([]string, len(model.ContentSecurities))
+	policy.ContentSecurity = make([]string, len(model.ContentSecurity))
 
 	if len(model.TrustProviders) > 0 {
 		for i, trustProvider := range model.TrustProviders {
@@ -537,9 +537,9 @@ func convertAccessPolicyModelToPolicyDTO(
 			policy.AccessConditions[i] = accessConditions.ValueString()
 		}
 	}
-	if len(model.ContentSecurities) > 0 {
-		for i, contentSecurity := range model.ContentSecurities {
-			policy.ContentSecurities[i] = contentSecurity.ValueString()
+	if len(model.ContentSecurity) > 0 {
+		for i, contentSecurity := range model.ContentSecurity {
+			policy.ContentSecurity[i] = contentSecurity.ValueString()
 		}
 	}
 
@@ -651,22 +651,22 @@ func convertAccessPolicyDTOToModel(
 			model.AccessConditions[i] = types.StringValue(accessConditions)
 		}
 	}
-	model.ContentSecurities = make([]types.String, len(dto.ContentSecurities))
-	if len(dto.ContentSecurities) > 0 {
-		for i, contentSecurities := range dto.ContentSecurities {
-			model.ContentSecurities[i] = types.StringValue(contentSecurities)
+	model.ContentSecurity = make([]types.String, len(dto.ContentSecurity))
+	if len(dto.ContentSecurity) > 0 {
+		for i, contentSecurity := range dto.ContentSecurity {
+			model.ContentSecurity[i] = types.StringValue(contentSecurity)
 		}
 	}
 
-	// Handle cases where the plan does not specify TrustProviders, AccessConditions, or ContentSecurities at all
+	// Handle cases where the plan does not specify TrustProviders, AccessConditions, or ContentSecurity at all
 	if plan.TrustProviders == nil {
 		model.TrustProviders = nil
 	}
 	if plan.AccessConditions == nil {
 		model.AccessConditions = nil
 	}
-	if plan.ContentSecurities == nil {
-		model.ContentSecurities = nil
+	if plan.ContentSecurity == nil {
+		model.ContentSecurity = nil
 	}
 
 	model.ResourceSetId = types.StringValue(dto.ResourceSet)
@@ -731,10 +731,10 @@ func convertAccessPolicyExternalDTOToModel(
 			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
 		}
 	}
-	model.ContentSecurities = make([]types.String, len(dto.ContentSecurities))
-	if len(dto.ContentSecurities) > 0 {
-		for i, contentSecurities := range dto.ContentSecurities {
-			model.ContentSecurities[i] = types.StringValue(contentSecurities.ExternalID)
+	model.ContentSecurity = make([]types.String, len(dto.ContentSecurity))
+	if len(dto.ContentSecurity) > 0 {
+		for i, contentSecurity := range dto.ContentSecurity {
+			model.ContentSecurity[i] = types.StringValue(contentSecurity.ExternalID)
 		}
 	}
 

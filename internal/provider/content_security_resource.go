@@ -117,7 +117,7 @@ func (r *contentSecurityResource) Schema(
 				Attributes: map[string]schema.Attribute{
 					"encrypted_token": schema.StringAttribute{
 						Description: "The encrypted API token or client secret used to authenticate with the CrowdStrike Falcon AIDR service.",
-						Optional:    true,
+						Required:    true,
 						Sensitive:   true,
 					},
 					"base_url": schema.StringAttribute{
@@ -183,14 +183,7 @@ func (r *contentSecurityResource) Create(
 	}
 
 	// Generate API request body from plan
-	dto, err := convertContentSecurityModelToDTO(ctx, plan, nil, r.client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating Content Security resource",
-			err.Error(),
-		)
-		return
-	}
+	dto := convertContentSecurityModelToDTO(ctx, plan, nil, r.client)
 
 	resourceSetId := getResourceSetId(plan.ResourceSetID, r.client)
 	// Create new ContentSecurity
@@ -291,14 +284,7 @@ func (r *contentSecurityResource) Update(
 	}
 
 	// Generate API request body from plan
-	dto, err := convertContentSecurityModelToDTO(ctx, plan, &externalID, r.client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			errorUpdateMessage,
-			err.Error(),
-		)
-		return
-	}
+	dto := convertContentSecurityModelToDTO(ctx, plan, &externalID, r.client)
 
 	// Update ContentSecurity
 	contentSecurity, err := r.client.UpdateContentSecurity(dto, nil, &dto.ResourceSet)
@@ -375,7 +361,7 @@ func convertContentSecurityModelToDTO(
 	model models.ContentSecurityResourceModel,
 	externalID *string,
 	client *aembit.CloudClient,
-) (aembit.ContentSecurityDTO, error) {
+) aembit.ContentSecurityDTO {
 	var dto aembit.ContentSecurityDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -400,7 +386,7 @@ func convertContentSecurityModelToDTO(
 		dto.MaxRetries = int(model.CrowdStrikeFalconAIDR.MaxRetries.ValueInt64())
 	}
 
-	return dto, nil
+	return dto
 }
 
 func convertContentSecurityDTOToModel(
@@ -421,18 +407,15 @@ func convertContentSecurityDTOToModel(
 
 	if dto.Type == "CrowdStrikeAIDR" {
 		model.CrowdStrikeFalconAIDR = &models.CrowdStrikeFalconAIDRContentSecurityModel{
-			BaseUrl:    types.StringValue(dto.BaseUrl),
-			FailOpen:   types.BoolValue(dto.FailOpen),
-			TimeoutMs:  types.Int64Value(int64(dto.TimeoutMs)),
-			MaxRetries: types.Int64Value(int64(dto.MaxRetries)),
+			BaseUrl:        types.StringValue(dto.BaseUrl),
+			FailOpen:       types.BoolValue(dto.FailOpen),
+			TimeoutMs:      types.Int64Value(int64(dto.TimeoutMs)),
+			MaxRetries:     types.Int64Value(int64(dto.MaxRetries)),
+			EncryptedToken: types.StringNull(),
 		}
 
-		if dto.EncryptedToken != "" {
-			model.CrowdStrikeFalconAIDR.EncryptedToken = types.StringValue(dto.EncryptedToken)
-		} else if planModel != nil && planModel.CrowdStrikeFalconAIDR != nil {
+		if planModel.CrowdStrikeFalconAIDR != nil {
 			model.CrowdStrikeFalconAIDR.EncryptedToken = planModel.CrowdStrikeFalconAIDR.EncryptedToken
-		} else {
-			model.CrowdStrikeFalconAIDR.EncryptedToken = types.StringNull()
 		}
 	}
 

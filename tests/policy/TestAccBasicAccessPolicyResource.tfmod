@@ -65,7 +65,7 @@ resource "aembit_access_policy" "first_policy" {
     client_workload = aembit_client_workload.first_client.id
     trust_providers = []
     access_conditions = []
-    content_securities = []
+    content_security = []
     credential_provider = aembit_credential_provider.snowflake1.id
     server_workload = aembit_server_workload.first_server.id
 }

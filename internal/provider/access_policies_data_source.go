@@ -97,8 +97,8 @@ func (d *accessPoliciesDataSource) Schema(
 							Computed:    true,
 							ElementType: types.StringType,
 						},
-						"content_securities": schema.ListAttribute{
-							Description: "Set of Content Securities to enforce on the Access Policy.",
+						"content_security": schema.ListAttribute{
+							Description: "Set of Content Security records to enforce on the Access Policy.",
 							Optional:    true,
 							Computed:    true,
 							ElementType: types.StringType,

@@ -6,14 +6,14 @@ import (
 
 // models.ContentSecurityResourceModel maps the resource schema.
 type ContentSecurityResourceModel struct {
-	ID                  types.String                                 `tfsdk:"id"`
-	ResourceSetID       types.String                                 `tfsdk:"resource_set_id"`
-	Name                types.String                                 `tfsdk:"name"`
-	Description         types.String                                 `tfsdk:"description"`
-	IsActive            types.Bool                                   `tfsdk:"is_active"`
-	Tags                types.Map                                    `tfsdk:"tags"`
-	TagsAll             types.Map                                    `tfsdk:"tags_all"`
-	Type                types.String                                 `tfsdk:"type"`
+	ID                    types.String                               `tfsdk:"id"`
+	ResourceSetID         types.String                               `tfsdk:"resource_set_id"`
+	Name                  types.String                               `tfsdk:"name"`
+	Description           types.String                               `tfsdk:"description"`
+	IsActive              types.Bool                                 `tfsdk:"is_active"`
+	Tags                  types.Map                                  `tfsdk:"tags"`
+	TagsAll               types.Map                                  `tfsdk:"tags_all"`
+	Type                  types.String                               `tfsdk:"type"`
 	CrowdStrikeFalconAIDR *CrowdStrikeFalconAIDRContentSecurityModel `tfsdk:"crowdstrike_falcon_aidr"`
 }
 

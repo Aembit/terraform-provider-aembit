@@ -142,7 +142,7 @@ func (d *contentSecuritiesDataSource) Read(
 	contentSecurities, err := d.client.GetContentSecurities(nil, &resourceSetId)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Read Aembit Content Securities",
+			"Unable to Read Aembit Content Security",
 			err.Error(),
 		)
 		return
