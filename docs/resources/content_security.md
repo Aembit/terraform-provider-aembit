@@ -17,13 +17,13 @@ Manages a Content Security resource.
 
 ### Required
 
+- `crowdstrike_falcon_aidr` (Attributes) CrowdStrike Falcon AIDR configuration settings. (see [below for nested schema](#nestedatt--crowdstrike_falcon_aidr))
 - `is_active` (Boolean) Status of the Content Security resource (`active` or `inactive`).
 - `name` (String) Name for the Content Security resource.
 - `type` (String) Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR`.
 
 ### Optional
 
-- `crowdstrike_falcon_aidr` (Attributes) CrowdStrike Falcon AIDR configuration settings. (see [below for nested schema](#nestedatt--crowdstrike_falcon_aidr))
 - `description` (String) Description for the Content Security resource.
 - `resource_set_id` (String) ResourceSet unique identifier of the Content Security resource.
 - `tags` (Map of String) Tags are key-value pairs.

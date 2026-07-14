@@ -113,7 +113,7 @@ func (r *contentSecurityResource) Schema(
 			},
 			"crowdstrike_falcon_aidr": schema.SingleNestedAttribute{
 				Description: "CrowdStrike Falcon AIDR configuration settings.",
-				Optional:    true,
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"encrypted_token": schema.StringAttribute{
 						Description: "The encrypted API token or client secret used to authenticate with the CrowdStrike Falcon AIDR service.",
@@ -228,7 +228,7 @@ func (r *contentSecurityResource) Read(
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Content Security resource",
-			"Could not read Aembit External ID from Terraform state "+state.ID.ValueString()+": "+err.Error(),
+			"Could not read Aembit Content Security resource from Terraform state "+state.ID.ValueString()+": "+err.Error(),
 		)
 
 		// If the resource is not found on Aembit Cloud, delete it locally
