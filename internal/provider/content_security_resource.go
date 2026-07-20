@@ -131,7 +131,7 @@ func (r *contentSecurityResource) Schema(
 						Description: "Indicates whether requests should be allowed (fail-open) or blocked (fail-closed) if the CrowdStrike Falcon AIDR service is unreachable.",
 						Optional:    true,
 						Computed:    true,
-						Default:     booldefault.StaticBool(false),
+						Default:     booldefault.StaticBool(true),
 					},
 					"timeout_ms": schema.Int64Attribute{
 						Description: "The connection timeout in milliseconds for requests sent to the CrowdStrike Falcon AIDR service.",
