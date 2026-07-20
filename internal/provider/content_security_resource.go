@@ -406,13 +406,12 @@ func convertContentSecurityDTOToModel(
 	model.TagsAll = newTagsModel(ctx, dto.Tags)
 
 	if dto.Type == "CrowdStrikeAIDR" {
-		model.CrowdStrikeFalconAIDR = &models.CrowdStrikeFalconAIDRContentSecurityModel{
-			BaseUrl:        types.StringValue(dto.BaseUrl),
-			FailOpen:       types.BoolValue(dto.FailOpen),
-			TimeoutMs:      types.Int64Value(int64(dto.TimeoutMs)),
-			MaxRetries:     types.Int64Value(int64(dto.MaxRetries)),
-			EncryptedToken: types.StringNull(),
-		}
+		model.CrowdStrikeFalconAIDR = &models.CrowdStrikeFalconAIDRContentSecurityModel{}
+		model.CrowdStrikeFalconAIDR.BaseUrl = types.StringValue(dto.BaseUrl)
+		model.CrowdStrikeFalconAIDR.FailOpen = types.BoolValue(dto.FailOpen)
+		model.CrowdStrikeFalconAIDR.TimeoutMs = types.Int64Value(int64(dto.TimeoutMs))
+		model.CrowdStrikeFalconAIDR.MaxRetries = types.Int64Value(int64(dto.MaxRetries))
+		model.CrowdStrikeFalconAIDR.EncryptedToken = types.StringNull()
 
 		if planModel.CrowdStrikeFalconAIDR != nil {
 			model.CrowdStrikeFalconAIDR.EncryptedToken = planModel.CrowdStrikeFalconAIDR.EncryptedToken
