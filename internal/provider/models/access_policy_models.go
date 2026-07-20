@@ -14,6 +14,7 @@ type AccessPolicyResourceModel struct {
 	ClientWorkload      types.String                    `tfsdk:"client_workload"`
 	TrustProviders      []types.String                  `tfsdk:"trust_providers"`
 	AccessConditions    []types.String                  `tfsdk:"access_conditions"`
+	ContentSecurity     []types.String                  `tfsdk:"content_security"`
 	CredentialProvider  types.String                    `tfsdk:"credential_provider"`
 	CredentialProviders []*PolicyCredentialMappingModel `tfsdk:"credential_providers"`
 	ServerWorkload      types.String                    `tfsdk:"server_workload"`

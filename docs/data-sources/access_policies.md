@@ -29,6 +29,7 @@ Manages access policies.
 Optional:
 
 - `access_conditions` (List of String) Set of Access Conditions to enforce on the Access Policy.
+- `content_security` (List of String) Set of Content Security records to enforce on the Access Policy.
 - `trust_providers` (List of String) Set of Trust Providers to enforce on the Access Policy.
 
 Read-Only:

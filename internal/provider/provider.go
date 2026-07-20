@@ -383,6 +383,7 @@ func (p *aembitProvider) Resources(_ context.Context) []func() resource.Resource
 		NewGlobalPolicyComplianceResource,
 		NewIdentityProviderResource,
 		NewTrustProviderSecretResource,
+		NewContentSecurityResource,
 	}
 }
 
@@ -409,6 +410,7 @@ func (p *aembitProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewLogStreamsDataSource,
 		NewCallerIdentityDataSource,
 		NewIdentityProviderDataSource,
+		NewContentSecuritiesDataSource,
 	}
 }
 

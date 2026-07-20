@@ -148,6 +148,21 @@ func (r *accessPolicyResource) Schema(
 					setplanmodifier.RequiresReplace(),
 				},
 			},
+			"content_security": schema.SetAttribute{
+				Description: "Set of Content Security records to enforce on the Access Policy.",
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
+				},
+				Default: setdefault.StaticValue(
+					types.SetValueMust(types.StringType, []attr.Value{}),
+				),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
+			},
 			"credential_provider": schema.StringAttribute{
 				Description: "Credential Provider ID configured in the Access Policy.",
 				Optional:    true,
@@ -510,6 +525,7 @@ func convertAccessPolicyModelToPolicyDTO(
 	policy.ServerWorkload = model.ServerWorkload.ValueString()
 	policy.TrustProviders = make([]string, len(model.TrustProviders))
 	policy.AccessConditions = make([]string, len(model.AccessConditions))
+	policy.ContentSecurity = make([]string, len(model.ContentSecurity))
 
 	if len(model.TrustProviders) > 0 {
 		for i, trustProvider := range model.TrustProviders {
@@ -519,6 +535,11 @@ func convertAccessPolicyModelToPolicyDTO(
 	if len(model.AccessConditions) > 0 {
 		for i, accessConditions := range model.AccessConditions {
 			policy.AccessConditions[i] = accessConditions.ValueString()
+		}
+	}
+	if len(model.ContentSecurity) > 0 {
+		for i, contentSecurity := range model.ContentSecurity {
+			policy.ContentSecurity[i] = contentSecurity.ValueString()
 		}
 	}
 
@@ -630,13 +651,22 @@ func convertAccessPolicyDTOToModel(
 			model.AccessConditions[i] = types.StringValue(accessConditions)
 		}
 	}
+	model.ContentSecurity = make([]types.String, len(dto.ContentSecurity))
+	if len(dto.ContentSecurity) > 0 {
+		for i, contentSecurity := range dto.ContentSecurity {
+			model.ContentSecurity[i] = types.StringValue(contentSecurity)
+		}
+	}
 
-	// Handle cases where the plan does not specify TrustProviders or AccessConditions at all
+	// Handle cases where the plan does not specify TrustProviders, AccessConditions, or ContentSecurity at all
 	if plan.TrustProviders == nil {
 		model.TrustProviders = nil
 	}
 	if plan.AccessConditions == nil {
 		model.AccessConditions = nil
+	}
+	if plan.ContentSecurity == nil {
+		model.ContentSecurity = nil
 	}
 
 	model.ResourceSetId = types.StringValue(dto.ResourceSet)
@@ -699,6 +729,12 @@ func convertAccessPolicyExternalDTOToModel(
 	if len(dto.AccessConditions) > 0 {
 		for i, accessConditions := range dto.AccessConditions {
 			model.AccessConditions[i] = types.StringValue(accessConditions.ExternalID)
+		}
+	}
+	model.ContentSecurity = make([]types.String, len(dto.ContentSecurity))
+	if len(dto.ContentSecurity) > 0 {
+		for i, contentSecurity := range dto.ContentSecurity {
+			model.ContentSecurity[i] = types.StringValue(contentSecurity.ExternalID)
 		}
 	}
 
