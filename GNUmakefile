@@ -8,8 +8,8 @@ default: test_coverage
         echo "Environment variable AEMBIT_STACK_DOMAIN not set"; \
         exit 1; \
 	fi
-	@ if [ -z $$AEMBIT_TOKEN ]; then \
-        echo "Environment variable AEMBIT_TOKEN not set"; \
+	@ if [ -z $$AEMBIT_TOKEN ] && [ -z $$AEMBIT_CLIENT_ID ]; then \
+        echo "Environment variable AEMBIT_TOKEN or AEMBIT_CLIENT_ID not set"; \
         exit 1; \
 	fi
 
