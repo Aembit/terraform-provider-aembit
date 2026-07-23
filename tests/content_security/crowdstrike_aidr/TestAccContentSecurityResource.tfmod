@@ -1,0 +1,17 @@
+provider "aembit" {
+}
+
+resource "aembit_content_security" "crowdstrike" {
+	name = "TF Acceptance CrowdStrike Content Security - Modified"
+	is_active = true
+	type = "CrowdStrikeAIDR"
+	crowdstrike_falcon_aidr = {
+		base_url = "https://api.crowdstrike.com/auth"
+		fail_open = false
+		encrypted_token = "test_token"
+	}
+	tags = {
+        color = "blue"
+        day   = "Sunday"
+    }
+}

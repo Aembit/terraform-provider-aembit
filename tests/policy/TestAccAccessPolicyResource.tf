@@ -73,6 +73,16 @@ resource "aembit_server_workload" "first_server" {
     }
 }
 
+resource "aembit_content_security" "crowdstrike" {
+	name = "TF Acceptance CrowdStrike Content Security"
+	is_active = false
+	type = "CrowdStrikeAIDR"
+	crowdstrike_falcon_aidr = {
+		base_url = "https://api.crowdstrike.com"
+		encrypted_token = "test_token"
+	}
+}
+
 resource "aembit_access_policy" "first_policy" {
 	name = "TF First Policy"
     is_active = false
@@ -83,6 +93,9 @@ resource "aembit_access_policy" "first_policy" {
     ]
     access_conditions = [
         aembit_access_condition.wiz.id
+    ]
+    content_security = [
+        aembit_content_security.crowdstrike.id
     ]
     credential_provider = aembit_credential_provider.api_key.id
     server_workload = aembit_server_workload.first_server.id
