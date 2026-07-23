@@ -891,10 +891,16 @@ func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testi
 
 func TestAccTrustProviderResource_AwsAlbJwt(t *testing.T) {
 	t.Parallel()
-	createFile, _ := os.ReadFile("../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tf")
-	modifyFile, _ := os.ReadFile(
+	createFile, err := os.ReadFile("../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tf")
+	if err != nil {
+		t.Fatalf("failed to read AWS ALB JWT test config: %v", err)
+	}
+	modifyFile, err := os.ReadFile(
 		"../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tfmod",
 	)
+	if err != nil {
+		t.Fatalf("failed to read AWS ALB JWT modified test config: %v", err)
+	}
 
 	const trustProviderAwsAlbJwt = "aembit_trust_provider.aws_alb_jwt"
 	const trustProviderAwsAlbJwtMulti = "aembit_trust_provider.aws_alb_jwt_multi"

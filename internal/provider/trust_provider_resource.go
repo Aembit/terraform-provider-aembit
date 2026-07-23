@@ -816,6 +816,9 @@ func (r *trustProviderResource) Schema(
 					"email": schema.StringAttribute{
 						Description: "The Email (`email` claim) of the AWS ALB JWT.",
 						Optional:    true,
+						Validators: []validator.String{
+							validators.EmailValidation(),
+						},
 					},
 					"emails": schema.SetAttribute{
 						Description: "The set of accepted Email values of the associated AWS ALB JWT. Used only for cases where multiple Emails can be matched.",
@@ -824,6 +827,7 @@ func (r *trustProviderResource) Schema(
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(2),
 							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+							setvalidator.ValueStringsAre(validators.EmailValidation()),
 						},
 					},
 					"custom_claims": schema.SetAttribute{
