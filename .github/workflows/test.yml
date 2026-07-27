@@ -163,6 +163,17 @@ jobs:
           exit ${PIPESTATUS[0]}
         timeout-minutes: 20
 
+      - name: Run Acceptance Tests using OIDC Client
+        id: test
+        env:
+          TF_ACC: "1"
+          TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
+          AEMBIT_CLIENT_ID: "aembit:devbroadangle:ad6127:identity:oidc_id_token:de9d7d25-ae96-422f-8841-97bc46c6529b"
+        run: |          
+          go test -v -run "TestAccCredentialProviderResource_ApiKey"
+          exit ${PIPESTATUS[0]}
+        timeout-minutes: 5
+
       # Upload coverage output as artifact
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
