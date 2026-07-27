@@ -164,7 +164,7 @@ jobs:
         timeout-minutes: 20
 
       - name: Run Acceptance Tests using OIDC Client
-        id: test
+        id: test_oidc_client
         env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
