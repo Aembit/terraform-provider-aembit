@@ -151,7 +151,6 @@ jobs:
       - run: go mod download
 
       - name: Run Acceptance Tests
-        if: false
         id: test
         env:
           TF_ACC: "1"

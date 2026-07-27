@@ -252,7 +252,6 @@ func (p *aembitProvider) Configure(
 
 	// Check for the Aembit Client ID - if provided, then we need to try TrustProvider Attestation Authentication
 	aembitClientID := os.Getenv("AEMBIT_CLIENT_ID")
-	fmt.Println("aembitClientID: ", aembitClientID)
 	if !config.ClientID.IsNull() && len(config.ClientID.ValueString()) > 0 {
 		// If there is a provider block ClientID, prefer that
 		aembitClientID = config.ClientID.ValueString()
@@ -599,7 +598,6 @@ func getWorkloadAssessment(clientId, idToken, resourceSetId string) (string, err
 			Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken},
 		}
 	case "oidc_id_token":
-		fmt.Println("getWorkloadAssessment oidc_id_token: ", idToken)
 		workload = WorkloadAssessment{
 			Version: "1.0.0",
 			Oidc:    WorkloadAssessmentIdToken{IdentityToken: idToken},
@@ -637,7 +635,6 @@ func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version strin
 	case "terraform_idtoken":
 		idTokenType = "terraform"
 	case "oidc_id_token":
-		fmt.Println("getAembitToken oidc_id_token")
 		idTokenType = "oidc"
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
@@ -710,7 +707,6 @@ func getIdentityToken(clientId, stackDomain string) (string, error) {
 	case "terraform_idtoken":
 		return getTerraformIdentityToken()
 	case "oidc_id_token":
-		fmt.Println("getIdentityToken getOidcIdentityToken:")
 		return getOidcIdentityToken()
 	}
 	return "", fmt.Errorf("no matching id token configuration")
@@ -806,13 +802,11 @@ func getTerraformIdentityToken() (string, error) {
 }
 
 func getOidcIdentityToken() (string, error) {
-	fmt.Println("cache getOidcIdentityToken oidc_id_token: ", OIDC_ID_TOKEN)
 	if isTokenValid(OIDC_ID_TOKEN) {
 		return OIDC_ID_TOKEN, nil
 	}
 
 	OIDC_ID_TOKEN = os.Getenv("AEMBIT_OIDC_ID_TOKEN")
-	fmt.Println("getOidcIdentityToken oidc_id_token: ", OIDC_ID_TOKEN)
 	return OIDC_ID_TOKEN, nil
 }
 
