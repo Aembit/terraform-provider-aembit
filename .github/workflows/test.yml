@@ -170,7 +170,7 @@ jobs:
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
           AEMBIT_CLIENT_ID: "aembit:devbroadangle:ad6127:identity:oidc_id_token:de9d7d25-ae96-422f-8841-97bc46c6529b"
         run: |          
-          go test -v -run "TestAccCredentialProviderResource_ApiKey"
+          go test -v -run "^TestAccCredentialProviderResource_ApiKey$" ./internal/provider/...
           exit ${PIPESTATUS[0]}
         timeout-minutes: 5
 
