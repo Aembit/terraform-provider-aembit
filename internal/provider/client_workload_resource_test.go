@@ -743,7 +743,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testCWResource,
 						testCWResourceIdentitiesValue[0],
-						newValue,
+						fmt.Sprintf("https://%s.aembit.local:12345", newValue),
 					),
 					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "true"),
 					resource.TestCheckResourceAttr(
