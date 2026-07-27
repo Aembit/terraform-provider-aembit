@@ -704,7 +704,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 		"../../tests/client/oauthRedirectUri/TestAccClientWorkloadResource.tfmod",
 	)
 
-	createFileConfig, modifyFileConfig, _ := randomizeFileConfigs(
+	createFileConfig, modifyFileConfig, newValue := randomizeFileConfigs(
 		string(createFile),
 		string(modifyFile),
 		"replace",
@@ -743,7 +743,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testCWResource,
 						testCWResourceIdentitiesValue[0],
-						"https://test.aembit.local:12345",
+						newValue,
 					),
 					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "true"),
 					resource.TestCheckResourceAttr(
