@@ -170,6 +170,7 @@ jobs:
           TF_ACC: "1"
           TF_LOG: "DEBUG"
           AEMBIT_CLIENT_ID: "aembit:devbroadangle:ad6127:identity:oidc_id_token:de9d7d25-ae96-422f-8841-97bc46c6529b"
+          AEMBIT_OIDC_ID_TOKEN: ${{ secrets.AEMBIT_OIDC_ID_TOKEN }}
         run: |          
           go test -v -run "^TestAccCredentialProviderResource_ApiKey$" ./internal/provider/...
           exit ${PIPESTATUS[0]}
