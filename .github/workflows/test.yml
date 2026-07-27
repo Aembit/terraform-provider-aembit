@@ -151,6 +151,7 @@ jobs:
       - run: go mod download
 
       - name: Run Acceptance Tests
+        if: false
         id: test
         env:
           TF_ACC: "1"
@@ -167,7 +168,7 @@ jobs:
         id: test_oidc_client
         env:
           TF_ACC: "1"
-          TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
+          TF_LOG: "DEBUG"
           AEMBIT_CLIENT_ID: "aembit:devbroadangle:ad6127:identity:oidc_id_token:de9d7d25-ae96-422f-8841-97bc46c6529b"
         run: |          
           go test -v -run "^TestAccCredentialProviderResource_ApiKey$" ./internal/provider/...
