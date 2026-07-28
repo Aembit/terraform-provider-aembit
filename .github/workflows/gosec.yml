@@ -3,9 +3,12 @@ name: Gosec Security Checker
 
 # Enable check for pull requests on main
 on:
+  push:
+    branches:
+      - 'main'
   pull_request:
     branches:
-      - main
+      - 'main'
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -14,24 +17,24 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
           private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
       - name: Checkout Source
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
             token: ${{ steps.generate-token.outputs.token }}
             submodules: recursive
       - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
             go-version-file: 'go.mod'
             cache: true
       - name: Go Mod Download
         run: go mod download
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@bb17e422fc34bf4c0a2e5cab9d07dc45a68c040c # v2.24.7
+        uses: securego/gosec@9e75c0576c9878035d4221392108d458abe10fc3 # v2.28.0
         with:
           args: -exclude=G101,G117,G704 ./...
