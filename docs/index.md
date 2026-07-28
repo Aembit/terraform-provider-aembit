@@ -18,7 +18,8 @@ To get started using the Aembit Terraform provider, first you'll need an active 
 Aembit supports authentication to the Aembit API using a native authentication capability which utilizes OIDC (Open ID Connect tokens) ID Tokens. This capability requires configuring your Aembit tenant with the appropriate components as follows:
 * **Client Workload:** This Workload identifies the execution environment of the Terraform Provider, either in Terraform Cloud, GitHub Actions, or another Aembit-supported Serverless platform.
 * **Trust Provider:** This Trust Provider ensures the authentication of the Client Workload using attestation of the platform ID Token and associated match rules.
-  * Match Rules can be configured for platform-specific restrictions, for example a repository on GitHub or workspace ID on Terraform Cloud.
+  * Native authentication methods supported include Trust Provider Types Github Action Identity Token, Terraform Cloud Identity Token, GCP Identity Token and OIDC ID Token.
+  * Match Rules can be configured for platform-specific restrictions, for example a repository on GitHub, workspace ID on Terraform Cloud, or issuers, subjects, audiences, and custom claims for generic OIDC ID Tokens.
 * **Credential Provider:** Created using the *Aembit Access Token* Credential Provider type, this Credential Provider can be configured with an Aembit Role that has permissions for the types of resources you want to configure.
   * **Prerequisite**: Configuring your Credential Provider with the *Aembit Access Token* type requires that you have the **read** permission for [**Roles**](https://docs.aembit.io/administration/roles/overview).
   * **Note**: The Aembit API hostname will be provided as an Audience value here and can be copied to the Server Workload hostname field.
@@ -39,6 +40,9 @@ The custom Resource Set can alternatively be specified by setting the `AEMBIT_RE
 
 ->**Terraform Cloud Configuration**
 Setting the environment variable `TFC_WORKLOAD_IDENTITY_AUDIENCE` is required for Terraform Cloud Workspace ID Tokens. The value for this variable will be provided by your Aembit Cloud tenant Trust Provider and references your tenant-specific endpoint.
+
+->**Generic OIDC ID Token Configuration**
+Setting the environment variable `AEMBIT_OIDC_ID_TOKEN` is required when using the generic OIDC ID Token native authentication method.
 
 #### Sample Terraform Config
 
