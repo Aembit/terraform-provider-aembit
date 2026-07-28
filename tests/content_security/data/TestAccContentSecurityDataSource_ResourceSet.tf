@@ -23,7 +23,7 @@ resource "aembit_content_security" "crowdstrike" {
 		encrypted_token = "test_token"
 		fail_open = true
 		max_retries = 10
-		timeout_ms = 3000
+		timeout_ms = 6000
 	}
 }
 
