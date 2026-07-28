@@ -65,7 +65,7 @@ func TestAccContentSecurityResource(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testContentSecurityResource,
 						"crowdstrike_falcon_aidr.timeout_ms",
-						"3000",
+						"6000",
 					),
 					// Verify placeholder ID and resource_set_id are set
 					resource.TestCheckResourceAttrSet(testContentSecurityResource, "id"),
