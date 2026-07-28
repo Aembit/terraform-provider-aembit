@@ -107,7 +107,7 @@ jobs:
         if [[ $REGRESSION == 'true' ]]; then
           echo 'matrix=["latest"]' >> "$GITHUB_OUTPUT"
         else
-          echo 'matrix=["latest", "1.10", "1.9"]' >> "$GITHUB_OUTPUT"
+          echo 'matrix=["latest", "1.14", "1.12"]' >> "$GITHUB_OUTPUT"
         fi
 
   # Run acceptance tests in a matrix with Terraform CLI versions
