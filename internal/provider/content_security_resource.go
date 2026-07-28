@@ -7,6 +7,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -138,12 +139,18 @@ func (r *contentSecurityResource) Schema(
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(5000),
+						Validators: []validator.Int64{
+							int64validator.Between(5000, 600000),
+						},
 					},
 					"max_retries": schema.Int64Attribute{
 						Description: "The maximum number of retry attempts for requests to the CrowdStrike Falcon AIDR service.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(2),
+						Validators: []validator.Int64{
+							int64validator.Between(0, 10),
+						},
 					},
 				},
 			},
