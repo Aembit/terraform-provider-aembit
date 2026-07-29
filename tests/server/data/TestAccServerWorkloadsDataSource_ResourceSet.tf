@@ -8,7 +8,7 @@ locals {
 }
 
 resource "aembit_resource_set" "crs" {
-	name = "TF Acceptance Custom ResourceSet ${uuid()}"
+	name = "TF Acceptance Custom ResourceSet"
 	description = "TF Acceptance Custom ResourceSet"
 	roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
 }
