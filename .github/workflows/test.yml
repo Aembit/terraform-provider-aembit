@@ -151,7 +151,6 @@ jobs:
       - run: go mod download
 
       - name: Run Acceptance Tests using OIDC Client
-        if: always() && inputs.regression
         id: test_oidc_client
         env:
           TF_ACC: "1"
