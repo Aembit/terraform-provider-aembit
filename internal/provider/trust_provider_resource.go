@@ -770,6 +770,78 @@ func (r *trustProviderResource) Schema(
 					},
 				},
 			},
+			"aws_alb_jwt": schema.SingleNestedAttribute{
+				Description: "AWS Application Load Balancer JWT type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"issuer": schema.StringAttribute{
+						Description: "The Issuer (`iss` claim) of the AWS ALB JWT.",
+						Optional:    true,
+					},
+					"issuers": schema.SetAttribute{
+						Description: "The set of accepted Issuer values of the associated AWS ALB JWT. Used only for cases where multiple Issuers can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"subject": schema.StringAttribute{
+						Description: "The Subject (`sub` claim) of the AWS ALB JWT.",
+						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted Subject values of the associated AWS ALB JWT. Used only for cases where multiple Subjects can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "The Audience (`aud` claim) of the AWS ALB JWT.",
+						Optional:    true,
+					},
+					"audiences": schema.SetAttribute{
+						Description: "The set of accepted Audience values of the associated AWS ALB JWT. Used only for cases where multiple Audiences can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"email": schema.StringAttribute{
+						Description: "The Email (`email` claim) of the AWS ALB JWT.",
+						Optional:    true,
+						Validators: []validator.String{
+							validators.EmailValidation(),
+						},
+					},
+					"emails": schema.SetAttribute{
+						Description: "The set of accepted Email values of the associated AWS ALB JWT. Used only for cases where multiple Emails can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+							setvalidator.ValueStringsAre(validators.EmailValidation()),
+						},
+					},
+					"custom_claims": schema.SetAttribute{
+						Description: "The set of accepted Custom Claim values of the associated AWS ALB JWT.",
+						ElementType: types.ObjectType{
+							AttrTypes: map[string]attr.Type{
+								"claim_key":   types.StringType,
+								"claim_value": types.StringType,
+							},
+						},
+						Optional: true,
+					},
+				},
+			},
 			"certificate_signed_attestation": schema.SingleNestedAttribute{
 				Description: "Certificate Signed Attestation type Trust Provider configuration.",
 				Optional:    true,
@@ -801,6 +873,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kubernetes_service_account"),
 			path.MatchRoot("terraform_workspace"),
 			path.MatchRoot("oidc_id_token"),
+			path.MatchRoot("aws_alb_jwt"),
 			path.MatchRoot("certificate_signed_attestation"),
 		),
 		// Ensure we don't have conflicting single and multiple match rule configurations (Azure Metadata)
@@ -948,6 +1021,23 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("oidc_id_token").AtName("audience"),
 			path.MatchRoot("oidc_id_token").AtName("audiences"),
+		),
+		// Ensure we don't have conflicting single and multiple match rule configurations (AWS ALB JWT)
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_alb_jwt").AtName("issuer"),
+			path.MatchRoot("aws_alb_jwt").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_alb_jwt").AtName("subject"),
+			path.MatchRoot("aws_alb_jwt").AtName("subjects"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_alb_jwt").AtName("audience"),
+			path.MatchRoot("aws_alb_jwt").AtName("audiences"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("aws_alb_jwt").AtName("email"),
+			path.MatchRoot("aws_alb_jwt").AtName("emails"),
 		),
 	}
 }
@@ -1229,6 +1319,9 @@ func convertTrustProviderModelToDTO(
 	}
 	if model.OidcIdToken != nil {
 		err = convertOidcIdTokenTpModelToDTO(model, &trust)
+	}
+	if model.AwsAlbJwt != nil {
+		convertAwsAlbJwtTpModelToDTO(model, &trust)
 	}
 	if model.CertificateSignedAttestation != nil {
 		trust.Provider = "CertificateSignedAttestation"
@@ -1745,6 +1838,69 @@ func convertOidcIdTokenTpModelToDTO(
 	return nil
 }
 
+func convertAwsAlbJwtTpModelToDTO(
+	model models.TrustProviderResourceModel,
+	dto *aembit.TrustProviderDTO,
+) {
+	dto.Provider = "AWSAlbJwt"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Issuer,
+		"AwsAlbJwtIssuer",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Issuers,
+		"AwsAlbJwtIssuer",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Subject,
+		"AwsAlbJwtSubject",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Subjects,
+		"AwsAlbJwtSubject",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Audience,
+		"AwsAlbJwtAudience",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.Audiences,
+		"AwsAlbJwtAudience",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.EMail,
+		"Email",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.AwsAlbJwt.EMails,
+		"Email",
+	)
+	if len(model.AwsAlbJwt.CustomClaims) > 0 {
+		for _, value := range model.AwsAlbJwt.CustomClaims {
+			dto.MatchRules = appendMatchRuleIfExists(
+				dto.MatchRules,
+				value.ClaimValue,
+				"AwsAlbJwtCustom",
+				value.ClaimKey,
+			)
+		}
+	}
+}
+
 func convertJWKSModelToDto(jwksJson string, dto *aembit.TrustProviderDTO) error {
 	if jwksJson == "" {
 		return nil
@@ -1866,6 +2022,8 @@ func convertTrustProviderDTOToModel(
 		model.KubernetesService = convertKubernetesDTOToModel(dto)
 	case "OidcIdToken":
 		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto)
+	case "AWSAlbJwt":
+		model.AwsAlbJwt = convertAwsAlbJwtTpDTOToModel(dto)
 	case "TerraformIdentityToken":
 		model.TerraformWorkspace = convertTerraformDTOToModel(dto)
 	case "CertificateSignedAttestation":
@@ -1891,6 +2049,8 @@ func convertTrustProviderDTOToModel(
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:kubernetes_idtoken:%s", stack, tenant, dto.ExternalID))
 		case "OidcIdToken":
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:oidc_id_token:%s", stack, tenant, dto.ExternalID))
+		case "AWSAlbJwt":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:aws_alb_jwt:%s", stack, tenant, dto.ExternalID))
 		case "TerraformIdentityToken":
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:terraform_idtoken:%s", stack, tenant, dto.ExternalID))
 		}
@@ -2138,6 +2298,43 @@ func convertOidcIdTokenTpDTOToModel(
 	}
 	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("OidcCustom")) {
 		model.CustomClaims = extractCustomClaimMatchRules(dto.MatchRules, "OidcCustom")
+	}
+	return model
+}
+
+func convertAwsAlbJwtTpDTOToModel(
+	dto aembit.TrustProviderDTO,
+) *models.TrustProviderAwsAlbJwtModel {
+	model := &models.TrustProviderAwsAlbJwtModel{
+		Issuer:   types.StringNull(),
+		Subject:  types.StringNull(),
+		Audience: types.StringNull(),
+		EMail:    types.StringNull(),
+	}
+
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAlbJwtIssuer")) {
+		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "AwsAlbJwtIssuer")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAlbJwtSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "AwsAlbJwtSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAlbJwtAudience")) {
+		model.Audience, model.Audiences = extractMatchRules(dto.MatchRules, "AwsAlbJwtAudience")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Email")) {
+		model.EMail, model.EMails = extractMatchRules(dto.MatchRules, "Email")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("AwsAlbJwtCustom")) {
+		var customClaims []models.TrustProviderAwsAlbJwtCustomClaimModel
+		for _, rule := range dto.MatchRules {
+			if rule.Attribute == "AwsAlbJwtCustom" {
+				customClaims = append(customClaims, models.TrustProviderAwsAlbJwtCustomClaimModel{
+					ClaimKey:   types.StringValue(rule.Key),
+					ClaimValue: types.StringValue(rule.Value),
+				})
+			}
+		}
+		model.CustomClaims = customClaims
 	}
 	return model
 }

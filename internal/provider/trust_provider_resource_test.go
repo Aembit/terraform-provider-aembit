@@ -888,3 +888,87 @@ func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testi
 		},
 	})
 }
+
+func TestAccTrustProviderResource_AwsAlbJwt(t *testing.T) {
+	t.Parallel()
+	createFile, err := os.ReadFile("../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tf")
+	if err != nil {
+		t.Fatalf("failed to read AWS ALB JWT test config: %v", err)
+	}
+	modifyFile, err := os.ReadFile(
+		"../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tfmod",
+	)
+	if err != nil {
+		t.Fatalf("failed to read AWS ALB JWT modified test config: %v", err)
+	}
+
+	const trustProviderAwsAlbJwt = "aembit_trust_provider.aws_alb_jwt"
+	const trustProviderAwsAlbJwtMulti = "aembit_trust_provider.aws_alb_jwt_multi"
+	const trustProviderAwsAlbJwtCustomClaims = "aembit_trust_provider.aws_alb_jwt_customclaims"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwt,
+						"name",
+						"TF Acceptance AWS ALB JWT",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwt, "id"),
+					checkValidClientID(
+						trustProviderAwsAlbJwt,
+						"client_id",
+						":identity:aws_alb_jwt:",
+					),
+					// Verify Multi Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwtMulti,
+						"name",
+						"TF Acceptance AWS ALB JWT Multi",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwtMulti, "id"),
+					// Verify Custom Claims Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwtCustomClaims,
+						"name",
+						"TF Acceptance AWS ALB JWT Custom Claims",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwtCustomClaims, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: trustProviderAwsAlbJwt, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwt,
+						"name",
+						"TF Acceptance AWS ALB JWT - Modified",
+					),
+					// Verify Multi Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwtMulti,
+						"name",
+						"TF Acceptance AWS ALB JWT Multi - Modified",
+					),
+					// Verify Custom Claims Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderAwsAlbJwtCustomClaims,
+						"name",
+						"TF Acceptance AWS ALB JWT Custom Claims - Modified",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

@@ -19,6 +19,7 @@ type TrustProviderResourceModel struct {
 	AzureMetadata                *TrustProviderAzureMetadataModel                `tfsdk:"azure_metadata"`
 	AwsRole                      *TrustProviderAwsRoleModel                      `tfsdk:"aws_role"`
 	AwsMetadata                  *TrustProviderAwsMetadataModel                  `tfsdk:"aws_metadata"`
+	AwsAlbJwt                    *TrustProviderAwsAlbJwtModel                    `tfsdk:"aws_alb_jwt"`
 	GcpIdentity                  *TrustProviderGcpIdentityModel                  `tfsdk:"gcp_identity"`
 	GitHubAction                 *TrustProviderGitHubActionModel                 `tfsdk:"github_action"`
 	GitLabJob                    *TrustProviderGitLabJobModel                    `tfsdk:"gitlab_job"`
@@ -165,4 +166,21 @@ type TrustProviderTerraformModel struct {
 }
 
 type TrustProviderCertificateSignedAttestationModel struct {
+}
+
+type TrustProviderAwsAlbJwtModel struct {
+	Issuer       types.String                             `tfsdk:"issuer"`
+	Issuers      []types.String                           `tfsdk:"issuers"`
+	Subject      types.String                             `tfsdk:"subject"`
+	Subjects     []types.String                           `tfsdk:"subjects"`
+	Audience     types.String                             `tfsdk:"audience"`
+	Audiences    []types.String                           `tfsdk:"audiences"`
+	EMail        types.String                             `tfsdk:"email"`
+	EMails       []types.String                           `tfsdk:"emails"`
+	CustomClaims []TrustProviderAwsAlbJwtCustomClaimModel `tfsdk:"custom_claims"`
+}
+
+type TrustProviderAwsAlbJwtCustomClaimModel struct {
+	ClaimKey   types.String `tfsdk:"claim_key"`
+	ClaimValue types.String `tfsdk:"claim_value"`
 }

@@ -33,6 +33,7 @@ Optional:
 
 Read-Only:
 
+- `aws_alb_jwt` (Attributes) AWS Application Load Balancer JWT type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_alb_jwt))
 - `aws_metadata` (Attributes) AWS Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_metadata))
 - `aws_role` (Attributes) AWS Role type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--aws_role))
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
@@ -53,6 +54,31 @@ Read-Only:
 
 <a id="nestedatt--trust_providers--certificate_signed_attestation"></a>
 ### Nested Schema for `trust_providers.certificate_signed_attestation`
+
+
+<a id="nestedatt--trust_providers--aws_alb_jwt"></a>
+### Nested Schema for `trust_providers.aws_alb_jwt`
+
+Read-Only:
+
+- `audience` (String) The Audience (`aud` claim) of the AWS ALB JWT.
+- `audiences` (Set of String) The set of accepted Audience values of the associated AWS ALB JWT.
+- `custom_claims` (Set of Object) The set of accepted Custom Claim values of the associated AWS ALB JWT. (see [below for nested schema](#nestedatt--trust_providers--aws_alb_jwt--custom_claims))
+- `email` (String) The Email (`email` claim) of the AWS ALB JWT.
+- `emails` (Set of String) The set of accepted Email values of the associated AWS ALB JWT.
+- `issuer` (String) The Issuer (`iss` claim) of the AWS ALB JWT.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated AWS ALB JWT.
+- `subject` (String) The Subject (`sub` claim) of the AWS ALB JWT.
+- `subjects` (Set of String) The set of accepted Subject values of the associated AWS ALB JWT.
+
+<a id="nestedatt--trust_providers--aws_alb_jwt--custom_claims"></a>
+### Nested Schema for `trust_providers.aws_alb_jwt.custom_claims`
+
+Read-Only:
+
+- `claim_key` (String)
+- `claim_value` (String)
+
 
 
 <a id="nestedatt--trust_providers--aws_metadata"></a>
