@@ -5,7 +5,7 @@ locals {
 }
 
 resource "aembit_resource_set" "crs" {
-	name = "TF Acceptance Custom ResourceSet"
+	name = "TF Acceptance Custom ResourceSet Datasource"
 	description = "TF Acceptance Custom ResourceSet"
 	roles = [local.role_ids_by_name["SuperAdmin"], local.role_ids_by_name["Auditor"]]
 }

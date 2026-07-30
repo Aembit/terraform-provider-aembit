@@ -703,12 +703,19 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 	modifyFile, _ := os.ReadFile(
 		"../../tests/client/oauthRedirectUri/TestAccClientWorkloadResource.tfmod",
 	)
+
+	createFileConfig, modifyFileConfig, newValue := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"replace",
+	)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: string(createFile),
+				Config: createFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Client Workload Name, Description, Active status
 					resource.TestCheckResourceAttr(
@@ -736,7 +743,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						testCWResource,
 						testCWResourceIdentitiesValue[0],
-						"https://test.aembit.local:12345",
+						fmt.Sprintf("https://%s.aembit.local:12345", newValue),
 					),
 					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "true"),
 					resource.TestCheckResourceAttr(
@@ -760,7 +767,7 @@ func TestAccClientWorkloadResource_OauthRedirectUri(t *testing.T) {
 			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
-				Config: string(modifyFile),
+				Config: modifyFileConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
