@@ -889,22 +889,22 @@ func TestAccTrustProviderResource_OidcIdToken_MissingRequiredECDSAField(t *testi
 	})
 }
 
-func TestAccTrustProviderResource_GcpIapJwt(t *testing.T) {
+func TestAccTrustProviderResource_AwsAlbJwt(t *testing.T) {
 	t.Parallel()
-	createFile, err := os.ReadFile("../../tests/trust/gcp_iap_jwt/TestAccTrustProviderResource.tf")
+	createFile, err := os.ReadFile("../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tf")
 	if err != nil {
-		t.Fatalf("failed to read GCP IAP JWT test config: %v", err)
+		t.Fatalf("failed to read AWS ALB JWT test config: %v", err)
 	}
 	modifyFile, err := os.ReadFile(
-		"../../tests/trust/gcp_iap_jwt/TestAccTrustProviderResource.tfmod",
+		"../../tests/trust/aws_alb_jwt/TestAccTrustProviderResource.tfmod",
 	)
 	if err != nil {
-		t.Fatalf("failed to read GCP IAP JWT modified test config: %v", err)
+		t.Fatalf("failed to read AWS ALB JWT modified test config: %v", err)
 	}
 
-	const trustProviderGcpIapJwt = "aembit_trust_provider.gcp_iap_jwt"
-	const trustProviderGcpIapJwtMulti = "aembit_trust_provider.gcp_iap_jwt_multi"
-	const trustProviderGcpIapJwtCustomClaims = "aembit_trust_provider.gcp_iap_jwt_customclaims"
+	const trustProviderAwsAlbJwt = "aembit_trust_provider.aws_alb_jwt"
+	const trustProviderAwsAlbJwtMulti = "aembit_trust_provider.aws_alb_jwt_multi"
+	const trustProviderAwsAlbJwtCustomClaims = "aembit_trust_provider.aws_alb_jwt_customclaims"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -915,56 +915,56 @@ func TestAccTrustProviderResource_GcpIapJwt(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwt,
+						trustProviderAwsAlbJwt,
 						"name",
-						"TF Acceptance GCP IAP JWT",
+						"TF Acceptance AWS ALB JWT",
 					),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwt, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwt, "id"),
 					checkValidClientID(
-						trustProviderGcpIapJwt,
+						trustProviderAwsAlbJwt,
 						"client_id",
-						":identity:gcp_iap_jwt:",
+						":identity:aws_alb_jwt:",
 					),
 					// Verify Multi Trust Provider Name
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwtMulti,
+						trustProviderAwsAlbJwtMulti,
 						"name",
-						"TF Acceptance GCP IAP JWT Multi",
+						"TF Acceptance AWS ALB JWT Multi",
 					),
-					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwtMulti, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwtMulti, "id"),
 					// Verify Custom Claims Trust Provider Name
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwtCustomClaims,
+						trustProviderAwsAlbJwtCustomClaims,
 						"name",
-						"TF Acceptance GCP IAP JWT Custom Claims",
+						"TF Acceptance AWS ALB JWT Custom Claims",
 					),
-					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwtCustomClaims, "id"),
+					resource.TestCheckResourceAttrSet(trustProviderAwsAlbJwtCustomClaims, "id"),
 				),
 			},
 			// ImportState testing
-			{ResourceName: trustProviderGcpIapJwt, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderAwsAlbJwt, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify Name updated
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwt,
+						trustProviderAwsAlbJwt,
 						"name",
-						"TF Acceptance GCP IAP JWT - Modified",
+						"TF Acceptance AWS ALB JWT - Modified",
 					),
 					// Verify Multi Name updated
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwtMulti,
+						trustProviderAwsAlbJwtMulti,
 						"name",
-						"TF Acceptance GCP IAP JWT Multi - Modified",
+						"TF Acceptance AWS ALB JWT Multi - Modified",
 					),
 					// Verify Custom Claims Name updated
 					resource.TestCheckResourceAttr(
-						trustProviderGcpIapJwtCustomClaims,
+						trustProviderAwsAlbJwtCustomClaims,
 						"name",
-						"TF Acceptance GCP IAP JWT Custom Claims - Modified",
+						"TF Acceptance AWS ALB JWT Custom Claims - Modified",
 					),
 				),
 			},

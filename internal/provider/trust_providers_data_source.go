@@ -563,6 +563,58 @@ func (d *trustProvidersDataSource) Schema(
 								},
 							},
 						},
+						"aws_alb_jwt": schema.SingleNestedAttribute{
+							Description: "AWS Application Load Balancer JWT type Trust Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"issuer": schema.StringAttribute{
+									Description: "The Issuer (`iss` claim) of the AWS ALB JWT.",
+									Computed:    true,
+								},
+								"issuers": schema.SetAttribute{
+									Description: "The set of accepted Issuer values of the associated AWS ALB JWT.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"subject": schema.StringAttribute{
+									Description: "The Subject (`sub` claim) of the AWS ALB JWT.",
+									Computed:    true,
+								},
+								"subjects": schema.SetAttribute{
+									Description: "The set of accepted Subject values of the associated AWS ALB JWT.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"audience": schema.StringAttribute{
+									Description: "The Audience (`aud` claim) of the AWS ALB JWT.",
+									Computed:    true,
+								},
+								"audiences": schema.SetAttribute{
+									Description: "The set of accepted Audience values of the associated AWS ALB JWT.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"email": schema.StringAttribute{
+									Description: "The Email (`email` claim) of the AWS ALB JWT.",
+									Computed:    true,
+								},
+								"emails": schema.SetAttribute{
+									Description: "The set of accepted Email values of the associated AWS ALB JWT.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
+								"custom_claims": schema.SetAttribute{
+									Description: "The set of accepted Custom Claim values of the associated AWS ALB JWT.",
+									ElementType: types.ObjectType{
+										AttrTypes: map[string]attr.Type{
+											"claim_key":   types.StringType,
+											"claim_value": types.StringType,
+										},
+									},
+									Computed: true,
+								},
+							},
+						},
 						"certificate_signed_attestation": schema.SingleNestedAttribute{
 							Description: "Certificate Signed Attestation type Trust Provider configuration.",
 							Optional:    true,

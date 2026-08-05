@@ -60,7 +60,7 @@ resource "aembit_client_workload" "test" {
     identities = [
         {
             type = "oauthRedirectUri"
-            value = "https://test.aembit.local:12345"
+            value = "https://replace.aembit.local:12345"
         }
     ]
     sso_identity_providers = [

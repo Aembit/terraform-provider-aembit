@@ -420,6 +420,7 @@ var (
 	GITHUB_ID_TOKEN    string
 	TERRAFORM_ID_TOKEN string
 	AEMBIT_TOKEN       string
+	OIDC_ID_TOKEN      string
 )
 
 type ClientRequestNetwork struct {
@@ -442,6 +443,7 @@ type WorkloadAssessment struct {
 	GCP       WorkloadAssessmentIdToken `json:"gcp,omitempty"`
 	GitHub    WorkloadAssessmentIdToken `json:"github,omitempty"`
 	Terraform WorkloadAssessmentIdToken `json:"terraform,omitempty"`
+	Oidc      WorkloadAssessmentIdToken `json:"oidc,omitempty"`
 	OS        OperatingSystemData       `json:"os,omitempty"`
 }
 
@@ -475,6 +477,7 @@ func getToken(
 	aembitClientID, stackDomain, resourceSetId, version string,
 ) (string, error) {
 	idToken, err := getIdentityToken(aembitClientID, stackDomain)
+
 	if err == nil {
 		aembitToken, err := getAembitToken(
 			aembitClientID,
@@ -483,6 +486,7 @@ func getToken(
 			resourceSetId,
 			version,
 		)
+
 		if err == nil {
 			roleToken, err := getAembitCredential(
 				fmt.Sprintf("%s.api.%s", getAembitTenantId(aembitClientID), stackDomain),
@@ -493,6 +497,7 @@ func getToken(
 				aembitToken,
 				resourceSetId,
 			)
+
 			if err == nil {
 				return roleToken, nil
 			} else {
@@ -592,6 +597,11 @@ func getWorkloadAssessment(clientId, idToken, resourceSetId string) (string, err
 			Version:   "1.0.0",
 			Terraform: WorkloadAssessmentIdToken{IdentityToken: idToken},
 		}
+	case "oidc_id_token":
+		workload = WorkloadAssessment{
+			Version: "1.0.0",
+			Oidc:    WorkloadAssessmentIdToken{IdentityToken: idToken},
+		}
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
 	}
@@ -624,6 +634,8 @@ func getAembitToken(clientId, stackDomain, idToken, resourceSetId, version strin
 		idTokenType = "github"
 	case "terraform_idtoken":
 		idTokenType = "terraform"
+	case "oidc_id_token":
+		idTokenType = "oidc"
 	default:
 		return "", fmt.Errorf("invalid aembit client id")
 	}
@@ -694,6 +706,8 @@ func getIdentityToken(clientId, stackDomain string) (string, error) {
 		return getGitHubIdentityToken(clientId, stackDomain)
 	case "terraform_idtoken":
 		return getTerraformIdentityToken()
+	case "oidc_id_token":
+		return getOidcIdentityToken()
 	}
 	return "", fmt.Errorf("no matching id token configuration")
 }
@@ -785,6 +799,15 @@ func getTerraformIdentityToken() (string, error) {
 
 	TERRAFORM_ID_TOKEN = os.Getenv("TFC_WORKLOAD_IDENTITY_TOKEN")
 	return TERRAFORM_ID_TOKEN, nil
+}
+
+func getOidcIdentityToken() (string, error) {
+	if isTokenValid(OIDC_ID_TOKEN) {
+		return OIDC_ID_TOKEN, nil
+	}
+
+	OIDC_ID_TOKEN = os.Getenv("AEMBIT_OIDC_ID_TOKEN")
+	return OIDC_ID_TOKEN, nil
 }
 
 func getAembitTenantId(clientId string) string {
