@@ -972,3 +972,87 @@ func TestAccTrustProviderResource_AwsAlbJwt(t *testing.T) {
 		},
 	})
 }
+
+func TestAccTrustProviderResource_GcpIapJwt(t *testing.T) {
+	t.Parallel()
+	createFile, err := os.ReadFile("../../tests/trust/gcp_iap_jwt/TestAccTrustProviderResource.tf")
+	if err != nil {
+		t.Fatalf("failed to read GCP IAP JWT test config: %v", err)
+	}
+	modifyFile, err := os.ReadFile(
+		"../../tests/trust/gcp_iap_jwt/TestAccTrustProviderResource.tfmod",
+	)
+	if err != nil {
+		t.Fatalf("failed to read GCP IAP JWT modified test config: %v", err)
+	}
+
+	const trustProviderGcpIapJwt = "aembit_trust_provider.gcp_iap_jwt"
+	const trustProviderGcpIapJwtMulti = "aembit_trust_provider.gcp_iap_jwt_multi"
+	const trustProviderGcpIapJwtCustomClaims = "aembit_trust_provider.gcp_iap_jwt_customclaims"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwt,
+						"name",
+						"TF Acceptance GCP IAP JWT",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwt, "id"),
+					checkValidClientID(
+						trustProviderGcpIapJwt,
+						"client_id",
+						":identity:gcp_iap_jwt:",
+					),
+					// Verify Multi Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwtMulti,
+						"name",
+						"TF Acceptance GCP IAP JWT Multi",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwtMulti, "id"),
+					// Verify Custom Claims Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwtCustomClaims,
+						"name",
+						"TF Acceptance GCP IAP JWT Custom Claims",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderGcpIapJwtCustomClaims, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: trustProviderGcpIapJwt, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwt,
+						"name",
+						"TF Acceptance GCP IAP JWT - Modified",
+					),
+					// Verify Multi Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwtMulti,
+						"name",
+						"TF Acceptance GCP IAP JWT Multi - Modified",
+					),
+					// Verify Custom Claims Name updated
+					resource.TestCheckResourceAttr(
+						trustProviderGcpIapJwtCustomClaims,
+						"name",
+						"TF Acceptance GCP IAP JWT Custom Claims - Modified",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

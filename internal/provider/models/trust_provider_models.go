@@ -185,3 +185,20 @@ type TrustProviderAwsAlbJwtCustomClaimModel struct {
 	ClaimKey   types.String `tfsdk:"claim_key"`
 	ClaimValue types.String `tfsdk:"claim_value"`
 }
+
+type TrustProviderGcpIapJwtModel struct {
+	Issuer       types.String                             `tfsdk:"issuer"`
+	Issuers      []types.String                           `tfsdk:"issuers"`
+	Subject      types.String                             `tfsdk:"subject"`
+	Subjects     []types.String                           `tfsdk:"subjects"`
+	Audience     types.String                             `tfsdk:"audience"`
+	Audiences    []types.String                           `tfsdk:"audiences"`
+	EMail        types.String                             `tfsdk:"email"`
+	EMails       []types.String                           `tfsdk:"emails"`
+	CustomClaims []TrustProviderGcpIapJwtCustomClaimModel `tfsdk:"custom_claims"`
+}
+
+type TrustProviderGcpIapJwtCustomClaimModel struct {
+	ClaimKey   types.String `tfsdk:"claim_key"`
+	ClaimValue types.String `tfsdk:"claim_value"`
+}
