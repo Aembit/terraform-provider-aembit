@@ -2166,6 +2166,8 @@ func convertTrustProviderDTOToModel(
 		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
 	case "GcpIdentityToken":
 		model.GcpIdentity = convertGcpIdentityDTOToModel(dto)
+	case "GcpIapJwt":
+		model.GcpIapJwt = convertGcpIapJwtTpDTOToModel(dto)
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto, tenant, stackDomain)
 	case "GitLabIdentityToken":
@@ -2191,6 +2193,8 @@ func convertTrustProviderDTOToModel(
 		switch dto.Provider {
 		case "GcpIdentityToken":
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gcp_idtoken:%s", stack, tenant, dto.ExternalID))
+		case "GcpIapJwt":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gcp_iap_jwt:%s", stack, tenant, dto.ExternalID))
 		case "GitHubIdentityToken":
 			if model.GitHubAction != nil {
 				model.ClientID = model.GitHubAction.OIDCClientID
@@ -2483,6 +2487,43 @@ func convertAwsAlbJwtTpDTOToModel(
 		for _, rule := range dto.MatchRules {
 			if rule.Attribute == "AwsAlbJwtCustom" {
 				customClaims = append(customClaims, models.TrustProviderAwsAlbJwtCustomClaimModel{
+					ClaimKey:   types.StringValue(rule.Key),
+					ClaimValue: types.StringValue(rule.Value),
+				})
+			}
+		}
+		model.CustomClaims = customClaims
+	}
+	return model
+}
+
+func convertGcpIapJwtTpDTOToModel(
+	dto aembit.TrustProviderDTO,
+) *models.TrustProviderGcpIapJwtModel {
+	model := &models.TrustProviderGcpIapJwtModel{
+		Issuer:   types.StringNull(),
+		Subject:  types.StringNull(),
+		Audience: types.StringNull(),
+		EMail:    types.StringNull(),
+	}
+
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtIssuer")) {
+		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "GcpIapJwtIssuer")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "GcpIapJwtSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtAudience")) {
+		model.Audience, model.Audiences = extractMatchRules(dto.MatchRules, "GcpIapJwtAudience")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Email")) {
+		model.EMail, model.EMails = extractMatchRules(dto.MatchRules, "Email")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtCustom")) {
+		var customClaims []models.TrustProviderGcpIapJwtCustomClaimModel
+		for _, rule := range dto.MatchRules {
+			if rule.Attribute == "GcpIapJwtCustom" {
+				customClaims = append(customClaims, models.TrustProviderGcpIapJwtCustomClaimModel{
 					ClaimKey:   types.StringValue(rule.Key),
 					ClaimValue: types.StringValue(rule.Value),
 				})
