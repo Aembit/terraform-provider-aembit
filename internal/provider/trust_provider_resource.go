@@ -1095,7 +1095,6 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("oidc_id_token").AtName("audience"),
 			path.MatchRoot("oidc_id_token").AtName("audiences"),
 		),
-		// Ensure we don't have conflicting single and multiple match rule configurations (AWS ALB JWT)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("aws_alb_jwt").AtName("issuer"),
 			path.MatchRoot("aws_alb_jwt").AtName("issuers"),
@@ -1111,6 +1110,22 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("aws_alb_jwt").AtName("email"),
 			path.MatchRoot("aws_alb_jwt").AtName("emails"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("issuer"),
+			path.MatchRoot("gcp_iap_jwt").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("subject"),
+			path.MatchRoot("gcp_iap_jwt").AtName("subjects"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("audience"),
+			path.MatchRoot("gcp_iap_jwt").AtName("audiences"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("email"),
+			path.MatchRoot("gcp_iap_jwt").AtName("emails"),
 		),
 	}
 }
@@ -1395,6 +1410,9 @@ func convertTrustProviderModelToDTO(
 	}
 	if model.AwsAlbJwt != nil {
 		convertAwsAlbJwtTpModelToDTO(model, &trust)
+	}
+	if model.GcpIapJwt != nil {
+		convertGcpIapJwtTpModelToDTO(model, &trust)
 	}
 	if model.CertificateSignedAttestation != nil {
 		trust.Provider = "CertificateSignedAttestation"
@@ -1968,6 +1986,69 @@ func convertAwsAlbJwtTpModelToDTO(
 				dto.MatchRules,
 				value.ClaimValue,
 				"AwsAlbJwtCustom",
+				value.ClaimKey,
+			)
+		}
+	}
+}
+
+func convertGcpIapJwtTpModelToDTO(
+	model models.TrustProviderResourceModel,
+	dto *aembit.TrustProviderDTO,
+) {
+	dto.Provider = "GcpIapJwt"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Issuer,
+		"GcpIapJwtIssuer",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Issuers,
+		"GcpIapJwtIssuer",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Subject,
+		"GcpIapJwtSubject",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Subjects,
+		"GcpIapJwtSubject",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Audience,
+		"GcpIapJwtAudience",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Audiences,
+		"GcpIapJwtAudience",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.EMail,
+		"Email",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.EMails,
+		"Email",
+	)
+	if len(model.GcpIapJwt.CustomClaims) > 0 {
+		for _, value := range model.GcpIapJwt.CustomClaims {
+			dto.MatchRules = appendMatchRuleIfExists(
+				dto.MatchRules,
+				value.ClaimValue,
+				"GcpIapJwtCustom",
 				value.ClaimKey,
 			)
 		}
