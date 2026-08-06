@@ -1,0 +1,41 @@
+provider "aembit" {
+}
+
+resource "aembit_trust_provider" "gcp_iap_jwt" {
+	name = "TF Acceptance GCP IAP JWT"
+	is_active = true
+	gcp_iap_jwt = {
+		issuer = "https://cloud.google.com/iap"
+		subject = "subject"
+		audience = "audience"
+		email = "test@example.com"
+	}
+}
+
+resource "aembit_trust_provider" "gcp_iap_jwt_multi" {
+	name = "TF Acceptance GCP IAP JWT Multi"
+	is_active = true
+	gcp_iap_jwt = {
+		issuers = ["issuer1", "issuer2"]
+		subjects = ["subject1", "subject2"]
+		audiences = ["audience1", "audience2"]
+		emails = ["test1@example.com", "test2@example.com"]
+	}
+}
+
+resource "aembit_trust_provider" "gcp_iap_jwt_customclaims" {
+	name = "TF Acceptance GCP IAP JWT Custom Claims"
+	is_active = true
+	gcp_iap_jwt = {
+		custom_claims = [
+			{
+				claim_key   = "key1"
+				claim_value = "value1"
+			},
+			{
+				claim_key   = "key2"
+				claim_value = "value2"
+			}
+		]
+	}
+}

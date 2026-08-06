@@ -100,6 +100,7 @@ Please make sure to update your configuration accordingly.
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--azure_metadata))
 - `certificate_signed_attestation` (Attributes) Certificate Signed Attestation type Trust Provider configuration. (see [below for nested schema](#nestedatt--certificate_signed_attestation))
 - `description` (String) Description for the Trust Provider.
+- `gcp_iap_jwt` (Attributes) GCP Identity-Aware Proxy JWT type Trust Provider configuration. (see [below for nested schema](#nestedatt--gcp_iap_jwt))
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--gcp_identity))
 - `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--github_action))
 - `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--gitlab_job))
@@ -199,6 +200,31 @@ Optional:
 
 <a id="nestedatt--certificate_signed_attestation"></a>
 ### Nested Schema for `certificate_signed_attestation`
+
+
+<a id="nestedatt--gcp_iap_jwt"></a>
+### Nested Schema for `gcp_iap_jwt`
+
+Optional:
+
+- `audience` (String) The Audience (`aud` claim) of the GCP IAP JWT.
+- `audiences` (Set of String) The set of accepted Audience values of the associated GCP IAP JWT. Used only for cases where multiple Audiences can be matched.
+- `custom_claims` (Set of Object) The set of accepted Custom Claim values of the associated GCP IAP JWT. (see [below for nested schema](#nestedatt--gcp_iap_jwt--custom_claims))
+- `email` (String) The Email (`email` claim) of the GCP IAP JWT.
+- `emails` (Set of String) The set of accepted Email values of the associated GCP IAP JWT. Used only for cases where multiple Emails can be matched.
+- `issuer` (String) The Issuer (`iss` claim) of the GCP IAP JWT.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated GCP IAP JWT. Used only for cases where multiple Issuers can be matched.
+- `subject` (String) The Subject (`sub` claim) of the GCP IAP JWT.
+- `subjects` (Set of String) The set of accepted Subject values of the associated GCP IAP JWT. Used only for cases where multiple Subjects can be matched.
+
+<a id="nestedatt--gcp_iap_jwt--custom_claims"></a>
+### Nested Schema for `gcp_iap_jwt.custom_claims`
+
+Optional:
+
+- `claim_key` (String)
+- `claim_value` (String)
+
 
 
 <a id="nestedatt--gcp_identity"></a>

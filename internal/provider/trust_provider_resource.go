@@ -355,6 +355,78 @@ func (r *trustProviderResource) Schema(
 					},
 				},
 			},
+			"gcp_iap_jwt": schema.SingleNestedAttribute{
+				Description: "GCP Identity-Aware Proxy JWT type Trust Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"issuer": schema.StringAttribute{
+						Description: "The Issuer (`iss` claim) of the GCP IAP JWT.",
+						Optional:    true,
+					},
+					"issuers": schema.SetAttribute{
+						Description: "The set of accepted Issuer values of the associated GCP IAP JWT. Used only for cases where multiple Issuers can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"subject": schema.StringAttribute{
+						Description: "The Subject (`sub` claim) of the GCP IAP JWT.",
+						Optional:    true,
+					},
+					"subjects": schema.SetAttribute{
+						Description: "The set of accepted Subject values of the associated GCP IAP JWT. Used only for cases where multiple Subjects can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"audience": schema.StringAttribute{
+						Description: "The Audience (`aud` claim) of the GCP IAP JWT.",
+						Optional:    true,
+					},
+					"audiences": schema.SetAttribute{
+						Description: "The set of accepted Audience values of the associated GCP IAP JWT. Used only for cases where multiple Audiences can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+						},
+					},
+					"email": schema.StringAttribute{
+						Description: "The Email (`email` claim) of the GCP IAP JWT.",
+						Optional:    true,
+						Validators: []validator.String{
+							validators.EmailValidation(),
+						},
+					},
+					"emails": schema.SetAttribute{
+						Description: "The set of accepted Email values of the associated GCP IAP JWT. Used only for cases where multiple Emails can be matched.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(2),
+							setvalidator.ValueStringsAre(stringvalidator.LengthAtLeast(1)),
+							setvalidator.ValueStringsAre(validators.EmailValidation()),
+						},
+					},
+					"custom_claims": schema.SetAttribute{
+						Description: "The set of accepted Custom Claim values of the associated GCP IAP JWT.",
+						ElementType: types.ObjectType{
+							AttrTypes: map[string]attr.Type{
+								"claim_key":   types.StringType,
+								"claim_value": types.StringType,
+							},
+						},
+						Optional: true,
+					},
+				},
+			},
 			"github_action": schema.SingleNestedAttribute{
 				Description: "GitHub Action type Trust Provider configuration.",
 				Optional:    true,
@@ -867,6 +939,7 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("aws_metadata"),
 			path.MatchRoot("azure_metadata"),
 			path.MatchRoot("gcp_identity"),
+			path.MatchRoot("gcp_iap_jwt"),
 			path.MatchRoot("github_action"),
 			path.MatchRoot("gitlab_job"),
 			path.MatchRoot("kerberos"),
@@ -1022,7 +1095,6 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("oidc_id_token").AtName("audience"),
 			path.MatchRoot("oidc_id_token").AtName("audiences"),
 		),
-		// Ensure we don't have conflicting single and multiple match rule configurations (AWS ALB JWT)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("aws_alb_jwt").AtName("issuer"),
 			path.MatchRoot("aws_alb_jwt").AtName("issuers"),
@@ -1038,6 +1110,22 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("aws_alb_jwt").AtName("email"),
 			path.MatchRoot("aws_alb_jwt").AtName("emails"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("issuer"),
+			path.MatchRoot("gcp_iap_jwt").AtName("issuers"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("subject"),
+			path.MatchRoot("gcp_iap_jwt").AtName("subjects"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("audience"),
+			path.MatchRoot("gcp_iap_jwt").AtName("audiences"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("gcp_iap_jwt").AtName("email"),
+			path.MatchRoot("gcp_iap_jwt").AtName("emails"),
 		),
 	}
 }
@@ -1322,6 +1410,9 @@ func convertTrustProviderModelToDTO(
 	}
 	if model.AwsAlbJwt != nil {
 		convertAwsAlbJwtTpModelToDTO(model, &trust)
+	}
+	if model.GcpIapJwt != nil {
+		convertGcpIapJwtTpModelToDTO(model, &trust)
 	}
 	if model.CertificateSignedAttestation != nil {
 		trust.Provider = "CertificateSignedAttestation"
@@ -1901,6 +1992,69 @@ func convertAwsAlbJwtTpModelToDTO(
 	}
 }
 
+func convertGcpIapJwtTpModelToDTO(
+	model models.TrustProviderResourceModel,
+	dto *aembit.TrustProviderDTO,
+) {
+	dto.Provider = "GcpIapJwt"
+
+	dto.MatchRules = make([]aembit.TrustProviderMatchRuleDTO, 0)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Issuer,
+		"GcpIapJwtIssuer",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Issuers,
+		"GcpIapJwtIssuer",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Subject,
+		"GcpIapJwtSubject",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Subjects,
+		"GcpIapJwtSubject",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Audience,
+		"GcpIapJwtAudience",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.Audiences,
+		"GcpIapJwtAudience",
+	)
+	dto.MatchRules = appendMatchRuleIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.EMail,
+		"Email",
+		types.StringNull(),
+	)
+	dto.MatchRules = appendMatchRulesIfExists(
+		dto.MatchRules,
+		model.GcpIapJwt.EMails,
+		"Email",
+	)
+	if len(model.GcpIapJwt.CustomClaims) > 0 {
+		for _, value := range model.GcpIapJwt.CustomClaims {
+			dto.MatchRules = appendMatchRuleIfExists(
+				dto.MatchRules,
+				value.ClaimValue,
+				"GcpIapJwtCustom",
+				value.ClaimKey,
+			)
+		}
+	}
+}
+
 func convertJWKSModelToDto(jwksJson string, dto *aembit.TrustProviderDTO) error {
 	if jwksJson == "" {
 		return nil
@@ -2012,6 +2166,8 @@ func convertTrustProviderDTOToModel(
 		model.AzureMetadata = convertAzureMetadataDTOToModel(dto)
 	case "GcpIdentityToken":
 		model.GcpIdentity = convertGcpIdentityDTOToModel(dto)
+	case "GcpIapJwt":
+		model.GcpIapJwt = convertGcpIapJwtTpDTOToModel(dto)
 	case "GitHubIdentityToken":
 		model.GitHubAction = convertGitHubActionDTOToModel(dto, tenant, stackDomain)
 	case "GitLabIdentityToken":
@@ -2037,6 +2193,8 @@ func convertTrustProviderDTOToModel(
 		switch dto.Provider {
 		case "GcpIdentityToken":
 			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gcp_idtoken:%s", stack, tenant, dto.ExternalID))
+		case "GcpIapJwt":
+			model.ClientID = types.StringValue(fmt.Sprintf("aembit:%s:%s:identity:gcp_iap_jwt:%s", stack, tenant, dto.ExternalID))
 		case "GitHubIdentityToken":
 			if model.GitHubAction != nil {
 				model.ClientID = model.GitHubAction.OIDCClientID
@@ -2329,6 +2487,43 @@ func convertAwsAlbJwtTpDTOToModel(
 		for _, rule := range dto.MatchRules {
 			if rule.Attribute == "AwsAlbJwtCustom" {
 				customClaims = append(customClaims, models.TrustProviderAwsAlbJwtCustomClaimModel{
+					ClaimKey:   types.StringValue(rule.Key),
+					ClaimValue: types.StringValue(rule.Value),
+				})
+			}
+		}
+		model.CustomClaims = customClaims
+	}
+	return model
+}
+
+func convertGcpIapJwtTpDTOToModel(
+	dto aembit.TrustProviderDTO,
+) *models.TrustProviderGcpIapJwtModel {
+	model := &models.TrustProviderGcpIapJwtModel{
+		Issuer:   types.StringNull(),
+		Subject:  types.StringNull(),
+		Audience: types.StringNull(),
+		EMail:    types.StringNull(),
+	}
+
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtIssuer")) {
+		model.Issuer, model.Issuers = extractMatchRules(dto.MatchRules, "GcpIapJwtIssuer")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtSubject")) {
+		model.Subject, model.Subjects = extractMatchRules(dto.MatchRules, "GcpIapJwtSubject")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtAudience")) {
+		model.Audience, model.Audiences = extractMatchRules(dto.MatchRules, "GcpIapJwtAudience")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("Email")) {
+		model.EMail, model.EMails = extractMatchRules(dto.MatchRules, "Email")
+	}
+	if slices.ContainsFunc(dto.MatchRules, matchRuleAttributeFunc("GcpIapJwtCustom")) {
+		var customClaims []models.TrustProviderGcpIapJwtCustomClaimModel
+		for _, rule := range dto.MatchRules {
+			if rule.Attribute == "GcpIapJwtCustom" {
+				customClaims = append(customClaims, models.TrustProviderGcpIapJwtCustomClaimModel{
 					ClaimKey:   types.StringValue(rule.Key),
 					ClaimValue: types.StringValue(rule.Value),
 				})

@@ -39,6 +39,7 @@ Read-Only:
 - `azure_metadata` (Attributes) Azure Metadata type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--azure_metadata))
 - `client_id` (String) Edge SDK Client ID for the Trust Provider.
 - `description` (String) User-provided description of the trust provider.
+- `gcp_iap_jwt` (Attributes) GCP Identity-Aware Proxy JWT type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gcp_iap_jwt))
 - `gcp_identity` (Attributes) GCP Identity type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gcp_identity))
 - `github_action` (Attributes) GitHub Action type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--github_action))
 - `gitlab_job` (Attributes) GitLab Job type Trust Provider configuration. (see [below for nested schema](#nestedatt--trust_providers--gitlab_job))
@@ -134,6 +135,31 @@ Read-Only:
 - `subscription_ids` (Set of String) The set of accepted Azure Subscription IDs that are hosting the Client Workloads.
 - `vm_id` (String)
 - `vm_ids` (Set of String) The set of accepted Azure VM IDs that are hosting the Client Workloads.
+
+
+<a id="nestedatt--trust_providers--gcp_iap_jwt"></a>
+### Nested Schema for `trust_providers.gcp_iap_jwt`
+
+Read-Only:
+
+- `audience` (String) The Audience (`aud` claim) of the GCP IAP JWT.
+- `audiences` (Set of String) The set of accepted Audience values of the associated GCP IAP JWT.
+- `custom_claims` (Set of Object) The set of accepted Custom Claim values of the associated GCP IAP JWT. (see [below for nested schema](#nestedatt--trust_providers--gcp_iap_jwt--custom_claims))
+- `email` (String) The Email (`email` claim) of the GCP IAP JWT.
+- `emails` (Set of String) The set of accepted Email values of the associated GCP IAP JWT.
+- `issuer` (String) The Issuer (`iss` claim) of the GCP IAP JWT.
+- `issuers` (Set of String) The set of accepted Issuer values of the associated GCP IAP JWT.
+- `subject` (String) The Subject (`sub` claim) of the GCP IAP JWT.
+- `subjects` (Set of String) The set of accepted Subject values of the associated GCP IAP JWT.
+
+<a id="nestedatt--trust_providers--gcp_iap_jwt--custom_claims"></a>
+### Nested Schema for `trust_providers.gcp_iap_jwt.custom_claims`
+
+Read-Only:
+
+- `claim_key` (String)
+- `claim_value` (String)
+
 
 
 <a id="nestedatt--trust_providers--gcp_identity"></a>
