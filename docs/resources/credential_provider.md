@@ -189,7 +189,7 @@ This attribute was previously deprecated in favor of `lifetime_in_hours`.s
 
 Required:
 
-- `lifetime` (Number) Lifetime of the Credential Provider.
+- `lifetime` (Number) Lifetime (in seconds) of the Credential Provider.
 - `role_id` (String) Aembit Role ID of the Credential Provider.
 
 Optional:
