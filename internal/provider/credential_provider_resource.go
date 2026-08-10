@@ -130,7 +130,7 @@ func (r *credentialProviderResource) Schema(
 						Required:    true,
 					},
 					"lifetime": schema.Int64Attribute{
-						Description: "Lifetime of the Credential Provider.",
+						Description: "Lifetime (in seconds) of the Credential Provider.",
 						Required:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(300, 43200),
