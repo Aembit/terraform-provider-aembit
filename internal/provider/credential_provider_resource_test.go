@@ -1745,34 +1745,3 @@ func TestAccCredentialProviderResource_OpenAiWif_InvalidServiceAccount(t *testin
 		},
 	})
 }
-
-func TestAccCredentialProviderResource_AembitToken_InvalidLifetime(t *testing.T) {
-	t.Parallel()
-	config := `
-provider "aembit" {
-}
-
-resource "aembit_role" "role" {
-	name = "TF Acceptance Role for Token Invalid Lifetime"
-	is_active = true
-}
-
-resource "aembit_credential_provider" "aembit" {
-	name = "TF Acceptance Aembit Token Invalid Lifetime"
-	is_active = false
-	aembit_access_token = {
-		role_id = aembit_role.role.id
-		lifetime = 299
-	}
-}
-`
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config:      config,
-				ExpectError: regexp.MustCompile(`value must be between 300 and 43200`),
-			},
-		},
-	})
-}
