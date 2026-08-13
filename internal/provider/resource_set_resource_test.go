@@ -157,3 +157,40 @@ func TestAccResourceSetPolicy(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceSetNoRoles(t *testing.T) {
+	t.Parallel()
+	config, err := os.ReadFile(
+		"../../tests/resource_set/TestAccResourceSetNoRoles.tf",
+	)
+	if err != nil {
+		t.Fatalf("failed to read test config file: %v", err)
+	}
+	resourceName := "aembit_resource_set.no_roles"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: string(config),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"name",
+						"TF Acceptance ResourceSet No Roles",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"roles.#",
+						"2",
+					),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

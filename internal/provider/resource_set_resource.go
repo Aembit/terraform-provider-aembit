@@ -8,11 +8,12 @@ import (
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -88,9 +89,9 @@ func (r *resourceSetResource) Schema(
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
 				},
-				Default: setdefault.StaticValue(
-					types.SetValueMust(types.StringType, []attr.Value{}),
-				),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"standalone_certificate_authority": schema.StringAttribute{
 				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
@@ -119,10 +120,14 @@ func (r *resourceSetResource) Create(
 	}
 
 	// Generate API request body from plan
-	trust := convertResourceSetModelToDTO(ctx, plan, nil)
+	resourceSetDTO, dtoDiags := convertResourceSetModelToDTO(ctx, plan, nil)
+	resp.Diagnostics.Append(dtoDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Create new ResourceSet
-	role, err := r.client.CreateResourceSet(trust, nil)
+	resourceSet, err := r.client.CreateResourceSet(resourceSetDTO, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating ResourceSet",
@@ -132,7 +137,12 @@ func (r *resourceSetResource) Create(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan = convertResourceSetDTOToModel(ctx, *role)
+	var modelDiags diag.Diagnostics
+	plan, modelDiags = convertResourceSetDTOToModel(ctx, *resourceSet)
+	resp.Diagnostics.Append(modelDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -156,8 +166,8 @@ func (r *resourceSetResource) Read(
 		return
 	}
 
-	// Get refreshed trust value from Aembit
-	role, err, notFound := r.client.GetResourceSet(state.ID.ValueString(), nil)
+	// Get refreshed ResourceSet value from Aembit
+	resourceSet, err, notFound := r.client.GetResourceSet(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit ResourceSet",
@@ -171,7 +181,12 @@ func (r *resourceSetResource) Read(
 		return
 	}
 
-	state = convertResourceSetDTOToModel(ctx, role)
+	var modelDiags diag.Diagnostics
+	state, modelDiags = convertResourceSetDTOToModel(ctx, resourceSet)
+	resp.Diagnostics.Append(modelDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -207,10 +222,14 @@ func (r *resourceSetResource) Update(
 	}
 
 	// Generate API request body from plan
-	trust := convertResourceSetModelToDTO(ctx, plan, &externalID)
+	resourceSetDTO, dtoDiags := convertResourceSetModelToDTO(ctx, plan, &externalID)
+	resp.Diagnostics.Append(dtoDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Update ResourceSet
-	role, err := r.client.UpdateResourceSet(trust, nil)
+	resourceSet, err := r.client.UpdateResourceSet(resourceSetDTO, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating ResourceSet",
@@ -220,7 +239,12 @@ func (r *resourceSetResource) Update(
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	state = convertResourceSetDTOToModel(ctx, *role)
+	var modelDiags diag.Diagnostics
+	state, modelDiags = convertResourceSetDTOToModel(ctx, *resourceSet)
+	resp.Diagnostics.Append(modelDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -267,10 +291,11 @@ func (r *resourceSetResource) ImportState(
 
 // Model to DTO conversion methods.
 func convertResourceSetModelToDTO(
-	_ context.Context,
+	ctx context.Context,
 	model models.ResourceSetResourceModel,
 	externalID *string,
-) aembit.ResourceSetDTO {
+) (aembit.ResourceSetDTO, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var dto aembit.ResourceSetDTO
 	dto.EntityDTO = aembit.EntityDTO{
 		Name:        model.Name.ValueString(),
@@ -281,23 +306,21 @@ func convertResourceSetModelToDTO(
 		dto.ExternalID = *externalID
 	}
 
-	dto.Roles = make([]string, len(model.Roles))
-	if len(model.Roles) > 0 {
-		for i, role := range model.Roles {
-			dto.Roles[i] = role.ValueString()
-		}
+	if !model.Roles.IsNull() && !model.Roles.IsUnknown() {
+		diags.Append(model.Roles.ElementsAs(ctx, &dto.Roles, false)...)
 	}
 
 	dto.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
 
-	return dto
+	return dto, diags
 }
 
 // DTO to Model conversion methods.
 func convertResourceSetDTOToModel(
-	_ context.Context,
+	ctx context.Context,
 	dto aembit.ResourceSetDTO,
-) models.ResourceSetResourceModel {
+) (models.ResourceSetResourceModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var model models.ResourceSetResourceModel
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
@@ -309,12 +332,9 @@ func convertResourceSetDTOToModel(
 		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 	}
 
-	model.Roles = make([]types.String, len(dto.Roles))
-	if len(dto.Roles) > 0 {
-		for i, role := range dto.Roles {
-			model.Roles[i] = types.StringValue(role)
-		}
-	}
+	rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, dto.Roles)
+	diags.Append(setDiags...)
+	model.Roles = rolesSet
 
-	return model
+	return model, diags
 }
