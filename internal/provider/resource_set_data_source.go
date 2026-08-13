@@ -6,6 +6,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
 )
@@ -105,7 +106,12 @@ func (d *resourceSetDataSource) Read(
 	}
 
 	// Map response body to model
-	state = convertResourceSetDTOToModel(ctx, resourceSet)
+	var modelDiags diag.Diagnostics
+	state, modelDiags = convertResourceSetDTOToModel(ctx, resourceSet)
+	resp.Diagnostics.Append(modelDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Set state
 	diags = resp.State.Set(ctx, &state)

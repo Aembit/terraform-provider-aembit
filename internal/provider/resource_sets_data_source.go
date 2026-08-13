@@ -6,6 +6,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-aembit/internal/provider/models"
 )
@@ -110,7 +111,12 @@ func (d *resourceSetsDataSource) Read(
 	}
 
 	// Map response body to model
-	state = convertResourceSetsDTOToModel(ctx, resourceSets)
+	var modelDiags diag.Diagnostics
+	state, modelDiags = convertResourceSetsDTOToModel(ctx, resourceSets)
+	resp.Diagnostics.Append(modelDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Set state
 	diags = resp.State.Set(ctx, &state)
@@ -124,13 +130,16 @@ func (d *resourceSetsDataSource) Read(
 func convertResourceSetsDTOToModel(
 	ctx context.Context,
 	dto []aembit.ResourceSetDTO,
-) models.ResourceSetsDataModel {
+) (models.ResourceSetsDataModel, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	model := models.ResourceSetsDataModel{
 		ResourceSets: make([]models.ResourceSetResourceModel, len(dto)),
 	}
 	for index, resourceSet := range dto {
-		model.ResourceSets[index] = convertResourceSetDTOToModel(ctx, resourceSet)
+		itemModel, itemDiags := convertResourceSetDTOToModel(ctx, resourceSet)
+		diags.Append(itemDiags...)
+		model.ResourceSets[index] = itemModel
 	}
 
-	return model
+	return model, diags
 }
