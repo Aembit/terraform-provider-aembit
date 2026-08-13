@@ -8,11 +8,11 @@ import (
 
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -88,9 +88,9 @@ func (r *resourceSetResource) Schema(
 				Validators: []validator.Set{
 					setvalidator.ValueStringsAre(validators.UUIDRegexValidation()),
 				},
-				Default: setdefault.StaticValue(
-					types.SetValueMust(types.StringType, []attr.Value{}),
-				),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"standalone_certificate_authority": schema.StringAttribute{
 				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
@@ -267,7 +267,7 @@ func (r *resourceSetResource) ImportState(
 
 // Model to DTO conversion methods.
 func convertResourceSetModelToDTO(
-	_ context.Context,
+	ctx context.Context,
 	model models.ResourceSetResourceModel,
 	externalID *string,
 ) aembit.ResourceSetDTO {
@@ -281,11 +281,8 @@ func convertResourceSetModelToDTO(
 		dto.ExternalID = *externalID
 	}
 
-	dto.Roles = make([]string, len(model.Roles))
-	if len(model.Roles) > 0 {
-		for i, role := range model.Roles {
-			dto.Roles[i] = role.ValueString()
-		}
+	if !model.Roles.IsNull() && !model.Roles.IsUnknown() {
+		_ = model.Roles.ElementsAs(ctx, &dto.Roles, false)
 	}
 
 	dto.StandaloneCertificateAuthority = model.StandaloneCertificateAuthority.ValueString()
@@ -295,7 +292,7 @@ func convertResourceSetModelToDTO(
 
 // DTO to Model conversion methods.
 func convertResourceSetDTOToModel(
-	_ context.Context,
+	ctx context.Context,
 	dto aembit.ResourceSetDTO,
 ) models.ResourceSetResourceModel {
 	var model models.ResourceSetResourceModel
@@ -309,12 +306,8 @@ func convertResourceSetDTOToModel(
 		model.StandaloneCertificateAuthority = types.StringValue(dto.StandaloneCertificateAuthority)
 	}
 
-	model.Roles = make([]types.String, len(dto.Roles))
-	if len(dto.Roles) > 0 {
-		for i, role := range dto.Roles {
-			model.Roles[i] = types.StringValue(role)
-		}
-	}
+	rolesSet, _ := types.SetValueFrom(ctx, types.StringType, dto.Roles)
+	model.Roles = rolesSet
 
 	return model
 }

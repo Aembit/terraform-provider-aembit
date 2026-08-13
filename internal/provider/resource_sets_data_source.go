@@ -122,25 +122,14 @@ func (d *resourceSetsDataSource) Read(
 
 // DTO to Model conversion methods.
 func convertResourceSetsDTOToModel(
-	_ context.Context,
+	ctx context.Context,
 	dto []aembit.ResourceSetDTO,
 ) models.ResourceSetsDataModel {
 	model := models.ResourceSetsDataModel{
 		ResourceSets: make([]models.ResourceSetResourceModel, len(dto)),
 	}
 	for index, resourceSet := range dto {
-		model.ResourceSets[index] = models.ResourceSetResourceModel{
-			ID:          types.StringValue(resourceSet.ExternalID),
-			Name:        types.StringValue(resourceSet.Name),
-			Description: types.StringValue(resourceSet.Description),
-			Roles:       make([]types.String, len(resourceSet.Roles)),
-		}
-		model.ResourceSets[index].Roles = make([]types.String, len(resourceSet.Roles))
-		if len(resourceSet.Roles) > 0 {
-			for i, role := range resourceSet.Roles {
-				model.ResourceSets[index].Roles[i] = types.StringValue(role)
-			}
-		}
+		model.ResourceSets[index] = convertResourceSetDTOToModel(ctx, resourceSet)
 	}
 
 	return model
