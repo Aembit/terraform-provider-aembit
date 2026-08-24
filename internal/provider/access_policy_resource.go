@@ -206,32 +206,26 @@ func (r *accessPolicyResource) Schema(
 						"header_name": schema.StringAttribute{
 							Description: "Name of the header for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 						"header_value": schema.StringAttribute{
 							Description: "Value of the header for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 						"httpbody_field_path": schema.StringAttribute{
 							Description: "Field path in the HTTP body for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 						"httpbody_field_value": schema.StringAttribute{
 							Description: "Field value in the HTTP body for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 						"access_key_id": schema.StringAttribute{
 							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
-							Computed:    true,
 						},
 					},
 				},
@@ -609,32 +603,13 @@ func convertAccessPolicyDTOToModel(
 						credentialProvider.CredentialProviderId,
 					),
 					MappingType:        types.StringValue(credentialProvider.MappingType),
-					AccountName:        types.StringValue(""),
-					AccessKeyId:        types.StringValue(""),
-					HeaderName:         types.StringValue(""),
-					HeaderValue:        types.StringValue(""),
-					HttpbodyFieldPath:  types.StringValue(""),
-					HttpbodyFieldValue: types.StringValue(""),
+					AccountName:        stringOrNull(credentialProvider.AccountName),
+					AccessKeyId:        stringOrNull(credentialProvider.AccessKeyId),
+					HeaderName:         stringOrNull(credentialProvider.HeaderName),
+					HeaderValue:        stringOrNull(credentialProvider.HeaderValue),
+					HttpbodyFieldPath:  stringOrNull(credentialProvider.HttpbodyFieldPath),
+					HttpbodyFieldValue: stringOrNull(credentialProvider.HttpbodyFieldValue),
 				}
-
-				model.CredentialProviders[i].AccountName = types.StringValue(
-					credentialProvider.AccountName,
-				)
-				model.CredentialProviders[i].AccessKeyId = types.StringValue(
-					credentialProvider.AccessKeyId,
-				)
-				model.CredentialProviders[i].HeaderName = types.StringValue(
-					credentialProvider.HeaderName,
-				)
-				model.CredentialProviders[i].HeaderValue = types.StringValue(
-					credentialProvider.HeaderValue,
-				)
-				model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(
-					credentialProvider.HttpbodyFieldPath,
-				)
-				model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(
-					credentialProvider.HttpbodyFieldValue,
-				)
 			}
 		}
 	}
@@ -708,12 +683,12 @@ func convertAccessPolicyExternalDTOToModel(
 				model.CredentialProviders[i] = &models.PolicyCredentialMappingModel{
 					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
 					MappingType:          types.StringValue(relatedMapping.MappingType),
-					AccountName:          types.StringValue(relatedMapping.AccountName),
-					AccessKeyId:          types.StringValue(relatedMapping.AccessKeyId),
-					HeaderName:           types.StringValue(relatedMapping.HeaderName),
-					HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
-					HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
-					HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
+					AccountName:          stringOrNull(relatedMapping.AccountName),
+					AccessKeyId:          stringOrNull(relatedMapping.AccessKeyId),
+					HeaderName:           stringOrNull(relatedMapping.HeaderName),
+					HeaderValue:          stringOrNull(relatedMapping.HeaderValue),
+					HttpbodyFieldPath:    stringOrNull(relatedMapping.HttpbodyFieldPath),
+					HttpbodyFieldValue:   stringOrNull(relatedMapping.HttpbodyFieldValue),
 				}
 			}
 		}
@@ -767,4 +742,11 @@ func sortCredentialProviders(
 
 	// preserve the incoming order
 	return credentialProviders
+}
+
+func stringOrNull(val string) types.String {
+	if val == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(val)
 }
