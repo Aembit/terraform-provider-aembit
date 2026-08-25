@@ -36,6 +36,7 @@ Read-Only:
 - `description` (String) Description for the Content Security resource.
 - `id` (String) Unique identifier of the Content Security resource.
 - `is_active` (Boolean) Status of the Content Security resource (`active` or `inactive`).
+- `mcp_tool_access_control` (Attributes) MCP Tool Access Control configuration settings. (see [below for nested schema](#nestedatt--content_securities--mcp_tool_access_control))
 - `name` (String) Name for the Content Security resource.
 - `resource_set_id` (String) ResourceSet unique identifier of the Content Security resource.
 - `tags` (Map of String) Tags are key-value pairs.
@@ -51,3 +52,13 @@ Read-Only:
 - `fail_open` (Boolean) Indicates whether requests should be allowed (fail-open) or blocked (fail-closed) if the CrowdStrike Falcon AIDR service is unreachable.
 - `max_retries` (Number) The maximum number of retry attempts for requests to the CrowdStrike Falcon AIDR service.
 - `timeout_ms` (Number) The connection timeout in milliseconds for requests sent to the CrowdStrike Falcon AIDR service.
+
+
+<a id="nestedatt--content_securities--mcp_tool_access_control"></a>
+### Nested Schema for `content_securities.mcp_tool_access_control`
+
+Read-Only:
+
+- `invocation` (String) The default invocation behavior for rules.
+- `mode` (String) The visibility mode for the tools.
+- `visibility` (String) The default visibility behavior for rules.

@@ -21,6 +21,11 @@ var (
 	_ resource.ResourceWithImportState = &mcpToolAccessRuleResource{}
 )
 
+const (
+	errFetchingContentSecurity = "Error fetching Content Security"
+	errCouldNotReadCS          = "Could not read Aembit Content Security resource "
+)
+
 // NewMcpToolAccessRuleResource is a helper function to simplify the provider implementation.
 func NewMcpToolAccessRuleResource() resource.Resource {
 	return &mcpToolAccessRuleResource{}
@@ -107,8 +112,8 @@ func (r *mcpToolAccessRuleResource) Create(
 	cs, err, notFound := r.client.GetContentSecurity(plan.ContentSecurityID.ValueString(), nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error fetching Content Security",
-			"Could not read Aembit Content Security resource "+plan.ContentSecurityID.ValueString()+": "+err.Error(),
+			errFetchingContentSecurity,
+			errCouldNotReadCS+plan.ContentSecurityID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -168,7 +173,7 @@ func (r *mcpToolAccessRuleResource) Read(
 	if err != nil {
 		resp.Diagnostics.AddWarning(
 			"Error reading Aembit Content Security",
-			"Could not read Aembit Content Security resource "+state.ContentSecurityID.ValueString()+": "+err.Error(),
+			errCouldNotReadCS+state.ContentSecurityID.ValueString()+": "+err.Error(),
 		)
 		if notFound {
 			resp.State.RemoveResource(ctx)
@@ -233,8 +238,8 @@ func (r *mcpToolAccessRuleResource) Update(
 	cs, err, notFound := r.client.GetContentSecurity(plan.ContentSecurityID.ValueString(), nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error fetching Content Security",
-			"Could not read Aembit Content Security resource "+plan.ContentSecurityID.ValueString()+": "+err.Error(),
+			errFetchingContentSecurity,
+			errCouldNotReadCS+plan.ContentSecurityID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -292,8 +297,8 @@ func (r *mcpToolAccessRuleResource) Delete(
 	cs, err, notFound := r.client.GetContentSecurity(state.ContentSecurityID.ValueString(), nil, nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error fetching Content Security",
-			"Could not read Aembit Content Security resource "+state.ContentSecurityID.ValueString()+": "+err.Error(),
+			errFetchingContentSecurity,
+			errCouldNotReadCS+state.ContentSecurityID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
