@@ -31,6 +31,10 @@ var (
 	_ resource.ResourceWithValidateConfig = &contentSecurityResource{}
 )
 
+const (
+	errInvalidConfiguration = "Invalid Configuration"
+)
+
 // NewContentSecurityResource is a helper function to simplify the provider implementation.
 func NewContentSecurityResource() resource.Resource {
 	return &contentSecurityResource{}
@@ -225,13 +229,13 @@ func (r *contentSecurityResource) ValidateConfig(
 	if csType == "CrowdStrikeAIDR" {
 		if config.CrowdStrikeFalconAIDR == nil {
 			resp.Diagnostics.AddError(
-				"Invalid Configuration",
+				errInvalidConfiguration,
 				"The 'crowdstrike_falcon_aidr' block must be configured when 'type' is set to 'CrowdStrikeAIDR'.",
 			)
 		}
 		if config.McpToolAccessControl != nil {
 			resp.Diagnostics.AddError(
-				"Invalid Configuration",
+				errInvalidConfiguration,
 				"The 'mcp_tool_access_control' block cannot be configured when 'type' is set to 'CrowdStrikeAIDR'.",
 			)
 		}
@@ -240,13 +244,13 @@ func (r *contentSecurityResource) ValidateConfig(
 	if csType == "McpToolAccessControl" {
 		if config.McpToolAccessControl == nil {
 			resp.Diagnostics.AddError(
-				"Invalid Configuration",
+				errInvalidConfiguration,
 				"The 'mcp_tool_access_control' block must be configured when 'type' is set to 'McpToolAccessControl'.",
 			)
 		}
 		if config.CrowdStrikeFalconAIDR != nil {
 			resp.Diagnostics.AddError(
-				"Invalid Configuration",
+				errInvalidConfiguration,
 				"The 'crowdstrike_falcon_aidr' block cannot be configured when 'type' is set to 'McpToolAccessControl'.",
 			)
 		}
