@@ -17,14 +17,15 @@ Manages a Content Security resource.
 
 ### Required
 
-- `crowdstrike_falcon_aidr` (Attributes) CrowdStrike Falcon AIDR configuration settings. (see [below for nested schema](#nestedatt--crowdstrike_falcon_aidr))
 - `is_active` (Boolean) Status of the Content Security resource (`active` or `inactive`).
 - `name` (String) Name for the Content Security resource.
-- `type` (String) Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR`.
+- `type` (String) Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR` or `McpToolAccessControl`.
 
 ### Optional
 
+- `crowdstrike_falcon_aidr` (Attributes) CrowdStrike Falcon AIDR configuration settings. (see [below for nested schema](#nestedatt--crowdstrike_falcon_aidr))
 - `description` (String) Description for the Content Security resource.
+- `mcp_tool_access_control` (Attributes) MCP Tool Access Control configuration settings. (see [below for nested schema](#nestedatt--mcp_tool_access_control))
 - `resource_set_id` (String) ResourceSet unique identifier of the Content Security resource.
 - `tags` (Map of String) Tags are key-value pairs.
 - `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
@@ -46,3 +47,13 @@ Optional:
 - `fail_open` (Boolean) Indicates whether requests should be allowed (fail-open) or blocked (fail-closed) if the CrowdStrike Falcon AIDR service is unreachable.
 - `max_retries` (Number) The maximum number of retry attempts for requests to the CrowdStrike Falcon AIDR service.
 - `timeout_ms` (Number) The connection timeout in milliseconds for requests sent to the CrowdStrike Falcon AIDR service.
+
+
+<a id="nestedatt--mcp_tool_access_control"></a>
+### Nested Schema for `mcp_tool_access_control`
+
+Required:
+
+- `invocation` (String) The default invocation behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).
+- `mode` (String) The visibility mode for the tools (e.g., Allow, Block).
+- `visibility` (String) The default visibility behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).
