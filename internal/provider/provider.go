@@ -384,6 +384,7 @@ func (p *aembitProvider) Resources(_ context.Context) []func() resource.Resource
 		NewIdentityProviderResource,
 		NewTrustProviderSecretResource,
 		NewContentSecurityResource,
+		NewMcpToolAccessRuleResource,
 	}
 }
 

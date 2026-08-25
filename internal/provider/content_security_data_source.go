@@ -117,6 +117,24 @@ func (d *contentSecuritiesDataSource) Schema(
 								},
 							},
 						},
+						"mcp_tool_access_control": schema.SingleNestedAttribute{
+							Description: "MCP Tool Access Control configuration settings.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"mode": schema.StringAttribute{
+									Description: "The visibility mode for the tools.",
+									Computed:    true,
+								},
+								"visibility": schema.StringAttribute{
+									Description: "The default visibility behavior for rules.",
+									Computed:    true,
+								},
+								"invocation": schema.StringAttribute{
+									Description: "The default invocation behavior for rules.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},

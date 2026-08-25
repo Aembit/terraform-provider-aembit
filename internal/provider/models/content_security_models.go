@@ -15,6 +15,7 @@ type ContentSecurityResourceModel struct {
 	TagsAll               types.Map                                  `tfsdk:"tags_all"`
 	Type                  types.String                               `tfsdk:"type"`
 	CrowdStrikeFalconAIDR *CrowdStrikeFalconAIDRContentSecurityModel `tfsdk:"crowdstrike_falcon_aidr"`
+	McpToolAccessControl  *McpToolAccessControlContentSecurityModel  `tfsdk:"mcp_tool_access_control"`
 }
 
 type CrowdStrikeFalconAIDRContentSecurityModel struct {
@@ -23,6 +24,12 @@ type CrowdStrikeFalconAIDRContentSecurityModel struct {
 	FailOpen       types.Bool   `tfsdk:"fail_open"`
 	TimeoutMs      types.Int64  `tfsdk:"timeout_ms"`
 	MaxRetries     types.Int64  `tfsdk:"max_retries"`
+}
+
+type McpToolAccessControlContentSecurityModel struct {
+	Mode       types.String `tfsdk:"mode"`
+	Visibility types.String `tfsdk:"visibility"`
+	Invocation types.String `tfsdk:"invocation"`
 }
 
 // ContentSecuritiesDataSourceModel maps the datasource schema.

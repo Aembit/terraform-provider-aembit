@@ -106,15 +106,15 @@ func (r *contentSecurityResource) Schema(
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
 			"type": schema.StringAttribute{
-				Description: "Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR`.",
+				Description: "Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR` or `McpToolAccessControl`.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("CrowdStrikeAIDR"),
+					stringvalidator.OneOf("CrowdStrikeAIDR", "McpToolAccessControl"),
 				},
 			},
 			"crowdstrike_falcon_aidr": schema.SingleNestedAttribute{
 				Description: "CrowdStrike Falcon AIDR configuration settings.",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"encrypted_token": schema.StringAttribute{
 						Description: "The encrypted API token or client secret used to authenticate with the CrowdStrike Falcon AIDR service.",
@@ -154,6 +154,33 @@ func (r *contentSecurityResource) Schema(
 					},
 				},
 			},
+			"mcp_tool_access_control": schema.SingleNestedAttribute{
+				Description: "MCP Tool Access Control configuration settings.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"mode": schema.StringAttribute{
+						Description: "The visibility mode for the tools (e.g., Allow, Block).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("Allow", "Block"),
+						},
+					},
+					"visibility": schema.StringAttribute{
+						Description: "The default visibility behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),
+						},
+					},
+					"invocation": schema.StringAttribute{
+						Description: "The default invocation behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -171,6 +198,7 @@ func (r *contentSecurityResource) ConfigValidators(_ context.Context) []resource
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("crowdstrike_falcon_aidr"),
+			path.MatchRoot("mcp_tool_access_control"),
 		),
 	}
 }
@@ -393,6 +421,12 @@ func convertContentSecurityModelToDTO(
 		dto.MaxRetries = int(model.CrowdStrikeFalconAIDR.MaxRetries.ValueInt64())
 	}
 
+	if model.McpToolAccessControl != nil {
+		dto.Mode = model.McpToolAccessControl.Mode.ValueString()
+		dto.Visibility = model.McpToolAccessControl.Visibility.ValueString()
+		dto.Invocation = model.McpToolAccessControl.Invocation.ValueString()
+	}
+
 	return dto
 }
 
@@ -423,6 +457,13 @@ func convertContentSecurityDTOToModel(
 		if planModel.CrowdStrikeFalconAIDR != nil {
 			model.CrowdStrikeFalconAIDR.EncryptedToken = planModel.CrowdStrikeFalconAIDR.EncryptedToken
 		}
+	}
+
+	if dto.Type == "McpToolAccessControl" {
+		model.McpToolAccessControl = &models.McpToolAccessControlContentSecurityModel{}
+		model.McpToolAccessControl.Mode = types.StringValue(dto.Mode)
+		model.McpToolAccessControl.Visibility = types.StringValue(dto.Visibility)
+		model.McpToolAccessControl.Invocation = types.StringValue(dto.Invocation)
 	}
 
 	return model
