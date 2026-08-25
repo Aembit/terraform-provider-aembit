@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strings"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -10,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -74,6 +77,9 @@ func (r *mcpToolAccessRuleResource) Schema(
 			"content_security_id": schema.StringAttribute{
 				Description: "Unique identifier of the Content Security.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					validators.UUIDRegexValidation(),
 				},
@@ -175,9 +181,11 @@ func (r *mcpToolAccessRuleResource) Read(
 			"Error reading Aembit Content Security",
 			errCouldNotReadCS+state.ContentSecurityID.ValueString()+": "+err.Error(),
 		)
-		if notFound {
-			resp.State.RemoveResource(ctx)
-		}
+		return
+	}
+	if notFound {
+		// Parent Content Security is gone; rule is deleted by cascade.
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

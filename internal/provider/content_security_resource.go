@@ -24,10 +24,11 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &contentSecurityResource{}
-	_ resource.ResourceWithConfigure   = &contentSecurityResource{}
-	_ resource.ResourceWithImportState = &contentSecurityResource{}
-	_ resource.ResourceWithModifyPlan  = &contentSecurityResource{}
+	_ resource.Resource                   = &contentSecurityResource{}
+	_ resource.ResourceWithConfigure      = &contentSecurityResource{}
+	_ resource.ResourceWithImportState    = &contentSecurityResource{}
+	_ resource.ResourceWithModifyPlan     = &contentSecurityResource{}
+	_ resource.ResourceWithValidateConfig = &contentSecurityResource{}
 )
 
 // NewContentSecurityResource is a helper function to simplify the provider implementation.
@@ -200,6 +201,55 @@ func (r *contentSecurityResource) ConfigValidators(_ context.Context) []resource
 			path.MatchRoot("crowdstrike_falcon_aidr"),
 			path.MatchRoot("mcp_tool_access_control"),
 		),
+	}
+}
+
+func (r *contentSecurityResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config models.ContentSecurityResourceModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if config.Type.IsUnknown() {
+		return
+	}
+
+	csType := config.Type.ValueString()
+
+	if csType == "CrowdStrikeAIDR" {
+		if config.CrowdStrikeFalconAIDR == nil {
+			resp.Diagnostics.AddError(
+				"Invalid Configuration",
+				"The 'crowdstrike_falcon_aidr' block must be configured when 'type' is set to 'CrowdStrikeAIDR'.",
+			)
+		}
+		if config.McpToolAccessControl != nil {
+			resp.Diagnostics.AddError(
+				"Invalid Configuration",
+				"The 'mcp_tool_access_control' block cannot be configured when 'type' is set to 'CrowdStrikeAIDR'.",
+			)
+		}
+	}
+
+	if csType == "McpToolAccessControl" {
+		if config.McpToolAccessControl == nil {
+			resp.Diagnostics.AddError(
+				"Invalid Configuration",
+				"The 'mcp_tool_access_control' block must be configured when 'type' is set to 'McpToolAccessControl'.",
+			)
+		}
+		if config.CrowdStrikeFalconAIDR != nil {
+			resp.Diagnostics.AddError(
+				"Invalid Configuration",
+				"The 'crowdstrike_falcon_aidr' block cannot be configured when 'type' is set to 'McpToolAccessControl'.",
+			)
+		}
 	}
 }
 
