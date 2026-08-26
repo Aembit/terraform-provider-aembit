@@ -2148,11 +2148,11 @@ func convertToOAuthAuthorizationCodeDTO(
 	credential.ClientSecret = model.OAuthAuthorizationCode.ClientSecret.ValueString()
 	credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
 	credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
+	credential.AuthorizationUrl = model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString()
+	credential.IntrospectionUrl = model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString()
+	credential.TokenUrl = model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString()
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
 		OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
-		AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
-		IntrospectionUrl:     model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString(),
-		TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
 		UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
 		IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
 		CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
@@ -2175,14 +2175,14 @@ func convertToMcpUserBasedAccessTokenDTO(
 	credential.ClientSecret = model.McpUserBasedAccessToken.ClientSecret.ValueString()
 	credential.Scope = model.McpUserBasedAccessToken.Scopes.ValueString()
 	credential.CustomParameters = convertCredentialMcpUserBasedAccessTokenCustomParameters(model)
+	credential.McpServerUrl = model.McpUserBasedAccessToken.McpServerUrl.ValueString()
+	credential.AuthorizationUrl = model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString()
+	credential.IntrospectionUrl = model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString()
+	credential.TokenUrl = model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString()
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-		McpServerUrl:     model.McpUserBasedAccessToken.McpServerUrl.ValueString(),
-		AuthorizationUrl: model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString(),
-		IntrospectionUrl: model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString(),
-		TokenUrl:         model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString(),
-		IsPkceRequired:   model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
-		CallBackUrl:      model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
-		Resource:         model.McpUserBasedAccessToken.Resource.ValueString(),
+		IsPkceRequired: model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
+		CallBackUrl:    model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
+		Resource:       model.McpUserBasedAccessToken.Resource.ValueString(),
 	}
 
 	if len(model.ID.ValueString()) > 0 {
@@ -2411,9 +2411,7 @@ func convertToOpenAiWifDTO(
 	credential.Type = "openai-wif"
 	credential.Audience = model.OpenAiWif.Audience.ValueString()
 	credential.ServiceAccountId = model.OpenAiWif.ServiceAccountId.ValueString()
-	credential.CredentialOpenAiWifV2DTO = aembit.CredentialOpenAiWifV2DTO{
-		IdentityProviderId: model.OpenAiWif.IdentityProviderId.ValueString(),
-	}
+	credential.IdentityProviderId = model.OpenAiWif.IdentityProviderId.ValueString()
 }
 
 func convertOpenAiWifV2DTOToModel(
@@ -2433,15 +2431,11 @@ func convertToMcpEmaDTO(
 ) {
 	credential.Type = "mcp-ema-token"
 	credential.Issuer = model.McpEma.Issuer.ValueString()
-	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-		McpServerUrl:     model.McpEma.McpServerUrl.ValueString(),
-		AuthorizationUrl: model.McpEma.AuthorizationUrl.ValueString(),
-		TokenUrl:         model.McpEma.TokenUrl.ValueString(),
-		IntrospectionUrl: model.McpEma.IntrospectionUrl.ValueString(),
-	}
-	credential.CredentialOpenAiWifV2DTO = aembit.CredentialOpenAiWifV2DTO{
-		IdentityProviderId: model.McpEma.IdentityProviderId.ValueString(),
-	}
+	credential.McpServerUrl = model.McpEma.McpServerUrl.ValueString()
+	credential.AuthorizationUrl = model.McpEma.AuthorizationUrl.ValueString()
+	credential.TokenUrl = model.McpEma.TokenUrl.ValueString()
+	credential.IntrospectionUrl = model.McpEma.IntrospectionUrl.ValueString()
+	credential.IdentityProviderId = model.McpEma.IdentityProviderId.ValueString()
 	credential.CredentialMcpEmaV2DTO = aembit.CredentialMcpEmaV2DTO{
 		IsCorporateIdp: model.McpEma.IsCorporateIdp.ValueBool(),
 	}
