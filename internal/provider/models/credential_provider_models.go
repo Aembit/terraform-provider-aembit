@@ -34,6 +34,7 @@ type CredentialProviderResourceModel struct {
 	X509SvidCertificate     *CredentialProviderX509SvidCertificateModel                  `tfsdk:"x509_svid_certificate"`
 	ClaudeWif               *CredentialProviderClaudeWifModel                            `tfsdk:"claude_wif"`
 	OpenAiWif               *CredentialProviderOpenAiWifModel                            `tfsdk:"openai_wif"`
+	McpEma                  *CredentialProviderMcpEmaModel                               `tfsdk:"mcp_ema"`
 }
 
 // credentialProviderDataSourceModel maps the datasource schema.
@@ -75,6 +76,16 @@ type CredentialProviderOpenAiWifModel struct {
 	IdentityProviderId types.String `tfsdk:"identity_provider_id"`
 	ServiceAccountId   types.String `tfsdk:"service_account_id"`
 	Audience           types.String `tfsdk:"audience"`
+}
+
+type CredentialProviderMcpEmaModel struct {
+	Issuer             types.String `tfsdk:"issuer"`
+	McpServerUrl       types.String `tfsdk:"mcp_server_url"`
+	AuthorizationUrl   types.String `tfsdk:"authorization_url"`
+	TokenUrl           types.String `tfsdk:"token_url"`
+	IntrospectionUrl   types.String `tfsdk:"introspection_url"`
+	IsCorporateIdp     types.Bool   `tfsdk:"is_corporate_idp"`
+	IdentityProviderId types.String `tfsdk:"identity_provider_id"`
 }
 
 type CredentialProviderGoogleWorkloadModel struct {

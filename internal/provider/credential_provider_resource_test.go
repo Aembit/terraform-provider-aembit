@@ -27,6 +27,8 @@ const (
 	gitlabManagedAccountResourcePath        = "aembit_credential_provider.gitlab_managed_account"
 	awsSecretManagerResourcePath            = "aembit_credential_provider.aws_sm_value"
 	azureKeyVaultResourcePath               = "aembit_credential_provider.azure_key_vault_value_cp"
+	testCredentialProviderMcpEma            = "aembit_credential_provider.mcp_ema"
+	testIdentityProviderOidcMcpEma          = "aembit_identity_provider.test_idp_oidc"
 )
 
 func testDeleteCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -1742,6 +1744,125 @@ func TestAccCredentialProviderResource_OpenAiWif_InvalidServiceAccount(t *testin
 				Config:      string(createFile),
 				ExpectError: regexp.MustCompile(`must be prefixed with "user-"`),
 			},
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_McpEma(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile("../../tests/credential/mcp-ema/TestAccCredentialProviderResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/credential/mcp-ema/TestAccCredentialProviderResource.tfmod",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: string(createFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Credential set values
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"name",
+						"TF Acceptance MCP EMA",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.issuer",
+						"https://idp.example.com",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.mcp_server_url",
+						"https://mcp.example.com",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.authorization_url",
+						"https://idp.example.com/oauth/authorize",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.token_url",
+						"https://idp.example.com/oauth/token",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.introspection_url",
+						"https://idp.example.com/oauth/introspect",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.is_corporate_idp",
+						"true",
+					),
+					resource.TestCheckResourceAttrPair(
+						testCredentialProviderMcpEma,
+						"mcp_ema.identity_provider_id",
+						testIdentityProviderOidcMcpEma,
+						"id",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCredentialProviderMcpEma, "id"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      testCredentialProviderMcpEma,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: string(modifyFile),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"name",
+						"TF Acceptance MCP EMA - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.issuer",
+						"https://idp-mod.example.com",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.mcp_server_url",
+						"https://mcp-mod.example.com",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.authorization_url",
+						"https://idp-mod.example.com/oauth/authorize",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.token_url",
+						"https://idp-mod.example.com/oauth/token",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.introspection_url",
+						"https://idp-mod.example.com/oauth/introspect",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.is_corporate_idp",
+						"false",
+					),
+					resource.TestCheckResourceAttrPair(
+						testCredentialProviderMcpEma,
+						"mcp_ema.identity_provider_id",
+						testIdentityProviderOidcMcpEma,
+						"id",
+					),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

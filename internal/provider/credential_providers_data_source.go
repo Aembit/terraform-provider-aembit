@@ -775,6 +775,40 @@ func (d *credentialProvidersDataSource) Schema(
 								},
 							},
 						},
+						"mcp_ema": schema.SingleNestedAttribute{
+							Description: "MCP Enterprise-Managed Authorization type Credential Provider configuration.",
+							Computed:    true,
+							Attributes: map[string]schema.Attribute{
+								"issuer": schema.StringAttribute{
+									Description: "OIDC Issuer for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Computed:    true,
+								},
+								"mcp_server_url": schema.StringAttribute{
+									Description: "MCP Server URL.",
+									Computed:    true,
+								},
+								"authorization_url": schema.StringAttribute{
+									Description: "OIDC Authorization URL.",
+									Computed:    true,
+								},
+								"token_url": schema.StringAttribute{
+									Description: "OIDC Token URL.",
+									Computed:    true,
+								},
+								"introspection_url": schema.StringAttribute{
+									Description: "OIDC Introspection URL.",
+									Computed:    true,
+								},
+								"is_corporate_idp": schema.BoolAttribute{
+									Description: "Indicates whether this is a corporate Identity Provider.",
+									Computed:    true,
+								},
+								"identity_provider_id": schema.StringAttribute{
+									Description: "The unique identifier of the Identity Provider.",
+									Computed:    true,
+								},
+							},
+						},
 					},
 				},
 			},

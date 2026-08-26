@@ -47,6 +47,7 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `jwt_svid_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
+- `mcp_ema` (Attributes) MCP Enterprise-Managed Authorization type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--mcp_ema))
 - `mcp_user_based_access_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--mcp_user_based_access_token))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
@@ -211,6 +212,20 @@ Read-Only:
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 - `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--mcp_ema"></a>
+### Nested Schema for `credential_providers.mcp_ema`
+
+Read-Only:
+
+- `authorization_url` (String) OIDC Authorization URL.
+- `identity_provider_id` (String) The unique identifier of the Identity Provider.
+- `introspection_url` (String) OIDC Introspection URL.
+- `is_corporate_idp` (Boolean) Indicates whether this is a corporate Identity Provider.
+- `issuer` (String) OIDC Issuer for the MCP Enterprise-Managed Authorization Credential Provider.
+- `mcp_server_url` (String) MCP Server URL.
+- `token_url` (String) OIDC Token URL.
 
 
 <a id="nestedatt--credential_providers--mcp_user_based_access_token"></a>
