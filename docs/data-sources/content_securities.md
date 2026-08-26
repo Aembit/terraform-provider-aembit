@@ -59,6 +59,6 @@ Read-Only:
 
 Read-Only:
 
-- `invocation` (String) The default invocation behavior for rules.
-- `mode` (String) The visibility mode for the tools.
-- `visibility` (String) The default visibility behavior for rules.
+- `invocation` (String) The tool invocation control mode.
+- `mode` (String) The overall policy enforcement mode for MCP tool access control.
+- `visibility` (String) The tool visibility control mode.

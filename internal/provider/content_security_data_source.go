@@ -122,15 +122,15 @@ func (d *contentSecuritiesDataSource) Schema(
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"mode": schema.StringAttribute{
-									Description: "The visibility mode for the tools.",
+									Description: "The overall policy enforcement mode for MCP tool access control.",
 									Computed:    true,
 								},
 								"visibility": schema.StringAttribute{
-									Description: "The default visibility behavior for rules.",
+									Description: "The tool visibility control mode.",
 									Computed:    true,
 								},
 								"invocation": schema.StringAttribute{
-									Description: "The default invocation behavior for rules.",
+									Description: "The tool invocation control mode.",
 									Computed:    true,
 								},
 							},

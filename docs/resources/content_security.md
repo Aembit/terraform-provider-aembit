@@ -54,6 +54,6 @@ Optional:
 
 Required:
 
-- `invocation` (String) The default invocation behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).
-- `mode` (String) The visibility mode for the tools (e.g., Allow, Block).
-- `visibility` (String) The default visibility behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).
+- `invocation` (String) The tool invocation control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).
+- `mode` (String) The overall policy enforcement mode for MCP tool access control (e.g., Allow, Block).
+- `visibility` (String) The tool visibility control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).

@@ -164,21 +164,21 @@ func (r *contentSecurityResource) Schema(
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"mode": schema.StringAttribute{
-						Description: "The visibility mode for the tools (e.g., Allow, Block).",
+						Description: "The overall policy enforcement mode for MCP tool access control (e.g., Allow, Block).",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("Allow", "Block"),
 						},
 					},
 					"visibility": schema.StringAttribute{
-						Description: "The default visibility behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Description: "The tool visibility control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),
 						},
 					},
 					"invocation": schema.StringAttribute{
-						Description: "The default invocation behavior for rules (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Description: "The tool invocation control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),

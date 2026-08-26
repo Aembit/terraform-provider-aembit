@@ -18,9 +18,9 @@ Manages an MCP Tool Access Rule resource associated with an MCP Tool Access Cont
 ### Required
 
 - `content_security_id` (String) Unique identifier of the Content Security.
-- `is_invocable` (Boolean) Whether the tool is invocable by the agent.
-- `is_visible` (Boolean) Whether the tool is visible to the agent.
-- `tool_name` (String) The name or pattern matching tool name.
+- `is_invocable` (Boolean) Determines if the tool can be executed via the MCP tools/call endpoint.
+- `is_visible` (Boolean) Determines if the tool is discoverable via the MCP tools/list endpoint.
+- `tool_name` (String) The exact name or glob pattern matching the tool name.
 
 ### Read-Only
 

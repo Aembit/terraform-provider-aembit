@@ -84,15 +84,15 @@ func (r *mcpToolAccessRuleResource) Schema(
 				},
 			},
 			"tool_name": schema.StringAttribute{
-				Description: "The name or pattern matching tool name.",
+				Description: "The exact name or glob pattern matching the tool name.",
 				Required:    true,
 			},
 			"is_visible": schema.BoolAttribute{
-				Description: "Whether the tool is visible to the agent.",
+				Description: "Determines if the tool is discoverable via the MCP tools/list endpoint.",
 				Required:    true,
 			},
 			"is_invocable": schema.BoolAttribute{
-				Description: "Whether the tool is invocable by the agent.",
+				Description: "Determines if the tool can be executed via the MCP tools/call endpoint.",
 				Required:    true,
 			},
 		},
