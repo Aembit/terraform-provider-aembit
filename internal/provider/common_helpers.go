@@ -99,3 +99,18 @@ func getResourceSetId(resourceSetId types.String, client *aembit.CloudClient) st
 
 	return rsId
 }
+
+func stringPointerOrNil(s types.String) *string {
+	if s.IsNull() || s.IsUnknown() {
+		return nil
+	}
+	val := s.ValueString()
+	return &val
+}
+
+func stringPointerToTypesString(s *string) types.String {
+	if s == nil {
+		return types.StringNull()
+	}
+	return types.StringValue(*s)
+}

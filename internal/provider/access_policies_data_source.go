@@ -123,32 +123,26 @@ func (d *accessPoliciesDataSource) Schema(
 									"header_name": schema.StringAttribute{
 										Description: "Name of the header for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 									"header_value": schema.StringAttribute{
 										Description: "Value of the header for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 									"httpbody_field_path": schema.StringAttribute{
 										Description: "Field path in the HTTP body for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 									"httpbody_field_value": schema.StringAttribute{
 										Description: "Field value in the HTTP body for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 									"account_name": schema.StringAttribute{
 										Description: "Name of the Snowflake account for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 									"access_key_id": schema.StringAttribute{
 										Description: "Name of the AWS Access Key Id for the credential provider.",
 										Optional:    true,
-										Computed:    true,
 									},
 								},
 							},
