@@ -162,13 +162,16 @@ jobs:
 
           TOKEN=$(python3 -c "
           import hmac, hashlib, base64, json, time, os
-          secret = os.environ['TFPROV_OIDC_TOKEN_SYMMETRIC_KEY'].encode()
+          secret_b64 = os.environ['TFPROV_OIDC_TOKEN_SYMMETRIC_KEY']
+          secret_bytes = base64.b64decode(secret_b64)
+          if len(secret_bytes) < 64:
+              secret_bytes = secret_bytes.ljust(64, b'\x00')
           header = base64.urlsafe_b64encode(json.dumps({'alg':'HS256','typ':'JWT'}).encode()).decode().rstrip('=')
           now = int(time.time())
           payload_data = {'iss':'aembit','sub':'terraform','aud':'terraform','iat':now,'exp':now+3600}
           payload = base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
           msg = f'{header}.{payload}'.encode()
-          sig = base64.urlsafe_b64encode(hmac.new(secret, msg, hashlib.sha256).digest()).decode().rstrip('=')
+          sig = base64.urlsafe_b64encode(hmac.new(secret_bytes, msg, hashlib.sha256).digest()).decode().rstrip('=')
           print(f'{header}.{payload}.{sig}')
           ")
 
