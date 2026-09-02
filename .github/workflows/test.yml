@@ -46,6 +46,7 @@ jobs:
         with:
           repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ inputs.regression && 'main' || '' }}
           submodules: recursive
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         env:
@@ -138,6 +139,7 @@ jobs:
         with:
           repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ inputs.regression && 'main' || '' }}
           submodules: recursive
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         env:
