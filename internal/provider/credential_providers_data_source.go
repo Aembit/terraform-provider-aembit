@@ -787,6 +787,14 @@ func (d *credentialProvidersDataSource) Schema(
 									Description: "MCP Server URL.",
 									Computed:    true,
 								},
+								"client_id": schema.StringAttribute{
+									Description: "Client ID for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Computed:    true,
+								},
+								"scopes": schema.StringAttribute{
+									Description: "Scopes for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Computed:    true,
+								},
 								"authorization_url": schema.StringAttribute{
 									Description: "OIDC Authorization URL.",
 									Computed:    true,

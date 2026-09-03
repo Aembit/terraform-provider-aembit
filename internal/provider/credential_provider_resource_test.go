@@ -1780,6 +1780,16 @@ func TestAccCredentialProviderResource_McpEma(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						testCredentialProviderMcpEma,
+						"mcp_ema.client_id",
+						"test-client-id",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.scopes",
+						"openid profile email",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
 						"mcp_ema.authorization_url",
 						"https://idp.example.com/oauth/authorize",
 					),
@@ -1833,6 +1843,16 @@ func TestAccCredentialProviderResource_McpEma(t *testing.T) {
 						testCredentialProviderMcpEma,
 						"mcp_ema.mcp_server_url",
 						"https://mcp-mod.example.com",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.client_id",
+						"test-client-id-mod",
+					),
+					resource.TestCheckResourceAttr(
+						testCredentialProviderMcpEma,
+						"mcp_ema.scopes",
+						"openid profile email offline_access",
 					),
 					resource.TestCheckResourceAttr(
 						testCredentialProviderMcpEma,

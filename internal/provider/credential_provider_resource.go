@@ -1126,6 +1126,14 @@ func (r *credentialProviderResource) Schema(
 							validators.SecureURLValidation(),
 						},
 					},
+					"client_id": schema.StringAttribute{
+						Description: "Client ID for the MCP Enterprise-Managed Authorization Credential Provider.",
+						Required:    true,
+					},
+					"scopes": schema.StringAttribute{
+						Description: "Scopes for the MCP Enterprise-Managed Authorization Credential Provider.",
+						Required:    true,
+					},
 					"authorization_url": schema.StringAttribute{
 						Description: "OIDC Authorization URL.",
 						Required:    true,
@@ -1142,7 +1150,8 @@ func (r *credentialProviderResource) Schema(
 					},
 					"introspection_url": schema.StringAttribute{
 						Description: "OIDC Introspection URL.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						Validators: []validator.String{
 							validators.SecureURLValidation(),
 						},
@@ -2432,6 +2441,8 @@ func convertToMcpEmaDTO(
 	credential.Type = "mcp-ema-token"
 	credential.Issuer = model.McpEma.Issuer.ValueString()
 	credential.McpServerUrl = model.McpEma.McpServerUrl.ValueString()
+	credential.ClientID = model.McpEma.ClientID.ValueString()
+	credential.Scope = model.McpEma.Scopes.ValueString()
 	credential.AuthorizationUrl = model.McpEma.AuthorizationUrl.ValueString()
 	credential.TokenUrl = model.McpEma.TokenUrl.ValueString()
 	credential.IntrospectionUrl = model.McpEma.IntrospectionUrl.ValueString()
@@ -2447,11 +2458,17 @@ func convertMcpEmaV2DTOToModel(
 	value := models.CredentialProviderMcpEmaModel{
 		Issuer:             types.StringValue(dto.Issuer),
 		McpServerUrl:       types.StringValue(dto.McpServerUrl),
+		ClientID:           types.StringValue(dto.ClientID),
+		Scopes:             types.StringValue(dto.Scope),
 		AuthorizationUrl:   types.StringValue(dto.AuthorizationUrl),
 		TokenUrl:           types.StringValue(dto.TokenUrl),
-		IntrospectionUrl:   types.StringValue(dto.IntrospectionUrl),
 		IsCorporateIdp:     types.BoolValue(dto.IsCorporateIdp),
 		IdentityProviderId: types.StringValue(dto.IdentityProviderId),
+	}
+	if dto.IntrospectionUrl == "" {
+		value.IntrospectionUrl = types.StringNull()
+	} else {
+		value.IntrospectionUrl = types.StringValue(dto.IntrospectionUrl)
 	}
 	return &value
 }

@@ -34,6 +34,8 @@ resource "aembit_credential_provider" "mcp_ema" {
 	mcp_ema = {
 		issuer               = "https://idp.example.com"
 		mcp_server_url       = "https://mcp.example.com"
+		client_id            = "test-client-id"
+		scopes               = "openid profile email"
 		authorization_url   = "https://idp.example.com/oauth/authorize"
 		token_url           = "https://idp.example.com/oauth/token"
 		introspection_url   = "https://idp.example.com/oauth/introspect"

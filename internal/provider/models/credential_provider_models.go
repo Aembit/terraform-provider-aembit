@@ -81,6 +81,8 @@ type CredentialProviderOpenAiWifModel struct {
 type CredentialProviderMcpEmaModel struct {
 	Issuer             types.String `tfsdk:"issuer"`
 	McpServerUrl       types.String `tfsdk:"mcp_server_url"`
+	ClientID           types.String `tfsdk:"client_id"`
+	Scopes             types.String `tfsdk:"scopes"`
 	AuthorizationUrl   types.String `tfsdk:"authorization_url"`
 	TokenUrl           types.String `tfsdk:"token_url"`
 	IntrospectionUrl   types.String `tfsdk:"introspection_url"`

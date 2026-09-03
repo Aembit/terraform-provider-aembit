@@ -363,14 +363,16 @@ Optional:
 Required:
 
 - `authorization_url` (String) OIDC Authorization URL.
+- `client_id` (String) Client ID for the MCP Enterprise-Managed Authorization Credential Provider.
 - `identity_provider_id` (String) The unique identifier of the Identity Provider.
-- `introspection_url` (String) OIDC Introspection URL.
 - `issuer` (String) OIDC Issuer for the MCP Enterprise-Managed Authorization Credential Provider.
 - `mcp_server_url` (String) MCP Server URL.
+- `scopes` (String) Scopes for the MCP Enterprise-Managed Authorization Credential Provider.
 - `token_url` (String) OIDC Token URL.
 
 Optional:
 
+- `introspection_url` (String) OIDC Introspection URL.
 - `is_corporate_idp` (Boolean) Indicates whether this is a corporate Identity Provider. Defaults to `true`.
 
 
