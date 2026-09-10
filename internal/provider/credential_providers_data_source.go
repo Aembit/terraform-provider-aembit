@@ -780,31 +780,31 @@ func (d *credentialProvidersDataSource) Schema(
 							Computed:    true,
 							Attributes: map[string]schema.Attribute{
 								"issuer": schema.StringAttribute{
-									Description: "OIDC Issuer for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Description: "OIDC Issuer URL for Enterprise-Managed Authentication (EMA / Cross-App Access). In Atlassian configurations, this corresponds to the Auth Server URL (e.g., https://auth.atlassian.com/{cloudId}) configured as the Issuer in the Identity Provider and used as the target audience in RFC 8693 token exchange.",
 									Computed:    true,
 								},
 								"mcp_server_url": schema.StringAttribute{
-									Description: "MCP Server URL.",
+									Description: "URL of the MCP Server (e.g., https://mcp.atlassian.com/v1/mcp/authv2 for Atlassian Rovo MCP server). Used by AI clients like Claude to connect to the MCP server and by Aembit to discover authentication metadata.",
 									Computed:    true,
 								},
 								"client_id": schema.StringAttribute{
-									Description: "Client ID for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Description: "OAuth Client ID configured for Enterprise-Managed Authentication (EMA / Cross-App Access). Used to identify the client during RFC 7523 token grant exchanges with the token endpoint.",
 									Computed:    true,
 								},
 								"scopes": schema.StringAttribute{
-									Description: "Scopes for the MCP Enterprise-Managed Authorization Credential Provider.",
+									Description: "OAuth scopes requested for accessing the MCP server resources (e.g., Atlassian Jira and Confluence tools). Multiple scopes must be space-delimited.",
 									Computed:    true,
 								},
 								"authorization_url": schema.StringAttribute{
-									Description: "OIDC Authorization URL.",
+									Description: "OAuth 2.0 / OIDC Authorization URL of the authorization server used for user authorization in Enterprise-Managed Authentication.",
 									Computed:    true,
 								},
 								"token_url": schema.StringAttribute{
-									Description: "OIDC Token URL.",
+									Description: "OAuth 2.0 / OIDC Token URL of the authorization server used to exchange identity assertions (RFC 7523 JWT bearer grant) for MCP access tokens.",
 									Computed:    true,
 								},
 								"introspection_url": schema.StringAttribute{
-									Description: "OIDC Introspection URL.",
+									Description: "OAuth 2.0 Token Introspection URL (RFC 7662) used to verify access tokens and determine expiration. Optional.",
 									Computed:    true,
 								},
 								"is_corporate_idp": schema.BoolAttribute{

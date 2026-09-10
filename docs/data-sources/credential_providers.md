@@ -219,15 +219,15 @@ Read-Only:
 
 Read-Only:
 
-- `authorization_url` (String) OIDC Authorization URL.
-- `client_id` (String) Client ID for the MCP Enterprise-Managed Authorization Credential Provider.
+- `authorization_url` (String) OAuth 2.0 / OIDC Authorization URL of the authorization server used for user authorization in Enterprise-Managed Authentication.
+- `client_id` (String) OAuth Client ID configured for Enterprise-Managed Authentication (EMA / Cross-App Access). Used to identify the client during RFC 7523 token grant exchanges with the token endpoint.
 - `identity_provider_id` (String) The unique identifier of the Identity Provider.
-- `introspection_url` (String) OIDC Introspection URL.
+- `introspection_url` (String) OAuth 2.0 Token Introspection URL (RFC 7662) used to verify access tokens and determine expiration. Optional.
 - `is_corporate_idp` (Boolean) Indicates whether this is a corporate Identity Provider.
-- `issuer` (String) OIDC Issuer for the MCP Enterprise-Managed Authorization Credential Provider.
-- `mcp_server_url` (String) MCP Server URL.
-- `scopes` (String) Scopes for the MCP Enterprise-Managed Authorization Credential Provider.
-- `token_url` (String) OIDC Token URL.
+- `issuer` (String) OIDC Issuer URL for Enterprise-Managed Authentication (EMA / Cross-App Access). In Atlassian configurations, this corresponds to the Auth Server URL (e.g., https://auth.atlassian.com/{cloudId}) configured as the Issuer in the Identity Provider and used as the target audience in RFC 8693 token exchange.
+- `mcp_server_url` (String) URL of the MCP Server (e.g., https://mcp.atlassian.com/v1/mcp/authv2 for Atlassian Rovo MCP server). Used by AI clients like Claude to connect to the MCP server and by Aembit to discover authentication metadata.
+- `scopes` (String) OAuth scopes requested for accessing the MCP server resources (e.g., Atlassian Jira and Confluence tools). Multiple scopes must be space-delimited.
+- `token_url` (String) OAuth 2.0 / OIDC Token URL of the authorization server used to exchange identity assertions (RFC 7523 JWT bearer grant) for MCP access tokens.
 
 
 <a id="nestedatt--credential_providers--mcp_user_based_access_token"></a>
