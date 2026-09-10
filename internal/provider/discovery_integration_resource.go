@@ -137,11 +137,11 @@ func (r *discoveryIntegrationResource) Schema(
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the Wiz Endpoint of the discovery integration.",
 						Required:    true,
-						Sensitive:   true,
 					},
 					"client_secret": schema.StringAttribute{
 						Description: "Client Secret for the Wiz Endpoint of the discovery integration.",
 						Required:    true,
+						Sensitive:   true,
 					},
 					"audience": schema.StringAttribute{
 						Description: "Audience for the Wiz Endpoint of the discovery integration.",

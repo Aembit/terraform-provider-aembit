@@ -42,6 +42,6 @@ description: |-
 Required:
 
 - `audience` (String) Audience for the Wiz Endpoint of the discovery integration.
-- `client_id` (String, Sensitive) Client ID for the Wiz Endpoint of the discovery integration.
-- `client_secret` (String) Client Secret for the Wiz Endpoint of the discovery integration.
+- `client_id` (String) Client ID for the Wiz Endpoint of the discovery integration.
+- `client_secret` (String, Sensitive) Client Secret for the Wiz Endpoint of the discovery integration.
 - `token_url` (String) Token URL for the Wiz Endpoint of the discovery integration.
