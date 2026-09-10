@@ -355,7 +355,7 @@ func (v *schemaSecurityValidator) validateAttribute(reporter testingReporter, a 
 }
 
 // assertNoStaleExemptions verifies that every registered exemption corresponds to an active schema attribute.
-func (v *schemaSecurityValidator) assertNoStaleExemptions(t *testing.T) {
+func (v *schemaSecurityValidator) assertNoStaleExemptions(reporter testingReporter) {
 	var staleKeys []string
 	for key := range v.exemptions {
 		if v.seenExemptions[key] == 0 {
@@ -364,17 +364,18 @@ func (v *schemaSecurityValidator) assertNoStaleExemptions(t *testing.T) {
 	}
 	sort.Strings(staleKeys)
 
-	require.Empty(
-		t,
-		staleKeys,
-		"Found %d obsolete or misconfigured exemptions in schemaSecurityValidator that do not match any active attribute in the provider schema:\n%s",
-		len(staleKeys),
-		strings.Join(staleKeys, "\n"),
-	)
+	if len(staleKeys) > 0 {
+		reporter.Errorf(
+			"Found %d obsolete or misconfigured exemptions in schemaSecurityValidator that do not match any active attribute in the provider schema:\n%s",
+			len(staleKeys),
+			strings.Join(staleKeys, "\n"),
+		)
+	}
 }
 
-// TestUnitSchema_SensitiveAttributesTagging validates all provider resources and data sources
-// to ensure every secret, credential, or token attribute is explicitly tagged Sensitive: true.
+// TestUnitSchema_SensitiveAttributesTagging validates all provider resources, data sources,
+// and provider configurations to ensure every secret, credential, or token attribute is
+// explicitly tagged with Sensitive: true or WriteOnly: true.
 func TestUnitSchema_SensitiveAttributesTagging(t *testing.T) {
 	t.Parallel()
 
@@ -438,11 +439,6 @@ func TestUnitSchema_SensitiveAttributesTagging(t *testing.T) {
 	})
 
 	t.Logf("Schema security audit completed successfully. Total attributes verified: %d", len(allAttrs))
-}
-
-// TestSchema_SensitiveAttributesTagging provides a direct alias for TestUnitSchema_SensitiveAttributesTagging.
-func TestSchema_SensitiveAttributesTagging(t *testing.T) {
-	TestUnitSchema_SensitiveAttributesTagging(t)
 }
 
 // TestUnitSchema_SensitiveAttributesTagging_Negative executes adversarial test cases
@@ -555,10 +551,13 @@ func TestUnitSchema_SensitiveAttributesTagging_Negative(t *testing.T) {
 		assert.Empty(t, recorder.errors)
 	})
 
-	// Case 6: Asserting stale exemptions fails when an exemption is never encountered in the schema.
+	// Case 6: Asserting stale exemptions triggers failure when an exemption is never encountered in the schema.
 	t.Run("stale_exemption_triggers_assertion_failure", func(t *testing.T) {
 		validator := newSchemaSecurityValidator(logger)
-		// Register a fake exemption that will never be traversed in active schema.
+		recorder := &testFailureRecorder{}
+
+		// Reset exemptions to isolate the stale check to the simulated exemption.
+		validator.exemptions = make(map[string]schemaExemption)
 		validator.exemptions["resource:fake_resource:fake_secret_name"] = schemaExemption{
 			sourceKind:    "resource",
 			entityName:    "fake_resource",
@@ -566,21 +565,10 @@ func TestUnitSchema_SensitiveAttributesTagging_Negative(t *testing.T) {
 			reason:        "Simulated stale exemption for negative test assertion.",
 		}
 
-		mockT := &testing.T{}
-		// Running in a subtest with defer/recover or checking recorder:
-		// Since require.Empty calls FailNow on *testing.T, let's verify via seenExemptions check:
-		staleCount := 0
-		for key := range validator.exemptions {
-			if validator.seenExemptions[key] == 0 {
-				staleCount++
-			}
-		}
-		assert.GreaterOrEqual(t, staleCount, 1)
-		_ = mockT
-	})
-}
+		validator.assertNoStaleExemptions(recorder)
 
-// TestSchema_SensitiveAttributesTagging_Negative provides a direct alias for TestUnitSchema_SensitiveAttributesTagging_Negative.
-func TestSchema_SensitiveAttributesTagging_Negative(t *testing.T) {
-	TestUnitSchema_SensitiveAttributesTagging_Negative(t)
+		require.Len(t, recorder.errors, 1)
+		assert.Contains(t, recorder.errors[0], "Found 1 obsolete or misconfigured exemptions")
+		assert.Contains(t, recorder.errors[0], "resource:fake_resource:fake_secret_name")
+	})
 }
