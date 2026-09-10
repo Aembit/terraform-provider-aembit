@@ -24,10 +24,15 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &contentSecurityResource{}
-	_ resource.ResourceWithConfigure   = &contentSecurityResource{}
-	_ resource.ResourceWithImportState = &contentSecurityResource{}
-	_ resource.ResourceWithModifyPlan  = &contentSecurityResource{}
+	_ resource.Resource                   = &contentSecurityResource{}
+	_ resource.ResourceWithConfigure      = &contentSecurityResource{}
+	_ resource.ResourceWithImportState    = &contentSecurityResource{}
+	_ resource.ResourceWithModifyPlan     = &contentSecurityResource{}
+	_ resource.ResourceWithValidateConfig = &contentSecurityResource{}
+)
+
+const (
+	errInvalidConfiguration = "Invalid Configuration"
 )
 
 // NewContentSecurityResource is a helper function to simplify the provider implementation.
@@ -106,15 +111,15 @@ func (r *contentSecurityResource) Schema(
 			"tags":     TagsMapAttribute(),
 			"tags_all": TagsAllMapAttribute(),
 			"type": schema.StringAttribute{
-				Description: "Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR`.",
+				Description: "Type of the Content Security resource. Currently supports: `CrowdStrikeAIDR` or `McpToolAccessControl`.",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf("CrowdStrikeAIDR"),
+					stringvalidator.OneOf("CrowdStrikeAIDR", "McpToolAccessControl"),
 				},
 			},
 			"crowdstrike_falcon_aidr": schema.SingleNestedAttribute{
 				Description: "CrowdStrike Falcon AIDR configuration settings.",
-				Required:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"encrypted_token": schema.StringAttribute{
 						Description: "The encrypted API token or client secret used to authenticate with the CrowdStrike Falcon AIDR service.",
@@ -154,6 +159,33 @@ func (r *contentSecurityResource) Schema(
 					},
 				},
 			},
+			"mcp_tool_access_control": schema.SingleNestedAttribute{
+				Description: "MCP Tool Access Control configuration settings.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"mode": schema.StringAttribute{
+						Description: "The overall policy enforcement mode for MCP tool access control (e.g., Allow, Block).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("Allow", "Block"),
+						},
+					},
+					"visibility": schema.StringAttribute{
+						Description: "The tool visibility control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),
+						},
+					},
+					"invocation": schema.StringAttribute{
+						Description: "The tool invocation control mode (e.g., AllowAll, AllowSpecific, BlockAll, BlockSpecific).",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("AllowAll", "AllowSpecific", "BlockAll", "BlockSpecific"),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -171,7 +203,57 @@ func (r *contentSecurityResource) ConfigValidators(_ context.Context) []resource
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("crowdstrike_falcon_aidr"),
+			path.MatchRoot("mcp_tool_access_control"),
 		),
+	}
+}
+
+func (r *contentSecurityResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config models.ContentSecurityResourceModel
+	diags := req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if config.Type.IsUnknown() {
+		return
+	}
+
+	csType := config.Type.ValueString()
+
+	if csType == "CrowdStrikeAIDR" {
+		if config.CrowdStrikeFalconAIDR == nil {
+			resp.Diagnostics.AddError(
+				errInvalidConfiguration,
+				"The 'crowdstrike_falcon_aidr' block must be configured when 'type' is set to 'CrowdStrikeAIDR'.",
+			)
+		}
+		if config.McpToolAccessControl != nil {
+			resp.Diagnostics.AddError(
+				errInvalidConfiguration,
+				"The 'mcp_tool_access_control' block cannot be configured when 'type' is set to 'CrowdStrikeAIDR'.",
+			)
+		}
+	}
+
+	if csType == "McpToolAccessControl" {
+		if config.McpToolAccessControl == nil {
+			resp.Diagnostics.AddError(
+				errInvalidConfiguration,
+				"The 'mcp_tool_access_control' block must be configured when 'type' is set to 'McpToolAccessControl'.",
+			)
+		}
+		if config.CrowdStrikeFalconAIDR != nil {
+			resp.Diagnostics.AddError(
+				errInvalidConfiguration,
+				"The 'crowdstrike_falcon_aidr' block cannot be configured when 'type' is set to 'McpToolAccessControl'.",
+			)
+		}
 	}
 }
 
@@ -393,6 +475,12 @@ func convertContentSecurityModelToDTO(
 		dto.MaxRetries = int(model.CrowdStrikeFalconAIDR.MaxRetries.ValueInt64())
 	}
 
+	if model.McpToolAccessControl != nil {
+		dto.Mode = model.McpToolAccessControl.Mode.ValueString()
+		dto.Visibility = model.McpToolAccessControl.Visibility.ValueString()
+		dto.Invocation = model.McpToolAccessControl.Invocation.ValueString()
+	}
+
 	return dto
 }
 
@@ -423,6 +511,13 @@ func convertContentSecurityDTOToModel(
 		if planModel.CrowdStrikeFalconAIDR != nil {
 			model.CrowdStrikeFalconAIDR.EncryptedToken = planModel.CrowdStrikeFalconAIDR.EncryptedToken
 		}
+	}
+
+	if dto.Type == "McpToolAccessControl" {
+		model.McpToolAccessControl = &models.McpToolAccessControlContentSecurityModel{}
+		model.McpToolAccessControl.Mode = types.StringValue(dto.Mode)
+		model.McpToolAccessControl.Visibility = types.StringValue(dto.Visibility)
+		model.McpToolAccessControl.Invocation = types.StringValue(dto.Invocation)
 	}
 
 	return model

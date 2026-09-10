@@ -46,6 +46,7 @@ jobs:
         with:
           repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ inputs.regression && 'main' || '' }}
           submodules: recursive
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         env:
@@ -138,6 +139,7 @@ jobs:
         with:
           repository: Aembit/terraform-provider-aembit
           token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ inputs.regression && 'main' || '' }}
           submodules: recursive
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         env:
@@ -150,13 +152,43 @@ jobs:
           terraform_wrapper: false
       - run: go mod download
 
+      - name: Generate OIDC ID Token
+        id: generate_oidc_token
+        env:
+          TFPROV_OIDC_TOKEN_SYMMETRIC_KEY: ${{ secrets.TFPROV_OIDC_TOKEN_SYMMETRIC_KEY }}
+        run: |
+          if [ -z "$TFPROV_OIDC_TOKEN_SYMMETRIC_KEY" ]; then
+            echo "::warning::TFPROV_OIDC_TOKEN_SYMMETRIC_KEY is not set. Skipping OIDC token generation."
+            exit 0
+          fi
+
+          TOKEN=$(python3 - << 'EOF'
+          import hmac, hashlib, base64, json, time, os
+          secret_b64 = os.environ['TFPROV_OIDC_TOKEN_SYMMETRIC_KEY']
+          secret_bytes = base64.b64decode(secret_b64)
+          if len(secret_bytes) < 64:
+              secret_bytes = secret_bytes.ljust(64, b'\x00')
+          header = base64.urlsafe_b64encode(json.dumps({'alg':'HS256','typ':'JWT'}).encode()).decode().rstrip('=')
+          now = int(time.time())
+          payload_data = {'iss':'aembit','sub':'terraform','aud':'terraform','iat':now,'exp':now+3600}
+          payload = base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+          msg = f'{header}.{payload}'.encode()
+          sig = base64.urlsafe_b64encode(hmac.new(secret_bytes, msg, hashlib.sha256).digest()).decode().rstrip('=')
+          print(f'{header}.{payload}.{sig}')
+          EOF
+          )
+
+          echo "::add-mask::$TOKEN"
+          echo "AEMBIT_OIDC_ID_TOKEN=$TOKEN" >> $GITHUB_ENV
+
       - name: Run Acceptance Tests using OIDC Client
         id: test_oidc_client
+        if: env.AEMBIT_OIDC_ID_TOKEN != ''
         env:
           TF_ACC: "1"
           TF_LOG: ${{ runner.debug == '1' && 'DEBUG' || '' }}
           AEMBIT_CLIENT_ID: "aembit:devbroadangle:ad6127:identity:oidc_id_token:de9d7d25-ae96-422f-8841-97bc46c6529b"
-          AEMBIT_OIDC_ID_TOKEN: ${{ secrets.AEMBIT_OIDC_ID_TOKEN }}
+          AEMBIT_OIDC_ID_TOKEN: ${{ env.AEMBIT_OIDC_ID_TOKEN }}
         run: |          
           go test -v -run "^TestAccCredentialProviderResource_ApiKey$" ./internal/provider/...
           exit ${PIPESTATUS[0]}

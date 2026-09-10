@@ -1,0 +1,24 @@
+provider "aembit" {
+}
+
+resource "aembit_content_security" "mcp_access_control" {
+	name = "TF Acceptance MCP Tool Access Control Content Security Updated"
+	is_active = true
+	type = "McpToolAccessControl"
+	mcp_tool_access_control = {
+		mode = "Block"
+		visibility = "BlockAll"
+		invocation = "BlockAll"
+	}
+	tags = {
+        color = "red"
+        day   = "Monday"
+    }
+}
+
+resource "aembit_mcp_tool_access_rule" "rule1" {
+	content_security_id = aembit_content_security.mcp_access_control.id
+	tool_name           = "test-tool-updated"
+	is_visible          = false
+	is_invocable        = true
+}
