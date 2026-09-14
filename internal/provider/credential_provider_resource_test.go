@@ -1113,6 +1113,7 @@ const (
 	oidcIdTokenResourcePath_emptyCustomClaims              = "aembit_credential_provider.oidc_id_token_empty_custom_claims"
 	oidcIdTokenResourcePath_nullCustomClaims               = "aembit_credential_provider.oidc_id_token_null_custom_claims"
 	oidcIdTokenResourcePath_dynamicSubjectProcessHash      = "aembit_credential_provider.oidc_id_token_dynamic_subject_process_hash"
+	oidcIdTokenResourcePath_dynamicSubjectSAML             = "aembit_credential_provider.oidc_id_token_dynamic_subject_saml"
 	oidcIdTokenResourcePath_dynamicClaimProcessHash        = "aembit_credential_provider.oidc_id_token_dynamic_claim_process_hash"
 	jwtSvidTokenResourcePath                               = "aembit_credential_provider.jwt_svid_token"
 	jwtSvidTokenResourcePath_emptyCustomClaims             = "aembit_credential_provider.jwt_svid_token_empty_custom_claims"
@@ -1327,6 +1328,23 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(
 						oidcIdTokenResourcePath_dynamicSubjectProcessHash,
+						"id",
+					),
+
+					// Verify Credential Provider Name
+					resource.TestCheckResourceAttr(
+						oidcIdTokenResourcePath_dynamicSubjectSAML,
+						"name",
+						"TF Acceptance OIDC ID Token - DynamicSubjectSAML",
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicSubjectSAML,
+						"id",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						oidcIdTokenResourcePath_dynamicSubjectSAML,
 						"id",
 					),
 
