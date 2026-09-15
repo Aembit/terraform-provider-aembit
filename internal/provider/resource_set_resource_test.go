@@ -58,8 +58,9 @@ func TestAccResourceSet(t *testing.T) {
 	rsModifiedName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d - Modified", randID)
 
 	createConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Custom ResourceSet", rsName)
-	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom ResourceSet - Modified", rsModifiedName)
+	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom ResourceSet - Modified", "{{MODIFIED_NAME}}")
 	modifiedConfig = strings.ReplaceAll(modifiedConfig, "TF Acceptance Custom ResourceSet", rsName)
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
 
 	t.Cleanup(func() {
 		sweepResourceSets(t, rsName, rsModifiedName)
@@ -143,8 +144,9 @@ func TestAccResourceSetPolicy(t *testing.T) {
 	rsModifiedName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d - Modified", randID)
 
 	createConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Custom Policy ResourceSet", rsName)
-	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom Policy ResourceSet - Modified", rsModifiedName)
+	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom Policy ResourceSet - Modified", "{{MODIFIED_NAME}}")
 	modifiedConfig = strings.ReplaceAll(modifiedConfig, "TF Acceptance Custom Policy ResourceSet", rsName)
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
 
 	t.Cleanup(func() {
 		sweepResourceSets(t, rsName, rsModifiedName)
