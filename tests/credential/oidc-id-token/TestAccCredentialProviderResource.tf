@@ -21,6 +21,11 @@ resource "aembit_credential_provider" "oidc_id_token" {
 				key = "key2"
 				value = "value2"
 				value_type = "dynamic"
+			},
+			{
+				key = "key_saml"
+				value = "$${saml.response.issuer}"
+				value_type = "dynamic"
 			}
 		]
 	}
@@ -80,5 +85,18 @@ resource "aembit_credential_provider" "oidc_id_token_dynamic_claim_process_hash"
 				value_type = "dynamic"
 			}
 		]		
+	}
+}
+
+resource "aembit_credential_provider" "oidc_id_token_dynamic_subject_saml" {
+	name = "TF Acceptance OIDC ID Token - DynamicSubjectSAML"
+	is_active = true
+	oidc_id_token = {
+		subject = "$${saml.response.subject.nameId}"
+		subject_type = "dynamic"
+		lifetime_in_minutes = 60
+		audience = "test.aembit.io"
+		algorithm_type = "ES256"
+		custom_claims = []
 	}
 }
