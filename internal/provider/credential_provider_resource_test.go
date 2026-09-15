@@ -1279,6 +1279,16 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(oidcIdTokenResourcePath, "id"),
+					// Verify custom_claims is preserved with dynamic key_saml
+					resource.TestCheckTypeSetElemNestedAttrs(
+						oidcIdTokenResourcePath,
+						"oidc_id_token.custom_claims.*",
+						map[string]string{
+							"key":        "key_saml",
+							"value":      "${saml.response.issuer}",
+							"value_type": "dynamic",
+						},
+					),
 
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
@@ -1342,10 +1352,11 @@ func TestAccCredentialProviderResource_OidcIdToken(t *testing.T) {
 						oidcIdTokenResourcePath_dynamicSubjectSAML,
 						"id",
 					),
-					// Verify placeholder ID is set
-					resource.TestCheckResourceAttrSet(
+					// Verify the SAML dynamic subject is preserved.
+					resource.TestCheckResourceAttr(
 						oidcIdTokenResourcePath_dynamicSubjectSAML,
-						"id",
+						"oidc_id_token.subject",
+						"${saml.response.subject.nameId}",
 					),
 
 					// Verify Credential Provider Name
