@@ -12,9 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-// sweepResourceSets deletes any existing resource sets whose names start with any of the provided prefixes.
-// This ensures that orphaned resource sets from previously failed or aborted test runs do not cause naming collisions.
-func sweepResourceSets(t *testing.T, prefixes ...string) {
+// sweepResourceSets deletes any existing resource sets whose names match any of the provided target names.
+// This ensures that orphaned resource sets from previously failed or aborted test runs do not cause naming collisions,
+// while avoiding deletion of dynamically named resources belonging to concurrent test runs.
+func sweepResourceSets(t *testing.T, names ...string) {
 	if testClient == nil {
 		return
 	}
@@ -25,10 +26,12 @@ func sweepResourceSets(t *testing.T, prefixes ...string) {
 	}
 	ctx := context.Background()
 	for _, rs := range rss {
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(rs.Name, prefix) {
+		for _, name := range names {
+			if rs.Name == name {
 				t.Logf("sweepResourceSets: cleaning up orphaned resource set: %s (id: %s)", rs.Name, rs.ExternalID)
-				_, _ = testClient.DeleteResourceSet(ctx, rs.ExternalID, nil)
+				if _, err := testClient.DeleteResourceSet(ctx, rs.ExternalID, nil); err != nil {
+					t.Logf("sweepResourceSets: failed to delete resource set %s (%s): %v", rs.Name, rs.ExternalID, err)
+				}
 				break
 			}
 		}
@@ -51,7 +54,7 @@ func TestAccResourceSet(t *testing.T) {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
 
-	sweepResourceSets(t, "TF Acceptance Custom ResourceSet")
+	sweepResourceSets(t, "TF Acceptance Custom ResourceSet", "TF Acceptance Custom ResourceSet - Modified")
 
 	randID := rand.Intn(10000000)
 	rsName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d", randID)
@@ -137,7 +140,7 @@ func TestAccResourceSetPolicy(t *testing.T) {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
 
-	sweepResourceSets(t, "TF Acceptance Custom Policy ResourceSet")
+	sweepResourceSets(t, "TF Acceptance Custom Policy ResourceSet", "TF Acceptance Custom Policy ResourceSet - Modified")
 
 	randID := rand.Intn(10000000)
 	rsName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d", randID)
