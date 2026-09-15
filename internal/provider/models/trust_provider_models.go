@@ -102,6 +102,7 @@ type TrustProviderKubernetesModel struct {
 	Subject                 types.String         `tfsdk:"subject"`
 	Subjects                []types.String       `tfsdk:"subjects"`
 	OIDCEndpoint            types.String         `tfsdk:"oidc_endpoint"`
+	OIDCEndpoints           types.Set            `tfsdk:"oidc_endpoints"`
 	PublicKey               types.String         `tfsdk:"public_key"`
 	Jwks                    jsontypes.Normalized `tfsdk:"jwks"`
 	IsAembitTenantOidcToken types.Bool           `tfsdk:"is_aembit_tenant_oidc_token"`
@@ -116,6 +117,7 @@ type TrustProviderOidcIdTokenModel struct {
 	Audiences               []types.String                             `tfsdk:"audiences"`
 	CustomClaims            []TrustProviderOidcIdTokenCustomClaimModel `tfsdk:"custom_claims"`
 	OIDCEndpoint            types.String                               `tfsdk:"oidc_endpoint"`
+	OIDCEndpoints           types.Set                                  `tfsdk:"oidc_endpoints"`
 	PublicKey               types.String                               `tfsdk:"public_key"`
 	Jwks                    jsontypes.Normalized                       `tfsdk:"jwks"`
 	IsAembitTenantOidcToken types.Bool                                 `tfsdk:"is_aembit_tenant_oidc_token"`

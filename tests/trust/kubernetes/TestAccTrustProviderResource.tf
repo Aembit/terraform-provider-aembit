@@ -66,3 +66,21 @@ resource "aembit_trust_provider" "kubernetes_jwks" {
 EOT
 	}
 }
+
+resource "aembit_trust_provider" "kubernetes_multipleoidc" {
+	name = "TF Acceptance Kubernetes Multiple OIDC"
+	is_active = true
+	kubernetes_service_account = {
+		issuer = "issuer"
+		namespace = "namespace"
+		pod_name = "pod_name"
+		service_account_name = "service_account_name"
+		subject = "subject"
+		oidc_endpoints = [
+			"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+			"https://accounts.google.com",
+			"https://login.salesforce.com",
+			"https://gitlab.com"
+		]
+	}
+}

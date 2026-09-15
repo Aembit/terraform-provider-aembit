@@ -355,6 +355,7 @@ func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
+	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
@@ -467,6 +468,7 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
+	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 	t.Parallel()
 	invalidNameFile, _ := os.ReadFile(
 		"../../tests/trust/gitlab/TestAccTrustProviderResource.tfinvalid",
@@ -563,6 +565,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 	const trustProviderKubernetes string = "aembit_trust_provider.kubernetes"
 	const trustProviderKubernetesKey string = "aembit_trust_provider.kubernetes_key"
 	const trustProviderKubernetesJWKS string = "aembit_trust_provider.kubernetes_jwks"
+	const trustProviderKubernetesMultipleOIDC string = "aembit_trust_provider.kubernetes_multipleoidc"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -581,6 +584,16 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetes, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetes,
+						"kubernetes_service_account.oidc_endpoints.#",
+						"1",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderKubernetes,
+						"kubernetes_service_account.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com/",
+					),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
 						trustProviderKubernetesKey,
@@ -601,6 +614,28 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"name",
+						"TF Acceptance Kubernetes Multiple OIDC",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesMultipleOIDC, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoints.#",
+						"4",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoint",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
 					checkValidClientID(
 						trustProviderKubernetes,
 						"client_id",
@@ -610,6 +645,7 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 			},
 			// ImportState testing
 			{ResourceName: trustProviderKubernetes, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderKubernetesMultipleOIDC, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -619,6 +655,16 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 						trustProviderKubernetes,
 						"name",
 						"TF Acceptance Kubernetes - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetes,
+						"kubernetes_service_account.oidc_endpoints.#",
+						"1",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderKubernetes,
+						"kubernetes_service_account.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com/",
 					),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
@@ -640,6 +686,33 @@ func TestAccTrustProviderResource_KubernetesServiceAccount(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderKubernetesJWKS, "id"),
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"name",
+						"TF Acceptance Kubernetes Multiple OIDC - Modified",
+					),
+					resource.TestCheckResourceAttrSet(trustProviderKubernetesMultipleOIDC, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoints.#",
+						"2",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoints.*",
+						"https://gitlab.com",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderKubernetesMultipleOIDC,
+						"kubernetes_service_account.oidc_endpoint",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -713,6 +786,7 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 	const trustProviderOidcidTokenJWKS = "aembit_trust_provider.oidcidtoken_jwks"
 	const trustProviderOidcidTokenAembitTenantOidcToken = "aembit_trust_provider.oidcidtoken_aembittenantoidctoken"
 	const trustProviderOidcidTokenCustomClaims = "aembit_trust_provider.oidcidtoken_customclaims"
+	const trustProviderOidcidTokenMultipleOIDC = "aembit_trust_provider.oidcidtoken_multipleoidc"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -731,6 +805,16 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(trustProviderOidcidToken, "id"),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidToken,
+						"oidc_id_token.oidc_endpoints.#",
+						"1",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderOidcidToken,
+						"oidc_id_token.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com/",
+					),
 					checkValidClientID(
 						trustProviderOidcidToken,
 						"client_id",
@@ -790,10 +874,38 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						"oidc_id_token.is_aembit_tenant_oidc_token",
 						"true",
 					),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"name",
+						"TF Acceptance OIDC ID Token Multiple OIDC",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenMultipleOIDC,
+						"id",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoints.#",
+						"4",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoint",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
 				),
 			},
 			// ImportState testing
 			{ResourceName: trustProviderOidcidToken, ImportState: true, ImportStateVerify: true},
+			{ResourceName: trustProviderOidcidTokenMultipleOIDC, ImportState: true, ImportStateVerify: true},
 			// Update and Read testing
 			{
 				Config: string(modifyFile),
@@ -803,6 +915,16 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 						trustProviderOidcidToken,
 						"name",
 						"TF Acceptance OIDC ID Token - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidToken,
+						"oidc_id_token.oidc_endpoints.#",
+						"1",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderOidcidToken,
+						"oidc_id_token.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com/",
 					),
 					// Verify Trust Provider Name
 					resource.TestCheckResourceAttr(
@@ -847,6 +969,38 @@ func TestAccTrustProviderResource_OidcIdToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						trustProviderOidcidTokenCustomClaims,
 						"id",
+					),
+
+					// Verify Trust Provider Name
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"name",
+						"TF Acceptance OIDC ID Token Multiple OIDC - Modified",
+					),
+					// Verify placeholder ID is set
+					resource.TestCheckResourceAttrSet(
+						trustProviderOidcidTokenMultipleOIDC,
+						"id",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoints.#",
+						"2",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoints.*",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoints.*",
+						"https://gitlab.com",
+					),
+					resource.TestCheckResourceAttr(
+						trustProviderOidcidTokenMultipleOIDC,
+						"oidc_id_token.oidc_endpoint",
+						"https://3a3b5d.id.devbroadangle.aembit-eng.com",
 					),
 				),
 			},
