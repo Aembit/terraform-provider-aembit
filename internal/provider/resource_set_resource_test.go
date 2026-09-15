@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -12,25 +13,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+// sweepLegacyResourceSets sweeps known un-randomized legacy resource set names once before tests run.
+func sweepLegacyResourceSets() {
+	sweepResourceSets(
+		"TF Acceptance Custom ResourceSet",
+		"TF Acceptance Custom ResourceSet - Modified",
+		"TF Acceptance Custom Policy ResourceSet",
+		"TF Acceptance Custom Policy ResourceSet - Modified",
+		"TF Acceptance ResourceSet No Roles",
+	)
+}
+
 // sweepResourceSets deletes any existing resource sets whose names match any of the provided target names.
 // This ensures that orphaned resource sets from previously failed or aborted test runs do not cause naming collisions,
 // while avoiding deletion of dynamically named resources belonging to concurrent test runs.
-func sweepResourceSets(t *testing.T, names ...string) {
+func sweepResourceSets(names ...string) {
 	if testClient == nil {
 		return
 	}
 	rss, err := testClient.GetResourceSets(nil)
 	if err != nil {
-		t.Logf("sweepResourceSets: unable to list resource sets: %v", err)
+		log.Printf("sweepResourceSets: unable to list resource sets: %v", err)
 		return
 	}
 	ctx := context.Background()
 	for _, rs := range rss {
 		for _, name := range names {
 			if rs.Name == name {
-				t.Logf("sweepResourceSets: cleaning up orphaned resource set: %s (id: %s)", rs.Name, rs.ExternalID)
+				log.Printf("sweepResourceSets: cleaning up orphaned resource set: %s (id: %s)", rs.Name, rs.ExternalID)
 				if _, err := testClient.DeleteResourceSet(ctx, rs.ExternalID, nil); err != nil {
-					t.Logf("sweepResourceSets: failed to delete resource set %s (%s): %v", rs.Name, rs.ExternalID, err)
+					log.Printf("sweepResourceSets: failed to delete resource set %s (%s): %v", rs.Name, rs.ExternalID, err)
 				}
 				break
 			}
@@ -54,8 +66,6 @@ func TestAccResourceSet(t *testing.T) {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
 
-	sweepResourceSets(t, "TF Acceptance Custom ResourceSet", "TF Acceptance Custom ResourceSet - Modified")
-
 	randID := rand.Intn(10000000)
 	rsName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d", randID)
 	rsModifiedName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d - Modified", randID)
@@ -66,7 +76,7 @@ func TestAccResourceSet(t *testing.T) {
 	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
 
 	t.Cleanup(func() {
-		sweepResourceSets(t, rsName, rsModifiedName)
+		sweepResourceSets(rsName, rsModifiedName)
 	})
 
 	resourceName := "aembit_resource_set.crs"
@@ -140,8 +150,6 @@ func TestAccResourceSetPolicy(t *testing.T) {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
 
-	sweepResourceSets(t, "TF Acceptance Custom Policy ResourceSet", "TF Acceptance Custom Policy ResourceSet - Modified")
-
 	randID := rand.Intn(10000000)
 	rsName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d", randID)
 	rsModifiedName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d - Modified", randID)
@@ -152,7 +160,7 @@ func TestAccResourceSetPolicy(t *testing.T) {
 	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
 
 	t.Cleanup(func() {
-		sweepResourceSets(t, rsName, rsModifiedName)
+		sweepResourceSets(rsName, rsModifiedName)
 	})
 
 	resourceName := "aembit_access_policy.first_policy"
@@ -231,14 +239,12 @@ func TestAccResourceSetNoRoles(t *testing.T) {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
 
-	sweepResourceSets(t, "TF Acceptance ResourceSet No Roles")
-
 	randID := rand.Intn(10000000)
 	rsName := fmt.Sprintf("TF Acceptance ResourceSet No Roles %d", randID)
 	testConfig := strings.ReplaceAll(string(config), "TF Acceptance ResourceSet No Roles", rsName)
 
 	t.Cleanup(func() {
-		sweepResourceSets(t, rsName)
+		sweepResourceSets(rsName)
 	})
 
 	resourceName := "aembit_resource_set.no_roles"
