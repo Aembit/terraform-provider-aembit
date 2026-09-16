@@ -47,6 +47,7 @@ Read-Only:
 - `is_active` (Boolean) Active/Inactive status of the credential provider.
 - `jwt_svid_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--jwt_svid_token))
 - `managed_gitlab_account` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--managed_gitlab_account))
+- `mcp_ema` (Attributes) MCP Enterprise-Managed Authorization type Credential Provider configuration. (see [below for nested schema](#nestedatt--credential_providers--mcp_ema))
 - `mcp_user_based_access_token` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--mcp_user_based_access_token))
 - `name` (String) User-provided name of the credential provider.
 - `oauth_authorization_code` (Attributes) (see [below for nested schema](#nestedatt--credential_providers--oauth_authorization_code))
@@ -211,6 +212,22 @@ Read-Only:
 - `project_ids` (Set of String) The set of GitLab project IDs.
 - `scope` (String) Scope for Managed Gitlab Account configuration of the Credential Provider.
 - `service_account_username` (String) The name of the GitLab service account used by the Credential Provider.
+
+
+<a id="nestedatt--credential_providers--mcp_ema"></a>
+### Nested Schema for `credential_providers.mcp_ema`
+
+Read-Only:
+
+- `authorization_url` (String) OAuth 2.0 / OIDC Authorization URL of the authorization server used for user authorization in Enterprise-Managed Authentication.
+- `client_id` (String) OAuth Client ID configured for Enterprise-Managed Authentication (EMA / Cross-App Access). Used to identify the client during RFC 7523 token grant exchanges with the token endpoint.
+- `identity_provider_id` (String) The unique identifier of the Identity Provider.
+- `introspection_url` (String) OAuth 2.0 Token Introspection URL (RFC 7662) used to verify access tokens and determine expiration. Optional.
+- `is_corporate_idp` (Boolean) Indicates whether this is a corporate Identity Provider.
+- `issuer` (String) OIDC Issuer URL for Enterprise-Managed Authentication (EMA / Cross-App Access). In Atlassian configurations, this corresponds to the Auth Server URL (e.g., https://auth.atlassian.com/{cloudId}) configured as the Issuer in the Identity Provider and used as the target audience in RFC 8693 token exchange.
+- `mcp_server_url` (String) URL of the MCP Server (e.g., https://mcp.atlassian.com/v1/mcp/authv2 for Atlassian Rovo MCP server). Used by AI clients like Claude to connect to the MCP server and by Aembit to discover authentication metadata.
+- `scopes` (String) OAuth scopes requested for accessing the MCP server resources (e.g., Atlassian Jira and Confluence tools). Multiple scopes must be space-delimited.
+- `token_url` (String) OAuth 2.0 / OIDC Token URL of the authorization server used to exchange identity assertions (RFC 7523 JWT bearer grant) for MCP access tokens.
 
 
 <a id="nestedatt--credential_providers--mcp_user_based_access_token"></a>

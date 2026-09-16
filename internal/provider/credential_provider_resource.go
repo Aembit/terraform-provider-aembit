@@ -1108,6 +1108,69 @@ func (r *credentialProviderResource) Schema(
 					},
 				},
 			},
+			"mcp_ema": schema.SingleNestedAttribute{
+				Description: "MCP Enterprise-Managed Authorization type Credential Provider configuration.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"issuer": schema.StringAttribute{
+						Description: "OIDC Issuer URL for Enterprise-Managed Authentication (EMA / Cross-App Access). In Atlassian configurations, this corresponds to the Auth Server URL (e.g., https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3) configured as the Issuer in the Identity Provider and used as the target audience in RFC 8693 token exchange.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
+					"mcp_server_url": schema.StringAttribute{
+						Description: "URL of the MCP Server (e.g., https://mcp.atlassian.com/v1/mcp/authv2 for Atlassian Rovo MCP server).",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
+					"client_id": schema.StringAttribute{
+						Description: "OAuth Client ID configured for Enterprise-Managed Authentication (EMA / Cross-App Access). Used to identify the client during RFC 7523 token grant exchanges with the token endpoint.",
+						Required:    true,
+					},
+					"scopes": schema.StringAttribute{
+						Description: "OAuth scopes requested for accessing the MCP server resources (e.g., Atlassian Jira and Confluence tools). Multiple scopes must be space-delimited.",
+						Required:    true,
+					},
+					"authorization_url": schema.StringAttribute{
+						Description: "OAuth 2.0 / OIDC Authorization URL of the authorization server used for user authorization in Enterprise-Managed Authentication.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
+					"token_url": schema.StringAttribute{
+						Description: "OAuth 2.0 / OIDC Token URL of the authorization server used to exchange identity assertions (RFC 7523 JWT bearer grant) for MCP access tokens.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
+					"introspection_url": schema.StringAttribute{
+						Description: "OAuth 2.0 Token Introspection URL (RFC 7662) used to verify access tokens and determine expiration. Optional.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
+					"is_corporate_idp": schema.BoolAttribute{
+						Description: "Indicates whether this is a corporate Identity Provider. Defaults to `true`.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
+					},
+					"identity_provider_id": schema.StringAttribute{
+						Description: "The unique identifier of the Identity Provider.",
+						Required:    true,
+						Validators: []validator.String{
+							validators.UUIDRegexValidation(),
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -1137,6 +1200,7 @@ func (r *credentialProviderResource) ConfigValidators(
 			path.MatchRoot("x509_svid_certificate"),
 			path.MatchRoot("claude_wif"),
 			path.MatchRoot("openai_wif"),
+			path.MatchRoot("mcp_ema"),
 		),
 	}
 }
@@ -1507,6 +1571,11 @@ func convertCredentialProviderModelToV2DTO(
 		convertToOpenAiWifDTO(&credential, model)
 	}
 
+	// Handle the MCP EMA use case
+	if model.McpEma != nil {
+		convertToMcpEmaDTO(&credential, model)
+	}
+
 	credential.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	credential.ResourceSet = model.ResourceSetId.ValueString()
 	return credential
@@ -1545,6 +1614,7 @@ func convertCredentialProviderV2DTOToModel(
 	model.X509SvidCertificate = nil
 	model.ClaudeWif = nil
 	model.OpenAiWif = nil
+	model.McpEma = nil
 
 	// Now fill in the objects based on the Credential Provider type
 	switch dto.Type {
@@ -1629,6 +1699,8 @@ func convertCredentialProviderV2DTOToModel(
 		model.ClaudeWif = convertClaudeWifV2DTOToModel(dto, tenant, stackDomain)
 	case "openai-wif":
 		model.OpenAiWif = convertOpenAiWifV2DTOToModel(dto)
+	case "mcp-ema-token":
+		model.McpEma = convertMcpEmaV2DTOToModel(dto)
 	}
 
 	model.ResourceSetId = types.StringValue(dto.ResourceSet)
@@ -2085,11 +2157,11 @@ func convertToOAuthAuthorizationCodeDTO(
 	credential.ClientSecret = model.OAuthAuthorizationCode.ClientSecret.ValueString()
 	credential.Scope = model.OAuthAuthorizationCode.Scopes.ValueString()
 	credential.CustomParameters = convertCredentialOAuthAuthorizationCodeCustomParameters(model)
+	credential.AuthorizationUrl = model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString()
+	credential.IntrospectionUrl = model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString()
+	credential.TokenUrl = model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString()
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
 		OAuthUrl:             model.OAuthAuthorizationCode.OAuthDiscoveryUrl.ValueString(),
-		AuthorizationUrl:     model.OAuthAuthorizationCode.OAuthAuthorizationUrl.ValueString(),
-		IntrospectionUrl:     model.OAuthAuthorizationCode.OAuthIntrospectionUrl.ValueString(),
-		TokenUrl:             model.OAuthAuthorizationCode.OAuthTokenUrl.ValueString(),
 		UserAuthorizationUrl: model.OAuthAuthorizationCode.UserAuthorizationUrl.ValueString(),
 		IsPkceRequired:       model.OAuthAuthorizationCode.IsPkceRequired.ValueBool(),
 		CallBackUrl:          model.OAuthAuthorizationCode.CallBackUrl.ValueString(),
@@ -2112,14 +2184,14 @@ func convertToMcpUserBasedAccessTokenDTO(
 	credential.ClientSecret = model.McpUserBasedAccessToken.ClientSecret.ValueString()
 	credential.Scope = model.McpUserBasedAccessToken.Scopes.ValueString()
 	credential.CustomParameters = convertCredentialMcpUserBasedAccessTokenCustomParameters(model)
+	credential.McpServerUrl = model.McpUserBasedAccessToken.McpServerUrl.ValueString()
+	credential.AuthorizationUrl = model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString()
+	credential.IntrospectionUrl = model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString()
+	credential.TokenUrl = model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString()
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
-		McpServerUrl:     model.McpUserBasedAccessToken.McpServerUrl.ValueString(),
-		AuthorizationUrl: model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString(),
-		IntrospectionUrl: model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString(),
-		TokenUrl:         model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString(),
-		IsPkceRequired:   model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
-		CallBackUrl:      model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
-		Resource:         model.McpUserBasedAccessToken.Resource.ValueString(),
+		IsPkceRequired: model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),
+		CallBackUrl:    model.McpUserBasedAccessToken.CallBackUrl.ValueString(),
+		Resource:       model.McpUserBasedAccessToken.Resource.ValueString(),
 	}
 
 	if len(model.ID.ValueString()) > 0 {
@@ -2348,9 +2420,7 @@ func convertToOpenAiWifDTO(
 	credential.Type = "openai-wif"
 	credential.Audience = model.OpenAiWif.Audience.ValueString()
 	credential.ServiceAccountId = model.OpenAiWif.ServiceAccountId.ValueString()
-	credential.CredentialOpenAiWifV2DTO = aembit.CredentialOpenAiWifV2DTO{
-		IdentityProviderId: model.OpenAiWif.IdentityProviderId.ValueString(),
-	}
+	credential.IdentityProviderId = model.OpenAiWif.IdentityProviderId.ValueString()
 }
 
 func convertOpenAiWifV2DTOToModel(
@@ -2360,6 +2430,45 @@ func convertOpenAiWifV2DTOToModel(
 		IdentityProviderId: types.StringValue(dto.IdentityProviderId),
 		ServiceAccountId:   types.StringValue(dto.ServiceAccountId),
 		Audience:           types.StringValue(dto.Audience),
+	}
+	return &value
+}
+
+func convertToMcpEmaDTO(
+	credential *aembit.CredentialProviderV2DTO,
+	model models.CredentialProviderResourceModel,
+) {
+	credential.Type = "mcp-ema-token"
+	credential.Issuer = model.McpEma.Issuer.ValueString()
+	credential.McpServerUrl = model.McpEma.McpServerUrl.ValueString()
+	credential.ClientID = model.McpEma.ClientID.ValueString()
+	credential.Scope = model.McpEma.Scopes.ValueString()
+	credential.AuthorizationUrl = model.McpEma.AuthorizationUrl.ValueString()
+	credential.TokenUrl = model.McpEma.TokenUrl.ValueString()
+	credential.IntrospectionUrl = model.McpEma.IntrospectionUrl.ValueString()
+	credential.IdentityProviderId = model.McpEma.IdentityProviderId.ValueString()
+	credential.CredentialMcpEmaV2DTO = aembit.CredentialMcpEmaV2DTO{
+		IsCorporateIdp: model.McpEma.IsCorporateIdp.ValueBool(),
+	}
+}
+
+func convertMcpEmaV2DTOToModel(
+	dto aembit.CredentialProviderV2DTO,
+) *models.CredentialProviderMcpEmaModel {
+	value := models.CredentialProviderMcpEmaModel{
+		Issuer:             types.StringValue(dto.Issuer),
+		McpServerUrl:       types.StringValue(dto.McpServerUrl),
+		ClientID:           types.StringValue(dto.ClientID),
+		Scopes:             types.StringValue(dto.Scope),
+		AuthorizationUrl:   types.StringValue(dto.AuthorizationUrl),
+		TokenUrl:           types.StringValue(dto.TokenUrl),
+		IsCorporateIdp:     types.BoolValue(dto.IsCorporateIdp),
+		IdentityProviderId: types.StringValue(dto.IdentityProviderId),
+	}
+	if dto.IntrospectionUrl == "" {
+		value.IntrospectionUrl = types.StringNull()
+	} else {
+		value.IntrospectionUrl = types.StringValue(dto.IntrospectionUrl)
 	}
 	return &value
 }
