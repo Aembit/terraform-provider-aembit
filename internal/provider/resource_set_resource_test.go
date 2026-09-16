@@ -1,14 +1,56 @@
 package provider
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"math/rand"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+// sweepLegacyResourceSets sweeps known un-randomized legacy resource set names once before tests run.
+func sweepLegacyResourceSets() {
+	sweepResourceSets(
+		"TF Acceptance Custom ResourceSet",
+		"TF Acceptance Custom ResourceSet - Modified",
+		"TF Acceptance Custom Policy ResourceSet",
+		"TF Acceptance Custom Policy ResourceSet - Modified",
+		"TF Acceptance ResourceSet No Roles",
+	)
+}
+
+// sweepResourceSets deletes any existing resource sets whose names match any of the provided target names.
+// This ensures that orphaned resource sets from previously failed or aborted test runs do not cause naming collisions,
+// while avoiding deletion of dynamically named resources belonging to concurrent test runs.
+func sweepResourceSets(names ...string) {
+	if testClient == nil {
+		return
+	}
+	rss, err := testClient.GetResourceSets(nil)
+	if err != nil {
+		log.Printf("sweepResourceSets: unable to list resource sets: %v", err)
+		return
+	}
+	ctx := context.Background()
+	for _, rs := range rss {
+		for _, name := range names {
+			if rs.Name == name {
+				log.Printf("sweepResourceSets: cleaning up orphaned resource set: %s (id: %s)", rs.Name, rs.ExternalID)
+				if _, err := testClient.DeleteResourceSet(ctx, rs.ExternalID, nil); err != nil {
+					log.Printf("sweepResourceSets: failed to delete resource set %s (%s): %v", rs.Name, rs.ExternalID, err)
+				}
+				break
+			}
+		}
+	}
+}
+
+// TestAccResourceSet tests the end-to-end lifecycle of a custom resource set.
 func TestAccResourceSet(t *testing.T) {
 	t.Parallel()
 	createFile, err := os.ReadFile(
@@ -23,23 +65,37 @@ func TestAccResourceSet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
+
+	randID := rand.Intn(10000000)
+	rsName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d", randID)
+	rsModifiedName := fmt.Sprintf("TF Acceptance Custom ResourceSet %d - Modified", randID)
+
+	createConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Custom ResourceSet", rsName)
+	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom ResourceSet - Modified", "{{MODIFIED_NAME}}")
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "TF Acceptance Custom ResourceSet", rsName)
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
+
+	t.Cleanup(func() {
+		sweepResourceSets(rsName, rsModifiedName)
+	})
+
 	resourceName := "aembit_resource_set.crs"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: string(createFile),
+				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"name",
-						"TF Acceptance Custom ResourceSet",
+						rsName,
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"description",
-						"TF Acceptance Custom ResourceSet",
+						rsName,
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
@@ -54,18 +110,18 @@ func TestAccResourceSet(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: string(modifiedFile),
+				Config: modifiedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"name",
-						"TF Acceptance Custom ResourceSet - Modified",
+						rsModifiedName,
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"description",
-						"TF Acceptance Custom ResourceSet - Modified",
+						rsModifiedName,
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
@@ -78,6 +134,7 @@ func TestAccResourceSet(t *testing.T) {
 	})
 }
 
+// TestAccResourceSetPolicy tests the end-to-end lifecycle of an access policy within a custom resource set.
 func TestAccResourceSetPolicy(t *testing.T) {
 	t.Parallel()
 	createFile, err := os.ReadFile(
@@ -92,12 +149,26 @@ func TestAccResourceSetPolicy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
+
+	randID := rand.Intn(10000000)
+	rsName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d", randID)
+	rsModifiedName := fmt.Sprintf("TF Acceptance Custom Policy ResourceSet %d - Modified", randID)
+
+	createConfig := strings.ReplaceAll(string(createFile), "TF Acceptance Custom Policy ResourceSet", rsName)
+	modifiedConfig := strings.ReplaceAll(string(modifiedFile), "TF Acceptance Custom Policy ResourceSet - Modified", "{{MODIFIED_NAME}}")
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "TF Acceptance Custom Policy ResourceSet", rsName)
+	modifiedConfig = strings.ReplaceAll(modifiedConfig, "{{MODIFIED_NAME}}", rsModifiedName)
+
+	t.Cleanup(func() {
+		sweepResourceSets(rsName, rsModifiedName)
+	})
+
 	resourceName := "aembit_access_policy.first_policy"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: string(createFile),
+				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_set_id"),
@@ -123,7 +194,7 @@ func TestAccResourceSetPolicy(t *testing.T) {
 				},
 			},
 			{
-				Config: string(modifiedFile),
+				Config: modifiedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_set_id"),
@@ -158,6 +229,7 @@ func TestAccResourceSetPolicy(t *testing.T) {
 	})
 }
 
+// TestAccResourceSetNoRoles tests the creation of a resource set with no assigned roles.
 func TestAccResourceSetNoRoles(t *testing.T) {
 	t.Parallel()
 	config, err := os.ReadFile(
@@ -166,18 +238,27 @@ func TestAccResourceSetNoRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
+
+	randID := rand.Intn(10000000)
+	rsName := fmt.Sprintf("TF Acceptance ResourceSet No Roles %d", randID)
+	testConfig := strings.ReplaceAll(string(config), "TF Acceptance ResourceSet No Roles", rsName)
+
+	t.Cleanup(func() {
+		sweepResourceSets(rsName)
+	})
+
 	resourceName := "aembit_resource_set.no_roles"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: string(config),
+				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"name",
-						"TF Acceptance ResourceSet No Roles",
+						rsName,
 					),
 					resource.TestCheckResourceAttr(
 						resourceName,
