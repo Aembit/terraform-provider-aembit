@@ -355,7 +355,6 @@ func TestAccTrustProviderResource_GitHubAction_OidcEndpoint(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
-	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 	t.Parallel()
 	createFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tf")
 	modifyFile, _ := os.ReadFile("../../tests/trust/gitlab/TestAccTrustProviderResource.tfmod")
@@ -468,7 +467,6 @@ func TestAccTrustProviderResource_GitLabJob(t *testing.T) {
 }
 
 func TestAccTrustProviderResource_GitLabJob_Validation(t *testing.T) {
-	//t.Skip("skipping test until we figure out a way to handle the GitLab tokens appropriately")
 	t.Parallel()
 	invalidNameFile, _ := os.ReadFile(
 		"../../tests/trust/gitlab/TestAccTrustProviderResource.tfinvalid",
