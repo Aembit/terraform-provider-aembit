@@ -697,8 +697,19 @@ func (r *trustProviderResource) Schema(
 					"oidc_endpoint": schema.StringAttribute{
 						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
 						Optional:    true,
+						Computed:    true,
 						Validators: []validator.String{
 							validators.OidcEndpointValidation(),
+						},
+					},
+					"oidc_endpoints": schema.SetAttribute{
+						Description: "The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+							setvalidator.ValueStringsAre(validators.OidcEndpointValidation()),
 						},
 					},
 					"public_key": schema.StringAttribute{
@@ -810,8 +821,19 @@ func (r *trustProviderResource) Schema(
 					"oidc_endpoint": schema.StringAttribute{
 						Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.",
 						Optional:    true,
+						Computed:    true,
 						Validators: []validator.String{
 							validators.OidcEndpointValidation(),
+						},
+					},
+					"oidc_endpoints": schema.SetAttribute{
+						Description: "The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.",
+						ElementType: types.StringType,
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+							setvalidator.ValueStringsAre(validators.OidcEndpointValidation()),
 						},
 					},
 					"public_key": schema.StringAttribute{
@@ -1034,6 +1056,10 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 			path.MatchRoot("kubernetes_service_account").AtName("subject"),
 			path.MatchRoot("kubernetes_service_account").AtName("subjects"),
 		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("kubernetes_service_account").AtName("oidc_endpoint"),
+			path.MatchRoot("kubernetes_service_account").AtName("oidc_endpoints"),
+		),
 		// Ensure we don't have conflicting single and multiple match rule configurations (GCP Identity)
 		resourcevalidator.Conflicting(
 			path.MatchRoot("gcp_identity").AtName("email"),
@@ -1094,6 +1120,10 @@ func (r *trustProviderResource) ConfigValidators(_ context.Context) []resource.C
 		resourcevalidator.Conflicting(
 			path.MatchRoot("oidc_id_token").AtName("audience"),
 			path.MatchRoot("oidc_id_token").AtName("audiences"),
+		),
+		resourcevalidator.Conflicting(
+			path.MatchRoot("oidc_id_token").AtName("oidc_endpoint"),
+			path.MatchRoot("oidc_id_token").AtName("oidc_endpoints"),
 		),
 		resourcevalidator.Conflicting(
 			path.MatchRoot("aws_alb_jwt").AtName("issuer"),
@@ -1400,13 +1430,13 @@ func convertTrustProviderModelToDTO(
 		convertKerberosModelToDTO(model, &trust)
 	}
 	if model.KubernetesService != nil {
-		err = convertKubernetesModelToDTO(model, &trust)
+		err = convertKubernetesModelToDTO(ctx, model, &trust)
 	}
 	if model.TerraformWorkspace != nil {
 		convertTerraformModelToDTO(model, &trust)
 	}
 	if model.OidcIdToken != nil {
-		err = convertOidcIdTokenTpModelToDTO(model, &trust)
+		err = convertOidcIdTokenTpModelToDTO(ctx, model, &trust)
 	}
 	if model.AwsAlbJwt != nil {
 		convertAwsAlbJwtTpModelToDTO(model, &trust)
@@ -1789,6 +1819,7 @@ func convertKerberosModelToDTO(
 }
 
 func convertKubernetesModelToDTO(
+	ctx context.Context,
 	model models.TrustProviderResourceModel,
 	dto *aembit.TrustProviderDTO,
 ) error {
@@ -1800,6 +1831,13 @@ func convertKubernetesModelToDTO(
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.KubernetesService.OIDCEndpoint.ValueString()
+	if !model.KubernetesService.OIDCEndpoints.IsNull() && !model.KubernetesService.OIDCEndpoints.IsUnknown() {
+		var oidcEndpoints []string
+		_ = model.KubernetesService.OIDCEndpoints.ElementsAs(ctx, &oidcEndpoints, false)
+		if len(oidcEndpoints) > 0 {
+			dto.OidcUrls = oidcEndpoints
+		}
+	}
 	dto.IsAembitTenantOidcToken = model.KubernetesService.IsAembitTenantOidcToken.ValueBool()
 
 	err := convertJWKSModelToDto(model.KubernetesService.Jwks.ValueString(), dto)
@@ -1868,6 +1906,7 @@ func convertKubernetesModelToDTO(
 }
 
 func convertOidcIdTokenTpModelToDTO(
+	ctx context.Context,
 	model models.TrustProviderResourceModel,
 	dto *aembit.TrustProviderDTO,
 ) error {
@@ -1879,6 +1918,13 @@ func convertOidcIdTokenTpModelToDTO(
 		dto.PemType = "PublicKey"
 	}
 	dto.OidcUrl = model.OidcIdToken.OIDCEndpoint.ValueString()
+	if !model.OidcIdToken.OIDCEndpoints.IsNull() && !model.OidcIdToken.OIDCEndpoints.IsUnknown() {
+		var oidcEndpoints []string
+		_ = model.OidcIdToken.OIDCEndpoints.ElementsAs(ctx, &oidcEndpoints, false)
+		if len(oidcEndpoints) > 0 {
+			dto.OidcUrls = oidcEndpoints
+		}
+	}
 	dto.IsAembitTenantOidcToken = model.OidcIdToken.IsAembitTenantOidcToken.ValueBool()
 
 	err := convertJWKSModelToDto(model.OidcIdToken.Jwks.ValueString(), dto)
@@ -2175,9 +2221,9 @@ func convertTrustProviderDTOToModel(
 	case "Kerberos":
 		model.Kerberos = convertKerberosDTOToModel(dto)
 	case "KubernetesServiceAccount":
-		model.KubernetesService = convertKubernetesDTOToModel(dto)
+		model.KubernetesService = convertKubernetesDTOToModel(ctx, dto)
 	case "OidcIdToken":
-		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(dto)
+		model.OidcIdToken = convertOidcIdTokenTpDTOToModel(ctx, dto)
 	case "AWSAlbJwt":
 		model.AwsAlbJwt = convertAwsAlbJwtTpDTOToModel(dto)
 	case "TerraformIdentityToken":
@@ -2367,6 +2413,7 @@ func convertKerberosDTOToModel(dto aembit.TrustProviderDTO) *models.TrustProvide
 }
 
 func convertKubernetesDTOToModel(
+	ctx context.Context,
 	dto aembit.TrustProviderDTO,
 ) *models.TrustProviderKubernetesModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
@@ -2379,6 +2426,7 @@ func convertKubernetesDTOToModel(
 		Subject:                 types.StringNull(),
 		PublicKey:               types.StringNull(),
 		OIDCEndpoint:            types.StringNull(),
+		OIDCEndpoints:           types.SetNull(types.StringType),
 		Jwks:                    jsontypes.NewNormalizedNull(),
 		IsAembitTenantOidcToken: types.BoolValue(false),
 	}
@@ -2389,6 +2437,10 @@ func convertKubernetesDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
+	}
+
+	if len(dto.OidcUrls) > 0 {
+		model.OIDCEndpoints = newStringSetModel(ctx, dto.OidcUrls)
 	}
 
 	model.IsAembitTenantOidcToken = types.BoolValue(dto.IsAembitTenantOidcToken)
@@ -2421,6 +2473,7 @@ func convertKubernetesDTOToModel(
 }
 
 func convertOidcIdTokenTpDTOToModel(
+	ctx context.Context,
 	dto aembit.TrustProviderDTO,
 ) *models.TrustProviderOidcIdTokenModel {
 	decodedKey, _ := base64.StdEncoding.DecodeString(dto.Certificate)
@@ -2431,6 +2484,7 @@ func convertOidcIdTokenTpDTOToModel(
 		Audience:                types.StringNull(),
 		PublicKey:               types.StringNull(),
 		OIDCEndpoint:            types.StringNull(),
+		OIDCEndpoints:           types.SetNull(types.StringType),
 		Jwks:                    jsontypes.NewNormalizedNull(),
 		IsAembitTenantOidcToken: types.BoolValue(false),
 	}
@@ -2441,6 +2495,10 @@ func convertOidcIdTokenTpDTOToModel(
 		model.OIDCEndpoint = types.StringValue(dto.OidcUrl)
 	} else if len(dto.Jwks) > 0 {
 		model.Jwks = jsontypes.NewNormalizedValue(dto.Jwks)
+	}
+
+	if len(dto.OidcUrls) > 0 {
+		model.OIDCEndpoints = newStringSetModel(ctx, dto.OidcUrls)
 	}
 
 	model.IsAembitTenantOidcToken = types.BoolValue(dto.IsAembitTenantOidcToken)

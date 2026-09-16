@@ -89,3 +89,19 @@ resource "aembit_trust_provider" "oidcidtoken_customclaims" {
 		is_aembit_tenant_oidc_token = true
 	}
 }
+
+resource "aembit_trust_provider" "oidcidtoken_multipleoidc" {
+	name = "TF Acceptance OIDC ID Token Multiple OIDC"
+	is_active = true
+	oidc_id_token = {
+		issuer = "issuer"
+		subject = "subject"
+		audience = "audience"
+		oidc_endpoints = [
+			"https://3a3b5d.id.devbroadangle.aembit-eng.com",
+			"https://accounts.google.com",
+			"https://login.salesforce.com",
+			"https://gitlab.com"
+		]
+	}
+}
