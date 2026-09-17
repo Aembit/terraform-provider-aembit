@@ -106,7 +106,6 @@ resource "aembit_credential_provider" "sts1" {
 	is_active = true
 	aws_sts = {
 		role_arn = "role:arn:1"
-		service_account = "username@email.com"
 	}
 }
 
@@ -115,7 +114,6 @@ resource "aembit_credential_provider" "sts2" {
 	is_active = true
 	aws_sts = {
 		role_arn = "role:arn:2"
-		service_account = "username@email.com"
 	}
 }
 
