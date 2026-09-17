@@ -169,6 +169,10 @@ func newSchemaSecurityValidator(logger *slog.Logger) *schemaSecurityValidator {
 		"Configuration enum specifying parameter passing method (InHeader vs InParams), not credential material.")
 
 	// Token URLs: Public or corporate endpoint URLs.
+	registerExemption("resource", "aembit_credential_provider", "mcp_ema.token_url",
+		"OAuth token endpoint URL, not the token itself.")
+	registerExemption("data_source", "aembit_credential_providers", "credential_providers.mcp_ema.token_url",
+		"OAuth token endpoint URL, not the token itself.")
 	registerExemption("resource", "aembit_credential_provider", "mcp_user_based_access_token.oauth_token_url",
 		"OAuth token endpoint URL, not the token itself.")
 	registerExemption("data_source", "aembit_credential_providers", "credential_providers.mcp_user_based_access_token.oauth_token_url",

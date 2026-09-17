@@ -305,6 +305,7 @@ Optional:
 - `namespace` (String) The Namespace of the Kubernetes Service Account Token.
 - `namespaces` (Set of String) The set of accepted Namespace values of the associated Kubernetes Service Account Token. Used only for cases where multiple Namespaces can be matched.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
+- `oidc_endpoints` (Set of String) The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.
 - `pod_name` (String) The Pod Name of the Kubernetes Service Account Token.
 - `pod_names` (Set of String) The set of accepted Pod Name values of the associated Kubernetes Service Account Token. Used only for cases where multiple Pod Names can be matched.
 - `public_key` (String) The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.
@@ -327,6 +328,7 @@ Optional:
 - `issuers` (Set of String) The set of accepted Issuer values of the associated OIDC ID Token. Used only for cases where multiple Issuers can be matched.
 - `jwks` (String) The JSON Web Key Set (JWKS) containing public keys used for signature verification.<br>**Note:** Only strictly valid JSON, with no trailing commas, will pass validation for this field.
 - `oidc_endpoint` (String) The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.
+- `oidc_endpoints` (Set of String) The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token.
 - `public_key` (String) The Public Key that can be used to verify the signature of the OIDC ID Token.
 - `subject` (String) The Subject (`sub` claim) of the OIDC ID Token.
 - `subjects` (Set of String) The set of accepted Subject values of the associated OIDC ID Token. Used only for cases where multiple Subjects can be matched.

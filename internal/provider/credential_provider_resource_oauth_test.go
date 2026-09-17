@@ -55,10 +55,10 @@ func TestConvertCredentialProviderV2DTOToModel_OAuthAuthorizationCode_IncludesFi
 		ClientID:         "client-id",
 		Scope:            "scope",
 		CustomParameters: []aembit.CustomClaimsDTO{},
+		AuthorizationUrl: "https://aembit.io/authorize",
+		TokenUrl:         "https://aembit.io/token",
+		IntrospectionUrl: "https://aembit.io/introspect",
 		CredentialOAuthAuthorizationCodeV2DTO: aembit.CredentialOAuthAuthorizationCodeV2DTO{
-			AuthorizationUrl: "https://aembit.io/authorize",
-			TokenUrl:         "https://aembit.io/token",
-			IntrospectionUrl: "https://aembit.io/introspect",
 			IsPkceRequired:   true,
 			CallBackUrl:      "https://aembit.io/callback",
 			FinalCallbackUrl: "https://aembit.io/final-callback",

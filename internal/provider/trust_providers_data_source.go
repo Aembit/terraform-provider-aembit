@@ -457,6 +457,11 @@ func (d *trustProvidersDataSource) Schema(
 									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
 									Computed:    true,
 								},
+								"oidc_endpoints": schema.SetAttribute{
+									Description: "The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the Kubernetes Service Account Token.",
+									ElementType: types.StringType,
+									Computed:    true,
+								},
 								"public_key": schema.StringAttribute{
 									Description: "The Public Key that can be used to verify the signature of the Kubernetes Service Account Token.",
 									Computed:    true,
@@ -537,6 +542,11 @@ func (d *trustProvidersDataSource) Schema(
 								},
 								"oidc_endpoint": schema.StringAttribute{
 									Description: "The OIDC Endpoint from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token Token.",
+									Computed:    true,
+								},
+								"oidc_endpoints": schema.SetAttribute{
+									Description: "The OIDC Endpoints from which Public Keys can be retrieved for verifying the signature of the OIDC ID Token Token.",
+									ElementType: types.StringType,
 									Computed:    true,
 								},
 								"public_key": schema.StringAttribute{
