@@ -348,32 +348,27 @@ func TestConvertAccessPolicyModelToPolicyDTO_CredentialProvidersNullable(t *test
 	// First mapping (AccessKeyId)
 	assert.Equal(t, "cp-1", dto.CredentialProviders[0].CredentialProviderId)
 	assert.Equal(t, "AccessKeyId", dto.CredentialProviders[0].MappingType)
-	require.NotNil(t, dto.CredentialProviders[0].AccessKeyId)
-	assert.Equal(t, "ACCESSKEY1", *dto.CredentialProviders[0].AccessKeyId)
-	assert.Nil(t, dto.CredentialProviders[0].AccountName)
-	assert.Nil(t, dto.CredentialProviders[0].HeaderName)
-	assert.Nil(t, dto.CredentialProviders[0].HeaderValue)
-	assert.Nil(t, dto.CredentialProviders[0].HttpbodyFieldPath)
-	assert.Nil(t, dto.CredentialProviders[0].HttpbodyFieldValue)
+	assert.Equal(t, "ACCESSKEY1", dto.CredentialProviders[0].AccessKeyId)
+	assert.Equal(t, "", dto.CredentialProviders[0].AccountName)
+	assert.Equal(t, "", dto.CredentialProviders[0].HeaderName)
+	assert.Equal(t, "", dto.CredentialProviders[0].HeaderValue)
+	assert.Equal(t, "", dto.CredentialProviders[0].HttpbodyFieldPath)
+	assert.Equal(t, "", dto.CredentialProviders[0].HttpbodyFieldValue)
 
 	// Second mapping (HttpHeader)
 	assert.Equal(t, "cp-2", dto.CredentialProviders[1].CredentialProviderId)
 	assert.Equal(t, "HttpHeader", dto.CredentialProviders[1].MappingType)
-	assert.Nil(t, dto.CredentialProviders[1].AccessKeyId)
-	assert.Nil(t, dto.CredentialProviders[1].AccountName)
-	require.NotNil(t, dto.CredentialProviders[1].HeaderName)
-	assert.Equal(t, "X-Test-Header", *dto.CredentialProviders[1].HeaderName)
-	require.NotNil(t, dto.CredentialProviders[1].HeaderValue)
-	assert.Equal(t, "test-val", *dto.CredentialProviders[1].HeaderValue)
-	assert.Nil(t, dto.CredentialProviders[1].HttpbodyFieldPath)
-	assert.Nil(t, dto.CredentialProviders[1].HttpbodyFieldValue)
+	assert.Equal(t, "", dto.CredentialProviders[1].AccessKeyId)
+	assert.Equal(t, "", dto.CredentialProviders[1].AccountName)
+	assert.Equal(t, "X-Test-Header", dto.CredentialProviders[1].HeaderName)
+	assert.Equal(t, "test-val", dto.CredentialProviders[1].HeaderValue)
+	assert.Equal(t, "", dto.CredentialProviders[1].HttpbodyFieldPath)
+	assert.Equal(t, "", dto.CredentialProviders[1].HttpbodyFieldValue)
 }
 
 func TestConvertAccessPolicyDTOToModel_CredentialProvidersNullable(t *testing.T) {
 	t.Parallel()
 
-	accessKey := "ACCESSKEY1"
-	accountName := "my-account"
 	dto := aembit.CreatePolicyDTO{
 		AccessEntityDTO: aembit.AccessEntityDTO{
 			EntityDTO: aembit.EntityDTO{
@@ -388,22 +383,22 @@ func TestConvertAccessPolicyDTOToModel_CredentialProvidersNullable(t *testing.T)
 			{
 				CredentialProviderId: "cp-1",
 				MappingType:          "AccessKeyId",
-				AccessKeyId:          &accessKey,
-				AccountName:          nil,
-				HeaderName:           nil,
-				HeaderValue:          nil,
-				HttpbodyFieldPath:    nil,
-				HttpbodyFieldValue:   nil,
+				AccessKeyId:          "ACCESSKEY1",
+				AccountName:          "",
+				HeaderName:           "",
+				HeaderValue:          "",
+				HttpbodyFieldPath:    "",
+				HttpbodyFieldValue:   "",
 			},
 			{
 				CredentialProviderId: "cp-2",
 				MappingType:          "AccountName",
-				AccessKeyId:          nil,
-				AccountName:          &accountName,
-				HeaderName:           nil,
-				HeaderValue:          nil,
-				HttpbodyFieldPath:    nil,
-				HttpbodyFieldValue:   nil,
+				AccessKeyId:          "",
+				AccountName:          "my-account",
+				HeaderName:           "",
+				HeaderValue:          "",
+				HttpbodyFieldPath:    "",
+				HttpbodyFieldValue:   "",
 			},
 		},
 	}
@@ -453,20 +448,17 @@ func TestConvertAccessPolicyExternalDTOToModel_CredentialProvidersNullable(t *te
 		},
 	}
 
-	headerName := "X-Custom"
-	headerVal := "custom-val"
-	accName := "acc-1"
 	mappings := []aembit.PolicyCredentialMappingDTO{
 		{
 			CredentialProviderId: "cp-1",
 			MappingType:          "HttpHeader",
-			HeaderName:           &headerName,
-			HeaderValue:          &headerVal,
+			HeaderName:           "X-Custom",
+			HeaderValue:          "custom-val",
 		},
 		{
 			CredentialProviderId: "cp-2",
 			MappingType:          "AccountName",
-			AccountName:          &accName,
+			AccountName:          "acc-1",
 		},
 	}
 

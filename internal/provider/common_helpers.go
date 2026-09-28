@@ -109,6 +109,13 @@ func getResourceSetId(resourceSetId types.String, client *aembit.CloudClient) st
 	return rsId
 }
 
+func stringToTypesString(s string) types.String {
+	if s == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(s)
+}
+
 func stringPointerToTypesString(s *string) types.String {
 	if s == nil || *s == "" {
 		return types.StringNull()

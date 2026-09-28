@@ -552,12 +552,12 @@ func convertAccessPolicyModelToPolicyDTO(
 				policy.CredentialProviders[i] = aembit.PolicyCredentialMappingDTO{
 					CredentialProviderId: credentialProvider.CredentialProviderId.ValueString(),
 					MappingType:          credentialProvider.MappingType.ValueString(),
-					AccountName:          typesStringToStringPointer(credentialProvider.AccountName),
-					AccessKeyId:          typesStringToStringPointer(credentialProvider.AccessKeyId),
-					HeaderName:           typesStringToStringPointer(credentialProvider.HeaderName),
-					HeaderValue:          typesStringToStringPointer(credentialProvider.HeaderValue),
-					HttpbodyFieldPath:    typesStringToStringPointer(credentialProvider.HttpbodyFieldPath),
-					HttpbodyFieldValue:   typesStringToStringPointer(credentialProvider.HttpbodyFieldValue),
+					AccountName:          credentialProvider.AccountName.ValueString(),
+					AccessKeyId:          credentialProvider.AccessKeyId.ValueString(),
+					HeaderName:           credentialProvider.HeaderName.ValueString(),
+					HeaderValue:          credentialProvider.HeaderValue.ValueString(),
+					HttpbodyFieldPath:    credentialProvider.HttpbodyFieldPath.ValueString(),
+					HttpbodyFieldValue:   credentialProvider.HttpbodyFieldValue.ValueString(),
 				}
 			}
 		}
@@ -597,12 +597,12 @@ func convertAccessPolicyDTOToModel(
 						credentialProvider.CredentialProviderId,
 					),
 					MappingType:        types.StringValue(credentialProvider.MappingType),
-					AccountName:        stringPointerToTypesString(credentialProvider.AccountName),
-					AccessKeyId:        stringPointerToTypesString(credentialProvider.AccessKeyId),
-					HeaderName:         stringPointerToTypesString(credentialProvider.HeaderName),
-					HeaderValue:        stringPointerToTypesString(credentialProvider.HeaderValue),
-					HttpbodyFieldPath:  stringPointerToTypesString(credentialProvider.HttpbodyFieldPath),
-					HttpbodyFieldValue: stringPointerToTypesString(credentialProvider.HttpbodyFieldValue),
+					AccountName:        stringToTypesString(credentialProvider.AccountName),
+					AccessKeyId:        stringToTypesString(credentialProvider.AccessKeyId),
+					HeaderName:         stringToTypesString(credentialProvider.HeaderName),
+					HeaderValue:        stringToTypesString(credentialProvider.HeaderValue),
+					HttpbodyFieldPath:  stringToTypesString(credentialProvider.HttpbodyFieldPath),
+					HttpbodyFieldValue: stringToTypesString(credentialProvider.HttpbodyFieldValue),
 				}
 			}
 		}
@@ -677,12 +677,12 @@ func convertAccessPolicyExternalDTOToModel(
 				model.CredentialProviders[i] = &models.PolicyCredentialMappingModel{
 					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
 					MappingType:          types.StringValue(relatedMapping.MappingType),
-					AccountName:          stringPointerToTypesString(relatedMapping.AccountName),
-					AccessKeyId:          stringPointerToTypesString(relatedMapping.AccessKeyId),
-					HeaderName:           stringPointerToTypesString(relatedMapping.HeaderName),
-					HeaderValue:          stringPointerToTypesString(relatedMapping.HeaderValue),
-					HttpbodyFieldPath:    stringPointerToTypesString(relatedMapping.HttpbodyFieldPath),
-					HttpbodyFieldValue:   stringPointerToTypesString(relatedMapping.HttpbodyFieldValue),
+					AccountName:          stringToTypesString(relatedMapping.AccountName),
+					AccessKeyId:          stringToTypesString(relatedMapping.AccessKeyId),
+					HeaderName:           stringToTypesString(relatedMapping.HeaderName),
+					HeaderValue:          stringToTypesString(relatedMapping.HeaderValue),
+					HttpbodyFieldPath:    stringToTypesString(relatedMapping.HttpbodyFieldPath),
+					HttpbodyFieldValue:   stringToTypesString(relatedMapping.HttpbodyFieldValue),
 				}
 			}
 		}

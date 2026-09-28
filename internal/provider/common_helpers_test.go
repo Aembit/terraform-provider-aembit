@@ -52,6 +52,19 @@ func Test_NewStringSetModel(t *testing.T) {
 	assert.Equal(t, 2, len(res.Elements()))
 }
 
+func Test_StringToTypesString(t *testing.T) {
+	t.Parallel()
+
+	// empty string -> types.StringNull()
+	res := stringToTypesString("")
+	assert.True(t, res.IsNull())
+
+	// non-empty string -> types.StringValue("hello")
+	res = stringToTypesString("hello")
+	assert.False(t, res.IsNull())
+	assert.Equal(t, types.StringValue("hello"), res)
+}
+
 func Test_StringPointerToTypesString(t *testing.T) {
 	t.Parallel()
 
