@@ -785,12 +785,3 @@ func hasOAuthRedirectURIIdentityDTO(identities []aembit.ClientWorkloadIdentityDT
 
 	return false
 }
-
-func newStringSetModel(ctx context.Context, values []string) types.Set {
-	if len(values) == 0 {
-		return types.SetNull(types.StringType)
-	}
-
-	s, _ := types.SetValueFrom(ctx, types.StringType, values)
-	return s
-}

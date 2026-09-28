@@ -1,11 +1,21 @@
 package provider
 
 import (
+	"context"
 	"os"
 	"regexp"
 	"testing"
 
+	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	frameworkResource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"terraform-provider-aembit/internal/provider/models"
 )
 
 const (
@@ -302,4 +312,238 @@ func TestAccMultipleSTSCredentialProviders_AccessPolicyResource(t *testing.T) {
 			// Delete testing automatically occurs in TestCase
 		},
 	})
+}
+
+func TestConvertAccessPolicyModelToPolicyDTO_CredentialProvidersNullable(t *testing.T) {
+	t.Parallel()
+
+	model := models.AccessPolicyResourceModel{
+		Name:           types.StringValue("Test Policy"),
+		IsActive:       types.BoolValue(true),
+		ClientWorkload: types.StringValue("cw-1"),
+		ServerWorkload: types.StringValue("sw-1"),
+		CredentialProviders: []*models.PolicyCredentialMappingModel{
+			{
+				CredentialProviderId: types.StringValue("cp-1"),
+				MappingType:          types.StringValue("AccessKeyId"),
+				AccessKeyId:          types.StringValue("ACCESSKEY1"),
+				AccountName:          types.StringNull(),
+				HeaderName:           types.StringNull(),
+				HeaderValue:          types.StringNull(),
+				HttpbodyFieldPath:    types.StringNull(),
+				HttpbodyFieldValue:   types.StringNull(),
+			},
+			{
+				CredentialProviderId: types.StringValue("cp-2"),
+				MappingType:          types.StringValue("HttpHeader"),
+				AccessKeyId:          types.StringNull(),
+				AccountName:          types.StringNull(),
+				HeaderName:           types.StringValue("X-Test-Header"),
+				HeaderValue:          types.StringValue("test-val"),
+				HttpbodyFieldPath:    types.StringNull(),
+				HttpbodyFieldValue:   types.StringNull(),
+			},
+		},
+	}
+
+	dto := convertAccessPolicyModelToPolicyDTO(model, nil)
+
+	require.Len(t, dto.CredentialProviders, 2)
+
+	// First mapping (AccessKeyId)
+	assert.Equal(t, "cp-1", dto.CredentialProviders[0].CredentialProviderId)
+	assert.Equal(t, "AccessKeyId", dto.CredentialProviders[0].MappingType)
+	assert.Equal(t, "ACCESSKEY1", dto.CredentialProviders[0].AccessKeyId)
+	assert.Equal(t, "", dto.CredentialProviders[0].AccountName)
+	assert.Equal(t, "", dto.CredentialProviders[0].HeaderName)
+	assert.Equal(t, "", dto.CredentialProviders[0].HeaderValue)
+	assert.Equal(t, "", dto.CredentialProviders[0].HttpbodyFieldPath)
+	assert.Equal(t, "", dto.CredentialProviders[0].HttpbodyFieldValue)
+
+	// Second mapping (HttpHeader)
+	assert.Equal(t, "cp-2", dto.CredentialProviders[1].CredentialProviderId)
+	assert.Equal(t, "HttpHeader", dto.CredentialProviders[1].MappingType)
+	assert.Equal(t, "", dto.CredentialProviders[1].AccessKeyId)
+	assert.Equal(t, "", dto.CredentialProviders[1].AccountName)
+	assert.Equal(t, "X-Test-Header", dto.CredentialProviders[1].HeaderName)
+	assert.Equal(t, "test-val", dto.CredentialProviders[1].HeaderValue)
+	assert.Equal(t, "", dto.CredentialProviders[1].HttpbodyFieldPath)
+	assert.Equal(t, "", dto.CredentialProviders[1].HttpbodyFieldValue)
+}
+
+func TestConvertAccessPolicyDTOToModel_CredentialProvidersNullable(t *testing.T) {
+	t.Parallel()
+
+	dto := aembit.CreatePolicyDTO{
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "policy-1",
+				Name:       "Test Policy",
+				IsActive:   true,
+			},
+		},
+		ClientWorkload: "cw-1",
+		ServerWorkload: "sw-1",
+		CredentialProviders: []aembit.PolicyCredentialMappingDTO{
+			{
+				CredentialProviderId: "cp-1",
+				MappingType:          "AccessKeyId",
+				AccessKeyId:          "ACCESSKEY1",
+				AccountName:          "",
+				HeaderName:           "",
+				HeaderValue:          "",
+				HttpbodyFieldPath:    "",
+				HttpbodyFieldValue:   "",
+			},
+			{
+				CredentialProviderId: "cp-2",
+				MappingType:          "AccountName",
+				AccessKeyId:          "",
+				AccountName:          "my-account",
+				HeaderName:           "",
+				HeaderValue:          "",
+				HttpbodyFieldPath:    "",
+				HttpbodyFieldValue:   "",
+			},
+		},
+	}
+
+	plan := models.AccessPolicyResourceModel{}
+	model := convertAccessPolicyDTOToModel(plan, dto)
+
+	require.Len(t, model.CredentialProviders, 2)
+
+	// First mapping: access_key_id should be string value, others should be StringNull()
+	assert.Equal(t, types.StringValue("cp-1"), model.CredentialProviders[0].CredentialProviderId)
+	assert.Equal(t, types.StringValue("AccessKeyId"), model.CredentialProviders[0].MappingType)
+	assert.Equal(t, types.StringValue("ACCESSKEY1"), model.CredentialProviders[0].AccessKeyId)
+	assert.True(t, model.CredentialProviders[0].AccountName.IsNull(), "expected AccountName to be null")
+	assert.True(t, model.CredentialProviders[0].HeaderName.IsNull(), "expected HeaderName to be null")
+	assert.True(t, model.CredentialProviders[0].HeaderValue.IsNull(), "expected HeaderValue to be null")
+	assert.True(t, model.CredentialProviders[0].HttpbodyFieldPath.IsNull(), "expected HttpbodyFieldPath to be null")
+	assert.True(t, model.CredentialProviders[0].HttpbodyFieldValue.IsNull(), "expected HttpbodyFieldValue to be null")
+
+	// Second mapping: account_name should be string value, others should be StringNull()
+	assert.Equal(t, types.StringValue("cp-2"), model.CredentialProviders[1].CredentialProviderId)
+	assert.Equal(t, types.StringValue("AccountName"), model.CredentialProviders[1].MappingType)
+	assert.Equal(t, types.StringValue("my-account"), model.CredentialProviders[1].AccountName)
+	assert.True(t, model.CredentialProviders[1].AccessKeyId.IsNull(), "expected AccessKeyId to be null")
+	assert.True(t, model.CredentialProviders[1].HeaderName.IsNull(), "expected HeaderName to be null")
+	assert.True(t, model.CredentialProviders[1].HeaderValue.IsNull(), "expected HeaderValue to be null")
+	assert.True(t, model.CredentialProviders[1].HttpbodyFieldPath.IsNull(), "expected HttpbodyFieldPath to be null")
+	assert.True(t, model.CredentialProviders[1].HttpbodyFieldValue.IsNull(), "expected HttpbodyFieldValue to be null")
+}
+
+func TestConvertAccessPolicyExternalDTOToModel_CredentialProvidersNullable(t *testing.T) {
+	t.Parallel()
+
+	dto := aembit.GetPolicyDTO{
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "policy-1",
+				Name:       "Test Policy",
+				IsActive:   true,
+			},
+		},
+		ClientWorkload: aembit.EntityMetaDTO{ExternalID: "cw-1"},
+		ServerWorkload: aembit.EntityMetaDTO{ExternalID: "sw-1"},
+		CredentialProviders: []aembit.EntityMetaDTO{
+			{ExternalID: "cp-1"},
+			{ExternalID: "cp-2"},
+		},
+	}
+
+	mappings := []aembit.PolicyCredentialMappingDTO{
+		{
+			CredentialProviderId: "cp-1",
+			MappingType:          "HttpHeader",
+			HeaderName:           "X-Custom",
+			HeaderValue:          "custom-val",
+		},
+		{
+			CredentialProviderId: "cp-2",
+			MappingType:          "AccountName",
+			AccountName:          "acc-1",
+		},
+	}
+
+	model := convertAccessPolicyExternalDTOToModel(dto, mappings)
+
+	require.Len(t, model.CredentialProviders, 2)
+	assert.Equal(t, types.StringValue("X-Custom"), model.CredentialProviders[0].HeaderName)
+	assert.Equal(t, types.StringValue("custom-val"), model.CredentialProviders[0].HeaderValue)
+	assert.True(t, model.CredentialProviders[0].AccessKeyId.IsNull())
+	assert.True(t, model.CredentialProviders[0].AccountName.IsNull())
+	assert.True(t, model.CredentialProviders[0].HttpbodyFieldPath.IsNull())
+	assert.True(t, model.CredentialProviders[0].HttpbodyFieldValue.IsNull())
+
+	assert.Equal(t, types.StringValue("acc-1"), model.CredentialProviders[1].AccountName)
+	assert.True(t, model.CredentialProviders[1].AccessKeyId.IsNull())
+	assert.True(t, model.CredentialProviders[1].HeaderName.IsNull())
+	assert.True(t, model.CredentialProviders[1].HeaderValue.IsNull())
+	assert.True(t, model.CredentialProviders[1].HttpbodyFieldPath.IsNull())
+	assert.True(t, model.CredentialProviders[1].HttpbodyFieldValue.IsNull())
+}
+
+func TestAccessPolicyResourceSchema_CredentialProviderMappingAttributesValidation(t *testing.T) {
+	t.Parallel()
+
+	r := NewAccessPolicyResource()
+	var resp frameworkResource.SchemaResponse
+	r.Schema(context.Background(), frameworkResource.SchemaRequest{}, &resp)
+	require.False(t, resp.Diagnostics.HasError())
+
+	cpAttr, ok := resp.Schema.Attributes["credential_providers"].(schema.SetNestedAttribute)
+	require.True(t, ok)
+
+	testedAttributes := []string{
+		"mapping_type",
+		"header_name",
+		"header_value",
+		"httpbody_field_path",
+		"httpbody_field_value",
+		"account_name",
+		"access_key_id",
+	}
+
+	for _, attrName := range testedAttributes {
+		t.Run(attrName, func(t *testing.T) {
+			attr, ok := cpAttr.NestedObject.Attributes[attrName].(schema.StringAttribute)
+			require.True(t, ok)
+			require.NotEmpty(t, attr.Validators)
+
+			// Validate empty string is rejected
+			emptyReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringValue(""),
+			}
+			var emptyResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), emptyReq, &emptyResp)
+			}
+			assert.True(t, emptyResp.Diagnostics.HasError(), "expected error for empty string on %s", attrName)
+
+			// Validate non-empty string passes
+			validReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringValue("valid-value"),
+			}
+			var validResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), validReq, &validResp)
+			}
+			assert.False(t, validResp.Diagnostics.HasError(), "expected no error for valid string on %s", attrName)
+
+			// Validate null string passes (skipped)
+			nullReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringNull(),
+			}
+			var nullResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), nullReq, &nullResp)
+			}
+			assert.False(t, nullResp.Diagnostics.HasError(), "expected no error for null string on %s", attrName)
+		})
+	}
 }
