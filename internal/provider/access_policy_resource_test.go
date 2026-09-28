@@ -1,11 +1,16 @@
 package provider
 
 import (
+	"context"
 	"os"
 	"regexp"
 	"testing"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	frameworkResource "github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
@@ -478,4 +483,67 @@ func TestConvertAccessPolicyExternalDTOToModel_CredentialProvidersNullable(t *te
 	assert.True(t, model.CredentialProviders[1].HeaderValue.IsNull())
 	assert.True(t, model.CredentialProviders[1].HttpbodyFieldPath.IsNull())
 	assert.True(t, model.CredentialProviders[1].HttpbodyFieldValue.IsNull())
+}
+
+func TestAccessPolicyResourceSchema_CredentialProviderMappingAttributesValidation(t *testing.T) {
+	t.Parallel()
+
+	r := NewAccessPolicyResource()
+	var resp frameworkResource.SchemaResponse
+	r.Schema(context.Background(), frameworkResource.SchemaRequest{}, &resp)
+	require.False(t, resp.Diagnostics.HasError())
+
+	cpAttr, ok := resp.Schema.Attributes["credential_providers"].(schema.SetNestedAttribute)
+	require.True(t, ok)
+
+	testedAttributes := []string{
+		"mapping_type",
+		"header_name",
+		"header_value",
+		"httpbody_field_path",
+		"httpbody_field_value",
+		"account_name",
+		"access_key_id",
+	}
+
+	for _, attrName := range testedAttributes {
+		t.Run(attrName, func(t *testing.T) {
+			attr, ok := cpAttr.NestedObject.Attributes[attrName].(schema.StringAttribute)
+			require.True(t, ok)
+			require.NotEmpty(t, attr.Validators)
+
+			// Validate empty string is rejected
+			emptyReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringValue(""),
+			}
+			var emptyResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), emptyReq, &emptyResp)
+			}
+			assert.True(t, emptyResp.Diagnostics.HasError(), "expected error for empty string on %s", attrName)
+
+			// Validate non-empty string passes
+			validReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringValue("valid-value"),
+			}
+			var validResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), validReq, &validResp)
+			}
+			assert.False(t, validResp.Diagnostics.HasError(), "expected no error for valid string on %s", attrName)
+
+			// Validate null string passes (skipped)
+			nullReq := validator.StringRequest{
+				Path:        path.Root("credential_providers").AtSetValue(types.ObjectNull(nil)).AtName(attrName),
+				ConfigValue: types.StringNull(),
+			}
+			var nullResp validator.StringResponse
+			for _, v := range attr.Validators {
+				v.ValidateString(context.Background(), nullReq, &nullResp)
+			}
+			assert.False(t, nullResp.Diagnostics.HasError(), "expected no error for null string on %s", attrName)
+		})
+	}
 }

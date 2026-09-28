@@ -10,6 +10,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -202,30 +203,51 @@ func (r *accessPolicyResource) Schema(
 						"mapping_type": schema.StringAttribute{
 							Description: "Mapping type for the credential provider.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"header_name": schema.StringAttribute{
 							Description: "Name of the header for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"header_value": schema.StringAttribute{
 							Description: "Value of the header for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"httpbody_field_path": schema.StringAttribute{
 							Description: "Field path in the HTTP body for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"httpbody_field_value": schema.StringAttribute{
 							Description: "Field value in the HTTP body for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"access_key_id": schema.StringAttribute{
 							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 					},
 				},
