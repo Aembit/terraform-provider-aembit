@@ -6,10 +6,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
+
+// invalidCustomClaimValueSummary is the diagnostic error summary for custom claim value errors.
+const invalidCustomClaimValueSummary = "Invalid Custom Claim Value"
 
 // CustomClaimsValidator validates custom claims sets on credential provider resources at plan time.
 type CustomClaimsValidator struct {
@@ -32,6 +36,14 @@ type customClaimModel struct {
 	ValueType types.String `tfsdk:"value_type"`
 }
 
+// keyString returns the claim key as a string or empty if null or unknown.
+func (c *customClaimModel) keyString() string {
+	if c.Key.IsNull() || c.Key.IsUnknown() {
+		return ""
+	}
+	return c.Key.ValueString()
+}
+
 // Description returns a plain text description of the validator.
 func (v CustomClaimsValidator) Description(_ context.Context) string {
 	return "Validates that custom claim values match their specified value_type (literal or dynamic)."
@@ -50,6 +62,96 @@ func formatFieldName(key string) string {
 	return fmt.Sprintf("CustomClaim '%s'", key)
 }
 
+// withDefaults ensures compiled regular expressions are initialized.
+func (v CustomClaimsValidator) withDefaults() CustomClaimsValidator {
+	if v.dynamicVarRegex == nil {
+		v.dynamicVarRegex = regexp.MustCompile(`\$\{[\\\w\-_.\[\]'":/]+\}`)
+	}
+	if v.literalPatternRegex == nil {
+		v.literalPatternRegex = regexp.MustCompile(`\$\{[^}]*\}`)
+	}
+	return v
+}
+
+// extractClaim handles object casting, null/unknown checks, and model mapping for a set element.
+func (v CustomClaimsValidator) extractClaim(
+	ctx context.Context,
+	elem attr.Value,
+	resp *validator.SetResponse,
+) (*customClaimModel, bool) {
+	if elem.IsNull() || elem.IsUnknown() {
+		return nil, false
+	}
+
+	obj, ok := elem.(types.Object)
+	if !ok {
+		return nil, false
+	}
+
+	var claim customClaimModel
+	diags := obj.As(ctx, &claim, basetypes.ObjectAsOptions{})
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return nil, false
+	}
+
+	if claim.Value.IsNull() || claim.Value.IsUnknown() ||
+		claim.ValueType.IsNull() || claim.ValueType.IsUnknown() {
+		return nil, false
+	}
+
+	return &claim, true
+}
+
+// claimValidationError represents a diagnostic validation error for a custom claim.
+type claimValidationError struct {
+	// message describes the specific claim validation failure.
+	message string
+}
+
+// Error returns the validation error message.
+func (e claimValidationError) Error() string {
+	return e.message
+}
+
+// validateLiteralClaim validates that a literal claim value does not contain template syntax.
+func (v CustomClaimsValidator) validateLiteralClaim(key, val string) error {
+	if val != "" && v.literalPatternRegex.MatchString(val) {
+		return claimValidationError{
+			message: fmt.Sprintf("Field '%s' cannot contain dynamic template syntax '${...}' when configured as literal.", formatFieldName(key)),
+		}
+	}
+	return nil
+}
+
+// validateDynamicClaim validates that a dynamic claim value contains valid template expression syntax.
+func (v CustomClaimsValidator) validateDynamicClaim(key, val string) error {
+	if val == "" || !strings.Contains(val, "${") {
+		return claimValidationError{
+			message: fmt.Sprintf("Field '%s' must contain a valid template expression '${...}' when configured as dynamic.", formatFieldName(key)),
+		}
+	}
+
+	if !v.dynamicVarRegex.MatchString(val) || strings.Contains(v.dynamicVarRegex.ReplaceAllString(val, ""), "${") {
+		return claimValidationError{
+			message: fmt.Sprintf("Field '%s' has invalid template expression syntax.", formatFieldName(key)),
+		}
+	}
+
+	return nil
+}
+
+// validateClaimValue delegates claim value validation according to its declared value type.
+func (v CustomClaimsValidator) validateClaimValue(key, val, valType string) error {
+	if strings.EqualFold(valType, "literal") {
+		return v.validateLiteralClaim(key, val)
+	}
+	if strings.EqualFold(valType, "dynamic") {
+		return v.validateDynamicClaim(key, val)
+	}
+	return nil
+}
+
 // ValidateSet executes plan-time validation on the custom_claims set attribute.
 func (v CustomClaimsValidator) ValidateSet(
 	ctx context.Context,
@@ -60,76 +162,24 @@ func (v CustomClaimsValidator) ValidateSet(
 		return
 	}
 
-	dynamicRegex := v.dynamicVarRegex
-	if dynamicRegex == nil {
-		dynamicRegex = regexp.MustCompile(`\$\{[\\\w\-_.\[\]'":/]+\}`)
-	}
-
-	literalRegex := v.literalPatternRegex
-	if literalRegex == nil {
-		literalRegex = regexp.MustCompile(`\$\{[^}]*\}`)
-	}
+	v = v.withDefaults()
 
 	for _, elem := range req.ConfigValue.Elements() {
-		if elem.IsNull() || elem.IsUnknown() {
-			continue
-		}
-
-		obj, ok := elem.(types.Object)
+		claim, ok := v.extractClaim(ctx, elem, resp)
 		if !ok {
 			continue
 		}
 
-		var claim customClaimModel
-		diags := obj.As(ctx, &claim, basetypes.ObjectAsOptions{})
-		resp.Diagnostics.Append(diags...)
-		if diags.HasError() {
-			continue
-		}
-
-		if claim.Value.IsNull() || claim.Value.IsUnknown() ||
-			claim.ValueType.IsNull() || claim.ValueType.IsUnknown() {
-			continue
-		}
-
-		key := ""
-		if !claim.Key.IsNull() && !claim.Key.IsUnknown() {
-			key = claim.Key.ValueString()
-		}
-
+		key := claim.keyString()
 		val := claim.Value.ValueString()
 		valType := strings.TrimSpace(claim.ValueType.ValueString())
 
-		if strings.EqualFold(valType, "literal") {
-			if val != "" && literalRegex.MatchString(val) {
-				resp.Diagnostics.AddAttributeError(
-					req.Path,
-					"Invalid Custom Claim Value",
-					fmt.Sprintf("Field '%s' cannot contain dynamic template syntax '${...}' when configured as literal.", formatFieldName(key)),
-				)
-			}
-		} else if strings.EqualFold(valType, "dynamic") {
-			if val == "" {
-				resp.Diagnostics.AddAttributeError(
-					req.Path,
-					"Invalid Custom Claim Value",
-					fmt.Sprintf("Field '%s' must contain a valid template expression '${...}' when configured as dynamic.", formatFieldName(key)),
-				)
-			} else if strings.Contains(val, "${") {
-				if !dynamicRegex.MatchString(val) || strings.Contains(dynamicRegex.ReplaceAllString(val, ""), "${") {
-					resp.Diagnostics.AddAttributeError(
-						req.Path,
-						"Invalid Custom Claim Value",
-						fmt.Sprintf("Field '%s' has invalid template expression syntax.", formatFieldName(key)),
-					)
-				}
-			} else {
-				resp.Diagnostics.AddAttributeError(
-					req.Path,
-					"Invalid Custom Claim Value",
-					fmt.Sprintf("Field '%s' must contain a valid template expression '${...}' when configured as dynamic.", formatFieldName(key)),
-				)
-			}
+		if err := v.validateClaimValue(key, val, valType); err != nil {
+			resp.Diagnostics.AddAttributeError(
+				req.Path,
+				invalidCustomClaimValueSummary,
+				err.Error(),
+			)
 		}
 	}
 }

@@ -574,3 +574,26 @@ func TestCustomClaimsValidator_InvalidObjectSchema(t *testing.T) {
 	v.ValidateSet(ctx, req, resp)
 	assert.True(t, resp.Diagnostics.HasError())
 }
+
+// TestCustomClaimsValidator_UnsupportedValueType verifies that unsupported value_types pass without error.
+func TestCustomClaimsValidator_UnsupportedValueType(t *testing.T) {
+	t.Parallel()
+
+	v := NewCustomClaimsValidator()
+	ctx := context.Background()
+
+	claimObj := createClaimObject("claim_key", "claim_val", "other")
+	setVal, diags := types.SetValue(createClaimObjectType(), []attr.Value{claimObj})
+	require.False(t, diags.HasError())
+
+	req := validator.SetRequest{
+		Path:        path.Root("custom_claims"),
+		ConfigValue: setVal,
+	}
+	resp := &validator.SetResponse{
+		Diagnostics: diag.Diagnostics{},
+	}
+
+	v.ValidateSet(ctx, req, resp)
+	assert.False(t, resp.Diagnostics.HasError())
+}
