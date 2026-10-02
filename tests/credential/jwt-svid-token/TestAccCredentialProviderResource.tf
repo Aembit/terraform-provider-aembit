@@ -18,7 +18,7 @@ resource "aembit_credential_provider" "jwt_svid_token" {
 			},
 			{
 				key = "key2"
-				value = "value2"
+				value = "$${client.executable.hash.sha256}"
 				value_type = "dynamic"
 			}
 		]	

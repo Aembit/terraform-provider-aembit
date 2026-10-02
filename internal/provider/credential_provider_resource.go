@@ -617,6 +617,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
@@ -814,6 +817,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 					"absolute_token_lifetime": schema.Int32Attribute{
 						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
@@ -957,6 +963,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 				},
 			},
