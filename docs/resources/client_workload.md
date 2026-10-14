@@ -51,10 +51,10 @@ resource "aembit_client_workload" "test" {
 ### Optional
 
 - `description` (String) Description for the Client Workload.
-- `enforce_sso` (Boolean) Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.
+- `enforce_sso` (Boolean) Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use an MCP identity (`oauthRedirectUri` or `cimdClientId`), which cannot be mixed with other identity types.
 - `is_active` (Boolean) Active status of the Client Workload.
 - `resource_set_id` (String) ResourceSet unique identifier of the Client Workload.
-- `sso_identity_providers` (Set of String) Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enable_sso' is true.
+- `sso_identity_providers` (Set of String) Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable to MCP client workloads (`oauthRedirectUri` or `cimdClientId`) when `enforce_sso` is true.
 - `standalone_certificate_authority` (String) Standalone Certificate Authority ID configured for this Client Workload.
 - `tags` (Map of String) Tags are key-value pairs.
 - `tags_all` (Map of String) A map of all tags that are associated with the resource, including both user-defined tags and any provider-level default tags that are automatically applied. Changes to provider default tags will be reflected in this attribute after the next apply or refresh.
@@ -71,6 +71,7 @@ Required:
 - `type` (String) Client identity type. Possible values are: 
 	* `aembitClientId`
 	* `cimdClientId`
+		When configured, it cannot be mixed with non-MCP client workload identity types.
 	* `awsAccountId`
 	* `awsEc2InstanceId`
 	* `awsEcsTaskFamily`
@@ -92,7 +93,7 @@ Required:
 	* `k8sServiceAccountName`
 	* `k8sServiceAccountUID`
 	* `oauthRedirectUri`
-	 	When configured, it must be the only client workload identity type in the set.
+		When configured, it cannot be mixed with non-MCP client workload identity types.
 	* `oauthScope`
 	* `oidcIdToken`
 	* `oidcIdTokenAudience`

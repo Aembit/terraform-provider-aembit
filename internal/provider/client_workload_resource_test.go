@@ -933,6 +933,7 @@ resource "aembit_client_workload" "test" {
 	})
 }
 
+// TestConvertClientWorkloadDTOToModel_NormalizesSSOFields verifies that SSO fields are normalized correctly when converting DTO to Model.
 func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
 	t.Parallel()
 
@@ -975,6 +976,145 @@ func TestConvertClientWorkloadDTOToModel_NormalizesSSOFields(t *testing.T) {
 	}
 	if !nonRedirectModel.SsoIdentityProviders.IsNull() {
 		t.Fatalf("expected non-redirect workload sso_identity_providers to be null")
+	}
+}
+
+// TestConvertClientWorkloadDTOToModel_NormalizesCimdSSOFields verifies that cimdClientId preserves enforce_sso and sso_identity_providers from DTO.
+func TestConvertClientWorkloadDTOToModel_NormalizesCimdSSOFields(t *testing.T) {
+	t.Parallel()
+
+	cimdModel := convertClientWorkloadDTOToModel(context.Background(), aembit.ClientWorkloadExternalDTO{
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "4fce7a89-9ab2-4fbf-a757-acbc8a1338d4",
+				Name:       "cimd workload",
+				IsActive:   true,
+			},
+		},
+		Identities: []aembit.ClientWorkloadIdentityDTO{
+			{Type: "cimdClientId", Value: "https://mcpjam.com/.well-known/oauth/client-metadata.json"},
+		},
+		EnforceSso:           false,
+		SsoIdentityProviders: []string{"11111111-1111-1111-1111-111111111111"},
+	}, &models.ClientWorkloadResourceModel{})
+
+	assertSetContainsString(t, cimdModel.SsoIdentityProviders, "11111111-1111-1111-1111-111111111111")
+	if cimdModel.EnforceSso.ValueBool() {
+		t.Fatalf("expected cimd workload enforce_sso to stay false")
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_ValidCimdWithDisabledSSO verifies valid cimdClientId with disabled enforce_sso.
+func TestConvertClientWorkloadModelToDTO_ValidCimdWithDisabledSSO(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("cimdClientId"), Value: types.StringValue("https://mcpjam.com/.well-known/oauth/client-metadata.json"), ClaimName: types.StringNull()}},
+		types.BoolValue(false),
+		types.SetNull(types.StringType),
+	)
+
+	dto, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	if dto.EnforceSso {
+		t.Fatalf("expected enforce_sso to remain false for cimd client ID workload")
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_ValidCimdWithSSOIdentityProviders verifies valid cimdClientId with enforce_sso and sso identity providers.
+func TestConvertClientWorkloadModelToDTO_ValidCimdWithSSOIdentityProviders(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("cimdClientId"), Value: types.StringValue("https://mcpjam.com/.well-known/oauth/client-metadata.json"), ClaimName: types.StringNull()}},
+		types.BoolValue(true),
+		types.SetValueMust(types.StringType, []attr.Value{types.StringValue("11111111-1111-1111-1111-111111111111")}),
+	)
+
+	dto, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diags)
+	}
+	if len(dto.SsoIdentityProviders) != 1 {
+		t.Fatalf("expected one sso_identity_provider, got %v", dto.SsoIdentityProviders)
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_CimdWithSSOAndMissingIDPsReturnsError verifies error when cimdClientId has enforce_sso true but missing IDPs.
+func TestConvertClientWorkloadModelToDTO_CimdWithSSOAndMissingIDPsReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("cimdClientId"), Value: types.StringValue("https://mcpjam.com/.well-known/oauth/client-metadata.json"), ClaimName: types.StringNull()}},
+		types.BoolValue(true),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when enforce_sso is true and no idps are set for cimdClientId")
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_CimdWithDisabledSSOAndIdentityProvidersReturnsError verifies error when cimdClientId has disabled SSO and IDPs configured.
+func TestConvertClientWorkloadModelToDTO_CimdWithDisabledSSOAndIdentityProvidersReturnsError(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{{Type: types.StringValue("cimdClientId"), Value: types.StringValue("https://mcpjam.com/.well-known/oauth/client-metadata.json"), ClaimName: types.StringNull()}},
+		types.BoolValue(false),
+		types.SetValueMust(types.StringType, []attr.Value{types.StringValue("11111111-1111-1111-1111-111111111111")}),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics when enforce_sso is false and idps are set for cimdClientId")
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_MixedCimdIdentitiesReturnsDiagnostics verifies error when cimdClientId is mixed with other non-MCP identity types.
+func TestConvertClientWorkloadModelToDTO_MixedCimdIdentitiesReturnsDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{
+			{Type: types.StringValue("cimdClientId"), Value: types.StringValue("https://mcpjam.com/.well-known/oauth/client-metadata.json"), ClaimName: types.StringNull()},
+			{Type: types.StringValue("k8sNamespace"), Value: types.StringValue("default"), ClaimName: types.StringNull()},
+		},
+		types.BoolValue(true),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics for mixed cimd client ID identities")
+	}
+}
+
+// TestConvertClientWorkloadModelToDTO_InvalidCimdUrlReturnsDiagnostics verifies error when cimdClientId has an invalid URL.
+func TestConvertClientWorkloadModelToDTO_InvalidCimdUrlReturnsDiagnostics(t *testing.T) {
+	t.Parallel()
+
+	model := newClientWorkloadResourceModel(
+		t,
+		[]models.IdentitiesModel{
+			{Type: types.StringValue("cimdClientId"), Value: types.StringValue("http://not-https.com/path"), ClaimName: types.StringNull()},
+			{Type: types.StringNull(), Value: types.StringNull(), ClaimName: types.StringNull()},
+		},
+		types.BoolValue(false),
+		types.SetNull(types.StringType),
+	)
+
+	_, diags := convertClientWorkloadModelToDTO(context.Background(), model, nil, nil)
+	if !diags.HasError() {
+		t.Fatalf("expected diagnostics for invalid CIMD Client ID URL")
 	}
 }
 
@@ -1308,6 +1448,7 @@ func TestAccClientWorkloadResource_OidcIdToken(t *testing.T) {
 	})
 }
 
+// TestAccClientWorkloadResource_CimdClientId verifies acceptance testing of a client workload configured with cimdClientId identity.
 func TestAccClientWorkloadResource_CimdClientId(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
@@ -1318,6 +1459,7 @@ func TestAccClientWorkloadResource_CimdClientId(t *testing.T) {
 					resource "aembit_client_workload" "test" {
 						name        = "TF Acceptance - CIMD Client ID"
 						description = "Acceptance Test client workload with CIMD URL"
+						enforce_sso = false
 						identities = [
 							{
 								type  = "cimdClientId"
@@ -1329,6 +1471,7 @@ func TestAccClientWorkloadResource_CimdClientId(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(testCWResource, "name", "TF Acceptance - CIMD Client ID"),
 					resource.TestCheckResourceAttr(testCWResource, "description", "Acceptance Test client workload with CIMD URL"),
+					resource.TestCheckResourceAttr(testCWResource, "enforce_sso", "false"),
 					resource.TestCheckResourceAttr(testCWResource, "identities.0.type", "cimdClientId"),
 					resource.TestCheckResourceAttr(testCWResource, "identities.0.value", "https://mcpjam.com/.well-known/oauth/client-metadata.json"),
 					resource.TestCheckResourceAttrSet(testCWResource, "id"),

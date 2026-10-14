@@ -86,11 +86,11 @@ func (r *clientWorkloadsDataSource) Schema(
 							Computed:    true,
 						},
 						"enforce_sso": schema.BoolAttribute{
-							Description: "Whether SSO is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.",
+							Description: "Whether SSO is enforced for MCP authorization. This is only applicable when the client workload identities use an MCP identity (`oauthRedirectUri` or `cimdClientId`), which cannot be mixed with other identity types.",
 							Computed:    true,
 						},
 						"sso_identity_providers": schema.SetAttribute{
-							Description: "Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enforce_sso' is true.",
+							Description: "Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable to MCP client workloads (`oauthRedirectUri` or `cimdClientId`) when 'enforce_sso' is true.",
 							ElementType: types.StringType,
 							Computed:    true,
 						},
