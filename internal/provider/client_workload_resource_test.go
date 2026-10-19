@@ -1767,29 +1767,42 @@ func TestValidateIdentities_UserGroupMissingIdpId(t *testing.T) {
 func TestValidateIdentities_UserGroupWithClaimName(t *testing.T) {
 	t.Parallel()
 
-	identities := []models.IdentitiesModel{
-		{
-			Type:               types.StringValue("userGroup"),
-			Value:              types.StringValue("engineering"),
-			IdentityProviderId: types.StringValue("11111111-2222-3333-4444-555555555555"),
-			ClaimName:          types.StringValue("groups"),
-		},
+	cases := []struct {
+		name      string
+		claimName types.String
+	}{
+		{name: "non_empty_claim_name", claimName: types.StringValue("groups")},
+		{name: "empty_claim_name", claimName: types.StringValue("")},
+		{name: "unknown_claim_name", claimName: types.StringUnknown()},
 	}
 
-	diags := validateUserGroupIdentityTypeForConfig(identities)
-	if !diags.HasError() {
-		t.Fatalf("expected error for claim_name set on userGroup, got none")
-	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			identities := []models.IdentitiesModel{
+				{
+					Type:               types.StringValue("userGroup"),
+					Value:              types.StringValue("engineering"),
+					IdentityProviderId: types.StringValue("11111111-2222-3333-4444-555555555555"),
+					ClaimName:          tc.claimName,
+				},
+			}
 
-	foundExpectedError := false
-	for _, diag := range diags.Errors() {
-		if strings.Contains(diag.Detail(), "Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.") {
-			foundExpectedError = true
-			break
-		}
-	}
-	if !foundExpectedError {
-		t.Errorf("did not find expected error message in: %v", diags.Errors())
+			diags := validateUserGroupIdentityTypeForConfig(identities)
+			if !diags.HasError() {
+				t.Fatalf("expected error for claim_name %v set on userGroup, got none", tc.claimName)
+			}
+
+			foundExpectedError := false
+			for _, diag := range diags.Errors() {
+				if strings.Contains(diag.Detail(), "Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.") {
+					foundExpectedError = true
+					break
+				}
+			}
+			if !foundExpectedError {
+				t.Errorf("did not find expected error message in: %v", diags.Errors())
+			}
+		})
 	}
 }
 

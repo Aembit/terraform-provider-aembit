@@ -738,7 +738,7 @@ func validateUserGroupIdentityTypeForConfig(
 					"Identity Provider ID is required when client identity type is userGroup.",
 				)
 			}
-			if !identity.ClaimName.IsUnknown() && !identity.ClaimName.IsNull() && identity.ClaimName.ValueString() != "" {
+			if !identity.ClaimName.IsNull() {
 				diags.AddAttributeError(
 					path.Root("identities"),
 					errInvalidClientWorkloadIdentitiesConfig,
