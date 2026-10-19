@@ -743,7 +743,7 @@ func validateUserGroupIdentityTypeForConfig(
 				)
 			}
 		} else {
-			if !identity.IdentityProviderId.IsUnknown() && !identity.IdentityProviderId.IsNull() && identity.IdentityProviderId.ValueString() != "" {
+			if !identity.IdentityProviderId.IsNull() && (identity.IdentityProviderId.IsUnknown() || identity.IdentityProviderId.ValueString() != "") {
 				diags.AddAttributeError(
 					path.Root("identities"),
 					"Invalid client workload identities configuration",

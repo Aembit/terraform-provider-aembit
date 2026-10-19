@@ -1833,6 +1833,34 @@ func TestValidateIdentities_NonEmptyIdpIdOnNonGroupType(t *testing.T) {
 			}
 		})
 	}
+
+	// Verify unknown identity_provider_id is also rejected for non-userGroup identity
+	t.Run("unknown_identity_provider_id_rejected", func(t *testing.T) {
+		identities := []models.IdentitiesModel{
+			{
+				Type:               types.StringValue("k8sNamespace"),
+				Value:              types.StringValue("test-val"),
+				IdentityProviderId: types.StringUnknown(),
+				ClaimName:          types.StringNull(),
+			},
+		}
+
+		diags := validateUserGroupIdentityTypeForConfig(identities)
+		if !diags.HasError() {
+			t.Fatalf("expected error for unknown identity_provider_id on k8sNamespace, got none")
+		}
+
+		foundExpectedError := false
+		for _, diag := range diags.Errors() {
+			if strings.Contains(diag.Detail(), "Identity Provider ID is only applicable for userGroup client identity type.") {
+				foundExpectedError = true
+				break
+			}
+		}
+		if !foundExpectedError {
+			t.Errorf("did not find expected error message in: %v", diags.Errors())
+		}
+	})
 }
 
 // TestValidateIdentities_MixedUserGroupAndRedirectUri verifies error when userGroup is mixed with oauthRedirectUri.
