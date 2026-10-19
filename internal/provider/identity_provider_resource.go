@@ -24,6 +24,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const (
+	defaultGroupClaimAttribute  = "groups"
+	defaultGroupCacheTtlMinutes = 15
+)
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ resource.Resource                = &identityProviderResource{}
@@ -207,13 +212,16 @@ func (r *identityProviderResource) Schema(
 						Description: "Claim name in the UserInfo response containing group memberships.",
 						Optional:    true,
 						Computed:    true,
-						Default:     stringdefault.StaticString("groups"),
+						Default:     stringdefault.StaticString(defaultGroupClaimAttribute),
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"group_cache_ttl_minutes": schema.Int64Attribute{
 						Description: "TTL in minutes for caching UserInfo group memberships. Accepted range: 5-1440 minutes.",
 						Optional:    true,
 						Computed:    true,
-						Default:     int64default.StaticInt64(15),
+						Default:     int64default.StaticInt64(defaultGroupCacheTtlMinutes),
 						Validators: []validator.Int64{
 							int64validator.Between(5, 1440),
 						},
@@ -531,11 +539,29 @@ func convertIdentityProviderDTOToModel(
 		model.Oidc.AembitRedirectUrl = types.StringValue(dto.AembitRedirectUrl)
 		model.Oidc.AembitJwksUrl = types.StringValue(dto.AembitJwksUrl)
 		model.Oidc.EnableUserinfoGroupLookup = types.BoolValue(dto.EnableUserinfoGroupLookup)
-		model.Oidc.GroupClaimAttribute = types.StringValue(dto.GroupClaimAttribute)
-		model.Oidc.GroupCacheTtlMinutes = types.Int64Value(int64(dto.GroupCacheTtlMinutes))
+
+		groupClaimAttr := dto.GroupClaimAttribute
+		if groupClaimAttr == "" {
+			if planModel != nil && planModel.Oidc != nil && !planModel.Oidc.GroupClaimAttribute.IsNull() && !planModel.Oidc.GroupClaimAttribute.IsUnknown() && planModel.Oidc.GroupClaimAttribute.ValueString() != "" {
+				groupClaimAttr = planModel.Oidc.GroupClaimAttribute.ValueString()
+			} else {
+				groupClaimAttr = defaultGroupClaimAttribute
+			}
+		}
+		model.Oidc.GroupClaimAttribute = types.StringValue(groupClaimAttr)
+
+		groupCacheTtl := dto.GroupCacheTtlMinutes
+		if groupCacheTtl == 0 {
+			if planModel != nil && planModel.Oidc != nil && !planModel.Oidc.GroupCacheTtlMinutes.IsNull() && !planModel.Oidc.GroupCacheTtlMinutes.IsUnknown() && planModel.Oidc.GroupCacheTtlMinutes.ValueInt64() > 0 {
+				groupCacheTtl = int(planModel.Oidc.GroupCacheTtlMinutes.ValueInt64())
+			} else {
+				groupCacheTtl = defaultGroupCacheTtlMinutes
+			}
+		}
+		model.Oidc.GroupCacheTtlMinutes = types.Int64Value(int64(groupCacheTtl))
 
 		model.Oidc.ClientSecret = types.StringNull()
-		if planModel.Oidc != nil {
+		if planModel != nil && planModel.Oidc != nil {
 			model.Oidc.ClientSecret = planModel.Oidc.ClientSecret
 		}
 	}
