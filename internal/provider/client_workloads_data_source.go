@@ -111,6 +111,10 @@ func (r *clientWorkloadsDataSource) Schema(
 										Description: "Client identity claim name. Applicable for oidcIdToken Client identity type.",
 										Computed:    true,
 									},
+									"identity_provider_id": schema.StringAttribute{
+										Description: "Identity Provider unique identifier. Applicable for userGroup Client identity type.",
+										Computed:    true,
+									},
 								},
 							},
 						},

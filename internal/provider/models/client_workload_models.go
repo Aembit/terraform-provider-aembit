@@ -29,14 +29,16 @@ type ClientWorkloadsDataSourceModel struct {
 
 // models.IdentitiesModel maps client workload identity data.
 type IdentitiesModel struct {
-	Type      types.String `tfsdk:"type"`
-	Value     types.String `tfsdk:"value"`
-	ClaimName types.String `tfsdk:"claim_name"`
+	Type               types.String `tfsdk:"type"`
+	Value              types.String `tfsdk:"value"`
+	ClaimName          types.String `tfsdk:"claim_name"`
+	IdentityProviderId types.String `tfsdk:"identity_provider_id"`
 }
 
 // TfIdentityObjectType maps client workload identity data to an Object type.
 var TfIdentityObjectType = types.ObjectType{AttrTypes: map[string]attr.Type{
-	"type":       types.StringType,
-	"value":      types.StringType,
-	"claim_name": types.StringType,
+	"type":                 types.StringType,
+	"value":                types.StringType,
+	"claim_name":           types.StringType,
+	"identity_provider_id": types.StringType,
 }}

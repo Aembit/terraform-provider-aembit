@@ -1,5 +1,5 @@
 ---
-page_title: "aembit_identity_provider Resource - terraform-provider-aembit"
+page_title: "aembit_identity_provider Resource - aembit"
 subcategory: ""
 description: |-
   
@@ -63,6 +63,9 @@ Required:
 Optional:
 
 - `client_secret` (String, Sensitive) The client secret associated with the OIDC client.
+- `enable_userinfo_group_lookup` (Boolean) Enable fetching group memberships from the OIDC UserInfo endpoint.
+- `group_cache_ttl_minutes` (Number) TTL in minutes for caching UserInfo group memberships. Accepted range: 5-1440 minutes.
+- `group_claim_attribute` (String) Claim name in the UserInfo response containing group memberships.
 - `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
 
 Read-Only:

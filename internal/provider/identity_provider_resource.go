@@ -8,6 +8,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -193,6 +196,27 @@ func (r *identityProviderResource) Schema(
 					"aembit_jwks_url": schema.StringAttribute{
 						Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
 						Computed:    true,
+					},
+					"enable_userinfo_group_lookup": schema.BoolAttribute{
+						Description: "Enable fetching group memberships from the OIDC UserInfo endpoint.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"group_claim_attribute": schema.StringAttribute{
+						Description: "Claim name in the UserInfo response containing group memberships.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString("groups"),
+					},
+					"group_cache_ttl_minutes": schema.Int64Attribute{
+						Description: "TTL in minutes for caching UserInfo group memberships. Accepted range: 5-1440 minutes.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(15),
+						Validators: []validator.Int64{
+							int64validator.Between(5, 1440),
+						},
 					},
 				},
 			},
@@ -433,6 +457,9 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.ClientSecret = model.Oidc.ClientSecret.ValueString()
 		identityProvider.PkceRequired = model.Oidc.PkceRequired.ValueBool()
 		identityProvider.AuthType = model.Oidc.AuthType.ValueString()
+		identityProvider.EnableUserinfoGroupLookup = model.Oidc.EnableUserinfoGroupLookup.ValueBool()
+		identityProvider.GroupClaimAttribute = model.Oidc.GroupClaimAttribute.ValueString()
+		identityProvider.GroupCacheTtlMinutes = int(model.Oidc.GroupCacheTtlMinutes.ValueInt64())
 	}
 
 	for _, mapping := range model.SsoStatementRoleMappings {
@@ -503,6 +530,9 @@ func convertIdentityProviderDTOToModel(
 
 		model.Oidc.AembitRedirectUrl = types.StringValue(dto.AembitRedirectUrl)
 		model.Oidc.AembitJwksUrl = types.StringValue(dto.AembitJwksUrl)
+		model.Oidc.EnableUserinfoGroupLookup = types.BoolValue(dto.EnableUserinfoGroupLookup)
+		model.Oidc.GroupClaimAttribute = types.StringValue(dto.GroupClaimAttribute)
+		model.Oidc.GroupCacheTtlMinutes = types.Int64Value(int64(dto.GroupCacheTtlMinutes))
 
 		model.Oidc.ClientSecret = types.StringNull()
 		if planModel.Oidc != nil {
