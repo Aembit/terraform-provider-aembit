@@ -1,5 +1,5 @@
 ---
-page_title: "aembit_global_policy_compliance Resource - aembit"
+page_title: "aembit_global_policy_compliance Resource - terraform-provider-aembit"
 subcategory: ""
 description: |-
   A resource to manage the Global Policy Compliance settings

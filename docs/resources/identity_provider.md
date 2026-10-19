@@ -1,5 +1,5 @@
 ---
-page_title: "aembit_identity_provider Resource - aembit"
+page_title: "aembit_identity_provider Resource - terraform-provider-aembit"
 subcategory: ""
 description: |-
   

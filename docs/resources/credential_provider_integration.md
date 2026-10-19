@@ -1,5 +1,5 @@
 ---
-page_title: "aembit_credential_provider_integration Resource - aembit"
+page_title: "aembit_credential_provider_integration Resource - terraform-provider-aembit"
 subcategory: ""
 description: |-
   
