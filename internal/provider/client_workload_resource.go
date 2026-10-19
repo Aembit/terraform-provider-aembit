@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// errInvalidClientWorkloadIdentitiesConfig is the summary message for workload identity validation errors.
+const errInvalidClientWorkloadIdentitiesConfig = "Invalid client workload identities configuration"
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ resource.Resource                   = &clientWorkloadResource{}
@@ -731,14 +734,14 @@ func validateUserGroupIdentityTypeForConfig(
 			if !identity.IdentityProviderId.IsUnknown() && (identity.IdentityProviderId.IsNull() || identity.IdentityProviderId.ValueString() == "") {
 				diags.AddAttributeError(
 					path.Root("identities"),
-					"Invalid client workload identities configuration",
+					errInvalidClientWorkloadIdentitiesConfig,
 					"Identity Provider ID is required when client identity type is userGroup.",
 				)
 			}
 			if !identity.ClaimName.IsUnknown() && !identity.ClaimName.IsNull() && identity.ClaimName.ValueString() != "" {
 				diags.AddAttributeError(
 					path.Root("identities"),
-					"Invalid client workload identities configuration",
+					errInvalidClientWorkloadIdentitiesConfig,
 					"Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.",
 				)
 			}
@@ -746,7 +749,7 @@ func validateUserGroupIdentityTypeForConfig(
 			if !identity.IdentityProviderId.IsNull() && (identity.IdentityProviderId.IsUnknown() || identity.IdentityProviderId.ValueString() != "") {
 				diags.AddAttributeError(
 					path.Root("identities"),
-					"Invalid client workload identities configuration",
+					errInvalidClientWorkloadIdentitiesConfig,
 					"Identity Provider ID is only applicable for userGroup client identity type.",
 				)
 			}
@@ -806,7 +809,7 @@ func validateMcpIdentityTypeForConfig(
 	if hasMcp && hasNonMcp {
 		diags.AddAttributeError(
 			path.Root("identities"),
-			"Invalid client workload identities configuration",
+			errInvalidClientWorkloadIdentitiesConfig,
 			"MCP client workload identities (`oauthRedirectUri` or `cimdClientId`) cannot be combined with other identity types.",
 		)
 	}
