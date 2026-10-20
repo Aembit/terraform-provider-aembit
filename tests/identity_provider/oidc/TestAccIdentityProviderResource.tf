@@ -25,5 +25,8 @@ resource "aembit_identity_provider" "test_idp_oidc" {
         auth_type = "ClientSecret"
         client_secret = "some_secret"
         pcke_required = true
+        enable_userinfo_group_lookup = true
+        group_claim_attribute = "roles"
+        group_cache_ttl_minutes = 30
     }
 }

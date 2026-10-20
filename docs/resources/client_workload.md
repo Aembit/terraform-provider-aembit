@@ -107,11 +107,13 @@ Required:
 	* `terraformIdTokenOrganizationId`
 	* `terraformIdTokenProjectId`
 	* `terraformIdTokenWorkspaceId`
+	* `userGroup`
 - `value` (String) Client identity value.
 
 Optional:
 
 - `claim_name` (String) Client identity claim name. Applicable for oidcIdToken Client identity type.
+- `identity_provider_id` (String) Identity Provider unique identifier. Applicable and required for userGroup Client identity type.
 
 
 

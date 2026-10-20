@@ -52,6 +52,9 @@ Read-Only:
 	* `KeyPair`
 - `client_id` (String) The client identifier registered with the OIDC provider.
 - `client_secret` (String, Sensitive) The client secret associated with the OIDC client.
+- `enable_userinfo_group_lookup` (Boolean) Enable fetching group memberships from the OIDC UserInfo endpoint.
+- `group_cache_ttl_minutes` (Number) TTL in minutes for caching UserInfo group memberships.
+- `group_claim_attribute` (String) Claim name in the UserInfo response containing group memberships.
 - `oidc_base_url` (String) The base URL of the OIDC Identity Provider.
 - `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
 - `scopes` (String) A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').

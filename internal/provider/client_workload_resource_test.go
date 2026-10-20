@@ -43,6 +43,13 @@ var (
 		"identities.2.claim_name",
 		"identities.3.claim_name",
 	}
+
+	testCWResourceIdentitiesIdpId = []string{
+		"identities.0.identity_provider_id",
+		"identities.1.identity_provider_id",
+		"identities.2.identity_provider_id",
+		"identities.3.identity_provider_id",
+	}
 )
 
 func testDeleteClientWorkload() resource.TestCheckFunc {
@@ -1287,10 +1294,19 @@ func newClientWorkloadResourceModel(
 func identityModelsToAttrValues(identities []models.IdentitiesModel) []attr.Value {
 	values := make([]attr.Value, len(identities))
 	for i, identity := range identities {
+		idpId := identity.IdentityProviderId
+		if idpId.IsNull() || idpId.IsUnknown() {
+			idpId = types.StringNull()
+		}
+		claimName := identity.ClaimName
+		if claimName.IsNull() || claimName.IsUnknown() {
+			claimName = types.StringNull()
+		}
 		values[i] = types.ObjectValueMust(models.TfIdentityObjectType.AttrTypes, map[string]attr.Value{
-			"type":       identity.Type,
-			"value":      identity.Value,
-			"claim_name": identity.ClaimName,
+			"type":                 identity.Type,
+			"value":                identity.Value,
+			"claim_name":           claimName,
+			"identity_provider_id": idpId,
 		})
 	}
 
@@ -1504,4 +1520,397 @@ func TestAccClientWorkloadResource_CimdClientId_Invalid(t *testing.T) {
 			},
 		},
 	})
+}
+
+// TestAccClientWorkloadResource_UserGroup verifies acceptance testing of a client workload configured with userGroup identity.
+func TestAccClientWorkloadResource_UserGroup(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/client/userGroup/TestAccClientWorkloadResource.tf")
+	modifyFile, _ := os.ReadFile(
+		"../../tests/client/userGroup/TestAccClientWorkloadResource.tfmod",
+	)
+	createFileConfig, modifyFileConfig, newName := randomizeFileConfigs(
+		string(createFile),
+		string(modifyFile),
+		"*group_name*",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Client Workload Name, Description, Active status
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - UserGroup",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"description",
+						"Acceptance Test Client Workload",
+					),
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "false"),
+					// Verify Workload Identity.
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesCount,
+						"1",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesType[0],
+						"userGroup",
+					),
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						testCWResourceIdentitiesValue[0],
+						newName,
+					),
+					resource.TestCheckResourceAttrSet(
+						testCWResource,
+						testCWResourceIdentitiesIdpId[0],
+					),
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet(testCWResource, "id"),
+				),
+			},
+			// ImportState testing
+			{ResourceName: testCWResource, ImportState: true, ImportStateVerify: true},
+			// Update and Read testing
+			{
+				Config: modifyFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify Name updated
+					resource.TestCheckResourceAttr(
+						testCWResource,
+						"name",
+						"TF Acceptance - UserGroup - Modified",
+					),
+					// Verify active state updated.
+					resource.TestCheckResourceAttr(testCWResource, "is_active", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+// TestConvertClientWorkloadModelToDTO_UserGroupIdentity verifies identity_provider_id maps to DTO Key.
+func TestConvertClientWorkloadModelToDTO_UserGroupIdentity(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	idpID := "11111111-2222-3333-4444-555555555555"
+	groupVal := "engineering"
+
+	identities := []models.IdentitiesModel{
+		{
+			Type:               types.StringValue("userGroup"),
+			Value:              types.StringValue(groupVal),
+			IdentityProviderId: types.StringValue(idpID),
+			ClaimName:          types.StringNull(),
+		},
+	}
+	identitiesSet, diags := types.SetValueFrom(ctx, models.TfIdentityObjectType, identities)
+	if diags.HasError() {
+		t.Fatalf("unexpected error creating identities set: %v", diags)
+	}
+
+	model := models.ClientWorkloadResourceModel{
+		Name:        types.StringValue("Test CW UserGroup"),
+		Description: types.StringValue("Test description"),
+		IsActive:    types.BoolValue(true),
+		Identities:  identitiesSet,
+		EnforceSso:  types.BoolValue(true),
+		Tags:        types.MapNull(types.StringType),
+	}
+
+	dto, diags := convertClientWorkloadModelToDTO(ctx, model, nil, nil)
+	if diags.HasError() {
+		t.Fatalf("unexpected error converting model to DTO: %v", diags)
+	}
+
+	if len(dto.Identities) != 1 {
+		t.Fatalf("expected 1 identity in DTO, got %d", len(dto.Identities))
+	}
+
+	if dto.Identities[0].Type != "userGroup" {
+		t.Errorf("expected identity Type 'userGroup', got '%s'", dto.Identities[0].Type)
+	}
+	if dto.Identities[0].Value != groupVal {
+		t.Errorf("expected identity Value '%s', got '%s'", groupVal, dto.Identities[0].Value)
+	}
+	if dto.Identities[0].Key != idpID {
+		t.Errorf("expected identity Key '%s', got '%s'", idpID, dto.Identities[0].Key)
+	}
+}
+
+// TestConvertClientWorkloadDTOToModel_UserGroupIdentity verifies DTO Key maps to IdentityProviderId.
+func TestConvertClientWorkloadDTOToModel_UserGroupIdentity(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	idpID := "11111111-2222-3333-4444-555555555555"
+	groupVal := "engineering"
+
+	dto := aembit.ClientWorkloadExternalDTO{
+		AccessEntityDTO: aembit.AccessEntityDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID:  "cw-12345",
+				Name:        "Test CW UserGroup",
+				Description: "Test description",
+				IsActive:    true,
+			},
+		},
+		Identities: []aembit.ClientWorkloadIdentityDTO{
+			{
+				Type:  "userGroup",
+				Value: groupVal,
+				Key:   idpID,
+			},
+		},
+	}
+
+	planModel := &models.ClientWorkloadResourceModel{}
+	model := convertClientWorkloadDTOToModel(ctx, dto, planModel)
+
+	var identities []models.IdentitiesModel
+	diags := model.Identities.ElementsAs(ctx, &identities, false)
+	if diags.HasError() {
+		t.Fatalf("unexpected error extracting identities from model: %v", diags)
+	}
+
+	if len(identities) != 1 {
+		t.Fatalf("expected 1 identity in model, got %d", len(identities))
+	}
+
+	if identities[0].Type.ValueString() != "userGroup" {
+		t.Errorf("expected Type 'userGroup', got '%s'", identities[0].Type.ValueString())
+	}
+	if identities[0].Value.ValueString() != groupVal {
+		t.Errorf("expected Value '%s', got '%s'", groupVal, identities[0].Value.ValueString())
+	}
+	if identities[0].IdentityProviderId.ValueString() != idpID {
+		t.Errorf("expected IdentityProviderId '%s', got '%s'", idpID, identities[0].IdentityProviderId.ValueString())
+	}
+	if !identities[0].ClaimName.IsNull() {
+		t.Errorf("expected ClaimName to be null, got '%s'", identities[0].ClaimName.ValueString())
+	}
+}
+
+// TestValidateIdentities_UserGroupMissingIdpId verifies diagnostic error when identity_provider_id is missing.
+func TestValidateIdentities_UserGroupMissingIdpId(t *testing.T) {
+	t.Parallel()
+
+	identities := []models.IdentitiesModel{
+		{
+			Type:               types.StringValue("userGroup"),
+			Value:              types.StringValue("engineering"),
+			IdentityProviderId: types.StringNull(),
+			ClaimName:          types.StringNull(),
+		},
+	}
+
+	diags := validateUserGroupIdentityTypeForConfig(identities)
+	if !diags.HasError() {
+		t.Fatalf("expected error for missing identity_provider_id, got none")
+	}
+
+	foundExpectedError := false
+	for _, diag := range diags.Errors() {
+		if strings.Contains(diag.Detail(), "Identity Provider ID is required when client identity type is userGroup.") {
+			foundExpectedError = true
+			break
+		}
+	}
+	if !foundExpectedError {
+		t.Errorf("did not find expected error message in: %v", diags.Errors())
+	}
+
+	// Also test empty string
+	identitiesEmpty := []models.IdentitiesModel{
+		{
+			Type:               types.StringValue("userGroup"),
+			Value:              types.StringValue("engineering"),
+			IdentityProviderId: types.StringValue(""),
+			ClaimName:          types.StringNull(),
+		},
+	}
+
+	diagsEmpty := validateUserGroupIdentityTypeForConfig(identitiesEmpty)
+	if !diagsEmpty.HasError() {
+		t.Fatalf("expected error for empty identity_provider_id, got none")
+	}
+
+	// Test unknown string does not trigger error during ValidateConfig
+	identitiesUnknown := []models.IdentitiesModel{
+		{
+			Type:               types.StringValue("userGroup"),
+			Value:              types.StringValue("engineering"),
+			IdentityProviderId: types.StringUnknown(),
+			ClaimName:          types.StringNull(),
+		},
+	}
+
+	diagsUnknown := validateUserGroupIdentityTypeForConfig(identitiesUnknown)
+	if diagsUnknown.HasError() {
+		t.Fatalf("expected no error for unknown identity_provider_id, got: %v", diagsUnknown.Errors())
+	}
+}
+
+// TestValidateIdentities_UserGroupWithClaimName verifies diagnostic error when claim_name is set on userGroup.
+func TestValidateIdentities_UserGroupWithClaimName(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name      string
+		claimName types.String
+	}{
+		{name: "non_empty_claim_name", claimName: types.StringValue("groups")},
+		{name: "empty_claim_name", claimName: types.StringValue("")},
+		{name: "unknown_claim_name", claimName: types.StringUnknown()},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			identities := []models.IdentitiesModel{
+				{
+					Type:               types.StringValue("userGroup"),
+					Value:              types.StringValue("engineering"),
+					IdentityProviderId: types.StringValue("11111111-2222-3333-4444-555555555555"),
+					ClaimName:          tc.claimName,
+				},
+			}
+
+			diags := validateUserGroupIdentityTypeForConfig(identities)
+			if !diags.HasError() {
+				t.Fatalf("expected error for claim_name %v set on userGroup, got none", tc.claimName)
+			}
+
+			foundExpectedError := false
+			for _, diag := range diags.Errors() {
+				if strings.Contains(diag.Detail(), "Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.") {
+					foundExpectedError = true
+					break
+				}
+			}
+			if !foundExpectedError {
+				t.Errorf("did not find expected error message in: %v", diags.Errors())
+			}
+		})
+	}
+}
+
+// TestValidateIdentities_NonEmptyIdpIdOnNonGroupType verifies diagnostic error when identity_provider_id is set on k8sNamespace or oidcIdToken.
+func TestValidateIdentities_NonEmptyIdpIdOnNonGroupType(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		idType string
+	}{
+		{name: "k8sNamespace", idType: "k8sNamespace"},
+		{name: "oidcIdToken", idType: "oidcIdToken"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			identities := []models.IdentitiesModel{
+				{
+					Type:               types.StringValue(tc.idType),
+					Value:              types.StringValue("test-val"),
+					IdentityProviderId: types.StringValue("11111111-2222-3333-4444-555555555555"),
+					ClaimName:          types.StringNull(),
+				},
+			}
+
+			diags := validateUserGroupIdentityTypeForConfig(identities)
+			if !diags.HasError() {
+				t.Fatalf("expected error for identity_provider_id on %s, got none", tc.idType)
+			}
+
+			foundExpectedError := false
+			for _, diag := range diags.Errors() {
+				if strings.Contains(diag.Detail(), "Identity Provider ID is only applicable for userGroup client identity type.") {
+					foundExpectedError = true
+					break
+				}
+			}
+			if !foundExpectedError {
+				t.Errorf("did not find expected error message in: %v", diags.Errors())
+			}
+		})
+	}
+
+	// Verify unknown identity_provider_id is also rejected for non-userGroup identity
+	t.Run("unknown_identity_provider_id_rejected", func(t *testing.T) {
+		identities := []models.IdentitiesModel{
+			{
+				Type:               types.StringValue("k8sNamespace"),
+				Value:              types.StringValue("test-val"),
+				IdentityProviderId: types.StringUnknown(),
+				ClaimName:          types.StringNull(),
+			},
+		}
+
+		diags := validateUserGroupIdentityTypeForConfig(identities)
+		if !diags.HasError() {
+			t.Fatalf("expected error for unknown identity_provider_id on k8sNamespace, got none")
+		}
+
+		foundExpectedError := false
+		for _, diag := range diags.Errors() {
+			if strings.Contains(diag.Detail(), "Identity Provider ID is only applicable for userGroup client identity type.") {
+				foundExpectedError = true
+				break
+			}
+		}
+		if !foundExpectedError {
+			t.Errorf("did not find expected error message in: %v", diags.Errors())
+		}
+	})
+}
+
+// TestValidateIdentities_MixedUserGroupAndRedirectUri verifies error when userGroup is mixed with oauthRedirectUri.
+func TestValidateIdentities_MixedUserGroupAndRedirectUri(t *testing.T) {
+	t.Parallel()
+
+	identities := []models.IdentitiesModel{
+		{
+			Type:               types.StringValue("userGroup"),
+			Value:              types.StringValue("engineering"),
+			IdentityProviderId: types.StringValue("11111111-2222-3333-4444-555555555555"),
+			ClaimName:          types.StringNull(),
+		},
+		{
+			Type:               types.StringValue("oauthRedirectUri"),
+			Value:              types.StringValue("https://example.com/oauth"),
+			IdentityProviderId: types.StringNull(),
+			ClaimName:          types.StringNull(),
+		},
+	}
+
+	diags, hasMcp := validateMcpIdentityTypeForConfig(identities)
+	if !hasMcp {
+		t.Fatalf("expected hasMcp to be true")
+	}
+	if !diags.HasError() {
+		t.Fatalf("expected error when mixing userGroup and oauthRedirectUri, got none")
+	}
+
+	foundExpectedError := false
+	for _, diag := range diags.Errors() {
+		if strings.Contains(diag.Detail(), "MCP client workload identities (`oauthRedirectUri` or `cimdClientId`) cannot be combined with other identity types.") {
+			foundExpectedError = true
+			break
+		}
+	}
+	if !foundExpectedError {
+		t.Errorf("did not find expected error message in: %v", diags.Errors())
+	}
 }

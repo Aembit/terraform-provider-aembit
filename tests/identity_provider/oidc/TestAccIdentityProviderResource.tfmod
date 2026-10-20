@@ -24,5 +24,8 @@ resource "aembit_identity_provider" "test_idp_oidc" {
         scopes = "profile email"
         auth_type = "KeyPair"
         pcke_required = false
+        enable_userinfo_group_lookup = false
+        group_claim_attribute = "groups"
+        group_cache_ttl_minutes = 15
     } 
 }

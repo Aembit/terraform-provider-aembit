@@ -49,5 +49,6 @@ Read-Only:
 Read-Only:
 
 - `claim_name` (String) Client identity claim name. Applicable for oidcIdToken Client identity type.
+- `identity_provider_id` (String) Identity Provider unique identifier. Applicable for userGroup Client identity type.
 - `type` (String) Client identity type.
 - `value` (String) Client identity value.

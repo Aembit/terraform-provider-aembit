@@ -8,6 +8,7 @@ import (
 	"terraform-provider-aembit/internal/provider/validators"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,10 +16,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+const (
+	defaultGroupClaimAttribute  = "groups"
+	defaultGroupCacheTtlMinutes = 15
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -193,6 +201,30 @@ func (r *identityProviderResource) Schema(
 					"aembit_jwks_url": schema.StringAttribute{
 						Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
 						Computed:    true,
+					},
+					"enable_userinfo_group_lookup": schema.BoolAttribute{
+						Description: "Enable fetching group memberships from the OIDC UserInfo endpoint.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"group_claim_attribute": schema.StringAttribute{
+						Description: "Claim name in the UserInfo response containing group memberships.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(defaultGroupClaimAttribute),
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
+					},
+					"group_cache_ttl_minutes": schema.Int64Attribute{
+						Description: "TTL in minutes for caching UserInfo group memberships. Accepted range: 5-1440 minutes.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(defaultGroupCacheTtlMinutes),
+						Validators: []validator.Int64{
+							int64validator.Between(5, 1440),
+						},
 					},
 				},
 			},
@@ -433,6 +465,9 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.ClientSecret = model.Oidc.ClientSecret.ValueString()
 		identityProvider.PkceRequired = model.Oidc.PkceRequired.ValueBool()
 		identityProvider.AuthType = model.Oidc.AuthType.ValueString()
+		identityProvider.EnableUserinfoGroupLookup = model.Oidc.EnableUserinfoGroupLookup.ValueBool()
+		identityProvider.GroupClaimAttribute = model.Oidc.GroupClaimAttribute.ValueString()
+		identityProvider.GroupCacheTtlMinutes = int(model.Oidc.GroupCacheTtlMinutes.ValueInt64())
 	}
 
 	for _, mapping := range model.SsoStatementRoleMappings {
@@ -451,6 +486,102 @@ func convertIdentityProviderModelToDTO(
 
 	identityProvider.Tags = collectAllTagsDto(ctx, defaultTags, model.Tags)
 	return identityProvider
+}
+
+// resolveGroupClaimAttribute determines the group claim attribute value, falling back to plan or schema default.
+func resolveGroupClaimAttribute(planOidc *models.IdentityProviderOidcModel, dtoVal string) string {
+	if dtoVal != "" {
+		return dtoVal
+	}
+	if planOidc != nil && !planOidc.GroupClaimAttribute.IsNull() && !planOidc.GroupClaimAttribute.IsUnknown() && planOidc.GroupClaimAttribute.ValueString() != "" {
+		return planOidc.GroupClaimAttribute.ValueString()
+	}
+	return defaultGroupClaimAttribute
+}
+
+// resolveGroupCacheTtlMinutes determines the cache TTL value, falling back to plan or schema default.
+func resolveGroupCacheTtlMinutes(planOidc *models.IdentityProviderOidcModel, dtoVal int) int64 {
+	if dtoVal > 0 {
+		return int64(dtoVal)
+	}
+	if planOidc != nil && !planOidc.GroupCacheTtlMinutes.IsNull() && !planOidc.GroupCacheTtlMinutes.IsUnknown() && planOidc.GroupCacheTtlMinutes.ValueInt64() > 0 {
+		return planOidc.GroupCacheTtlMinutes.ValueInt64()
+	}
+	return defaultGroupCacheTtlMinutes
+}
+
+// convertOidcDTOToModel converts OIDC DTO fields into an IdentityProviderOidcModel.
+func convertOidcDTOToModel(planOidc *models.IdentityProviderOidcModel, dto aembit.IdentityProviderDTO) *models.IdentityProviderOidcModel {
+	oidc := &models.IdentityProviderOidcModel{
+		ClientId:                  types.StringValue(dto.ClientId),
+		OidcBaseUrl:               types.StringValue(dto.OidcBaseUrl),
+		Scopes:                    types.StringValue(dto.Scopes),
+		AuthType:                  types.StringValue(dto.AuthType),
+		PkceRequired:              types.BoolValue(dto.PkceRequired),
+		AembitRedirectUrl:         types.StringValue(dto.AembitRedirectUrl),
+		AembitJwksUrl:             types.StringValue(dto.AembitJwksUrl),
+		EnableUserinfoGroupLookup: types.BoolValue(dto.EnableUserinfoGroupLookup),
+		GroupClaimAttribute:       types.StringValue(resolveGroupClaimAttribute(planOidc, dto.GroupClaimAttribute)),
+		GroupCacheTtlMinutes:      types.Int64Value(resolveGroupCacheTtlMinutes(planOidc, dto.GroupCacheTtlMinutes)),
+		ClientSecret:              types.StringNull(),
+	}
+
+	if planOidc != nil {
+		oidc.ClientSecret = planOidc.ClientSecret
+	}
+
+	return oidc
+}
+
+// convertSamlDTOToModel converts SAML DTO fields into an IdentityProviderSamlModel.
+func convertSamlDTOToModel(planSaml *models.IdentityProviderSamlModel, dto aembit.IdentityProviderDTO) *models.IdentityProviderSamlModel {
+	saml := &models.IdentityProviderSamlModel{
+		ServiceProviderEntityId: types.StringValue(dto.ServiceProviderEntityId),
+		ServiceProviderSsoUrl:   types.StringValue(dto.ServiceProviderSsoUrl),
+	}
+
+	if dto.MetadataUrl == "" {
+		saml.MetadataUrl = types.StringNull()
+	} else {
+		saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
+	}
+
+	// Add a carriage return if the original plan had one, to avoid diffs on re-read
+	if planSaml != nil &&
+		strings.HasSuffix(planSaml.MetadataXml.ValueString(), "\n") &&
+		!strings.HasSuffix(dto.MetadataXml, "\n") {
+		dto.MetadataXml += "\n"
+	}
+	saml.MetadataXml = types.StringValue(dto.MetadataXml)
+
+	return saml
+}
+
+// unflattenSsoStatementRoleMappings converts flat SSO mappings into grouped role mappings.
+func unflattenSsoStatementRoleMappings(mappings []aembit.SsoStatementRoleMappingDTO) []models.SsoStatementRoleMappings {
+	if len(mappings) == 0 {
+		return nil
+	}
+
+	tempMap := make(map[string]models.SsoStatementRoleMappings)
+	for _, mapping := range mappings {
+		key := mapping.AttributeName + mapping.AttributeValue
+		if newItem, exists := tempMap[key]; exists {
+			newItem.Roles = append(newItem.Roles, types.StringValue(mapping.RoleExternalId))
+			tempMap[key] = newItem
+		} else {
+			tempMap[key] = models.SsoStatementRoleMappings{
+				AttributeName:  types.StringValue(mapping.AttributeName),
+				AttributeValue: types.StringValue(mapping.AttributeValue),
+				Roles:          []types.String{types.StringValue(mapping.RoleExternalId)},
+			}
+		}
+	}
+	result := make([]models.SsoStatementRoleMappings, 0, len(tempMap))
+	for _, item := range tempMap {
+		result = append(result, item)
+	}
+	return result
 }
 
 func convertIdentityProviderDTOToModel(
@@ -475,65 +606,20 @@ func convertIdentityProviderDTOToModel(
 	// Now fill in the objects based on the Identity Provider type
 	switch dto.Type {
 	case "SAMLv2":
-		model.Saml = &models.IdentityProviderSamlModel{}
-
-		if dto.MetadataUrl == "" {
-			model.Saml.MetadataUrl = types.StringNull()
-		} else {
-			model.Saml.MetadataUrl = types.StringValue(dto.MetadataUrl)
+		var planSaml *models.IdentityProviderSamlModel
+		if planModel != nil {
+			planSaml = planModel.Saml
 		}
-
-		// Add a carriage return if the original plan had one, to avoid diffs on re-read
-		if planModel != nil && planModel.Saml != nil &&
-			strings.HasSuffix(planModel.Saml.MetadataXml.ValueString(), "\n") &&
-			!strings.HasSuffix(dto.MetadataXml, "\n") {
-			dto.MetadataXml += "\n"
-		}
-		model.Saml.MetadataXml = types.StringValue(dto.MetadataXml)
-		model.Saml.ServiceProviderEntityId = types.StringValue(dto.ServiceProviderEntityId)
-		model.Saml.ServiceProviderSsoUrl = types.StringValue(dto.ServiceProviderSsoUrl)
+		model.Saml = convertSamlDTOToModel(planSaml, dto)
 	case "OIDCv1":
-		model.Oidc = &models.IdentityProviderOidcModel{}
-
-		model.Oidc.ClientId = types.StringValue(dto.ClientId)
-		model.Oidc.OidcBaseUrl = types.StringValue(dto.OidcBaseUrl)
-		model.Oidc.Scopes = types.StringValue(dto.Scopes)
-		model.Oidc.AuthType = types.StringValue(dto.AuthType)
-		model.Oidc.PkceRequired = types.BoolValue(dto.PkceRequired)
-
-		model.Oidc.AembitRedirectUrl = types.StringValue(dto.AembitRedirectUrl)
-		model.Oidc.AembitJwksUrl = types.StringValue(dto.AembitJwksUrl)
-
-		model.Oidc.ClientSecret = types.StringNull()
-		if planModel.Oidc != nil {
-			model.Oidc.ClientSecret = planModel.Oidc.ClientSecret
+		var planOidc *models.IdentityProviderOidcModel
+		if planModel != nil {
+			planOidc = planModel.Oidc
 		}
+		model.Oidc = convertOidcDTOToModel(planOidc, dto)
 	}
 
-	//convert the mapping array from flat to unflatten form
-	if len(dto.SsoStatementRoleMappings) == 0 {
-		model.SsoStatementRoleMappings = nil
-		return model
-	}
-
-	tempMap := make(map[string]models.SsoStatementRoleMappings)
-	for _, mapping := range dto.SsoStatementRoleMappings {
-		key := mapping.AttributeName + mapping.AttributeValue
-		if newItem, exists := tempMap[key]; exists {
-			newItem.Roles = append(newItem.Roles, types.StringValue(mapping.RoleExternalId))
-			tempMap[key] = newItem
-		} else {
-			tempMap[key] = models.SsoStatementRoleMappings{
-				AttributeName:  types.StringValue(mapping.AttributeName),
-				AttributeValue: types.StringValue(mapping.AttributeValue),
-				Roles:          []types.String{types.StringValue(mapping.RoleExternalId)},
-			}
-		}
-	}
-	model.SsoStatementRoleMappings = make([]models.SsoStatementRoleMappings, 0, len(tempMap))
-	for _, item := range tempMap {
-		model.SsoStatementRoleMappings = append(model.SsoStatementRoleMappings, item)
-	}
+	model.SsoStatementRoleMappings = unflattenSsoStatementRoleMappings(dto.SsoStatementRoleMappings)
 
 	return model
 }

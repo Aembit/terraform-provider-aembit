@@ -162,6 +162,21 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"sso_statement_role_mappings.0.roles.#",
 						"2",
 					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.enable_userinfo_group_lookup",
+						"true",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.group_claim_attribute",
+						"roles",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.group_cache_ttl_minutes",
+						"30",
+					),
 				),
 			},
 			{
@@ -204,6 +219,21 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"sso_statement_role_mappings.0.roles.#",
 						"1",
 					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.enable_userinfo_group_lookup",
+						"false",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.group_claim_attribute",
+						"groups",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.group_cache_ttl_minutes",
+						"15",
+					),
 				),
 			},
 		},
@@ -222,6 +252,40 @@ func TestAccIdentityProviderResource_Oidc_MissingSecret(t *testing.T) {
 			{
 				Config:      string(createFile),
 				ExpectError: regexp.MustCompile(`attribute must be set.`),
+			},
+		},
+	})
+}
+
+func TestAccIdentityProviderResource_Oidc_InvalidTtlLow(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/identity_provider/oidc/TestAccIdentityProviderResource_InvalidTtlLow.tf",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`value must be between 5 and 1440`),
+			},
+		},
+	})
+}
+
+func TestAccIdentityProviderResource_Oidc_InvalidTtlHigh(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/identity_provider/oidc/TestAccIdentityProviderResource_InvalidTtlHigh.tf",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`value must be between 5 and 1440`),
 			},
 		},
 	})

@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// errInvalidClientWorkloadIdentitiesConfig is the summary message for workload identity validation errors.
+const errInvalidClientWorkloadIdentitiesConfig = "Invalid client workload identities configuration"
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ resource.Resource                   = &clientWorkloadResource{}
@@ -148,7 +151,8 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `sourceIPAddress`\n" +
 								"\t* `terraformIdTokenOrganizationId`\n" +
 								"\t* `terraformIdTokenProjectId`\n" +
-								"\t* `terraformIdTokenWorkspaceId`\n",
+								"\t* `terraformIdTokenWorkspaceId`\n" +
+								"\t* `userGroup`\n",
 							Required: true,
 							Validators: []validator.String{
 								stringvalidator.OneOf([]string{
@@ -189,6 +193,7 @@ func (r *clientWorkloadResource) Schema(
 									"terraformIdTokenOrganizationId",
 									"terraformIdTokenProjectId",
 									"terraformIdTokenWorkspaceId",
+									"userGroup",
 								}...),
 							},
 						},
@@ -199,6 +204,13 @@ func (r *clientWorkloadResource) Schema(
 						"claim_name": schema.StringAttribute{
 							Description: "Client identity claim name. Applicable for oidcIdToken Client identity type.",
 							Optional:    true,
+						},
+						"identity_provider_id": schema.StringAttribute{
+							Description: "Identity Provider unique identifier. Applicable and required for userGroup Client identity type.",
+							Optional:    true,
+							Validators: []validator.String{
+								validators.UUIDRegexValidation(),
+							},
 						},
 					},
 				},
@@ -273,6 +285,12 @@ func (r *clientWorkloadResource) ValidateConfig(
 	// MCP client identities cannot be combined with other identity types.
 	identityDiags, hasMcpIdentity := validateMcpIdentityTypeForConfig(identities)
 	resp.Diagnostics.Append(identityDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// UserGroup client identities cross-field validation.
+	resp.Diagnostics.Append(validateUserGroupIdentityTypeForConfig(identities)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -546,10 +564,14 @@ func convertClientWorkloadModelToDTO(
 	}
 
 	for _, identity := range identities {
+		key := identity.ClaimName.ValueString()
+		if identity.Type.ValueString() == "userGroup" {
+			key = identity.IdentityProviderId.ValueString()
+		}
 		workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 			Type:  identity.Type.ValueString(),
 			Value: identity.Value.ValueString(),
-			Key:   identity.ClaimName.ValueString(),
+			Key:   key,
 		})
 	}
 
@@ -617,15 +639,26 @@ func newClientWorkloadIdentityModel(
 	identities := make([]models.IdentitiesModel, len(clientWorkloadIdentities))
 
 	for i, identity := range clientWorkloadIdentities {
+		var claimName types.String
+		var identityProviderId types.String
+
+		if identity.Type == "userGroup" {
+			identityProviderId = types.StringValue(identity.Key)
+			claimName = types.StringNull()
+		} else {
+			identityProviderId = types.StringNull()
+			if identity.Key == "" {
+				claimName = types.StringNull()
+			} else {
+				claimName = types.StringValue(identity.Key)
+			}
+		}
+
 		identities[i] = models.IdentitiesModel{
-			Type:  types.StringValue(identity.Type),
-			Value: types.StringValue(identity.Value),
-			ClaimName: func() types.String {
-				if identity.Key == "" {
-					return types.StringNull()
-				}
-				return types.StringValue(identity.Key)
-			}(),
+			Type:               types.StringValue(identity.Type),
+			Value:              types.StringValue(identity.Value),
+			ClaimName:          claimName,
+			IdentityProviderId: identityProviderId,
 		}
 	}
 
@@ -678,6 +711,50 @@ func validateMcpIdentityType(
 	}
 
 	diags.Append(validateCimdClientIdIdentityTypeForConfig(identities)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(validateUserGroupIdentityTypeForConfig(identities)...)
+
+	return diags
+}
+
+func validateUserGroupIdentityTypeForConfig(
+	identities []models.IdentitiesModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, identity := range identities {
+		if identity.Type.IsNull() || identity.Type.IsUnknown() {
+			continue
+		}
+
+		if identity.Type.ValueString() == "userGroup" {
+			if !identity.IdentityProviderId.IsUnknown() && (identity.IdentityProviderId.IsNull() || identity.IdentityProviderId.ValueString() == "") {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Identity Provider ID is required when client identity type is userGroup.",
+				)
+			}
+			if !identity.ClaimName.IsNull() {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.",
+				)
+			}
+		} else {
+			if !identity.IdentityProviderId.IsNull() && (identity.IdentityProviderId.IsUnknown() || identity.IdentityProviderId.ValueString() != "") {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Identity Provider ID is only applicable for userGroup client identity type.",
+				)
+			}
+		}
+	}
 
 	return diags
 }
@@ -732,7 +809,7 @@ func validateMcpIdentityTypeForConfig(
 	if hasMcp && hasNonMcp {
 		diags.AddAttributeError(
 			path.Root("identities"),
-			"Invalid client workload identities configuration",
+			errInvalidClientWorkloadIdentitiesConfig,
 			"MCP client workload identities (`oauthRedirectUri` or `cimdClientId`) cannot be combined with other identity types.",
 		)
 	}

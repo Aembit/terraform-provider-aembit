@@ -164,6 +164,18 @@ func (r *identityProviderDataSource) Schema(
 									Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
 									Computed:    true,
 								},
+								"enable_userinfo_group_lookup": schema.BoolAttribute{
+									Description: "Enable fetching group memberships from the OIDC UserInfo endpoint.",
+									Computed:    true,
+								},
+								"group_claim_attribute": schema.StringAttribute{
+									Description: "Claim name in the UserInfo response containing group memberships.",
+									Computed:    true,
+								},
+								"group_cache_ttl_minutes": schema.Int64Attribute{
+									Description: "TTL in minutes for caching UserInfo group memberships.",
+									Computed:    true,
+								},
 							},
 						},
 					},
