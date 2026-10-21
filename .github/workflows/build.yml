@@ -99,8 +99,15 @@ jobs:
       - name: Check Submodule aembit_api_client
         run: |
           git submodule status
-          BRANCH=$(git submodule status | grep "aembit_api_client" | awk -F ' ' '{print $3}')
-          if [ "${BRANCH}" != "(heads/main)" ] && [[ ! "${BRANCH}" =~ ^\(heads/release/.*\) ]]; then
-            printf "aembit_api_client is currently on the ${BRANCH} branch and needs to be updated\n"
+          # Check whether submodule commit belongs to origin/main or an origin/release/* branch
+          cd aembit_api_client
+          git fetch origin main release/*:refs/remotes/origin/release/* || true
+          MATCHING_BRANCHES=$(git branch -r --contains HEAD)
+          echo "Submodule HEAD matches remote branches:"
+          echo "${MATCHING_BRANCHES}"
+          if echo "${MATCHING_BRANCHES}" | grep -qE 'origin/(main|release/)'; then
+            echo "Submodule commit is valid on main or release branch"
+          else
+            echo "aembit_api_client submodule commit is not on main or a release branch"
             exit 1
           fi
