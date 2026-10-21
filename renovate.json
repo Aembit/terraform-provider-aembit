@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "cloneSubmodules": true,
+  "minimumReleaseAge": "14 days",
+  "separateMajorMinor": false,
+  "pinDigests": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "dependencyDashboard": false,
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "groupName": "Go modules (all versions)",
+      "separateMajorMinor": false,
+      "groupSingleUpdates": true
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions (all versions)",
+      "separateMajorMinor": false,
+      "groupSingleUpdates": true
+    },
+    {
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "groupName": "Docker dependencies (all versions)",
+      "separateMajorMinor": false,
+      "groupSingleUpdates": true,
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    }
+  ]
+}
