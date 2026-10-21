@@ -12,9 +12,11 @@ on:
       - 'README.md'
     branches:
       - 'main'
+      - 'release/*'
   push:
     branches:
       - 'main'
+      - 'release/*'
   # Include workflow_call to enable execution from aembit_smoke_test/regression.yml
   workflow_call:
     inputs:

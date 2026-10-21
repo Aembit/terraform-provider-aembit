@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - 'main'
+      - 'release/*'
   pull_request:
     branches:
       - 'main'
+      - 'release/*'
 
 # Ensure only one workflow run at a time
 concurrency:
@@ -93,12 +95,12 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           submodules: recursive
 
-      # These Job Steps verify that the Aembit submodules are up to date with main
+      # These Job Steps verify that the Aembit submodules are up to date with main or release
       - name: Check Submodule aembit_api_client
         run: |
           git submodule status
           BRANCH=$(git submodule status | grep "aembit_api_client" | awk -F ' ' '{print $3}')
-          if [ "${BRANCH}" != "(heads/main)" ]; then
-            printf "aembit_api_client is currently on the ${s} branch and needs to be updated\n"
+          if [ "${BRANCH}" != "(heads/main)" ] && [[ ! "${BRANCH}" =~ ^\(heads/release/.*\) ]]; then
+            printf "aembit_api_client is currently on the ${BRANCH} branch and needs to be updated\n"
             exit 1
           fi

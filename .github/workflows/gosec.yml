@@ -1,14 +1,16 @@
 # Inspect code with Go Security Checker
 name: Gosec Security Checker
 
-# Enable check for pull requests on main
+# Enable check for pull requests and pushes on main and release branches
 on:
   push:
     branches:
       - 'main'
+      - 'release/*'
   pull_request:
     branches:
       - 'main'
+      - 'release/*'
 jobs:
   tests:
     runs-on: ubuntu-latest
