@@ -13,6 +13,11 @@
   "packageRules": [
     {
       "matchManagers": ["gomod"],
+      "matchDepTypes": ["golang"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchManagers": ["gomod"],
       "groupName": "Go modules (all versions)",
       "separateMajorMinor": false,
       "groupSingleUpdates": true
