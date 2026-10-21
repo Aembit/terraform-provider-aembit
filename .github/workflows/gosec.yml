@@ -34,7 +34,7 @@ jobs:
             cache: true
       - name: Go Mod Download
         run: go mod download
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@9e75c0576c9878035d4221392108d458abe10fc3 # v2.28.0
-        with:
-          args: -exclude=G101,G117,G704 ./...
+      - name: Install and Run Gosec Security Scanner
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@17ad2dd7533fd4c773d916e2bc81446917d593b5
+          $(go env GOPATH)/bin/gosec -exclude=G101,G117,G704 ./...
