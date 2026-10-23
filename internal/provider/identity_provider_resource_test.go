@@ -177,6 +177,11 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"oidc.group_cache_ttl_minutes",
 						"30",
 					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.token_url",
+						"https://test.oidc.com/oauth/v2/token",
+					),
 				),
 			},
 			{
@@ -233,6 +238,11 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						resourceName,
 						"oidc.group_cache_ttl_minutes",
 						"15",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"oidc.token_url",
+						"https://test.oidc.com/oauth/v2/token-updated",
 					),
 				),
 			},

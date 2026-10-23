@@ -96,7 +96,7 @@ resource "aembit_server_workload" "test_mcp_with_url_path" {
 		requested_port = 443
         tls = true
 		app_protocol = "MCP"
-		url_path = "/token"
+		url_path = "/api/v3/agentspace/mcp/"
 		transport_protocol = "TCP"
 		tls_verification = "full"
 		authentication_config = {

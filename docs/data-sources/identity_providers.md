@@ -58,6 +58,7 @@ Read-Only:
 - `oidc_base_url` (String) The base URL of the OIDC Identity Provider.
 - `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
 - `scopes` (String) A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').
+- `token_url` (String) The Token URL override for OIDC token exchange and refresh operations.
 
 
 <a id="nestedatt--identity_providers--saml"></a>

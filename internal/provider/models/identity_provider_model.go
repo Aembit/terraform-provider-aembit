@@ -38,6 +38,7 @@ type IdentityProviderOidcModel struct {
 	EnableUserinfoGroupLookup types.Bool   `tfsdk:"enable_userinfo_group_lookup"`
 	GroupClaimAttribute       types.String `tfsdk:"group_claim_attribute"`
 	GroupCacheTtlMinutes      types.Int64  `tfsdk:"group_cache_ttl_minutes"`
+	TokenUrl                  types.String `tfsdk:"token_url"`
 }
 
 // SsoStatementRoleMappings represents role mappings for SSO statements.

@@ -81,7 +81,7 @@ Optional:
 - `requested_port` (Number) Requested port of the Server Workload service endpoint.
 - `requested_tls` (Boolean) TLS requested on the Server Workload service endpoint.
 - `tls` (Boolean) TLS indicated on the Server Workload service endpoint.
-- `url_path` (String) URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.
+- `url_path` (String) URL path of the Server Workload service endpoint. Supports single root `/`, multi-segment paths, and optional trailing slashes (e.g. `/mcp/` or `/api/v3/agentspace/mcp/`). <br>This value is applicable when the `app_protocol` is set to `OAuth` or `MCP`.
 
 Read-Only:
 

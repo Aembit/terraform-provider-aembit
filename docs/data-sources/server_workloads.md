@@ -61,7 +61,7 @@ Read-Only:
 - `tls` (Boolean) tls of the service endpoint.
 - `tls_verification` (String) tls verification of the service endpoint.
 - `transport_protocol` (String) transport protocol of the service endpoint.
-- `url_path` (String) URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.
+- `url_path` (String) URL path of the Server Workload service endpoint. Supports single root `/`, multi-segment paths, and optional trailing slashes (e.g. `/mcp/` or `/api/v3/agentspace/mcp/`). <br>This value is applicable when the `app_protocol` is set to `OAuth` or `MCP`.
 
 <a id="nestedatt--server_workloads--service_endpoint--authentication_config"></a>
 ### Nested Schema for `server_workloads.service_endpoint.authentication_config`

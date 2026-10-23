@@ -56,6 +56,10 @@ var (
 	)
 	IdentityProviderIDPrefixRegex = regexp.MustCompile(`^idp_\S+`)
 	ServiceAccountIDPrefixRegex   = regexp.MustCompile(`^user-\S+`)
+	// UrlPathRegex matches URL paths starting with a slash, multi-segment paths, optional trailing slashes, and percent-encoded characters.
+	UrlPathRegex = regexp.MustCompile(
+		`^/(?:(?:[\w.\-~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[\w.\-~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+)*(?:/)?)?$`,
+	)
 )
 
 func NameLengthValidation() validator.String {
@@ -204,5 +208,13 @@ func ServiceAccountIDPrefixValidation() validator.String {
 	return stringvalidator.RegexMatches(
 		ServiceAccountIDPrefixRegex,
 		"must be prefixed with \"user-\"",
+	)
+}
+
+// UrlPathValidation validates that a string is a valid URL path conforming to UrlPathRegex.
+func UrlPathValidation() validator.String {
+	return stringvalidator.RegexMatches(
+		UrlPathRegex,
+		"must be a valid URL path",
 	)
 }

@@ -226,6 +226,14 @@ func (r *identityProviderResource) Schema(
 							int64validator.Between(5, 1440),
 						},
 					},
+					"token_url": schema.StringAttribute{
+						Description: "The Token URL override for OIDC token exchange and refresh operations. Must be an HTTPS URL.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
 				},
 			},
 		},
@@ -468,6 +476,9 @@ func convertIdentityProviderModelToDTO(
 		identityProvider.EnableUserinfoGroupLookup = model.Oidc.EnableUserinfoGroupLookup.ValueBool()
 		identityProvider.GroupClaimAttribute = model.Oidc.GroupClaimAttribute.ValueString()
 		identityProvider.GroupCacheTtlMinutes = int(model.Oidc.GroupCacheTtlMinutes.ValueInt64())
+		if !model.Oidc.TokenUrl.IsNull() && !model.Oidc.TokenUrl.IsUnknown() {
+			identityProvider.TokenUrl = model.Oidc.TokenUrl.ValueString()
+		}
 	}
 
 	for _, mapping := range model.SsoStatementRoleMappings {
@@ -528,6 +539,12 @@ func convertOidcDTOToModel(planOidc *models.IdentityProviderOidcModel, dto aembi
 
 	if planOidc != nil {
 		oidc.ClientSecret = planOidc.ClientSecret
+	}
+
+	if dto.TokenUrl == "" {
+		oidc.TokenUrl = types.StringNull()
+	} else {
+		oidc.TokenUrl = types.StringValue(dto.TokenUrl)
 	}
 
 	return oidc
