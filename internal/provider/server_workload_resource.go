@@ -200,10 +200,13 @@ func (r *serverWorkloadResource) Schema(
 						Computed:    true,
 					},
 					"url_path": schema.StringAttribute{
-						Description: "URL path of the Server Workload service endpoint. <br>This value is only applicable when the `app_protocol` is set to `OAuth`.",
+						Description: "URL path of the Server Workload service endpoint. Supports single root `/`, multi-segment paths, and optional trailing slashes (e.g. `/mcp/` or `/api/v3/agentspace/mcp/`). <br>This value is applicable when the `app_protocol` is set to `OAuth` or `MCP`.",
 						Required:    false,
 						Optional:    true,
 						Computed:    true,
+						Validators: []validator.String{
+							validators.UrlPathValidation(),
+						},
 					},
 					"http_headers": schema.MapAttribute{
 						Description: "HTTP Headers are key-value pairs.",

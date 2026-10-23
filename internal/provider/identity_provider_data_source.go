@@ -176,6 +176,10 @@ func (r *identityProviderDataSource) Schema(
 									Description: "TTL in minutes for caching UserInfo group memberships.",
 									Computed:    true,
 								},
+								"token_url": schema.StringAttribute{
+									Description: "The Token URL override for OIDC token exchange and refresh operations.",
+									Computed:    true,
+								},
 							},
 						},
 					},

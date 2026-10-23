@@ -234,3 +234,68 @@ func TestServiceAccountIDPrefixValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestUrlPathValidation(t *testing.T) {
+	t.Parallel()
+
+	v := UrlPathValidation()
+	require.NotNil(t, v)
+
+	ctx := context.Background()
+
+	require.Contains(t, v.Description(ctx), "must be a valid URL path")
+	require.Contains(t, v.MarkdownDescription(ctx), "must be a valid URL path")
+
+	validInputs := []string{
+		"/",
+		"/api",
+		"/api/",
+		"/api/v1/resource",
+		"/api/v1/resource/",
+		"/api/v3/agentspace/mcp/",
+		"/path-with_special~chars.123",
+		"/path/with%20encoded%2Fvalues/",
+		"/sub/dir;param=value:123@host+test$other,test*ok",
+	}
+
+	for _, input := range validInputs {
+		t.Run("Valid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("url_path"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.False(t, resp.Diagnostics.HasError(), "Expected valid URL path, but got error: %s", resp.Diagnostics)
+		})
+	}
+
+	invalidInputs := []string{
+		"",
+		"relative/path",
+		"relative/path/",
+		"//",
+		"/api//mcp",
+		"/api/v1//",
+		"/path with unencoded spaces",
+		"/path/with space/",
+		"/path?query=1",
+		"/path#fragment",
+	}
+
+	for _, input := range invalidInputs {
+		t.Run("Invalid_"+input, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(input),
+				Path:        path.Root("url_path"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.True(t, resp.Diagnostics.HasError(), "Expected invalid URL path to fail validation, but it succeeded: %s", input)
+		})
+	}
+}
