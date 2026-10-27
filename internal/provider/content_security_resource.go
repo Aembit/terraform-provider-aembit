@@ -413,7 +413,7 @@ func (r *contentSecurityResource) Delete(
 	resourceSetId := getResourceSetId(state.ResourceSetID, r.client)
 
 	// Check if Content Security is Active - if it is, disable it first
-	if state.IsActive.ValueBool() {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableContentSecurity(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(

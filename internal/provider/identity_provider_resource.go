@@ -408,7 +408,7 @@ func (r *identityProviderResource) Delete(
 	}
 
 	// Check if Identity Provider is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableIdentityProvider(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(
