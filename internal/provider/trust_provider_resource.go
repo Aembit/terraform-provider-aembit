@@ -1348,7 +1348,7 @@ func (r *trustProviderResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Trust Provider is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableTrustProvider(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(

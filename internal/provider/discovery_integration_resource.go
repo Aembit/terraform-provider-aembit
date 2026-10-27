@@ -323,7 +323,7 @@ func (r *discoveryIntegrationResource) Delete(
 	}
 
 	// Check if Discovery Integration is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableDiscoveryIntegration(state.ID.ValueString(), nil)
 		if err != nil {
 			resp.Diagnostics.AddError(

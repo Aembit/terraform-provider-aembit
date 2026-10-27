@@ -482,7 +482,7 @@ func (r *clientWorkloadResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Client Workload is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(

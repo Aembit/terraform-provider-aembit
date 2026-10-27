@@ -468,7 +468,7 @@ func (r *accessPolicyResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Access Policy is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableAccessPolicyV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
