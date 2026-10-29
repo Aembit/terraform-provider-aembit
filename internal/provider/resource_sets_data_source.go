@@ -76,6 +76,11 @@ func (d *resourceSetsDataSource) Schema(
 							Computed:    true,
 							ElementType: types.StringType,
 						},
+						"effective_roles": schema.SetAttribute{
+							Description: "Complete set of Role IDs in effect for this ResourceSet, including system-assigned roles (SuperAdmin and Auditor) and any custom roles.",
+							Computed:    true,
+							ElementType: types.StringType,
+						},
 						"standalone_certificate_authority": schema.StringAttribute{
 							Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
 							Optional:    true,
