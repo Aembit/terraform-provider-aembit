@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
+	"slices"
 
 	"terraform-provider-aembit/internal/provider/models"
 	"terraform-provider-aembit/internal/provider/validators"
@@ -17,6 +19,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+const resourceSetImplicitRolesKey = "implicit_roles"
+
+// privateStateData represents the provider private state reader and writer interface.
+type privateStateData interface {
+	GetKey(ctx context.Context, key string) ([]byte, diag.Diagnostics)
+	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
+}
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
@@ -60,6 +70,7 @@ func (r *resourceSetResource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage Resource Sets in an Aembit Cloud tenant.",
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
@@ -82,7 +93,7 @@ func (r *resourceSetResource) Schema(
 				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
-				Description: "IDs of the Roles associated with this ResourceSet.",
+				Description: "IDs of the Roles associated with this Resource Set. Aembit automatically assigns the tenant's SuperAdmin and Auditor roles to every Resource Set. If omitted or null, Terraform populates this attribute with those default system role IDs. If set to an explicit set of custom role IDs or an empty set ([]), Terraform tracks only the configured role IDs in this attribute while exposing the full backend-assigned set (including SuperAdmin and Auditor) in effective_roles.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
@@ -92,6 +103,11 @@ func (r *resourceSetResource) Schema(
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"effective_roles": schema.SetAttribute{
+				Description: "Complete set of Role IDs in effect for this Resource Set, including system-assigned roles (SuperAdmin and Auditor) and any configured custom roles.",
+				Computed:    true,
+				ElementType: types.StringType,
 			},
 			"standalone_certificate_authority": schema.StringAttribute{
 				Description: "Standalone Certificate Authority ID configured for this ResourceSet.",
@@ -119,6 +135,8 @@ func (r *resourceSetResource) Create(
 		return
 	}
 
+	planRoles := plan.Roles
+
 	// Generate API request body from plan
 	resourceSetDTO, dtoDiags := convertResourceSetModelToDTO(ctx, plan, nil)
 	resp.Diagnostics.Append(dtoDiags...)
@@ -143,6 +161,14 @@ func (r *resourceSetResource) Create(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Reconcile planned roles with backend-injected roles and persist implicit roles in private state
+	reconciledRoles, reconcileDiags := reconcileRolesOnApply(ctx, planRoles, resourceSet.Roles, resp.Private)
+	resp.Diagnostics.Append(reconcileDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	plan.Roles = reconciledRoles
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -187,6 +213,14 @@ func (r *resourceSetResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Filter out implicit roles using private state data
+	filteredRoles, filterDiags := filterRolesOnRead(ctx, resourceSet.Roles, req.Private)
+	resp.Diagnostics.Append(filterDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	state.Roles = filteredRoles
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -245,6 +279,14 @@ func (r *resourceSetResource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Reconcile planned roles with backend-injected roles and persist implicit roles in private state
+	reconciledRoles, reconcileDiags := reconcileRolesOnApply(ctx, plan.Roles, resourceSet.Roles, resp.Private)
+	resp.Diagnostics.Append(reconcileDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	state.Roles = reconciledRoles
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -336,5 +378,142 @@ func convertResourceSetDTOToModel(
 	diags.Append(setDiags...)
 	model.Roles = rolesSet
 
+	effectiveRolesSet, effectiveSetDiags := types.SetValueFrom(ctx, types.StringType, dto.Roles)
+	diags.Append(effectiveSetDiags...)
+	model.EffectiveRoles = effectiveRolesSet
+
 	return model, diags
+}
+
+// reconcileRolesOnApply reconciles planned roles with backend-returned roles during Create and Update.
+// If planRoles is unknown or null (omitted or set to null), it accepts all backendRoles and marks implicit_roles as an empty JSON array.
+// If planRoles is known and non-null, it computes the implicit roles injected by the backend (backendRoles \ plannedRoles),
+// persists them to the provider private state, and returns the reconciled roles (backendRoles \ implicitRoles).
+func reconcileRolesOnApply(
+	ctx context.Context,
+	planRoles types.Set,
+	backendRoles []string,
+	privateState privateStateData,
+) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if planRoles.IsUnknown() || planRoles.IsNull() {
+		if privateState != nil {
+			diags.Append(privateState.SetKey(ctx, resourceSetImplicitRolesKey, []byte("[]"))...)
+		}
+		rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
+		diags.Append(setDiags...)
+		return rolesSet, diags
+	}
+
+	var plannedRoles []string
+	diags.Append(planRoles.ElementsAs(ctx, &plannedRoles, false)...)
+	if diags.HasError() {
+		return planRoles, diags
+	}
+
+	// Check if all planned roles are present in backendRoles.
+	// If any planned role is missing, do not mask the discrepancy; clear implicit_roles and return backendRoles.
+	for _, role := range plannedRoles {
+		if !slices.Contains(backendRoles, role) {
+			if privateState != nil {
+				diags.Append(privateState.SetKey(ctx, resourceSetImplicitRolesKey, []byte("[]"))...)
+			}
+			rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
+			diags.Append(setDiags...)
+			return rolesSet, diags
+		}
+	}
+
+	// Compute implicitRoles = backendRoles \ plannedRoles
+	var implicitRoles []string
+	for _, role := range backendRoles {
+		if !slices.Contains(plannedRoles, role) {
+			implicitRoles = append(implicitRoles, role)
+		}
+	}
+
+	if implicitRoles == nil {
+		implicitRoles = []string{}
+	}
+
+	marshaled, err := json.Marshal(implicitRoles)
+	if err != nil {
+		diags.AddError("Error marshaling implicit roles", err.Error())
+		return planRoles, diags
+	}
+
+	if privateState != nil {
+		diags.Append(privateState.SetKey(ctx, resourceSetImplicitRolesKey, marshaled)...)
+		if diags.HasError() {
+			return planRoles, diags
+		}
+	}
+
+	// Compute reconciledRoles = backendRoles \ implicitRoles
+	var reconciledRoles []string
+	for _, role := range backendRoles {
+		if !slices.Contains(implicitRoles, role) {
+			reconciledRoles = append(reconciledRoles, role)
+		}
+	}
+
+	if reconciledRoles == nil {
+		reconciledRoles = []string{}
+	}
+
+	rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, reconciledRoles)
+	diags.Append(setDiags...)
+	return rolesSet, diags
+}
+
+// filterRolesOnRead filters implicit system roles out of backend-returned roles during Read using private state data.
+// If implicit_roles is absent, empty, or unmarshals to an empty slice, the full backendRoles slice is returned.
+func filterRolesOnRead(
+	ctx context.Context,
+	backendRoles []string,
+	privateData privateStateData,
+) (types.Set, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if privateData == nil {
+		rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
+		diags.Append(setDiags...)
+		return rolesSet, diags
+	}
+
+	rawBytes, getDiags := privateData.GetKey(ctx, resourceSetImplicitRolesKey)
+	diags.Append(getDiags...)
+	if diags.HasError() || len(rawBytes) == 0 {
+		rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
+		diags.Append(setDiags...)
+		return rolesSet, diags
+	}
+
+	var implicitRoles []string
+	if err := json.Unmarshal(rawBytes, &implicitRoles); err != nil {
+		diags.AddError("Error unmarshaling implicit roles", err.Error())
+		return types.SetNull(types.StringType), diags
+	}
+
+	if len(implicitRoles) == 0 {
+		rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
+		diags.Append(setDiags...)
+		return rolesSet, diags
+	}
+
+	var filtered []string
+	for _, role := range backendRoles {
+		if !slices.Contains(implicitRoles, role) {
+			filtered = append(filtered, role)
+		}
+	}
+
+	if filtered == nil {
+		filtered = []string{}
+	}
+
+	rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, filtered)
+	diags.Append(setDiags...)
+	return rolesSet, diags
 }

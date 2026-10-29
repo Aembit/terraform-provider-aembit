@@ -50,6 +50,10 @@ func TestAccDefaultResourceSetDataSource(t *testing.T) {
 						"id",
 						"ffffffff-ffff-ffff-ffff-ffffffffffff",
 					),
+					resource.TestCheckResourceAttrSet(
+						testResourceSetDefault,
+						"effective_roles.#",
+					),
 
 					resource.TestMatchResourceAttr(
 						testResourceSetsAll,

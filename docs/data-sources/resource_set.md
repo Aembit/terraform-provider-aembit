@@ -26,5 +26,6 @@ Use this data source to get information about an Aembit ResourceSet.
 ### Read-Only
 
 - `description` (String) User-provided description of the ResourceSet.
+- `effective_roles` (Set of String) Complete set of Role IDs in effect for this ResourceSet, including system-assigned roles (SuperAdmin and Auditor) and any custom roles.
 - `name` (String) User-provided name of the ResourceSet.
 - `roles` (Set of String) IDs of the Roles associated with this ResourceSet.
