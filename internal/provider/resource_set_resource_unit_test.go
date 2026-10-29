@@ -52,14 +52,48 @@ func getStringSliceFromSet(ctx context.Context, t *testing.T, set types.Set) []s
 	return elements
 }
 
-// TestReconcileRolesOnApply_OmittedOrNullRoles verifies reconciliation when planned roles is unknown (omitted/null).
+// TestReconcileRolesOnApply_OmittedRoles verifies reconciliation when planned roles is unknown (omitted).
 // It verifies that backend-returned roles are preserved and implicit_roles is set to an empty array.
-func TestReconcileRolesOnApply_OmittedOrNullRoles(t *testing.T) {
+func TestReconcileRolesOnApply_OmittedRoles(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	mockState := newMockPrivateState()
 
 	planRoles := types.SetUnknown(types.StringType)
+	backendRoles := []string{"superadmin-id", "auditor-id"}
+
+	reconciledSet, diags := reconcileRolesOnApply(ctx, planRoles, backendRoles, mockState)
+	if diags.HasError() {
+		t.Fatalf("reconcileRolesOnApply returned unexpected error diags: %v", diags)
+	}
+
+	resultRoles := getStringSliceFromSet(ctx, t, reconciledSet)
+	if len(resultRoles) != 2 {
+		t.Fatalf("expected 2 reconciled roles, got %d: %v", len(resultRoles), resultRoles)
+	}
+	for _, expectedRole := range backendRoles {
+		if !slices.Contains(resultRoles, expectedRole) {
+			t.Errorf("expected reconciled set to contain role %q, got: %v", expectedRole, resultRoles)
+		}
+	}
+
+	storedBytes, getDiags := mockState.GetKey(ctx, resourceSetImplicitRolesKey)
+	if getDiags.HasError() {
+		t.Fatalf("mockState.GetKey returned unexpected error diags: %v", getDiags)
+	}
+	if string(storedBytes) != "[]" {
+		t.Errorf("expected implicit_roles in private state to be %q, got %q", "[]", string(storedBytes))
+	}
+}
+
+// TestReconcileRolesOnApply_NullRoles verifies reconciliation when planned roles is explicit null (roles = null).
+// It verifies that null is treated like omitted/unknown: backend-returned roles are preserved and implicit_roles is set to [].
+func TestReconcileRolesOnApply_NullRoles(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	mockState := newMockPrivateState()
+
+	planRoles := types.SetNull(types.StringType)
 	backendRoles := []string{"superadmin-id", "auditor-id"}
 
 	reconciledSet, diags := reconcileRolesOnApply(ctx, planRoles, backendRoles, mockState)
@@ -183,11 +217,14 @@ func TestReconcileRolesOnApply_CustomRoles(t *testing.T) {
 }
 
 // TestReconcileRolesOnApply_PlannedRoleMissingInBackend verifies that if a planned role is missing in the backend response,
-// the discrepancy is not masked and full backend roles are returned.
+// the discrepancy is not masked, implicit_roles in private state is cleared, and full backend roles are returned.
 func TestReconcileRolesOnApply_PlannedRoleMissingInBackend(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	mockState := newMockPrivateState()
+
+	// Pre-seed private state with prior implicit roles to verify they are cleared on discrepancy
+	mockState.SetKey(ctx, resourceSetImplicitRolesKey, []byte(`["superadmin-id","auditor-id"]`))
 
 	plannedRolesList := []string{"custom-1", "custom-missing"}
 	planRoles, setDiags := types.SetValueFrom(ctx, types.StringType, plannedRolesList)
@@ -210,6 +247,14 @@ func TestReconcileRolesOnApply_PlannedRoleMissingInBackend(t *testing.T) {
 		if !slices.Contains(resultRoles, bRole) {
 			t.Errorf("expected reconciled set to contain backend role %q, got: %v", bRole, resultRoles)
 		}
+	}
+
+	storedBytes, getDiags := mockState.GetKey(ctx, resourceSetImplicitRolesKey)
+	if getDiags.HasError() {
+		t.Fatalf("mockState.GetKey returned unexpected error diags: %v", getDiags)
+	}
+	if string(storedBytes) != "[]" {
+		t.Errorf("expected implicit_roles in private state to be cleared to %q, got %q", "[]", string(storedBytes))
 	}
 }
 

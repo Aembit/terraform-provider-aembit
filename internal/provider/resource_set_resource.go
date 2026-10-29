@@ -386,8 +386,8 @@ func convertResourceSetDTOToModel(
 }
 
 // reconcileRolesOnApply reconciles planned roles with backend-returned roles during Create and Update.
-// If planRoles is unknown, it accepts all backendRoles and marks implicit_roles as an empty JSON array.
-// If planRoles is known, it computes the implicit roles injected by the backend (backendRoles \ plannedRoles),
+// If planRoles is unknown or null (omitted or set to null), it accepts all backendRoles and marks implicit_roles as an empty JSON array.
+// If planRoles is known and non-null, it computes the implicit roles injected by the backend (backendRoles \ plannedRoles),
 // persists them to the provider private state, and returns the reconciled roles (backendRoles \ implicitRoles).
 func reconcileRolesOnApply(
 	ctx context.Context,
@@ -397,7 +397,7 @@ func reconcileRolesOnApply(
 ) (types.Set, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	if planRoles.IsUnknown() {
+	if planRoles.IsUnknown() || planRoles.IsNull() {
 		if privateState != nil {
 			diags.Append(privateState.SetKey(ctx, resourceSetImplicitRolesKey, []byte("[]"))...)
 		}
@@ -407,17 +407,18 @@ func reconcileRolesOnApply(
 	}
 
 	var plannedRoles []string
-	if !planRoles.IsNull() {
-		diags.Append(planRoles.ElementsAs(ctx, &plannedRoles, false)...)
-		if diags.HasError() {
-			return planRoles, diags
-		}
+	diags.Append(planRoles.ElementsAs(ctx, &plannedRoles, false)...)
+	if diags.HasError() {
+		return planRoles, diags
 	}
 
 	// Check if all planned roles are present in backendRoles.
-	// If any planned role is missing, do not mask the discrepancy; return backendRoles.
+	// If any planned role is missing, do not mask the discrepancy; clear implicit_roles and return backendRoles.
 	for _, role := range plannedRoles {
 		if !slices.Contains(backendRoles, role) {
+			if privateState != nil {
+				diags.Append(privateState.SetKey(ctx, resourceSetImplicitRolesKey, []byte("[]"))...)
+			}
 			rolesSet, setDiags := types.SetValueFrom(ctx, types.StringType, backendRoles)
 			diags.Append(setDiags...)
 			return rolesSet, diags
