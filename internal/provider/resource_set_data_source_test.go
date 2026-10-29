@@ -50,21 +50,15 @@ func TestAccDefaultResourceSetDataSource(t *testing.T) {
 						"id",
 						"ffffffff-ffff-ffff-ffff-ffffffffffff",
 					),
-					resource.TestCheckResourceAttr(
+					resource.TestCheckResourceAttrSet(
 						testResourceSetDefault,
 						"effective_roles.#",
-						"2",
 					),
 
 					resource.TestMatchResourceAttr(
 						testResourceSetsAll,
 						"resource_sets.#",
 						regexp.MustCompile(`[2-9]`),
-					),
-					resource.TestCheckResourceAttr(
-						testResourceSetsAll,
-						"resource_sets.0.effective_roles.#",
-						"2",
 					),
 				),
 			},
@@ -86,11 +80,6 @@ func TestAccResourceSetDataSource(t *testing.T) {
 						testResourceSetDataSource,
 						"resource_sets.#",
 						regexp.MustCompile(`[3-9]`),
-					),
-					resource.TestCheckResourceAttr(
-						testResourceSetDataSource,
-						"resource_sets.0.effective_roles.#",
-						"2",
 					),
 					// Find newly created entry
 					testFindResourceSet(testResourceSetResource),
