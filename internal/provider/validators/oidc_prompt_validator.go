@@ -8,6 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+// invalidOidcPromptValueSummary is the diagnostic summary returned when oidc.prompt fails validation.
+const invalidOidcPromptValueSummary = "Invalid OIDC Prompt Value"
+
 // oidcPromptValidator validates that oidc.prompt adheres to OIDC Core 1.0 Section 3.1.2.1 rules.
 type oidcPromptValidator struct{}
 
@@ -58,7 +61,7 @@ func (v oidcPromptValidator) ValidateString(
 	if len(tokens) == 0 || val != strings.Join(tokens, " ") {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid OIDC Prompt Value",
+			invalidOidcPromptValueSummary,
 			fmt.Sprintf("OIDC prompt must be a non-empty, single-space-delimited list of prompt values without leading, trailing, or consecutive whitespace. Got: %q", val),
 		)
 		return
@@ -71,7 +74,7 @@ func (v oidcPromptValidator) ValidateString(
 		if !isAllowedOidcPrompt(token) {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"Invalid OIDC Prompt Value",
+				invalidOidcPromptValueSummary,
 				fmt.Sprintf("Invalid OIDC prompt value %q. Allowed values are: 'none', 'login', 'consent', 'select_account'.", token),
 			)
 			return
@@ -80,7 +83,7 @@ func (v oidcPromptValidator) ValidateString(
 		if _, exists := seen[token]; exists {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"Invalid OIDC Prompt Value",
+				invalidOidcPromptValueSummary,
 				fmt.Sprintf("Duplicate OIDC prompt value %q found. Each prompt value must be unique.", token),
 			)
 			return
@@ -95,7 +98,7 @@ func (v oidcPromptValidator) ValidateString(
 	if hasNone && len(tokens) > 1 {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid OIDC Prompt Value",
+			invalidOidcPromptValueSummary,
 			"OIDC prompt 'none' cannot be combined with any other prompt values.",
 		)
 		return

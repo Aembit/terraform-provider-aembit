@@ -222,7 +222,7 @@ func TestOidcPromptValidation_Invalid(t *testing.T) {
 
 			hasExpectedMessage := false
 			for _, d := range resp.Diagnostics.Errors() {
-				require.Equal(t, "Invalid OIDC Prompt Value", d.Summary())
+				require.Equal(t, invalidOidcPromptValueSummary, d.Summary())
 				if strings.Contains(d.Detail(), tc.expectedError) {
 					hasExpectedMessage = true
 					break
