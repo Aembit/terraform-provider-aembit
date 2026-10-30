@@ -29,5 +29,6 @@ resource "aembit_identity_provider" "test_idp_oidc" {
         group_claim_attribute = "roles"
         group_cache_ttl_minutes = 30
         token_url = "https://test.oidc.com/oauth/v2/token"
+        prompt = "login"
     }
 }

@@ -28,5 +28,6 @@ resource "aembit_identity_provider" "test_idp_oidc" {
         group_claim_attribute = "groups"
         group_cache_ttl_minutes = 15
         token_url = "https://test.oidc.com/oauth/v2/token-updated"
+        prompt = "login consent"
     } 
 }
