@@ -223,12 +223,7 @@ func TestOidcPromptValidation_Invalid(t *testing.T) {
 			hasExpectedMessage := false
 			for _, d := range resp.Diagnostics.Errors() {
 				require.Equal(t, "Invalid OIDC Prompt Value", d.Summary())
-				if d.Detail() == tc.expectedError || (len(tc.expectedError) > 0 && d.Detail() != "" && (d.Detail() == tc.expectedError || (len(d.Detail()) >= len(tc.expectedError) && d.Detail()[:len(tc.expectedError)] == tc.expectedError))) {
-					hasExpectedMessage = true
-					break
-				}
-				// Also check contains if full match not exact
-				if d.Detail() != "" && strings.Contains(d.Detail(), tc.expectedError) {
+				if strings.Contains(d.Detail(), tc.expectedError) {
 					hasExpectedMessage = true
 					break
 				}
