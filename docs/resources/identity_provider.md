@@ -67,6 +67,11 @@ Optional:
 - `group_cache_ttl_minutes` (Number) TTL in minutes for caching UserInfo group memberships. Accepted range: 5-1440 minutes.
 - `group_claim_attribute` (String) Claim name in the UserInfo response containing group memberships.
 - `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
+- `prompt` (String) A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login (e.g., `login` or `login consent`). Possible values are:
+	* `none` (cannot be combined with other values)
+	* `login`
+	* `consent`
+	* `select_account`
 - `token_url` (String) The Token URL override for OIDC token exchange and refresh operations. Must be an HTTPS URL.
 
 Read-Only:

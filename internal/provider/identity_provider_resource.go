@@ -234,6 +234,18 @@ func (r *identityProviderResource) Schema(
 							validators.SecureURLValidation(),
 						},
 					},
+					"prompt": schema.StringAttribute{
+						Description: "A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login (e.g., `login` or `login consent`). Possible values are:\n" +
+							"\t* `none` (cannot be combined with other values)\n" +
+							"\t* `login`\n" +
+							"\t* `consent`\n" +
+							"\t* `select_account`\n",
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							validators.OidcPromptValidation(),
+						},
+					},
 				},
 			},
 		},
@@ -479,6 +491,9 @@ func convertIdentityProviderModelToDTO(
 		if !model.Oidc.TokenUrl.IsNull() && !model.Oidc.TokenUrl.IsUnknown() {
 			identityProvider.TokenUrl = model.Oidc.TokenUrl.ValueString()
 		}
+		if !model.Oidc.Prompt.IsNull() && !model.Oidc.Prompt.IsUnknown() {
+			identityProvider.Prompt = model.Oidc.Prompt.ValueString()
+		}
 	}
 
 	for _, mapping := range model.SsoStatementRoleMappings {
@@ -545,6 +560,12 @@ func convertOidcDTOToModel(planOidc *models.IdentityProviderOidcModel, dto aembi
 		oidc.TokenUrl = types.StringNull()
 	} else {
 		oidc.TokenUrl = types.StringValue(dto.TokenUrl)
+	}
+
+	if dto.Prompt == "" {
+		oidc.Prompt = types.StringNull()
+	} else {
+		oidc.Prompt = types.StringValue(dto.Prompt)
 	}
 
 	return oidc

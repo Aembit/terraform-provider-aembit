@@ -180,6 +180,10 @@ func (r *identityProviderDataSource) Schema(
 									Description: "The Token URL override for OIDC token exchange and refresh operations.",
 									Computed:    true,
 								},
+								"prompt": schema.StringAttribute{
+									Description: "A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login.",
+									Computed:    true,
+								},
 							},
 						},
 					},

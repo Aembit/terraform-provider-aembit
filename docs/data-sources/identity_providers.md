@@ -57,6 +57,7 @@ Read-Only:
 - `group_claim_attribute` (String) Claim name in the UserInfo response containing group memberships.
 - `oidc_base_url` (String) The base URL of the OIDC Identity Provider.
 - `pcke_required` (Boolean) Indicates whether Proof Key for Code Exchange (PKCE) is required during the OIDC authorization flow.
+- `prompt` (String) A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login.
 - `scopes` (String) A space-separated list of OIDC scopes to request during authentication (e.g., 'openid profile email').
 - `token_url` (String) The Token URL override for OIDC token exchange and refresh operations.
 

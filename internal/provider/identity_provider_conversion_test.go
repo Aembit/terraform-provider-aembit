@@ -174,3 +174,133 @@ func TestConvertIdentityProviderDTOToModel_OidcUserInfoDefaultsWhenOmitted(t *te
 	assert.Equal(t, int64(15), modelImport.Oidc.GroupCacheTtlMinutes.ValueInt64())
 	assert.True(t, modelImport.Oidc.ClientSecret.IsNull())
 }
+
+// TestConvertIdentityProviderModelToDTO_Prompt verifies conversion of prompt from Terraform model to DTO.
+func TestConvertIdentityProviderModelToDTO_Prompt(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name           string
+		modelPrompt    types.String
+		expectedPrompt string
+	}{
+		{
+			name:           "null prompt results in empty DTO prompt",
+			modelPrompt:    types.StringNull(),
+			expectedPrompt: "",
+		},
+		{
+			name:           "unknown prompt results in empty DTO prompt",
+			modelPrompt:    types.StringUnknown(),
+			expectedPrompt: "",
+		},
+		{
+			name:           "single value prompt is converted",
+			modelPrompt:    types.StringValue("login"),
+			expectedPrompt: "login",
+		},
+		{
+			name:           "multi-value prompt is converted",
+			modelPrompt:    types.StringValue("login consent"),
+			expectedPrompt: "login consent",
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			model := models.IdentityProviderResourceModel{
+				Name:        types.StringValue("Test IdP"),
+				Description: types.StringValue("Description"),
+				IsActive:    types.BoolValue(true),
+				Tags:        types.MapNull(types.StringType),
+				Oidc: &models.IdentityProviderOidcModel{
+					OidcBaseUrl:  types.StringValue("https://oidc.example.com"),
+					ClientId:     types.StringValue("client-123"),
+					Scopes:       types.StringValue("openid profile email"),
+					AuthType:     types.StringValue("ClientSecret"),
+					PkceRequired: types.BoolValue(true),
+					Prompt:       tc.modelPrompt,
+				},
+			}
+
+			dto := convertIdentityProviderModelToDTO(
+				context.Background(),
+				model,
+				nil,
+				nil,
+			)
+
+			assert.Equal(t, "OIDCv1", dto.Type)
+			assert.Equal(t, tc.expectedPrompt, dto.Prompt)
+		})
+	}
+}
+
+// TestConvertIdentityProviderDTOToModel_Prompt verifies conversion of prompt from DTO to Terraform model.
+func TestConvertIdentityProviderDTOToModel_Prompt(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name           string
+		dtoPrompt      string
+		expectedPrompt types.String
+	}{
+		{
+			name:           "empty DTO prompt results in types.StringNull()",
+			dtoPrompt:      "",
+			expectedPrompt: types.StringNull(),
+		},
+		{
+			name:           "single value prompt results in types.StringValue",
+			dtoPrompt:      "login",
+			expectedPrompt: types.StringValue("login"),
+		},
+		{
+			name:           "multi-value prompt results in types.StringValue",
+			dtoPrompt:      "login consent",
+			expectedPrompt: types.StringValue("login consent"),
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dto := aembit.IdentityProviderDTO{
+				EntityDTO: aembit.EntityDTO{
+					ExternalID:  "00000000-0000-0000-0000-000000000003",
+					Name:        "Test IdP",
+					Description: "Description",
+					IsActive:    true,
+				},
+				Type: "OIDCv1",
+				IdentityProviderOidcDTO: aembit.IdentityProviderOidcDTO{
+					OidcBaseUrl:  "https://oidc.example.com",
+					ClientId:     "client-123",
+					Scopes:       "openid profile email",
+					AuthType:     "ClientSecret",
+					PkceRequired: true,
+					Prompt:       tc.dtoPrompt,
+				},
+			}
+
+			planModel := &models.IdentityProviderResourceModel{
+				Tags: types.MapNull(types.StringType),
+				Oidc: &models.IdentityProviderOidcModel{},
+			}
+
+			model := convertIdentityProviderDTOToModel(
+				context.Background(),
+				planModel,
+				dto,
+			)
+
+			assert.NotNil(t, model.Oidc)
+			assert.Equal(t, tc.expectedPrompt, model.Oidc.Prompt)
+		})
+	}
+}
