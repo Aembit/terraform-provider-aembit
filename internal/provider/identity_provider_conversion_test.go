@@ -10,8 +10,11 @@ import (
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConvertIdentityProviderModelToDTO_OidcUserInfoSettings(t *testing.T) {
@@ -303,4 +306,80 @@ func TestConvertIdentityProviderDTOToModel_Prompt(t *testing.T) {
 			assert.Equal(t, tc.expectedPrompt, model.Oidc.Prompt)
 		})
 	}
+}
+
+func TestIdentityProviderResourceSchema_OidcTokenUrlIsOptionalOnly(t *testing.T) {
+	t.Parallel()
+
+	r := NewIdentityProviderResource()
+	schemaResp := &resource.SchemaResponse{}
+	r.Schema(context.Background(), resource.SchemaRequest{}, schemaResp)
+
+	oidcAttr, ok := schemaResp.Schema.Attributes["oidc"].(schema.SingleNestedAttribute)
+	require.True(t, ok)
+
+	tokenUrlAttr, ok := oidcAttr.Attributes["token_url"]
+	require.True(t, ok)
+	assert.True(t, tokenUrlAttr.IsOptional(), "token_url should be Optional")
+	assert.False(t, tokenUrlAttr.IsComputed(), "token_url must not be Computed so removing it from config plans null")
+}
+
+func TestConvertIdentityProvider_OidcTokenUrlSetAndRemoved(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// 1. Model with token_url set -> DTO has TokenUrl populated
+	modelWithTokenUrl := models.IdentityProviderResourceModel{
+		Name:        types.StringValue("Test OIDC IdP"),
+		Description: types.StringValue("Test Description"),
+		IsActive:    types.BoolValue(true),
+		Tags:        types.MapNull(types.StringType),
+		Oidc: &models.IdentityProviderOidcModel{
+			OidcBaseUrl:               types.StringValue("https://oidc.example.com"),
+			ClientId:                  types.StringValue("client-123"),
+			Scopes:                    types.StringValue("openid profile email"),
+			AuthType:                  types.StringValue("KeyPair"),
+			PkceRequired:              types.BoolValue(true),
+			EnableUserinfoGroupLookup: types.BoolValue(false),
+			GroupClaimAttribute:       types.StringValue("groups"),
+			GroupCacheTtlMinutes:      types.Int64Value(15),
+			TokenUrl:                  types.StringValue("https://oidc.example.com/oauth2/token"),
+		},
+	}
+
+	dtoWithTokenUrl := convertIdentityProviderModelToDTO(ctx, modelWithTokenUrl, nil, nil)
+	assert.Equal(t, "https://oidc.example.com/oauth2/token", dtoWithTokenUrl.TokenUrl)
+
+	// 2. Model with token_url removed (null) -> DTO has empty TokenUrl ("")
+	modelWithoutTokenUrl := modelWithTokenUrl
+	oidcCopy := *modelWithTokenUrl.Oidc
+	oidcCopy.TokenUrl = types.StringNull()
+	modelWithoutTokenUrl.Oidc = &oidcCopy
+
+	dtoWithoutTokenUrl := convertIdentityProviderModelToDTO(ctx, modelWithoutTokenUrl, nil, nil)
+	assert.Empty(t, dtoWithoutTokenUrl.TokenUrl)
+
+	// 3. Backend response with empty TokenUrl -> Model has TokenUrl = StringNull()
+	dtoResponse := aembit.IdentityProviderDTO{
+		EntityDTO: aembit.EntityDTO{
+			ExternalID:  "00000000-0000-0000-0000-000000000003",
+			Name:        "Test OIDC IdP",
+			Description: "Test Description",
+			IsActive:    true,
+		},
+		Type: "OIDCv1",
+		IdentityProviderOidcDTO: aembit.IdentityProviderOidcDTO{
+			OidcBaseUrl:  "https://oidc.example.com",
+			ClientId:     "client-123",
+			Scopes:       "openid profile email",
+			AuthType:     "KeyPair",
+			PkceRequired: true,
+			TokenUrl:     "",
+		},
+	}
+
+	convertedModel := convertIdentityProviderDTOToModel(ctx, &modelWithoutTokenUrl, dtoResponse)
+	require.NotNil(t, convertedModel.Oidc)
+	assert.True(t, convertedModel.Oidc.TokenUrl.IsNull())
 }

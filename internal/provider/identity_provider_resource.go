@@ -229,7 +229,6 @@ func (r *identityProviderResource) Schema(
 					"token_url": schema.StringAttribute{
 						Description: "The Token URL override for OIDC token exchange and refresh operations. Must be an HTTPS URL.",
 						Optional:    true,
-						Computed:    true,
 						Validators: []validator.String{
 							validators.SecureURLValidation(),
 						},

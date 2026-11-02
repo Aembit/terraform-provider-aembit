@@ -3,6 +3,7 @@ package provider
 import (
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -125,6 +126,11 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
+	removedTokenUrlConfig := strings.ReplaceAll(
+		string(modifiedFile),
+		`token_url = "https://test.oidc.com/oauth/v2/token-updated"`,
+		"",
+	)
 	resourceName := "aembit_identity_provider.test_idp_oidc"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -255,6 +261,16 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						resourceName,
 						"oidc.prompt",
 						"login consent",
+					),
+				),
+			},
+			{
+				Config: removedTokenUrlConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckNoResourceAttr(
+						resourceName,
+						"oidc.token_url",
 					),
 				),
 			},
