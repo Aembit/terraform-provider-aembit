@@ -10,6 +10,7 @@ import (
 	"aembit.io/aembit"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -202,36 +203,51 @@ func (r *accessPolicyResource) Schema(
 						"mapping_type": schema.StringAttribute{
 							Description: "Mapping type for the credential provider.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"header_name": schema.StringAttribute{
 							Description: "Name of the header for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"header_value": schema.StringAttribute{
 							Description: "Value of the header for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"httpbody_field_path": schema.StringAttribute{
 							Description: "Field path in the HTTP body for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"httpbody_field_value": schema.StringAttribute{
 							Description: "Field value in the HTTP body for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"account_name": schema.StringAttribute{
 							Description: "Name of the Snowflake account for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"access_key_id": schema.StringAttribute{
 							Description: "Name of the AWS Access Key Id for the credential provider.",
 							Optional:    true,
-							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 					},
 				},
@@ -549,12 +565,6 @@ func convertAccessPolicyModelToPolicyDTO(
 		policy.CredentialProviders[0] = aembit.PolicyCredentialMappingDTO{
 			CredentialProviderId: model.CredentialProvider.ValueString(),
 			MappingType:          "None",
-			AccountName:          "",
-			AccessKeyId:          "",
-			HeaderName:           "",
-			HeaderValue:          "",
-			HttpbodyFieldPath:    "",
-			HttpbodyFieldValue:   "",
 		}
 	} else {
 		policy.CredentialProviders = make([]aembit.PolicyCredentialMappingDTO, len(model.CredentialProviders))
@@ -609,32 +619,13 @@ func convertAccessPolicyDTOToModel(
 						credentialProvider.CredentialProviderId,
 					),
 					MappingType:        types.StringValue(credentialProvider.MappingType),
-					AccountName:        types.StringValue(""),
-					AccessKeyId:        types.StringValue(""),
-					HeaderName:         types.StringValue(""),
-					HeaderValue:        types.StringValue(""),
-					HttpbodyFieldPath:  types.StringValue(""),
-					HttpbodyFieldValue: types.StringValue(""),
+					AccountName:        stringToTypesString(credentialProvider.AccountName),
+					AccessKeyId:        stringToTypesString(credentialProvider.AccessKeyId),
+					HeaderName:         stringToTypesString(credentialProvider.HeaderName),
+					HeaderValue:        stringToTypesString(credentialProvider.HeaderValue),
+					HttpbodyFieldPath:  stringToTypesString(credentialProvider.HttpbodyFieldPath),
+					HttpbodyFieldValue: stringToTypesString(credentialProvider.HttpbodyFieldValue),
 				}
-
-				model.CredentialProviders[i].AccountName = types.StringValue(
-					credentialProvider.AccountName,
-				)
-				model.CredentialProviders[i].AccessKeyId = types.StringValue(
-					credentialProvider.AccessKeyId,
-				)
-				model.CredentialProviders[i].HeaderName = types.StringValue(
-					credentialProvider.HeaderName,
-				)
-				model.CredentialProviders[i].HeaderValue = types.StringValue(
-					credentialProvider.HeaderValue,
-				)
-				model.CredentialProviders[i].HttpbodyFieldPath = types.StringValue(
-					credentialProvider.HttpbodyFieldPath,
-				)
-				model.CredentialProviders[i].HttpbodyFieldValue = types.StringValue(
-					credentialProvider.HttpbodyFieldValue,
-				)
 			}
 		}
 	}
@@ -708,12 +699,12 @@ func convertAccessPolicyExternalDTOToModel(
 				model.CredentialProviders[i] = &models.PolicyCredentialMappingModel{
 					CredentialProviderId: types.StringValue(credentialProvider.ExternalID),
 					MappingType:          types.StringValue(relatedMapping.MappingType),
-					AccountName:          types.StringValue(relatedMapping.AccountName),
-					AccessKeyId:          types.StringValue(relatedMapping.AccessKeyId),
-					HeaderName:           types.StringValue(relatedMapping.HeaderName),
-					HeaderValue:          types.StringValue(relatedMapping.HeaderValue),
-					HttpbodyFieldPath:    types.StringValue(relatedMapping.HttpbodyFieldPath),
-					HttpbodyFieldValue:   types.StringValue(relatedMapping.HttpbodyFieldValue),
+					AccountName:          stringToTypesString(relatedMapping.AccountName),
+					AccessKeyId:          stringToTypesString(relatedMapping.AccessKeyId),
+					HeaderName:           stringToTypesString(relatedMapping.HeaderName),
+					HeaderValue:          stringToTypesString(relatedMapping.HeaderValue),
+					HttpbodyFieldPath:    stringToTypesString(relatedMapping.HttpbodyFieldPath),
+					HttpbodyFieldValue:   stringToTypesString(relatedMapping.HttpbodyFieldValue),
 				}
 			}
 		}
