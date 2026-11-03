@@ -304,3 +304,85 @@ func TestConvertIdentityProviderDTOToModel_Prompt(t *testing.T) {
 		})
 	}
 }
+
+func TestConvertIdentityProviderDTOToModel_AembitClientId(t *testing.T) {
+	t.Parallel()
+
+	t.Run("populated aembit client id mapped to string value", func(t *testing.T) {
+		dto := aembit.IdentityProviderDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "00000000-0000-0000-0000-000000000003",
+				Name:       "OIDC with ClientId",
+				IsActive:   true,
+			},
+			Type: "OIDCv1",
+			IdentityProviderOidcDTO: aembit.IdentityProviderOidcDTO{
+				OidcBaseUrl:    "https://oidc.example.com",
+				ClientId:       "client-789",
+				Scopes:         "openid",
+				AuthType:       "ClientSecret",
+				AembitClientId: "arn:aembit:iam:tenant:client/test-client-id",
+			},
+		}
+
+		model := convertIdentityProviderDTOToModel(
+			context.Background(),
+			&models.IdentityProviderResourceModel{},
+			dto,
+		)
+
+		assert.NotNil(t, model.Oidc)
+		assert.False(t, model.Oidc.AembitClientId.IsNull())
+		assert.Equal(t, "arn:aembit:iam:tenant:client/test-client-id", model.Oidc.AembitClientId.ValueString())
+	})
+
+	t.Run("empty aembit client id mapped to string null", func(t *testing.T) {
+		dto := aembit.IdentityProviderDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "00000000-0000-0000-0000-000000000004",
+				Name:       "OIDC without ClientId",
+				IsActive:   true,
+			},
+			Type: "OIDCv1",
+			IdentityProviderOidcDTO: aembit.IdentityProviderOidcDTO{
+				OidcBaseUrl:    "https://oidc.example.com",
+				ClientId:       "client-789",
+				Scopes:         "openid",
+				AuthType:       "ClientSecret",
+				AembitClientId: "",
+			},
+		}
+
+		model := convertIdentityProviderDTOToModel(
+			context.Background(),
+			&models.IdentityProviderResourceModel{},
+			dto,
+		)
+
+		assert.NotNil(t, model.Oidc)
+		assert.True(t, model.Oidc.AembitClientId.IsNull())
+	})
+
+	t.Run("saml provider leaves oidc model nil", func(t *testing.T) {
+		dto := aembit.IdentityProviderDTO{
+			EntityDTO: aembit.EntityDTO{
+				ExternalID: "00000000-0000-0000-0000-000000000005",
+				Name:       "SAML IdP",
+				IsActive:   true,
+			},
+			Type: "SAMLv2",
+			IdentityProviderSamlDTO: aembit.IdentityProviderSamlDTO{
+				MetadataUrl: "https://saml.example.com/metadata",
+			},
+		}
+
+		model := convertIdentityProviderDTOToModel(
+			context.Background(),
+			&models.IdentityProviderResourceModel{},
+			dto,
+		)
+
+		assert.Nil(t, model.Oidc)
+		assert.NotNil(t, model.Saml)
+	})
+}
