@@ -9,8 +9,29 @@
   "pinDigests": true,
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
-  "dependencyDashboard": false,
+  "dependencyDashboard": true,
   "packageRules": [
+    {
+      "description": "Prevent Renovate from attempting to pin Docker digests on action inputs (e.g., renovate-version)",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepTypes": [
+        "uses-with"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/renovatebot/renovate"
+      ],
+      "pinDigests": false
+    },
+    {
+      "description": "Do not pin or update GitHub Actions or reusable workflows referenced by branch name (e.g., @main); always keep live branch reference",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchCurrentValue": "/^main$/",
+      "pinDigests": false
+    },
     {
       "matchManagers": ["gomod"],
       "matchDepTypes": ["golang"],
