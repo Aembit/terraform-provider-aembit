@@ -246,6 +246,10 @@ func (r *identityProviderResource) Schema(
 							validators.OidcPromptValidation(),
 						},
 					},
+					"aembit_client_id": schema.StringAttribute{
+						Description: "Aembit Client ID for the Identity Provider.",
+						Computed:    true,
+					},
 				},
 			},
 		},
@@ -550,6 +554,11 @@ func convertOidcDTOToModel(planOidc *models.IdentityProviderOidcModel, dto aembi
 		GroupClaimAttribute:       types.StringValue(resolveGroupClaimAttribute(planOidc, dto.GroupClaimAttribute)),
 		GroupCacheTtlMinutes:      types.Int64Value(resolveGroupCacheTtlMinutes(planOidc, dto.GroupCacheTtlMinutes)),
 		ClientSecret:              types.StringNull(),
+		AembitClientId:            types.StringNull(),
+	}
+
+	if dto.AembitClientId != "" {
+		oidc.AembitClientId = types.StringValue(dto.AembitClientId)
 	}
 
 	if planOidc != nil {

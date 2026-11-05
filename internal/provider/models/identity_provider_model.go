@@ -41,6 +41,8 @@ type IdentityProviderOidcModel struct {
 	TokenUrl                  types.String `tfsdk:"token_url"`
 	// Prompt represents the optional space-delimited OIDC prompt parameter (e.g. "none", "login", "consent", "select_account").
 	Prompt types.String `tfsdk:"prompt"`
+	// AembitClientId is the Aembit Client ID for the Identity Provider.
+	AembitClientId types.String `tfsdk:"aembit_client_id"`
 }
 
 // SsoStatementRoleMappings represents role mappings for SSO statements.

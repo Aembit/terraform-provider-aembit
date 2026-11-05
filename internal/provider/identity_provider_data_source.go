@@ -184,6 +184,10 @@ func (r *identityProviderDataSource) Schema(
 									Description: "A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login.",
 									Computed:    true,
 								},
+								"aembit_client_id": schema.StringAttribute{
+									Description: "Aembit Client ID for the Identity Provider.",
+									Computed:    true,
+								},
 							},
 						},
 					},
