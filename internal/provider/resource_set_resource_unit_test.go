@@ -4,10 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -366,4 +371,135 @@ func TestFilterRolesOnRead_NoImplicitRoles(t *testing.T) {
 			t.Fatalf("expected 2 roles, got %d: %v", len(resultRoles), resultRoles)
 		}
 	})
+}
+
+// TestRoleResource_SchemaMetadata verifies the schema descriptions and attribute metadata
+// for aembit_role, ensuring documentation for Default Resource Set assignments, permission
+// requirements, and single-sided ownership is maintained alongside unchanged default/computed behavior.
+func TestRoleResource_SchemaMetadata(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	res := NewRoleResource()
+	var resp resource.SchemaResponse
+	res.Schema(ctx, resource.SchemaRequest{}, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Schema returned unexpected error diagnostics: %v", resp.Diagnostics)
+	}
+
+	// 1. Top-level Description
+	expectedTopDesc := "Resource to create and manage Roles in an Aembit Cloud tenant."
+	if resp.Schema.Description != expectedTopDesc {
+		t.Errorf("expected top-level Schema.Description %q, got %q", expectedTopDesc, resp.Schema.Description)
+	}
+
+	// 2. resource_sets_assignments attribute metadata
+	attrVal, ok := resp.Schema.Attributes["resource_sets_assignments"]
+	if !ok {
+		t.Fatalf("missing required schema attribute resource_sets_assignments")
+	}
+	setAttr, ok := attrVal.(schema.SetAttribute)
+	if !ok {
+		t.Fatalf("expected resource_sets_assignments to be schema.SetAttribute, got %T", attrVal)
+	}
+
+	if !setAttr.Optional {
+		t.Errorf("expected resource_sets_assignments.Optional to be true")
+	}
+	if !setAttr.Computed {
+		t.Errorf("expected resource_sets_assignments.Computed to be true")
+	}
+
+	// Description checks
+	expectedDescSnippets := []string{
+		"ffffffff-ffff-ffff-ffff-ffffffffffff",
+		"[]",
+		"resource_sets = { read = true, ... }",
+		"Manage Role-to-ResourceSet associations on either aembit_role.resource_sets_assignments or aembit_resource_set.roles, not both",
+	}
+	for _, snippet := range expectedDescSnippets {
+		if !strings.Contains(setAttr.Description, snippet) {
+			t.Errorf("expected resource_sets_assignments Description to contain %q, but got %q", snippet, setAttr.Description)
+		}
+	}
+
+	// Default value verification
+	if setAttr.Default == nil {
+		t.Fatalf("expected setAttr.Default to be configured, got nil")
+	}
+	var defaultResp defaults.SetResponse
+	setAttr.Default.DefaultSet(ctx, defaults.SetRequest{
+		Path: path.Root("resource_sets_assignments"),
+	}, &defaultResp)
+	if defaultResp.Diagnostics.HasError() {
+		t.Fatalf("DefaultSet returned unexpected error diagnostics: %v", defaultResp.Diagnostics)
+	}
+
+	expectedDefaultSet := types.SetValueMust(types.StringType, []attr.Value{
+		types.StringValue("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+	})
+	if !defaultResp.PlanValue.Equal(expectedDefaultSet) {
+		t.Errorf("expected default set value %v, got %v", expectedDefaultSet, defaultResp.PlanValue)
+	}
+}
+
+// TestResourceSetResource_SchemaMetadata verifies the schema descriptions and attribute metadata
+// for aembit_resource_set, ensuring documentation for roles, effective_roles, and single-sided
+// ownership is maintained alongside unchanged computed behavior.
+func TestResourceSetResource_SchemaMetadata(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+
+	res := NewResourceSetResource()
+	var resp resource.SchemaResponse
+	res.Schema(ctx, resource.SchemaRequest{}, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("Schema returned unexpected error diagnostics: %v", resp.Diagnostics)
+	}
+
+	// 1. roles attribute metadata
+	rolesAttrVal, ok := resp.Schema.Attributes["roles"]
+	if !ok {
+		t.Fatalf("missing required schema attribute roles")
+	}
+	rolesSetAttr, ok := rolesAttrVal.(schema.SetAttribute)
+	if !ok {
+		t.Fatalf("expected roles to be schema.SetAttribute, got %T", rolesAttrVal)
+	}
+
+	if !rolesSetAttr.Optional {
+		t.Errorf("expected roles.Optional to be true")
+	}
+	if !rolesSetAttr.Computed {
+		t.Errorf("expected roles.Computed to be true")
+	}
+
+	expectedRolesSnippets := []string{
+		"SuperAdmin",
+		"Auditor",
+		"effective_roles",
+		"Manage Role-to-ResourceSet associations on either aembit_resource_set.roles or aembit_role.resource_sets_assignments, not both",
+	}
+	for _, snippet := range expectedRolesSnippets {
+		if !strings.Contains(rolesSetAttr.Description, snippet) {
+			t.Errorf("expected roles Description to contain %q, but got %q", snippet, rolesSetAttr.Description)
+		}
+	}
+
+	// 2. effective_roles attribute metadata
+	effRolesAttrVal, ok := resp.Schema.Attributes["effective_roles"]
+	if !ok {
+		t.Fatalf("missing required schema attribute effective_roles")
+	}
+	effRolesSetAttr, ok := effRolesAttrVal.(schema.SetAttribute)
+	if !ok {
+		t.Fatalf("expected effective_roles to be schema.SetAttribute, got %T", effRolesAttrVal)
+	}
+
+	if !effRolesSetAttr.Computed {
+		t.Errorf("expected effective_roles.Computed to be true")
+	}
+	if effRolesSetAttr.Optional {
+		t.Errorf("expected effective_roles.Optional to be false")
+	}
 }
