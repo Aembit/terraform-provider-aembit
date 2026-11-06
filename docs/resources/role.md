@@ -3,14 +3,150 @@
 page_title: "aembit_role Resource - aembit"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage Roles in an Aembit Cloud tenant.
 ---
 
 # aembit_role (Resource)
 
+Resource to create and manage Roles in an Aembit Cloud tenant.
 
+~> **Resource Set Association Guidance & Permissions**:
+   - **Default Resource Set**: When `resource_sets_assignments` is omitted, Terraform defaults to the tenant's Default Resource Set (`ffffffff-ffff-ffff-ffff-ffffffffffff`).
+   - **Opting Out (`[]`) & Login Behavior**: Setting `resource_sets_assignments = []` creates the Role with zero Resource Set assignments. Note that users assigned exclusively to roles without at least one associated Resource Set cannot log into the Aembit Admin Console.
+   - **Prerequisite for Custom Resource Sets**: Assigning any non-Default Resource Set requires `resource_sets` read permission (`resource_sets = { read = true, ... }`) on this Role. The Aembit backend rejects assignments with HTTP `400 Bad Request` if this permission is missing.
+   - **Single-Sided Association Ownership**: Manage Role-to-ResourceSet associations on either `aembit_role.resource_sets_assignments` or `aembit_resource_set.roles`, **never both**.
+     - **Pattern A (Recommended - Manage on `aembit_role`)**: Define `resource_sets_assignments = [aembit_resource_set.custom.id]` here and **omit** `roles` on `aembit_resource_set`. Do not set `roles = []` on the Resource Set.
+     - **Pattern B (Manage on `aembit_resource_set`)**: If associations are configured via `aembit_resource_set.roles`, set `resource_sets_assignments = []` and add `lifecycle { ignore_changes = [resource_sets_assignments] }` on `aembit_role` to prevent Terraform from applying the default Default Resource Set assignment.
 
+## Example Usage
 
+```terraform
+# 1. Default Resource Set assignment: role created with resource_sets_assignments omitted
+# Automatically defaults to the tenant's Default Resource Set ("ffffffff-ffff-ffff-ffff-ffffffffffff")
+resource "aembit_role" "default_resource_set" {
+  name        = "Security Operator - Default Scope"
+  description = "Role scoped to the Default Resource Set"
+  is_active   = true
+
+  access_policies                    = { read = true, write = false }
+  client_workloads                   = { read = true, write = false }
+  trust_providers                    = { read = true, write = false }
+  access_conditions                  = { read = true, write = false }
+  integrations                       = { read = true, write = false }
+  credential_providers               = { read = true, write = false }
+  credential_provider_integrations   = { read = true, write = false }
+  server_workloads                   = { read = true, write = false }
+  agent_controllers                  = { read = true, write = false }
+  discovery_integrations             = { read = true, write = false }
+  standalone_certificate_authorities = { read = true, write = false }
+
+  access_authorization_events     = { read = true }
+  global_policy_compliance_report = { read = true }
+  audit_logs                      = { read = true }
+  workload_events                 = { read = true }
+
+  users                    = { read = true, write = false }
+  roles                    = { read = true, write = false }
+  log_streams              = { read = true, write = false }
+  identity_providers       = { read = true, write = false }
+  signon_policy            = { read = true, write = false }
+  global_policy_compliance = { read = true, write = false }
+  resource_sets            = { read = true, write = false }
+  routing                  = { read = true, write = false }
+
+  # resource_sets_assignments omitted -> defaults to ["ffffffff-ffff-ffff-ffff-ffffffffffff"]
+}
+
+# 2. Scoped to a custom Resource Set (Pattern A - Recommended):
+# aembit_role owns the association via resource_sets_assignments.
+# Prerequisite: resource_sets = { read = true, ... } is REQUIRED when assigning non-Default Resource Sets.
+# Note: roles is omitted on aembit_resource_set.custom_app to avoid conflicting bidirectional state.
+resource "aembit_resource_set" "custom_app" {
+  name        = "App Team Production"
+  description = "Resource Set for production application workloads"
+}
+
+resource "aembit_role" "custom_resource_set" {
+  name        = "App Operator - Custom Scope"
+  description = "Role scoped to a custom Resource Set"
+  is_active   = true
+
+  access_policies                    = { read = true, write = true }
+  client_workloads                   = { read = true, write = true }
+  trust_providers                    = { read = true, write = true }
+  access_conditions                  = { read = true, write = true }
+  integrations                       = { read = true, write = true }
+  credential_providers               = { read = true, write = true }
+  credential_provider_integrations   = { read = true, write = true }
+  server_workloads                   = { read = true, write = true }
+  agent_controllers                  = { read = true, write = true }
+  discovery_integrations             = { read = true, write = true }
+  standalone_certificate_authorities = { read = true, write = true }
+
+  access_authorization_events     = { read = true }
+  global_policy_compliance_report = { read = true }
+  audit_logs                      = { read = true }
+  workload_events                 = { read = true }
+
+  users                    = { read = true, write = false }
+  roles                    = { read = true, write = false }
+  log_streams              = { read = true, write = false }
+  identity_providers       = { read = true, write = false }
+  signon_policy            = { read = true, write = false }
+  global_policy_compliance = { read = true, write = false }
+  resource_sets            = { read = true, write = false } # Required: read = true for custom Resource Sets
+  routing                  = { read = true, write = false }
+
+  resource_sets_assignments = [aembit_resource_set.custom_app.id]
+}
+
+# 3. Association managed from aembit_resource_set.roles (Pattern B):
+# aembit_resource_set owns the association. Set resource_sets_assignments = []
+# and ignore changes on resource_sets_assignments to prevent default assignment drift.
+resource "aembit_role" "rs_managed_role" {
+  name        = "Data Analyst - ResourceSet Managed"
+  description = "Role whose Resource Set association is managed from aembit_resource_set.roles"
+  is_active   = true
+
+  access_policies                    = { read = true, write = false }
+  client_workloads                   = { read = true, write = false }
+  trust_providers                    = { read = true, write = false }
+  access_conditions                  = { read = true, write = false }
+  integrations                       = { read = true, write = false }
+  credential_providers               = { read = true, write = false }
+  credential_provider_integrations   = { read = true, write = false }
+  server_workloads                   = { read = true, write = false }
+  agent_controllers                  = { read = true, write = false }
+  discovery_integrations             = { read = true, write = false }
+  standalone_certificate_authorities = { read = true, write = false }
+
+  access_authorization_events     = { read = true }
+  global_policy_compliance_report = { read = true }
+  audit_logs                      = { read = true }
+  workload_events                 = { read = true }
+
+  users                    = { read = true, write = false }
+  roles                    = { read = true, write = false }
+  log_streams              = { read = true, write = false }
+  identity_providers       = { read = true, write = false }
+  signon_policy            = { read = true, write = false }
+  global_policy_compliance = { read = true, write = false }
+  resource_sets            = { read = true, write = false }
+  routing                  = { read = true, write = false }
+
+  # Opt out of default Default Resource Set assignment and ignore out-of-band updates
+  resource_sets_assignments = []
+  lifecycle {
+    ignore_changes = [resource_sets_assignments]
+  }
+}
+
+resource "aembit_resource_set" "analytics" {
+  name        = "Analytics Platform"
+  description = "Resource Set managing associated roles"
+  roles       = [aembit_role.rs_managed_role.id]
+}
+```
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -46,7 +182,7 @@ description: |-
 
 - `description` (String) Description for the Role.
 - `is_active` (Boolean) Active status of the Role.
-- `resource_sets_assignments` (Set of String) IDs of the ResourceSets associated with this Role.
+- `resource_sets_assignments` (Set of String) IDs of the Resource Sets associated with this Role. Defaults to the tenant's Default Resource Set (ffffffff-ffff-ffff-ffff-ffffffffffff) when omitted. Set to an explicit empty set ([]) to create the Role without any Resource Set assignments (note: users assigned only to roles without a Resource Set cannot log into Aembit until at least one Resource Set is associated). Assigning any non-Default Resource Set ID requires resource_sets read permission (resource_sets = { read = true, ... }) on this Role. Manage Role-to-ResourceSet associations on either aembit_role.resource_sets_assignments or aembit_resource_set.roles, not both; if managing associations on aembit_resource_set.roles, set resource_sets_assignments = [] and add lifecycle { ignore_changes = [resource_sets_assignments] } on the aembit_role resource to prevent plan drift.
 
 ### Read-Only
 
