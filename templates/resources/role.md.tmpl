@@ -1,0 +1,24 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Resource Set Association Guidance & Permissions**:
+   - **Default Resource Set**: When `resource_sets_assignments` is omitted, Terraform defaults to the tenant's Default Resource Set (`ffffffff-ffff-ffff-ffff-ffffffffffff`).
+   - **Opting Out (`[]`) & Login Behavior**: Setting `resource_sets_assignments = []` creates the Role with zero Resource Set assignments. Note that users assigned exclusively to roles without at least one associated Resource Set cannot log into the Aembit Admin Console.
+   - **Prerequisite for Custom Resource Sets**: Assigning any non-Default Resource Set requires `resource_sets` read permission (`resource_sets = { read = true, ... }`) on this Role. The Aembit backend rejects assignments with HTTP `400 Bad Request` if this permission is missing.
+   - **Single-Sided Association Ownership**: Manage Role-to-ResourceSet associations on either `aembit_role.resource_sets_assignments` or `aembit_resource_set.roles`, **never both**.
+     - **Pattern A (Recommended - Manage on `aembit_role`)**: Define `resource_sets_assignments = [aembit_resource_set.custom.id]` here and **omit** `roles` on `aembit_resource_set`. Do not set `roles = []` on the Resource Set.
+     - **Pattern B (Manage on `aembit_resource_set`)**: If associations are configured via `aembit_resource_set.roles`, set `resource_sets_assignments = []` and add `lifecycle { ignore_changes = [resource_sets_assignments] }` on `aembit_role` to prevent Terraform from applying the default Default Resource Set assignment.
+
+## Example Usage
+
+{{ tffile (printf "examples/role/resource.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
