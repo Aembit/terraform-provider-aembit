@@ -69,6 +69,7 @@ func (r *roleResource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage Roles in an Aembit Cloud tenant.",
 		Attributes: map[string]schema.Attribute{
 			// ID field is required for Terraform Framework acceptance testing.
 			"id": schema.StringAttribute{
@@ -96,7 +97,7 @@ func (r *roleResource) Schema(
 				Computed:    true,
 			},
 			"resource_sets_assignments": schema.SetAttribute{
-				Description: "IDs of the ResourceSets associated with this Role.",
+				Description: "IDs of the Resource Sets associated with this Role. Defaults to the tenant's Default Resource Set (ffffffff-ffff-ffff-ffff-ffffffffffff) when omitted. Set to an explicit empty set ([]) to create the Role without any Resource Set assignments (note: users assigned only to roles without a Resource Set cannot log into Aembit until at least one Resource Set is associated). Assigning any non-Default Resource Set ID requires resource_sets read permission (resource_sets = { read = true, ... }) on this Role. Manage Role-to-ResourceSet associations on either aembit_role.resource_sets_assignments or aembit_resource_set.roles, not both; if managing associations on aembit_resource_set.roles, set resource_sets_assignments = [] and add lifecycle { ignore_changes = [resource_sets_assignments] } on the aembit_role resource to prevent plan drift.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,

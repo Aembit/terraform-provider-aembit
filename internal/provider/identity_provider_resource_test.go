@@ -195,6 +195,7 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"oidc.prompt",
 						"login",
 					),
+					resource.TestCheckResourceAttrSet(resourceName, "oidc.aembit_client_id"),
 				),
 			},
 			{
@@ -262,6 +263,7 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"oidc.prompt",
 						"login consent",
 					),
+					resource.TestCheckResourceAttrSet(resourceName, "oidc.aembit_client_id"),
 				),
 			},
 			{

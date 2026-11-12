@@ -1,5 +1,5 @@
 ---
-page_title: "aembit_identity_provider Resource - terraform-provider-aembit"
+page_title: "aembit_identity_provider Resource - aembit"
 subcategory: ""
 description: |-
   
@@ -76,6 +76,7 @@ Optional:
 
 Read-Only:
 
+- `aembit_client_id` (String) Aembit Client ID for the Identity Provider.
 - `aembit_jwks_url` (String) The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.
 - `aembit_redirect_url` (String) The redirect URI registered with the OIDC provider.
 

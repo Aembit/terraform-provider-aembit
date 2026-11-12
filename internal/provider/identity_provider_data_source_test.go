@@ -23,6 +23,9 @@ func TestAccIdentityProviderDataSource(t *testing.T) {
 	startValue := "Identity Provider for TF Acceptance Test"
 	createFileConfig, _, endValue := randomizeFileConfigs(string(createFile), "", startValue)
 
+	startOidcValue := "Identity Provider OIDC for TF Acceptance Test"
+	createFileConfig, _, endOidcValue := randomizeFileConfigs(createFileConfig, "", startOidcValue)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -31,6 +34,7 @@ func TestAccIdentityProviderDataSource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(testIdpDataSource, "identity_providers.#"),
 					testAccCheckIdentityProviderExistsInDataSource(testIdpDataSource, endValue),
+					testAccCheckOidcIdentityProviderHasAembitClientIdInDataSource(testIdpDataSource, endOidcValue),
 				),
 			},
 		},
@@ -56,6 +60,37 @@ func testAccCheckIdentityProviderExistsInDataSource(n string, name string) resou
 
 		for i := 0; i < count; i++ {
 			if ms.Primary.Attributes[fmt.Sprintf("identity_providers.%d.name", i)] == name {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Identity Provider with name %s not found in %s", name, n)
+	}
+}
+
+func testAccCheckOidcIdentityProviderHasAembitClientIdInDataSource(n string, name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ms, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if ms.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		countStr := ms.Primary.Attributes["identity_providers.#"]
+		count, err := strconv.Atoi(countStr)
+		if err != nil {
+			return err
+		}
+
+		for i := 0; i < count; i++ {
+			if ms.Primary.Attributes[fmt.Sprintf("identity_providers.%d.name", i)] == name {
+				clientId := ms.Primary.Attributes[fmt.Sprintf("identity_providers.%d.oidc.aembit_client_id", i)]
+				if clientId == "" {
+					return fmt.Errorf("identity_providers.%d.oidc.aembit_client_id is empty or not set", i)
+				}
 				return nil
 			}
 		}

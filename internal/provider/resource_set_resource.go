@@ -93,7 +93,7 @@ func (r *resourceSetResource) Schema(
 				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
-				Description: "IDs of the Roles associated with this Resource Set. Aembit automatically assigns the tenant's SuperAdmin and Auditor roles to every Resource Set. If omitted or null, Terraform populates this attribute with those default system role IDs. If set to an explicit set of custom role IDs or an empty set ([]), Terraform tracks only the configured role IDs in this attribute while exposing the full backend-assigned set (including SuperAdmin and Auditor) in effective_roles.",
+				Description: "IDs of the Roles associated with this Resource Set. Aembit automatically assigns the tenant's SuperAdmin and Auditor roles to every Resource Set. If omitted or null, Terraform treats this attribute as computed, reflecting all backend-associated roles (including default system roles and any custom roles assigned via aembit_role.resource_sets_assignments). If set to an explicit set of custom role IDs or an empty set ([]), Terraform tracks only the configured role IDs in this attribute while exposing the full backend-assigned set (including SuperAdmin and Auditor) in effective_roles. Manage Role-to-ResourceSet associations on either aembit_resource_set.roles or aembit_role.resource_sets_assignments, not both; if managing associations on aembit_role.resource_sets_assignments, omit roles on aembit_resource_set (or use lifecycle { ignore_changes = [roles] }) rather than setting roles = [].",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
