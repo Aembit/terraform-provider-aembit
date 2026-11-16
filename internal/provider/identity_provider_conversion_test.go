@@ -17,7 +17,6 @@ import (
 	"terraform-provider-aembit/internal/provider/models"
 
 	"aembit.io/aembit"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
@@ -477,10 +476,28 @@ func TestIdentityProviderResource_OidcPromptSchema(t *testing.T) {
 	assert.True(t, foundPrompt.Optional)
 	assert.False(t, foundPrompt.Computed)
 
-	ds := NewIdentityProviderDataSource()
-	var dsResp datasource.SchemaResponse
-	ds.Schema(ctx, datasource.SchemaRequest{}, &dsResp)
-	require.False(t, dsResp.Diagnostics.HasError())
+	dsProtoSchema, ok := protoSchema.DataSourceSchemas["aembit_identity_providers"]
+	require.True(t, ok)
+
+	var dsFoundPrompt *tfprotov6.SchemaAttribute
+	for _, attr := range dsProtoSchema.Block.Attributes {
+		if attr.Name == "identity_providers" && attr.NestedType != nil {
+			for _, idpAttr := range attr.NestedType.Attributes {
+				if idpAttr.Name == "oidc" && idpAttr.NestedType != nil {
+					for _, oidcAttr := range idpAttr.NestedType.Attributes {
+						if oidcAttr.Name == "prompt" {
+							dsFoundPrompt = oidcAttr
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+	require.NotNil(t, dsFoundPrompt, "missing oidc.prompt in protocol v6 data source schema")
+	assert.True(t, dsFoundPrompt.Computed)
+	assert.False(t, dsFoundPrompt.Optional)
+	assert.False(t, dsFoundPrompt.Required)
 }
 
 // newMockIdpCloudClient creates an isolated mock-backed CloudClient and captures PUT payloads for assertions.
