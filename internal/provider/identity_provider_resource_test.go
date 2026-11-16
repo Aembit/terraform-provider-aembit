@@ -125,6 +125,12 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read test config file: %v", err)
 	}
+	clearPromptFile, err := os.ReadFile(
+		"../../tests/identity_provider/oidc/TestAccIdentityProviderResource_ClearPrompt.tf",
+	)
+	if err != nil {
+		t.Fatalf("failed to read test config file: %v", err)
+	}
 	resourceName := "aembit_identity_provider.test_idp_oidc"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -257,6 +263,14 @@ func TestAccIdentityProviderResource_Oidc(t *testing.T) {
 						"oidc.prompt",
 						"login consent",
 					),
+					resource.TestCheckResourceAttrSet(resourceName, "oidc.aembit_client_id"),
+				),
+			},
+			{
+				Config: string(clearPromptFile),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckNoResourceAttr(resourceName, "oidc.prompt"),
 					resource.TestCheckResourceAttrSet(resourceName, "oidc.aembit_client_id"),
 				),
 			},
