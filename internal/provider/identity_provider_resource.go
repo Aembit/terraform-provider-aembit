@@ -240,7 +240,6 @@ func (r *identityProviderResource) Schema(
 							"\t* `consent`\n" +
 							"\t* `select_account`\n",
 						Optional: true,
-						Computed: true,
 						Validators: []validator.String{
 							validators.OidcPromptValidation(),
 						},
