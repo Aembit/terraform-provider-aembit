@@ -299,3 +299,402 @@ func TestUrlPathValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestStringValidators_TableDriven(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	type stringValidatorCase struct {
+		name      string
+		validator validator.String
+		descPart  string
+		valid     []string
+		invalid   []string
+	}
+
+	cases := []stringValidatorCase{
+		{
+			name:      "NameLengthValidation",
+			validator: NameLengthValidation(),
+			descPart:  "string length must be between 1 and 128",
+			valid: []string{
+				"a",
+				"my-resource-name",
+				"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", // 128 chars
+			},
+			invalid: []string{
+				"",
+				"123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", // 129 chars
+			},
+		},
+		{
+			name:      "UUIDRegexValidation",
+			validator: UUIDRegexValidation(),
+			descPart:  "must be a valid uuid",
+			valid: []string{
+				"550e8400-e29b-41d4-a716-446655440000",
+				"{550e8400-e29b-41d4-a716-446655440000}",
+			},
+			invalid: []string{
+				"not-a-uuid",
+				"550e8400e29b41d4a716446655440000",
+			},
+		},
+		{
+			name:      "EmailValidation",
+			validator: EmailValidation(),
+			descPart:  "must be a valid email",
+			valid: []string{
+				"user@example.com",
+				"user.name+tag@sub.example.co.uk",
+			},
+			invalid: []string{
+				"not-an-email",
+				"user@localhost",
+			},
+		},
+		{
+			name:      "SnowflakeAccountValidation",
+			validator: SnowflakeAccountValidation(),
+			descPart:  "must be a valid Snowflake Account ID",
+			valid: []string{
+				"acct123",
+				"my-account-1",
+			},
+			invalid: []string{
+				"acct_123",
+				"acct.123",
+			},
+		},
+		{
+			name:      "SnowflakeUserNameValidation",
+			validator: SnowflakeUserNameValidation(),
+			descPart:  "must be a valid Snowflake Username",
+			valid: []string{
+				"svc_user",
+				"user@example",
+			},
+			invalid: []string{
+				"user-name",
+				"user.name",
+			},
+		},
+		{
+			name:      "UrlSchemeValidation",
+			validator: UrlSchemeValidation(),
+			descPart:  "must be a valid http(s) scheme",
+			valid: []string{
+				"http://example.com",
+				"https://example.com/path",
+			},
+			invalid: []string{
+				"ftp://example.com",
+				"example.com",
+			},
+		},
+		{
+			name:      "SecureURLValidation",
+			validator: SecureURLValidation(),
+			descPart:  "must be a valid https url",
+			valid: []string{
+				"https://example.com",
+				"https://sub.example.com/path?q=1",
+			},
+			invalid: []string{
+				"http://example.com",
+				"https://localhost",
+			},
+		},
+		{
+			name:      "HostValidation",
+			validator: HostValidation(),
+			descPart:  "must be a valid hostname",
+			valid: []string{
+				"example.com",
+				"api-1.internal",
+			},
+			invalid: []string{
+				"-invalid.com",
+				"invalid-.com",
+			},
+		},
+		{
+			name:      "SafeWildcardHostNameValidation",
+			validator: SafeWildcardHostNameValidation(),
+			descPart:  "must be a valid hostname or IP address",
+			valid: []string{
+				"192.168.1.1", // NOSONAR
+				"*.example.com",
+				"service.internal",
+			},
+			invalid: []string{
+				"google.*",
+				"*",
+				"bad host",
+			},
+		},
+		{
+			name:      "S3BucketRegionLengthValidation",
+			validator: S3BucketRegionLengthValidation(),
+			descPart:  "string length must be between 8 and 30",
+			valid: []string{
+				"us-east1",
+				"ap-southeast-2",
+			},
+			invalid: []string{
+				"us-east",
+				"region-name-exceeding-thirty-characters",
+			},
+		},
+		{
+			name:      "S3BucketRegionValidation",
+			validator: S3BucketRegionValidation(),
+			descPart:  "must be a valid AWS S3 Bucket region",
+			valid: []string{
+				"us-east-2",
+				"eu-central-1",
+			},
+			invalid: []string{
+				"US-EAST-2",
+				"us_east_2",
+			},
+		},
+		{
+			name:      "S3BucketNameLengthValidation",
+			validator: S3BucketNameLengthValidation(),
+			descPart:  "string length must be between 3 and 63",
+			valid: []string{
+				"abc",
+				"my-valid-bucket-name-123",
+			},
+			invalid: []string{
+				"ab",
+				"a123456789012345678901234567890123456789012345678901234567890123", // 64 chars
+			},
+		},
+		{
+			name:      "S3BucketNameValidation",
+			validator: S3BucketNameValidation(),
+			descPart:  "must be a valid AWS S3 Bucket name",
+			valid: []string{
+				"my-bucket.1",
+				"abc",
+			},
+			invalid: []string{
+				"-mybucket",
+				"MyBucket",
+			},
+		},
+		{
+			name:      "S3PathPrefixLengthValidation",
+			validator: S3PathPrefixLengthValidation(),
+			descPart:  "string length must be between 3 and 800",
+			valid: []string{
+				"abc",
+				"logs/prod/",
+			},
+			invalid: []string{
+				"ab",
+			},
+		},
+		{
+			name:      "S3PathPrefixValidation",
+			validator: S3PathPrefixValidation(),
+			descPart:  "must be a valid AWS S3 path prefix",
+			valid: []string{
+				"logs/aembit/prod/",
+				"prefix-1_2",
+			},
+			invalid: []string{
+				"logs/{bad}",
+				"logs/#hash",
+			},
+		},
+		{
+			name:      "GCSBucketNameSimpleValidation",
+			validator: GCSBucketNameSimpleValidation(),
+			descPart:  "must be a valid GCS Bucket name",
+			valid: []string{
+				"my_gcs-bucket1",
+				"abc",
+			},
+			invalid: []string{
+				"ab",
+				"my.gcs.bucket",
+			},
+		},
+		{
+			name:      "GCSBucketNameWithPeriodValidation",
+			validator: GCSBucketNameWithPeriodValidation(),
+			descPart:  "must be a valid GCS Bucket name",
+			valid: []string{
+				"my.gcs_bucket-1",
+				"abc",
+			},
+			invalid: []string{
+				"ab",
+				"MyBucket",
+			},
+		},
+		{
+			name:      "GCSPathPrefixValidation",
+			validator: GCSPathPrefixValidation(),
+			descPart:  "must be a valid GCS path prefix",
+			valid: []string{
+				"",
+				"logs/aembit/",
+			},
+			invalid: []string{
+				"logs/*wild",
+				"logs/bad?prefix",
+			},
+		},
+		{
+			name:      "AudienceValidation",
+			validator: AudienceValidation(),
+			descPart:  "string length must be between 0 and 256",
+			valid: []string{
+				"",
+				"https://api.example.com",
+			},
+			invalid: []string{
+				string(make([]byte, 257)),
+			},
+		},
+		{
+			name:      "HecHostPortValidation",
+			validator: HecHostPortValidation(),
+			descPart:  "must be a valid HEC host port",
+			valid: []string{
+				"hec.example.com:8088",
+				"10.0.0.1:443",
+			},
+			invalid: []string{
+				"hec.example.com",
+				"hec.example.com:8",
+			},
+		},
+		{
+			name:      "AuthenticationTokenValidation",
+			validator: AuthenticationTokenValidation(),
+			descPart:  "must be a valid authentication token",
+			valid: []string{
+				"550e8400-e29b-41d4-a716-446655440000",
+			},
+			invalid: []string{
+				"{550e8400-e29b-41d4-a716-446655440000}",
+				"invalid-token",
+			},
+		},
+		{
+			name:      "CrowdstrikeApiKeyValidation",
+			validator: CrowdstrikeApiKeyValidation(),
+			descPart:  "must be a valid API Key",
+			valid: []string{
+				"0123456789abcdef0123456789abcdef",
+				"01234567-89ab-cdef-0123-456789abcdef",
+			},
+			invalid: []string{
+				"short-key",
+				"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+			},
+		},
+		{
+			name:      "Base64Validation",
+			validator: Base64Validation(),
+			descPart:  "must be a valid base64-encoded string",
+			valid: []string{
+				"YWVtYml0",
+				"YWI=",
+			},
+			invalid: []string{
+				"not-base64!",
+				"abc",
+			},
+		},
+		{
+			name:      "AwsIamRoleArnValidation",
+			validator: AwsIamRoleArnValidation(),
+			descPart:  "must be a valid AWS ARN",
+			valid: []string{
+				"arn:aws:iam::123456789012:role/MyRole",
+				"arn:aws:iam::123456789012:role/service-role/MyRole",
+			},
+			invalid: []string{
+				"arn:aws:iam::12345:role/MyRole",
+				"arn:aws:s3:::my-bucket",
+			},
+		},
+		{
+			name:      "AwsSecretArnValidation",
+			validator: AwsSecretArnValidation(),
+			descPart:  "must be a valid AWS Secrets Manager secret ARN",
+			valid: []string{
+				"arn:aws:secretsmanager:us-east-2:123456789012:secret:my-secret-AbCdEf",
+			},
+			invalid: []string{
+				"arn:aws:secretsmanager:us-east-2:123456789012:secret:nosuffix",
+				"not-an-arn",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			require.NotNil(t, tc.validator)
+			require.Contains(t, tc.validator.Description(ctx), tc.descPart)
+			require.Contains(t, tc.validator.MarkdownDescription(ctx), tc.descPart)
+
+			for _, val := range tc.valid {
+				t.Run("Valid_"+val, func(t *testing.T) {
+					req := validator.StringRequest{
+						ConfigValue: types.StringValue(val),
+						Path:        path.Root("test_field"),
+					}
+					resp := &validator.StringResponse{
+						Diagnostics: diag.Diagnostics{},
+					}
+					tc.validator.ValidateString(ctx, req, resp)
+					require.False(t, resp.Diagnostics.HasError(), "expected %q to pass %s, got: %s", val, tc.name, resp.Diagnostics)
+				})
+			}
+
+			for _, val := range tc.invalid {
+				t.Run("Invalid_"+val, func(t *testing.T) {
+					req := validator.StringRequest{
+						ConfigValue: types.StringValue(val),
+						Path:        path.Root("test_field"),
+					}
+					resp := &validator.StringResponse{
+						Diagnostics: diag.Diagnostics{},
+					}
+					tc.validator.ValidateString(ctx, req, resp)
+					require.True(t, resp.Diagnostics.HasError(), "expected %q to fail %s", val, tc.name)
+				})
+			}
+
+			for _, skipped := range []struct {
+				label string
+				val   types.String
+			}{
+				{label: "Null", val: types.StringNull()},
+				{label: "Unknown", val: types.StringUnknown()},
+			} {
+				t.Run(skipped.label, func(t *testing.T) {
+					req := validator.StringRequest{
+						ConfigValue: skipped.val,
+						Path:        path.Root("test_field"),
+					}
+					resp := &validator.StringResponse{
+						Diagnostics: diag.Diagnostics{},
+					}
+					tc.validator.ValidateString(ctx, req, resp)
+					require.False(t, resp.Diagnostics.HasError(), "expected %s value to skip validation in %s", skipped.label, tc.name)
+				})
+			}
+		})
+	}
+}
