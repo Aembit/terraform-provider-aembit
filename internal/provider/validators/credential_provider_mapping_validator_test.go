@@ -92,6 +92,14 @@ func TestCredentialProviderMappingValidator(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name: "distinct mappings with adjacent concatenated fields do not collide",
+			configValue: types.SetValueMust(mappingObjectType(), []attr.Value{
+				makeMappingObject("cp-1", "HttpHeader", "ab", "", "c", "", "", ""),
+				makeMappingObject("cp-2", "HttpHeader", "a", "", "bc", "", "", ""),
+			}),
+			expectError: false,
+		},
+		{
 			name: "duplicate header mapping fails",
 			configValue: types.SetValueMust(mappingObjectType(), []attr.Value{
 				makeMappingObject("cp-1", "HttpHeader", "", "", "X-Tenant", "alpha", "", ""),
