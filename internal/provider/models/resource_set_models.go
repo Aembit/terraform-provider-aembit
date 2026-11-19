@@ -11,6 +11,7 @@ type ResourceSetResourceModel struct {
 	Name                           types.String `tfsdk:"name"`
 	Description                    types.String `tfsdk:"description"`
 	Roles                          types.Set    `tfsdk:"roles"`
+	EffectiveRoles                 types.Set    `tfsdk:"effective_roles"`
 	StandaloneCertificateAuthority types.String `tfsdk:"standalone_certificate_authority"`
 }
 

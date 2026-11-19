@@ -617,6 +617,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 					"lifetime": schema.Int64Attribute{
 						Description: "Lifetime (in seconds) of the JWT Token used to authenticate to the Vault Cluster. Note: The lifetime of the retrieved Vault Client Token is managed within Vault configuration.",
@@ -814,6 +817,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 					"absolute_token_lifetime": schema.Int32Attribute{
 						Description: "Absolute lifetime of the Credential Provider token in seconds. Enables refresh token support.",
@@ -957,6 +963,9 @@ func (r *credentialProviderResource) Schema(
 								"value_type": types.StringType,
 							}}, []attr.Value{}),
 						),
+						Validators: []validator.Set{
+							validators.NewCustomClaimsValidator(),
+						},
 					},
 				},
 			},
@@ -1403,7 +1412,7 @@ func (r *credentialProviderResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Credential Provider is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableCredentialProviderV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(

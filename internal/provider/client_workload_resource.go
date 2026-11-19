@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// errInvalidClientWorkloadIdentitiesConfig is the summary message for workload identity validation errors.
+const errInvalidClientWorkloadIdentitiesConfig = "Invalid client workload identities configuration"
+
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ resource.Resource                   = &clientWorkloadResource{}
@@ -111,7 +114,8 @@ func (r *clientWorkloadResource) Schema(
 						"type": schema.StringAttribute{
 							Description: "Client identity type. Possible values are: \n" +
 								"\t* `aembitClientId`\n" +
-								"\t* `cimdClientId`\n" +
+								"\t* `cimdClientId`\n\t\t" +
+								"When configured, it cannot be mixed with non-MCP client workload identity types.\n" +
 								"\t* `awsAccountId`\n" +
 								"\t* `awsEc2InstanceId`\n" +
 								//"\t* `awsEcsServiceName`\n" +	// Hiding for now
@@ -133,8 +137,8 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `k8sPodNamePrefix`\n" +
 								"\t* `k8sServiceAccountName`\n" +
 								"\t* `k8sServiceAccountUID`\n" +
-								"\t* `oauthRedirectUri`\n\t \t" +
-								"When configured, it must be the only client workload identity type in the set.\n" +
+								"\t* `oauthRedirectUri`\n\t\t" +
+								"When configured, it cannot be mixed with non-MCP client workload identity types.\n" +
 								"\t* `oauthScope`\n" +
 								"\t* `oidcIdToken`\n" +
 								"\t* `oidcIdTokenAudience`\n" +
@@ -147,7 +151,8 @@ func (r *clientWorkloadResource) Schema(
 								"\t* `sourceIPAddress`\n" +
 								"\t* `terraformIdTokenOrganizationId`\n" +
 								"\t* `terraformIdTokenProjectId`\n" +
-								"\t* `terraformIdTokenWorkspaceId`\n",
+								"\t* `terraformIdTokenWorkspaceId`\n" +
+								"\t* `userGroup`\n",
 							Required: true,
 							Validators: []validator.String{
 								stringvalidator.OneOf([]string{
@@ -188,6 +193,7 @@ func (r *clientWorkloadResource) Schema(
 									"terraformIdTokenOrganizationId",
 									"terraformIdTokenProjectId",
 									"terraformIdTokenWorkspaceId",
+									"userGroup",
 								}...),
 							},
 						},
@@ -199,17 +205,24 @@ func (r *clientWorkloadResource) Schema(
 							Description: "Client identity claim name. Applicable for oidcIdToken Client identity type.",
 							Optional:    true,
 						},
+						"identity_provider_id": schema.StringAttribute{
+							Description: "Identity Provider unique identifier. Applicable and required for userGroup Client identity type.",
+							Optional:    true,
+							Validators: []validator.String{
+								validators.UUIDRegexValidation(),
+							},
+						},
 					},
 				},
 			},
 			"enforce_sso": schema.BoolAttribute{
-				Description: "Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use `oauthRedirectUri`, which must be the only identity type in the set.",
+				Description: "Whether SSO authentication is enforced for MCP authorization. This is only applicable when the client workload identities use an MCP identity (`oauthRedirectUri` or `cimdClientId`), which cannot be mixed with other identity types.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
 			},
 			"sso_identity_providers": schema.SetAttribute{
-				Description: "Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable when 'enable_sso' is true.",
+				Description: "Set of SSO Identity Provider IDs used for MCP authorization. This is only applicable to MCP client workloads (`oauthRedirectUri` or `cimdClientId`) when `enforce_sso` is true.",
 				ElementType: types.StringType,
 				Optional:    true,
 				Computed:    true,
@@ -269,9 +282,15 @@ func (r *clientWorkloadResource) ValidateConfig(
 		return
 	}
 
-	// Redirect URI client identities cannot be combined with other identity types.
-	identityDiags, hasRedirectURI := validateRedirectURIIdentityTypeForConfig(identities)
+	// MCP client identities cannot be combined with other identity types.
+	identityDiags, hasMcpIdentity := validateMcpIdentityTypeForConfig(identities)
 	resp.Diagnostics.Append(identityDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// UserGroup client identities cross-field validation.
+	resp.Diagnostics.Append(validateUserGroupIdentityTypeForConfig(identities)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -288,8 +307,8 @@ func (r *clientWorkloadResource) ValidateConfig(
 		return
 	}
 
-	resp.Diagnostics.Append(validateRedirectURIConfigurationForConfig(
-		hasRedirectURI,
+	resp.Diagnostics.Append(validateMcpConfigurationForConfig(
+		hasMcpIdentity,
 		effectiveEnforceSso,
 		config.EnforceSso,
 		config.SsoIdentityProviders,
@@ -463,7 +482,7 @@ func (r *clientWorkloadResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Client Workload is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableClientWorkload(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -533,7 +552,7 @@ func convertClientWorkloadModelToDTO(
 		return workload, diags
 	}
 
-	diags.Append(validateRedirectURIIdentityType(identities, model.EnforceSso, model.SsoIdentityProviders)...)
+	diags.Append(validateMcpIdentityType(identities, model.EnforceSso, model.SsoIdentityProviders)...)
 	if diags.HasError() {
 		return workload, diags
 	}
@@ -545,10 +564,14 @@ func convertClientWorkloadModelToDTO(
 	}
 
 	for _, identity := range identities {
+		key := identity.ClaimName.ValueString()
+		if identity.Type.ValueString() == "userGroup" {
+			key = identity.IdentityProviderId.ValueString()
+		}
 		workload.Identities = append(workload.Identities, aembit.ClientWorkloadIdentityDTO{
 			Type:  identity.Type.ValueString(),
 			Value: identity.Value.ValueString(),
-			Key:   identity.ClaimName.ValueString(),
+			Key:   key,
 		})
 	}
 
@@ -556,15 +579,15 @@ func convertClientWorkloadModelToDTO(
 		workload.ExternalID = *externalID
 	}
 
-	hasRedirectURI := hasRedirectURIIdentity(identities)
+	hasMcp := hasMcpIdentity(identities)
 	workload.EnforceSso = true
-	if hasRedirectURI {
+	if hasMcp {
 		if !model.EnforceSso.IsNull() {
 			workload.EnforceSso = model.EnforceSso.ValueBool()
 		}
 	}
 
-	if hasRedirectURI {
+	if hasMcp {
 		if !model.SsoIdentityProviders.IsNull() {
 			_ = model.SsoIdentityProviders.ElementsAs(ctx, &workload.SsoIdentityProviders, false)
 		}
@@ -584,14 +607,14 @@ func convertClientWorkloadDTOToModel(
 	planModel *models.ClientWorkloadResourceModel,
 ) models.ClientWorkloadResourceModel {
 	var model models.ClientWorkloadResourceModel
-	hasRedirectURI := hasOAuthRedirectURIIdentityDTO(dto.Identities)
+	hasMcp := hasMcpIdentityDTO(dto.Identities)
 	model.ID = types.StringValue(dto.ExternalID)
 	model.Name = types.StringValue(dto.Name)
 	model.Description = types.StringValue(dto.Description)
 	model.IsActive = types.BoolValue(dto.IsActive)
 	model.Identities = newClientWorkloadIdentityModel(ctx, dto.Identities)
 	model.EnforceSso = types.BoolValue(true)
-	if hasRedirectURI {
+	if hasMcp {
 		model.EnforceSso = types.BoolValue(dto.EnforceSso)
 	}
 	model.SsoIdentityProviders = newStringSetModel(ctx, dto.SsoIdentityProviders)
@@ -616,15 +639,26 @@ func newClientWorkloadIdentityModel(
 	identities := make([]models.IdentitiesModel, len(clientWorkloadIdentities))
 
 	for i, identity := range clientWorkloadIdentities {
+		var claimName types.String
+		var identityProviderId types.String
+
+		if identity.Type == "userGroup" {
+			identityProviderId = types.StringValue(identity.Key)
+			claimName = types.StringNull()
+		} else {
+			identityProviderId = types.StringNull()
+			if identity.Key == "" {
+				claimName = types.StringNull()
+			} else {
+				claimName = types.StringValue(identity.Key)
+			}
+		}
+
 		identities[i] = models.IdentitiesModel{
-			Type:  types.StringValue(identity.Type),
-			Value: types.StringValue(identity.Value),
-			ClaimName: func() types.String {
-				if identity.Key == "" {
-					return types.StringNull()
-				}
-				return types.StringValue(identity.Key)
-			}(),
+			Type:               types.StringValue(identity.Type),
+			Value:              types.StringValue(identity.Value),
+			ClaimName:          claimName,
+			IdentityProviderId: identityProviderId,
 		}
 	}
 
@@ -632,13 +666,15 @@ func newClientWorkloadIdentityModel(
 	return s
 }
 
-func hasRedirectURIIdentity(identities []models.IdentitiesModel) bool {
+// hasMcpIdentity returns true if any configured identity is an MCP client workload type (oauthRedirectUri or cimdClientId).
+func hasMcpIdentity(identities []models.IdentitiesModel) bool {
 	for _, identity := range identities {
 		if identity.Type.IsNull() {
 			continue
 		}
 
-		if identity.Type.ValueString() == "oauthRedirectUri" {
+		val := identity.Type.ValueString()
+		if val == "oauthRedirectUri" || val == "cimdClientId" {
 			return true
 		}
 	}
@@ -646,13 +682,14 @@ func hasRedirectURIIdentity(identities []models.IdentitiesModel) bool {
 	return false
 }
 
-func validateRedirectURIIdentityType(
+// validateMcpIdentityType checks identity types and MCP configuration for client workloads.
+func validateMcpIdentityType(
 	identities []models.IdentitiesModel,
 	enforceSso types.Bool,
 	ssoIdentityProviders types.Set,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-	identityDiags, hasRedirectURI := validateRedirectURIIdentityTypeForConfig(identities)
+	identityDiags, hasMcp := validateMcpIdentityTypeForConfig(identities)
 	diags.Append(identityDiags...)
 	if diags.HasError() {
 		return diags
@@ -663,12 +700,61 @@ func validateRedirectURIIdentityType(
 		effectiveEnforceSso = enforceSso.ValueBool()
 	}
 
-	diags.Append(validateRedirectURIConfigurationForConfig(
-		hasRedirectURI,
+	diags.Append(validateMcpConfigurationForConfig(
+		hasMcp,
 		effectiveEnforceSso,
 		enforceSso,
 		ssoIdentityProviders,
 	)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(validateCimdClientIdIdentityTypeForConfig(identities)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(validateUserGroupIdentityTypeForConfig(identities)...)
+
+	return diags
+}
+
+func validateUserGroupIdentityTypeForConfig(
+	identities []models.IdentitiesModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, identity := range identities {
+		if identity.Type.IsNull() || identity.Type.IsUnknown() {
+			continue
+		}
+
+		if identity.Type.ValueString() == "userGroup" {
+			if !identity.IdentityProviderId.IsUnknown() && (identity.IdentityProviderId.IsNull() || identity.IdentityProviderId.ValueString() == "") {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Identity Provider ID is required when client identity type is userGroup.",
+				)
+			}
+			if !identity.ClaimName.IsNull() {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Claim name is only applicable for oidcIdToken client identity type and cannot be specified for userGroup.",
+				)
+			}
+		} else {
+			if !identity.IdentityProviderId.IsNull() && (identity.IdentityProviderId.IsUnknown() || identity.IdentityProviderId.ValueString() != "") {
+				diags.AddAttributeError(
+					path.Root("identities"),
+					errInvalidClientWorkloadIdentitiesConfig,
+					"Identity Provider ID is only applicable for userGroup client identity type.",
+				)
+			}
+		}
+	}
 
 	return diags
 }
@@ -698,51 +784,54 @@ func validateCimdClientIdIdentityTypeForConfig(
 	return diags
 }
 
-func validateRedirectURIIdentityTypeForConfig(
+// validateMcpIdentityTypeForConfig ensures MCP client identities (oauthRedirectUri or cimdClientId) cannot be mixed with non-MCP identities.
+func validateMcpIdentityTypeForConfig(
 	identities []models.IdentitiesModel,
 ) (diag.Diagnostics, bool) {
 	var diags diag.Diagnostics
-	hasRedirectURI := false
-	hasNonRedirectURI := false
+	hasMcp := false
+	hasNonMcp := false
 
 	for _, identity := range identities {
 		if identity.Type.IsNull() {
 			continue
 		}
 
-		if identity.Type.ValueString() == "oauthRedirectUri" {
-			hasRedirectURI = true
+		val := identity.Type.ValueString()
+		if val == "oauthRedirectUri" || val == "cimdClientId" {
+			hasMcp = true
 			continue
 		}
 
-		hasNonRedirectURI = true
+		hasNonMcp = true
 	}
 
-	if hasRedirectURI && hasNonRedirectURI {
+	if hasMcp && hasNonMcp {
 		diags.AddAttributeError(
 			path.Root("identities"),
-			"Invalid client workload identities configuration",
-			"`oauthRedirectUri` must be the only client workload identity type when it is configured.",
+			errInvalidClientWorkloadIdentitiesConfig,
+			"MCP client workload identities (`oauthRedirectUri` or `cimdClientId`) cannot be combined with other identity types.",
 		)
 	}
 
-	return diags, hasRedirectURI
+	return diags, hasMcp
 }
 
-func validateRedirectURIConfigurationForConfig(
-	hasRedirectURI bool,
+// validateMcpConfigurationForConfig validates enforce_sso and sso_identity_providers consistency for MCP and non-MCP workloads.
+func validateMcpConfigurationForConfig(
+	hasMcp bool,
 	effectiveEnforceSso bool,
 	enforceSso types.Bool,
 	ssoIdentityProviders types.Set,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if hasRedirectURI {
+	if hasMcp {
 		if effectiveEnforceSso && (ssoIdentityProviders.IsNull() || len(ssoIdentityProviders.Elements()) == 0) {
 			diags.AddAttributeError(
 				path.Root("sso_identity_providers"),
 				"Missing SSO Identity Providers configuration",
-				"`sso_identity_providers` must contain at least one identity provider when `oauthRedirectUri` is configured and `enforce_sso` is `true`.",
+				"`sso_identity_providers` must contain at least one identity provider when an MCP client identity (`oauthRedirectUri` or `cimdClientId`) is configured and `enforce_sso` is `true`.",
 			)
 		}
 
@@ -750,7 +839,7 @@ func validateRedirectURIConfigurationForConfig(
 			diags.AddAttributeError(
 				path.Root("sso_identity_providers"),
 				"Invalid SSO Identity Providers configuration",
-				"`sso_identity_providers` cannot be configured when `oauthRedirectUri` is used and `enforce_sso` is `false`.",
+				"`sso_identity_providers` cannot be configured when `enforce_sso` is `false`.",
 			)
 		}
 
@@ -761,7 +850,7 @@ func validateRedirectURIConfigurationForConfig(
 		diags.AddAttributeError(
 			path.Root("enforce_sso"),
 			"Invalid enforce_sso configuration",
-			"`enforce_sso` can only be set to `false` when one of the client workload identities has type `oauthRedirectUri`.",
+			"`enforce_sso` can only be set to `false` when one of the client workload identities has an MCP type (`oauthRedirectUri` or `cimdClientId`).",
 		)
 	}
 
@@ -769,16 +858,17 @@ func validateRedirectURIConfigurationForConfig(
 		diags.AddAttributeError(
 			path.Root("sso_identity_providers"),
 			"Invalid SSO Identity Providers configuration",
-			"`sso_identity_providers` can only be configured when one of the client workload identities has type `oauthRedirectUri`.",
+			"`sso_identity_providers` can only be configured when one of the client workload identities has an MCP type (`oauthRedirectUri` or `cimdClientId`).",
 		)
 	}
 
 	return diags
 }
 
-func hasOAuthRedirectURIIdentityDTO(identities []aembit.ClientWorkloadIdentityDTO) bool {
+// hasMcpIdentityDTO returns true if any identity in the DTO is an MCP client workload type (oauthRedirectUri or cimdClientId).
+func hasMcpIdentityDTO(identities []aembit.ClientWorkloadIdentityDTO) bool {
 	for _, identity := range identities {
-		if identity.Type == "oauthRedirectUri" {
+		if identity.Type == "oauthRedirectUri" || identity.Type == "cimdClientId" {
 			return true
 		}
 	}

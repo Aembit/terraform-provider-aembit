@@ -400,3 +400,50 @@ func TestRegex_CimdUrl_Invalid(t *testing.T) {
 		})
 	}
 }
+
+func TestRegex_UrlPath_Valid(t *testing.T) {
+	t.Parallel()
+	validInputs := []string{
+		"/",
+		"/api",
+		"/api/",
+		"/api/v1/resource",
+		"/api/v1/resource/",
+		"/api/v3/agentspace/mcp/",
+		"/path-with_special~chars.123",
+		"/path/with%20encoded%2Fvalues/",
+		"/sub/dir;param=value:123@host+test$other,test*ok",
+	}
+	for _, input := range validInputs {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			if !UrlPathRegex.MatchString(input) {
+				t.Errorf("Expected valid URL path, but got invalid: %s", input)
+			}
+		})
+	}
+}
+
+func TestRegex_UrlPath_Invalid(t *testing.T) {
+	t.Parallel()
+	invalidInputs := []string{
+		"",
+		"relative/path",
+		"relative/path/",
+		"//",
+		"/api//mcp",
+		"/api/v1//",
+		"/path with unencoded spaces",
+		"/path/with space/",
+		"/path?query=1",
+		"/path#fragment",
+	}
+	for _, input := range invalidInputs {
+		t.Run(input, func(t *testing.T) {
+			t.Parallel()
+			if UrlPathRegex.MatchString(input) {
+				t.Errorf("Expected invalid URL path, but got valid: %s", input)
+			}
+		})
+	}
+}

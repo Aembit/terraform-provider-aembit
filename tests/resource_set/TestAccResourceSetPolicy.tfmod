@@ -55,7 +55,7 @@ resource "aembit_server_workload" "test" {
 resource "aembit_integration" "wiz" {
     resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Wiz - Modified"
-	is_active = true
+	is_active = false
 	type = "WizIntegrationApi"
 	sync_frequency = 3600
 	endpoint = "https://api.us17.app.wiz.io/graphql"
@@ -70,7 +70,7 @@ resource "aembit_integration" "wiz" {
 resource "aembit_access_condition" "test" {
     resource_set_id = aembit_resource_set.crs.id
 	name = "TF Acceptance Wiz - Modified"
-	is_active = true
+	is_active = false
 	integration_id = aembit_integration.wiz.id
 	wiz_conditions = {
 		max_last_seen = 3600

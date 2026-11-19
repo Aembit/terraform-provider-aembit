@@ -415,7 +415,7 @@ func (r *accessConditionResource) Delete(
 	resourceSetId := state.ResourceSetId.ValueString()
 
 	// Check if Access Condition is Active - if it is, disable it first
-	if state.IsActive == types.BoolValue(true) {
+	if !state.IsActive.IsNull() && !state.IsActive.IsUnknown() && state.IsActive.ValueBool() {
 		_, err := r.client.DisableAccessConditionV2(state.ID.ValueString(), nil, &resourceSetId)
 		if err != nil {
 			resp.Diagnostics.AddError(

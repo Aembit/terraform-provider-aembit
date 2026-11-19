@@ -164,6 +164,30 @@ func (r *identityProviderDataSource) Schema(
 									Description: "The URL where the OIDC provider's JSON Web Key Set (JWKS) can be retrieved.",
 									Computed:    true,
 								},
+								"enable_userinfo_group_lookup": schema.BoolAttribute{
+									Description: "Enable fetching group memberships from the OIDC UserInfo endpoint.",
+									Computed:    true,
+								},
+								"group_claim_attribute": schema.StringAttribute{
+									Description: "Claim name in the UserInfo response containing group memberships.",
+									Computed:    true,
+								},
+								"group_cache_ttl_minutes": schema.Int64Attribute{
+									Description: "TTL in minutes for caching UserInfo group memberships.",
+									Computed:    true,
+								},
+								"token_url": schema.StringAttribute{
+									Description: "The Token URL override for OIDC token exchange and refresh operations.",
+									Computed:    true,
+								},
+								"prompt": schema.StringAttribute{
+									Description: "A space-separated list of OIDC prompt values sent to the Identity Provider authorization endpoint during login.",
+									Computed:    true,
+								},
+								"aembit_client_id": schema.StringAttribute{
+									Description: "Aembit Client ID for the Identity Provider.",
+									Computed:    true,
+								},
 							},
 						},
 					},

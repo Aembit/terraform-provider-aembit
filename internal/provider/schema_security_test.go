@@ -193,6 +193,10 @@ func newSchemaSecurityValidator(logger *slog.Logger) *schemaSecurityValidator {
 		"OAuth token endpoint URL, not the token itself.")
 	registerExemption("data_source", "aembit_integrations", "integrations.oauth_client_credentials.token_url",
 		"OAuth token endpoint URL, not the token itself.")
+	registerExemption("resource", "aembit_identity_provider", "oidc.token_url",
+		"OIDC token endpoint URL override, not the token itself.")
+	registerExemption("data_source", "aembit_identity_providers", "identity_providers.oidc.token_url",
+		"OIDC token endpoint URL override, not the token itself.")
 
 	// Token Lifetimes & Durations: Integer time values.
 	registerExemption("resource", "aembit_credential_provider", "aembit_access_token.absolute_token_lifetime",

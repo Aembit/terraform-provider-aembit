@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
           private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
@@ -34,12 +34,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           version: '~> v2'
           args: build --snapshot --clean
       - name: Archive QA Build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: terraform-provider-aembit
           path: dist
@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
           private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}
@@ -71,7 +71,7 @@ jobs:
           git diff --compact-summary --ignore-space-at-eol --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
       - name: Archive QA Docs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: terraform-provider-aembit-docs
           path: docs
@@ -83,7 +83,7 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ secrets.SUBMODULE_CHECKOUT_CLIENT_ID }}
           private-key: ${{ secrets.SUBMODULE_CHECKOUT_PRIVATE_KEY }}

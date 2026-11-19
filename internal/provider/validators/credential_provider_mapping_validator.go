@@ -9,6 +9,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+// mappingUniquenessKey uniquely identifies a credential provider mapping entry
+// across its individual mapping fields without concatenation collisions.
+type mappingUniquenessKey struct {
+	// accountName is the Snowflake account name for the mapping.
+	accountName string
+	// headerName is the HTTP header name for the mapping.
+	headerName string
+	// headerValue is the HTTP header value for the mapping.
+	headerValue string
+	// httpbodyFieldPath is the HTTP body field path for the mapping.
+	httpbodyFieldPath string
+	// httpbodyFieldValue is the HTTP body field value for the mapping.
+	httpbodyFieldValue string
+	// accessKeyID is the AWS access key ID for the mapping.
+	accessKeyID string
+}
+
 type CredentialProviderMappingValidator struct{}
 
 func (v CredentialProviderMappingValidator) Description(_ context.Context) string {
@@ -36,10 +53,17 @@ func (v CredentialProviderMappingValidator) ValidateSet(
 		return
 	}
 
-	uniqueMap := make(map[string]bool)
+	uniqueMap := make(map[mappingUniquenessKey]bool)
 	for _, cp := range credentialProviders {
-		mapValue := cp.AccountName.ValueString() + cp.HeaderName.ValueString() + cp.HeaderValue.ValueString() + cp.HttpbodyFieldPath.ValueString() + cp.HttpbodyFieldValue.ValueString() + cp.AccessKeyId.ValueString()
-		_, found := uniqueMap[mapValue]
+		key := mappingUniquenessKey{
+			accountName:        cp.AccountName.ValueString(),
+			headerName:         cp.HeaderName.ValueString(),
+			headerValue:        cp.HeaderValue.ValueString(),
+			httpbodyFieldPath:  cp.HttpbodyFieldPath.ValueString(),
+			httpbodyFieldValue: cp.HttpbodyFieldValue.ValueString(),
+			accessKeyID:        cp.AccessKeyId.ValueString(),
+		}
+		_, found := uniqueMap[key]
 
 		if found {
 			resp.Diagnostics.AddError(
@@ -48,7 +72,7 @@ func (v CredentialProviderMappingValidator) ValidateSet(
 			)
 			return
 		}
-		uniqueMap[mapValue] = true
+		uniqueMap[key] = true
 	}
 }
 

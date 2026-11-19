@@ -21,6 +21,7 @@ func sweepLegacyResourceSets() {
 		"TF Acceptance Custom Policy ResourceSet",
 		"TF Acceptance Custom Policy ResourceSet - Modified",
 		"TF Acceptance ResourceSet No Roles",
+		"TF Acceptance ResourceSet Empty Roles",
 	)
 }
 
@@ -102,6 +103,11 @@ func TestAccResourceSet(t *testing.T) {
 						"roles.#",
 						"2",
 					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"effective_roles.#",
+						"2",
+					),
 				),
 			},
 			{
@@ -126,6 +132,11 @@ func TestAccResourceSet(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						resourceName,
 						"roles.#",
+						"2",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"effective_roles.#",
 						"2",
 					),
 				),
@@ -265,12 +276,70 @@ func TestAccResourceSetNoRoles(t *testing.T) {
 						"roles.#",
 						"2",
 					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"effective_roles.#",
+						"2",
+					),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TestAccResourceSetEmptyRoles tests the creation of a resource set with explicit empty roles ([]).
+func TestAccResourceSetEmptyRoles(t *testing.T) {
+	t.Parallel()
+	config, err := os.ReadFile(
+		"../../tests/resource_set/TestAccResourceSetEmptyRoles.tf",
+	)
+	if err != nil {
+		t.Fatalf("failed to read test config file: %v", err)
+	}
+
+	randID := rand.Intn(10000000)
+	rsName := fmt.Sprintf("TF Acceptance ResourceSet Empty Roles %d", randID)
+	testConfig := strings.ReplaceAll(string(config), "TF Acceptance ResourceSet Empty Roles", rsName)
+
+	t.Cleanup(func() {
+		sweepResourceSets(rsName)
+	})
+
+	resourceName := "aembit_resource_set.empty_roles"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"name",
+						rsName,
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"roles.#",
+						"0",
+					),
+					resource.TestCheckResourceAttr(
+						resourceName,
+						"effective_roles.#",
+						"2",
+					),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"roles"},
 			},
 		},
 	})
