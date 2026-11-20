@@ -17,12 +17,14 @@ import (
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -314,6 +316,8 @@ func TestCredentialProviderResourceSchema_McpUserBasedAccessToken_OAuthRevocatio
 		{name: "valid https url", value: types.StringValue("https://aembit.io/revoke")},
 		{name: "valid https url with path and query", value: types.StringValue("https://auth.example.com/oauth2/revoke?hint=access_token")},
 		{name: "omitted null value", value: types.StringNull()},
+		{name: "unknown value", value: types.StringUnknown()},
+		{name: "explicit empty string", value: types.StringValue("")},
 	}
 	for _, tc := range validCases {
 		tc := tc
@@ -339,6 +343,7 @@ func TestCredentialProviderResourceSchema_McpUserBasedAccessToken_OAuthRevocatio
 		{name: "localhost without tld", value: "https://localhost/revoke"},
 		{name: "malformed url", value: "not-a-valid-url"},
 		{name: "missing scheme", value: "aembit.io/revoke"},
+		{name: "whitespace only", value: "   "},
 	}
 	for _, tc := range invalidCases {
 		tc := tc
@@ -353,11 +358,77 @@ func TestCredentialProviderResourceSchema_McpUserBasedAccessToken_OAuthRevocatio
 				}, resp)
 				if resp.Diagnostics.HasError() {
 					hasError = true
+					require.Len(t, resp.Diagnostics.Errors(), 1)
+					assert.Contains(t, resp.Diagnostics.Errors()[0].Detail(), "must be a valid https url")
 				}
 			}
 			assert.True(t, hasError, "expected %q to fail validation", tc.value)
 		})
 	}
+
+	t.Run("ValidateResourceConfig", func(t *testing.T) {
+		t.Parallel()
+
+		server, err := providerserver.NewProtocol6WithError(New("test", "unittest")())()
+		require.NoError(t, err)
+
+		schemaType := schemaResp.Schema.Type().TerraformType(ctx)
+
+		validateCases := []struct {
+			name          string
+			revocationUrl types.String
+			expectError   bool
+		}{
+			{name: "explicit empty string", revocationUrl: types.StringValue(""), expectError: false},
+			{name: "omitted null value", revocationUrl: types.StringNull(), expectError: false},
+			{name: "valid https url", revocationUrl: types.StringValue("https://aembit.io/revoke"), expectError: false},
+			{name: "whitespace only", revocationUrl: types.StringValue("   "), expectError: true},
+			{name: "non-https url", revocationUrl: types.StringValue("http://aembit.io/revoke"), expectError: true},
+		}
+
+		for _, tc := range validateCases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+
+				cfgPlan := tfsdk.Plan{Schema: schemaResp.Schema}
+				diags := cfgPlan.Set(ctx, models.CredentialProviderResourceModel{
+					Name:     types.StringValue("MCP Validate Config Test"),
+					IsActive: types.BoolValue(true),
+					Tags:     types.MapNull(types.StringType),
+					TagsAll:  types.MapNull(types.StringType),
+					McpUserBasedAccessToken: &models.CredentialProviderMcpUserBasedAccessTokenModel{
+						McpServerUrl:       types.StringValue("https://aembit.io/mcp"),
+						OAuthRevocationUrl: tc.revocationUrl,
+						OAuthCodeModel: models.OAuthCodeModel{
+							OAuthAuthorizationUrl: types.StringValue("https://aembit.io/authorize"),
+							OAuthTokenUrl:         types.StringValue("https://aembit.io/token"),
+							ClientID:              types.StringValue("client-id"),
+						},
+					},
+				})
+				require.False(t, diags.HasError(), "unexpected plan.Set diagnostics: %v", diags)
+
+				dynVal, dynErr := tfprotov6.NewDynamicValue(schemaType, cfgPlan.Raw)
+				require.NoError(t, dynErr)
+
+				valResp, valErr := server.ValidateResourceConfig(ctx, &tfprotov6.ValidateResourceConfigRequest{
+					TypeName: "aembit_credential_provider",
+					Config:   &dynVal,
+				})
+				require.NoError(t, valErr)
+
+				var hasError bool
+				for _, d := range valResp.Diagnostics {
+					if d.Severity == tfprotov6.DiagnosticSeverityError {
+						hasError = true
+						assert.Contains(t, d.Detail, "must be a valid https url")
+					}
+				}
+				assert.Equal(t, tc.expectError, hasError, "diagnostics: %+v", valResp.Diagnostics)
+			})
+		}
+	})
 }
 
 func newMockCredentialProviderCloudClient(

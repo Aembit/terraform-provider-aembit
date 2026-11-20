@@ -744,6 +744,12 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 	modifyFile, _ := os.ReadFile(
 		"../../tests/credential/mcp-user-based-access-token/TestAccCredentialProviderResource.tfmod",
 	)
+	explicitEmptyRevocationUrlFile := regexp.MustCompile(
+		`(?m)^(\s*oauth_revocation_url\s*=).*$`,
+	).ReplaceAllString(string(modifyFile), `$1 ""`)
+	if !strings.Contains(explicitEmptyRevocationUrlFile, `oauth_revocation_url = ""`) {
+		t.Fatalf("failed to set empty oauth_revocation_url in modify config")
+	}
 	clearRevocationUrlFile := regexp.MustCompile(
 		`(?m)^\s*oauth_revocation_url\s*=.*\r?\n`,
 	).ReplaceAllString(string(modifyFile), "")
@@ -826,7 +832,23 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 					),
 				),
 			},
-			// Clear oauth_revocation_url and Read testing
+			// Clear oauth_revocation_url explicitly with "" and Read testing
+			{
+				Config: explicitEmptyRevocationUrlFile,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"",
+					),
+				),
+			},
+			// Clear oauth_revocation_url by omission and Read testing
 			{
 				Config: clearRevocationUrlFile,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -857,7 +879,7 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken_InvalidRevocation
 		Steps: []resource.TestStep{
 			{
 				Config:      string(createFile),
-				ExpectError: regexp.MustCompile(`must be a valid https url`),
+				ExpectError: regexp.MustCompile(`must be a valid\s+https url`),
 			},
 		},
 	})

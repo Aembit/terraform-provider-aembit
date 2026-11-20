@@ -490,7 +490,7 @@ func (r *credentialProviderResource) Schema(
 						Computed:    true,
 						Default:     stringdefault.StaticString(""),
 						Validators: []validator.String{
-							validators.SecureURLValidation(),
+							validators.OptionalSecureURLValidation(),
 						},
 					},
 					"client_id": schema.StringAttribute{

@@ -1,6 +1,7 @@
 package validators
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -94,6 +95,47 @@ func UrlSchemeValidation() validator.String {
 
 func SecureURLValidation() validator.String {
 	return stringvalidator.RegexMatches(SecureURLRegex, "must be a valid https url")
+}
+
+// optionalSecureURLValidator validates that non-empty string values conform to SecureURLValidation,
+// while permitting null, unknown, and explicit empty string values.
+type optionalSecureURLValidator struct {
+	// delegate enforces HTTPS URL validation for non-empty values.
+	delegate validator.String
+}
+
+// Ensure optionalSecureURLValidator implements validator.String.
+var _ validator.String = optionalSecureURLValidator{}
+
+// OptionalSecureURLValidation returns a validator.String that allows null, unknown, and empty string
+// values, and delegates all non-empty values to SecureURLValidation.
+func OptionalSecureURLValidation() validator.String {
+	return optionalSecureURLValidator{
+		delegate: SecureURLValidation(),
+	}
+}
+
+// Description returns a plain text description of the validator.
+func (v optionalSecureURLValidator) Description(ctx context.Context) string {
+	return v.delegate.Description(ctx) + " or be empty"
+}
+
+// MarkdownDescription returns a markdown description of the validator.
+func (v optionalSecureURLValidator) MarkdownDescription(ctx context.Context) string {
+	return v.delegate.MarkdownDescription(ctx) + " or be empty"
+}
+
+// ValidateString validates that non-empty string values conform to SecureURLValidation.
+func (v optionalSecureURLValidator) ValidateString(
+	ctx context.Context,
+	req validator.StringRequest,
+	resp *validator.StringResponse,
+) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() || req.ConfigValue.ValueString() == "" {
+		return
+	}
+
+	v.delegate.ValidateString(ctx, req, resp)
 }
 
 func HostValidation() validator.String {
