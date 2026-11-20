@@ -25,6 +25,15 @@ func newHTTPHeadersModel(ctx context.Context, headers []aembit.KeyValuePair) typ
 	return types.MapNull(types.StringType)
 }
 
+func newStringSetModel(ctx context.Context, values []string) types.Set {
+	if len(values) == 0 {
+		return types.SetNull(types.StringType)
+	}
+
+	s, _ := types.SetValueFrom(ctx, types.StringType, values)
+	return s
+}
+
 func modifyPlanForResourceSetId(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
@@ -98,4 +107,25 @@ func getResourceSetId(resourceSetId types.String, client *aembit.CloudClient) st
 	}
 
 	return rsId
+}
+
+func stringToTypesString(s string) types.String {
+	if s == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(s)
+}
+
+func stringPointerToTypesString(s *string) types.String {
+	if s == nil || *s == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(*s)
+}
+
+func typesStringToStringPointer(s types.String) *string {
+	if s.IsNull() || s.IsUnknown() || s.ValueString() == "" {
+		return nil
+	}
+	return s.ValueStringPointer()
 }
