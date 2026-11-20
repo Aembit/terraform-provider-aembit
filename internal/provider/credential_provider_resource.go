@@ -484,6 +484,15 @@ func (r *credentialProviderResource) Schema(
 						Computed:    true,
 						Default:     stringdefault.StaticString(""),
 					},
+					"oauth_revocation_url": schema.StringAttribute{
+						Description: "The OAuth revocation endpoint URL for revoking MCP user-based access tokens.",
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							validators.SecureURLValidation(),
+						},
+					},
 					"client_id": schema.StringAttribute{
 						Description: "Client ID for the MCP User Based Access Token Credential Provider.",
 						Required:    true,
@@ -1667,6 +1676,7 @@ func convertCredentialProviderV2DTOToModel(
 		value := models.CredentialProviderMcpUserBasedAccessTokenModel{}
 		value.McpServerUrl = types.StringValue(dto.McpServerUrl)
 		value.Resource = types.StringValue(dto.Resource)
+		value.OAuthRevocationUrl = types.StringValue(dto.RevocationUrl)
 		value.OAuthCodeModel = *convertOAuthCodeDTOToModel(dto)
 		if planModel.McpUserBasedAccessToken != nil {
 			value.ClientSecret = planModel.McpUserBasedAccessToken.ClientSecret
@@ -2196,6 +2206,7 @@ func convertToMcpUserBasedAccessTokenDTO(
 	credential.McpServerUrl = model.McpUserBasedAccessToken.McpServerUrl.ValueString()
 	credential.AuthorizationUrl = model.McpUserBasedAccessToken.OAuthAuthorizationUrl.ValueString()
 	credential.IntrospectionUrl = model.McpUserBasedAccessToken.OAuthIntrospectionUrl.ValueString()
+	credential.RevocationUrl = model.McpUserBasedAccessToken.OAuthRevocationUrl.ValueString()
 	credential.TokenUrl = model.McpUserBasedAccessToken.OAuthTokenUrl.ValueString()
 	credential.CredentialOAuthAuthorizationCodeV2DTO = aembit.CredentialOAuthAuthorizationCodeV2DTO{
 		IsPkceRequired: model.McpUserBasedAccessToken.IsPkceRequired.ValueBool(),

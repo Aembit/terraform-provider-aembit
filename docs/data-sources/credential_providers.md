@@ -243,6 +243,7 @@ Read-Only:
 - `mcp_server_url` (String)
 - `oauth_authorization_url` (String)
 - `oauth_introspection_url` (String)
+- `oauth_revocation_url` (String)
 - `oauth_token_url` (String)
 - `resource` (String)
 - `scopes` (String)
