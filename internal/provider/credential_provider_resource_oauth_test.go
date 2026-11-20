@@ -17,6 +17,7 @@ import (
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	fwresource "github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -666,6 +667,152 @@ func TestCredentialProviderResource_McpUserBasedAccessToken_Lifecycle(t *testing
 	assert.Equal(t, "https://aembit.io/revoke", reqs[0].RevocationUrl)
 	assert.Equal(t, "https://aembit.io/revoke-updated", reqs[1].RevocationUrl)
 	assert.Equal(t, "", reqs[2].RevocationUrl)
+}
+
+func TestCredentialProviderResource_McpUserBasedAccessToken_PlanOmissionAfterNonEmpty(t *testing.T) {
+	t.Setenv("AEMBIT_CLIENT_ID", "")
+	t.Setenv("AEMBIT_RESOURCE_SET_ID", "")
+
+	ctx := context.Background()
+	const externalID = "11111111-2222-3333-4444-555555555555"
+
+	p := New("test", "unittest")()
+	providerSchemaResp := &fwprovider.SchemaResponse{}
+	p.Schema(ctx, fwprovider.SchemaRequest{}, providerSchemaResp)
+	require.False(t, providerSchemaResp.Diagnostics.HasError())
+
+	providerCfgPlan := tfsdk.Plan{Schema: providerSchemaResp.Schema}
+	require.False(t, providerCfgPlan.Set(ctx, aembitProviderModel{
+		Tenant:      types.StringValue("unit-tenant"),
+		Token:       types.StringValue("unit-test-token"),
+		ClientID:    types.StringNull(),
+		ResourceSet: types.StringNull(),
+	}).HasError())
+
+	providerDynVal, err := tfprotov6.NewDynamicValue(
+		providerSchemaResp.Schema.Type().TerraformType(ctx),
+		providerCfgPlan.Raw,
+	)
+	require.NoError(t, err)
+
+	server, err := providerserver.NewProtocol6WithError(New("test", "unittest")())()
+	require.NoError(t, err)
+
+	cfgResp, err := server.ConfigureProvider(ctx, &tfprotov6.ConfigureProviderRequest{
+		Config: &providerDynVal,
+	})
+	require.NoError(t, err)
+	for _, d := range cfgResp.Diagnostics {
+		require.NotEqual(t, tfprotov6.DiagnosticSeverityError, d.Severity, "ConfigureProvider error: %s", d.Detail)
+	}
+
+	mockClient, getRequests := newMockCredentialProviderCloudClient(t, externalID, nil)
+	res, ok := NewCredentialProviderResource().(*credentialProviderResource)
+	require.True(t, ok)
+	res.client = mockClient
+
+	var schemaResp fwresource.SchemaResponse
+	res.Schema(ctx, fwresource.SchemaRequest{}, &schemaResp)
+	require.False(t, schemaResp.Diagnostics.HasError())
+	resSchema := schemaResp.Schema
+	schemaType := resSchema.Type().TerraformType(ctx)
+
+	buildModel := func(id types.String, revocationUrl types.String) models.CredentialProviderResourceModel {
+		return models.CredentialProviderResourceModel{
+			ID:            id,
+			ResourceSetId: types.StringValue(DEFAULT_RESOURCESET_ID),
+			Name:          types.StringValue("MCP Revocation Plan Omission"),
+			Description:   types.StringValue("Testing plan omission after non-empty"),
+			IsActive:      types.BoolValue(true),
+			Tags:          types.MapNull(types.StringType),
+			TagsAll:       types.MapNull(types.StringType),
+			McpUserBasedAccessToken: &models.CredentialProviderMcpUserBasedAccessTokenModel{
+				McpServerUrl:       types.StringValue("https://aembit.io/mcp"),
+				Resource:           types.StringValue("resource-id"),
+				OAuthRevocationUrl: revocationUrl,
+				OAuthCodeModel: models.OAuthCodeModel{
+					OAuthAuthorizationUrl: types.StringValue("https://aembit.io/authorize"),
+					OAuthTokenUrl:         types.StringValue("https://aembit.io/token"),
+					OAuthIntrospectionUrl: types.StringValue(""),
+					ClientID:              types.StringValue("client-id"),
+					ClientSecret:          types.StringValue("client-secret"),
+					Scopes:                types.StringValue("openid"),
+					IsPkceRequired:        types.BoolValue(true),
+					CallBackUrl:           types.StringValue("https://unit-tenant.mcp.aembit.io/userauth/" + externalID + "/callback"),
+					CustomParameters:      []*models.CredentialProviderOAuthClientCustomParametersModel{},
+				},
+			},
+		}
+	}
+
+	// 1. Seed initial resource with non-empty oauth_revocation_url.
+	createPlan := tfsdk.Plan{Schema: resSchema}
+	require.False(t, createPlan.Set(ctx, buildModel(types.StringUnknown(), types.StringValue("https://aembit.io/revoke-updated"))).HasError())
+	createResp := fwresource.CreateResponse{
+		State: tfsdk.State{Schema: resSchema, Raw: tftypes.NewValue(schemaType, nil)},
+	}
+	res.Create(ctx, fwresource.CreateRequest{Plan: createPlan}, &createResp)
+	require.False(t, createResp.Diagnostics.HasError(), "Create diagnostics: %v", createResp.Diagnostics)
+
+	// 2. Plan a config where oauth_revocation_url is omitted (null) immediately after non-empty state.
+	// ProposedNewState carries forward the prior non-empty value as Terraform Core does for Optional+Computed.
+	omittedCfgPlan := tfsdk.Plan{Schema: resSchema}
+	omittedModel := buildModel(types.StringNull(), types.StringNull())
+	omittedModel.ResourceSetId = types.StringNull()
+	omittedModel.McpUserBasedAccessToken.CallBackUrl = types.StringNull()
+	require.False(t, omittedCfgPlan.Set(ctx, omittedModel).HasError())
+
+	proposedState := tfsdk.Plan{Schema: resSchema}
+	require.False(t, proposedState.Set(ctx, buildModel(types.StringValue(externalID), types.StringValue("https://aembit.io/revoke-updated"))).HasError())
+
+	priorDynVal, err := tfprotov6.NewDynamicValue(schemaType, createResp.State.Raw)
+	require.NoError(t, err)
+	configDynVal, err := tfprotov6.NewDynamicValue(schemaType, omittedCfgPlan.Raw)
+	require.NoError(t, err)
+	proposedDynVal, err := tfprotov6.NewDynamicValue(schemaType, proposedState.Raw)
+	require.NoError(t, err)
+
+	planResp, err := server.PlanResourceChange(ctx, &tfprotov6.PlanResourceChangeRequest{
+		TypeName:         "aembit_credential_provider",
+		PriorState:       &priorDynVal,
+		Config:           &configDynVal,
+		ProposedNewState: &proposedDynVal,
+	})
+	require.NoError(t, err)
+	for _, d := range planResp.Diagnostics {
+		require.NotEqual(t, tfprotov6.DiagnosticSeverityError, d.Severity, "PlanResourceChange error: %s", d.Detail)
+	}
+
+	plannedTfVal, err := planResp.PlannedState.Unmarshal(schemaType)
+	require.NoError(t, err)
+	plannedPlan := tfsdk.Plan{Schema: resSchema, Raw: plannedTfVal}
+
+	var plannedModel models.CredentialProviderResourceModel
+	require.False(t, plannedPlan.Get(ctx, &plannedModel).HasError())
+	require.NotNil(t, plannedModel.McpUserBasedAccessToken)
+	assert.Equal(t, types.StringValue(""), plannedModel.McpUserBasedAccessToken.OAuthRevocationUrl)
+
+	// 3. Apply the planned state via Update and verify PUT sends "" and Read returns "".
+	updateResp := fwresource.UpdateResponse{State: createResp.State}
+	res.Update(ctx, fwresource.UpdateRequest{
+		State: createResp.State,
+		Plan:  plannedPlan,
+	}, &updateResp)
+	require.False(t, updateResp.Diagnostics.HasError(), "Update diagnostics: %v", updateResp.Diagnostics)
+
+	readResp := fwresource.ReadResponse{State: updateResp.State}
+	res.Read(ctx, fwresource.ReadRequest{State: updateResp.State}, &readResp)
+	require.False(t, readResp.Diagnostics.HasError(), "Read diagnostics: %v", readResp.Diagnostics)
+
+	var stateAfterRead models.CredentialProviderResourceModel
+	require.False(t, readResp.State.Get(ctx, &stateAfterRead).HasError())
+	require.NotNil(t, stateAfterRead.McpUserBasedAccessToken)
+	assert.Equal(t, types.StringValue(""), stateAfterRead.McpUserBasedAccessToken.OAuthRevocationUrl)
+
+	reqs := getRequests()
+	require.Len(t, reqs, 2)
+	assert.Equal(t, "https://aembit.io/revoke-updated", reqs[0].RevocationUrl)
+	assert.Equal(t, "", reqs[1].RevocationUrl)
 }
 
 func TestCredentialProvidersDataSourceSchema_OAuthRevocationUrl(t *testing.T) {

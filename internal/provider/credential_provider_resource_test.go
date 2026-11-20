@@ -750,6 +750,15 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 	if !strings.Contains(explicitEmptyRevocationUrlFile, `oauth_revocation_url = ""`) {
 		t.Fatalf("failed to set empty oauth_revocation_url in modify config")
 	}
+	restoreRevocationUrlFile := regexp.MustCompile(
+		`(?m)^(\s*oauth_revocation_url\s*=).*$`,
+	).ReplaceAllString(string(modifyFile), `$1 "https://aembit.io/revoke-restored"`)
+	if !strings.Contains(
+		restoreRevocationUrlFile,
+		`oauth_revocation_url = "https://aembit.io/revoke-restored"`,
+	) {
+		t.Fatalf("failed to set restored oauth_revocation_url in modify config")
+	}
 	clearRevocationUrlFile := regexp.MustCompile(
 		`(?m)^\s*oauth_revocation_url\s*=.*\r?\n`,
 	).ReplaceAllString(string(modifyFile), "")
@@ -832,9 +841,9 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 					),
 				),
 			},
-			// Clear oauth_revocation_url explicitly with "" and Read testing
+			// Clear oauth_revocation_url by omission immediately after non-empty update and Read testing.
 			{
-				Config: explicitEmptyRevocationUrlFile,
+				Config: clearRevocationUrlFile,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						testMcpUserBasedAccessTokenResource,
@@ -848,9 +857,25 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 					),
 				),
 			},
-			// Clear oauth_revocation_url by omission and Read testing
+			// Re-set oauth_revocation_url to a non-empty URL and Read testing.
 			{
-				Config: clearRevocationUrlFile,
+				Config: restoreRevocationUrlFile,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"https://aembit.io/revoke-restored",
+					),
+				),
+			},
+			// Clear oauth_revocation_url explicitly with "" immediately after non-empty update and Read testing.
+			{
+				Config: explicitEmptyRevocationUrlFile,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						testMcpUserBasedAccessTokenResource,
