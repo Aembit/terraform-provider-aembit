@@ -733,6 +733,7 @@ func TestAccCredentialProviderResource_OAuthAuthorizationCode(t *testing.T) {
 const (
 	testMcpUserBasedAccessTokenResource              = "aembit_credential_provider.mcp_user_based_access_token"
 	testMcpUserBasedAccessTokenEmptyCustomParameters = "aembit_credential_provider.mcp_user_based_access_token_empty_custom_parameters"
+	testMcpUserBasedAccessTokenRevocationUrl         = "mcp_user_based_access_token.oauth_revocation_url"
 )
 
 func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
@@ -743,6 +744,18 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 	modifyFile, _ := os.ReadFile(
 		"../../tests/credential/mcp-user-based-access-token/TestAccCredentialProviderResource.tfmod",
 	)
+	explicitEmptyRevocationUrlFile := regexp.MustCompile(
+		`(?m)^(\s*oauth_revocation_url\s*=).*$`,
+	).ReplaceAllString(string(modifyFile), `$1 ""`)
+	if !strings.Contains(explicitEmptyRevocationUrlFile, `oauth_revocation_url = ""`) {
+		t.Fatalf("failed to set empty oauth_revocation_url in modify config")
+	}
+	clearRevocationUrlFile := regexp.MustCompile(
+		`(?m)^\s*oauth_revocation_url\s*=.*\r?\n`,
+	).ReplaceAllString(string(modifyFile), "")
+	if strings.Contains(clearRevocationUrlFile, "oauth_revocation_url") {
+		t.Fatalf("failed to strip oauth_revocation_url from modify config")
+	}
 
 	firstID := uuid.New().String()
 	secondID := uuid.New().String()
@@ -768,6 +781,11 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testMcpUserBasedAccessTokenResource, "id"),
 					// Verify placeholder ID is set
 					resource.TestCheckResourceAttrSet(testMcpUserBasedAccessTokenResource, "id"),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"https://aembit.io/revoke",
+					),
 					// Verify Credential Provider Name
 					resource.TestCheckResourceAttr(
 						testMcpUserBasedAccessTokenEmptyCustomParameters,
@@ -783,6 +801,11 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						testMcpUserBasedAccessTokenEmptyCustomParameters,
 						"id",
+					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenEmptyCustomParameters,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"",
 					),
 				),
 			},
@@ -802,9 +825,62 @@ func TestAccCredentialProviderResource_McpUserBasedAccessToken(t *testing.T) {
 						"name",
 						"TF Acceptance McpUserBasedAccessToken - Modified",
 					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"https://aembit.io/revoke-updated",
+					),
+				),
+			},
+			// Clear oauth_revocation_url explicitly with "" and Read testing
+			{
+				Config: explicitEmptyRevocationUrlFile,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"",
+					),
+				),
+			},
+			// Clear oauth_revocation_url by omission and Read testing
+			{
+				Config: clearRevocationUrlFile,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						"name",
+						"TF Acceptance McpUserBasedAccessToken - Modified",
+					),
+					resource.TestCheckResourceAttr(
+						testMcpUserBasedAccessTokenResource,
+						testMcpUserBasedAccessTokenRevocationUrl,
+						"",
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccCredentialProviderResource_McpUserBasedAccessToken_InvalidRevocationUrl(t *testing.T) {
+	t.Parallel()
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/mcp-user-based-access-token/TestAccCredentialProviderResource_InvalidRevocationUrl.tf",
+	)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      string(createFile),
+				ExpectError: regexp.MustCompile(`must be a valid\s+https url`),
+			},
 		},
 	})
 }

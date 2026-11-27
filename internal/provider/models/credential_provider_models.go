@@ -148,6 +148,8 @@ type CredentialProviderOAuthAuthorizationCodeModel struct {
 type CredentialProviderMcpUserBasedAccessTokenModel struct {
 	McpServerUrl types.String `tfsdk:"mcp_server_url"`
 	Resource     types.String `tfsdk:"resource"`
+	// OAuthRevocationUrl is the optional OAuth token revocation endpoint URL.
+	OAuthRevocationUrl types.String `tfsdk:"oauth_revocation_url"`
 	OAuthCodeModel
 }
 

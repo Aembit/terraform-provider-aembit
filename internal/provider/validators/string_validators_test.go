@@ -698,3 +698,70 @@ func TestStringValidators_TableDriven(t *testing.T) {
 		})
 	}
 }
+
+func TestOptionalSecureURLValidation(t *testing.T) {
+	t.Parallel()
+
+	v := OptionalSecureURLValidation()
+	require.NotNil(t, v)
+
+	ctx := context.Background()
+
+	require.Contains(t, v.Description(ctx), "must be a valid https url")
+	require.Contains(t, v.Description(ctx), "or be empty")
+	require.Contains(t, v.MarkdownDescription(ctx), "must be a valid https url")
+	require.Contains(t, v.MarkdownDescription(ctx), "or be empty")
+
+	validCases := []struct {
+		name  string
+		value types.String
+	}{
+		{name: "Null", value: types.StringNull()},
+		{name: "Unknown", value: types.StringUnknown()},
+		{name: "Empty", value: types.StringValue("")},
+		{name: "ValidHTTPS", value: types.StringValue("https://example.com")},
+		{name: "ValidHTTPSWithPathAndQuery", value: types.StringValue("https://sub.example.com/oauth/revoke?hint=token")},
+	}
+
+	for _, tc := range validCases {
+		t.Run("Valid_"+tc.name, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: tc.value,
+				Path:        path.Root("oauth_revocation_url"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.False(t, resp.Diagnostics.HasError(), "expected %v to be valid, got: %s", tc.value, resp.Diagnostics)
+		})
+	}
+
+	invalidCases := []struct {
+		name  string
+		value string
+	}{
+		{name: "HTTP", value: "http://example.com/revoke"},
+		{name: "WhitespaceOnly", value: "   "},
+		{name: "MalformedURL", value: "not-a-valid-url"},
+		{name: "LocalhostWithoutTLD", value: "https://localhost/revoke"},
+		{name: "FTPScheme", value: "ftp://example.com/revoke"},
+	}
+
+	for _, tc := range invalidCases {
+		t.Run("Invalid_"+tc.name, func(t *testing.T) {
+			req := validator.StringRequest{
+				ConfigValue: types.StringValue(tc.value),
+				Path:        path.Root("oauth_revocation_url"),
+			}
+			resp := &validator.StringResponse{
+				Diagnostics: diag.Diagnostics{},
+			}
+			v.ValidateString(ctx, req, resp)
+			require.True(t, resp.Diagnostics.HasError(), "expected %q to fail validation", tc.value)
+			errs := resp.Diagnostics.Errors()
+			require.Len(t, errs, 1, "expected exactly 1 error diagnostic for %q", tc.value)
+			require.Contains(t, errs[0].Detail(), "must be a valid https url")
+		})
+	}
+}

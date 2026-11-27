@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -10,10 +11,12 @@ import (
 )
 
 const (
-	testCredentialProvidersDataSource  string = "data.aembit_credential_providers.test"
-	testCredentialProviderResource     string = "aembit_credential_provider.oauth"
-	testAzureKeyVaultValueCpDataSource string = "data.aembit_credential_providers.azure_key_vault_value_test"
-	testAzureKeyVaultValueCpResource   string = "aembit_credential_provider.azure_key_vault_value_cp"
+	testCredentialProvidersDataSource          string = "data.aembit_credential_providers.test"
+	testCredentialProviderResource             string = "aembit_credential_provider.oauth"
+	testAzureKeyVaultValueCpDataSource         string = "data.aembit_credential_providers.azure_key_vault_value_test"
+	testAzureKeyVaultValueCpResource           string = "aembit_credential_provider.azure_key_vault_value_cp"
+	testMcpUserBasedAccessTokenCpDataSource    string = "data.aembit_credential_providers.mcp_user_based_access_token_test"
+	testMcpUserBasedAccessTokenCpDataSourceRes string = "aembit_credential_provider.mcp_user_based_access_token_cp"
 )
 
 func testFindCredentialProvider(resourceName string) resource.TestCheckFunc {
@@ -100,6 +103,69 @@ func TestAccAzureKeyVaultValueCredentialProvidersDataSource(t *testing.T) {
 					),
 					// Find newly created entry
 					testFindCredentialProvider(testAzureKeyVaultValueCpResource),
+				),
+			},
+		},
+	})
+}
+
+func TestAccMcpUserBasedAccessTokenCredentialProvidersDataSource(t *testing.T) {
+	createFile, _ := os.ReadFile(
+		"../../tests/credential/data/TestAccMcpUserBasedAccessTokenCpDataSource.tf",
+	)
+	createFileConfig, _, endName := randomizeFileConfigs(
+		string(createFile),
+		"",
+		"TF Acceptance McpUserBasedAccessToken DataSource",
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: createFileConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						testMcpUserBasedAccessTokenCpDataSource,
+						"credential_providers.#",
+					),
+					testFindCredentialProvider(testMcpUserBasedAccessTokenCpDataSourceRes),
+					func(s *terraform.State) error {
+						ms, ok := s.RootModule().Resources[testMcpUserBasedAccessTokenCpDataSource]
+						if !ok {
+							return fmt.Errorf("Not found: %s", testMcpUserBasedAccessTokenCpDataSource)
+						}
+
+						countStr := ms.Primary.Attributes["credential_providers.#"]
+						count, err := strconv.Atoi(countStr)
+						if err != nil {
+							return err
+						}
+
+						const expectedRevocationUrl = "https://aembit.io/revoke"
+						for i := 0; i < count; i++ {
+							if ms.Primary.Attributes[fmt.Sprintf("credential_providers.%d.name", i)] == endName {
+								actual := ms.Primary.Attributes[fmt.Sprintf(
+									"credential_providers.%d.mcp_user_based_access_token.oauth_revocation_url",
+									i,
+								)]
+								if actual != expectedRevocationUrl {
+									return fmt.Errorf(
+										"expected oauth_revocation_url %q, got %q",
+										expectedRevocationUrl,
+										actual,
+									)
+								}
+								return nil
+							}
+						}
+
+						return fmt.Errorf(
+							"Credential Provider with name %q not found in %s",
+							endName,
+							testMcpUserBasedAccessTokenCpDataSource,
+						)
+					},
 				),
 			},
 		},
